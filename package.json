@@ -1,0 +1,17 @@
+{
+  "description": "AnSci \u2014 a classical-AI system whose mind is an ontology graph of ontological priors (yin/yang, Wuxing, trigrams), not a neural network.",
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  },
+  "name": "ansci-ai-classical-chat",
+  "private": true,
+  "scripts": {
+    "ask": "npm run build --silent && node dist/src/cli.js",
+    "build": "tsc",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "commonjs",
+  "version": "0.1.0"
+}

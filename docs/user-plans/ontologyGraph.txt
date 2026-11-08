@@ -1,0 +1,395 @@
+AnSci Ontology Graph Specification
+
+This document defines the node types, relationship types, and layers that make up
+the AnSci knowledge graph.
+
+---
+
+LAYER: ATOMIC
+
+These nodes are loaded at startup and are immutable.  They form the fixed
+cosmological backbone of the system.
+
+Node types in this layer:
+
+  Polarity
+    - Yin
+    - Yang
+
+  Element (Wuxing)
+    - Wood
+    - Fire
+    - Earth
+    - Metal
+    - Water
+
+  Trigram (Bagua)
+    - Qian  (Heaven)
+    - Kun   (Earth)
+    - Zhen  (Thunder)
+    - Xun   (Wind)
+    - Kan   (Water)
+    - Li    (Fire)
+    - Gen   (Mountain)
+    - Dui   (Lake)
+
+Relationship types in this layer (no confidence score; absolute truth):
+
+  MUTUAL_GENERATION ( cyclic, directed )
+    Wood -> Fire -> Earth -> Metal -> Water -> Wood
+
+  MUTUAL_RESTRAINT ( cyclic, directed )
+    Wood -> Earth -> Water -> Fire -> Metal -> Wood
+
+  POLARITY_OF ( directed: concept -> polarity )
+    Example: Water -> Yin, Fire -> Yang, Wood -> Yang-rising, Metal -> Yin-rising
+
+  ELEMENT_OF ( directed: concept -> element )
+    Example: Winter -> Water, Summer -> Fire
+
+  CONTAINS_SEED ( directed: polarity -> opposite-polarity )
+    Yin -> Yang (the seed of Yang within Yin)
+    Yang -> Yin (the seed of Yin within Yang)
+
+  TRIGRAM_COMPOSES ( directed: trigram -> hexagram )
+    (Used when the 64 Hexagrams are present; each hexagram is composed of two trigrams.)
+
+---
+
+LAYER: DICTIONARY
+
+These nodes are vocabulary entries.  They provide canonical definitions that the
+knowledge-ingestion LLM must query and respect before creating new acquired nodes.
+The dictionary is an active authority, not a passive reference.
+
+Node type:
+
+  DictionaryEntry
+    fields:
+      - word          (string, unique key)
+      - definition    (string)
+      - partOfSpeech  (string, e.g. "noun", "verb")
+      - domain        (string, e.g. "mathematics", "physics", "common")
+      - status        ("approved" | "proposed" | "deprecated")
+
+Relationship type:
+
+  DEFINED_AS ( directed: concept -> dictionary-entry )
+    Links an acquired or atomic concept to its dictionary definition.
+
+Example nodes:
+
+  DictionaryEntry {
+    word: "derivative",
+    definition: "A measure of how a function changes as its input changes; the instantaneous rate of change.",
+    partOfSpeech: "noun",
+    domain: "mathematics",
+    status: "approved"
+  }
+
+  DictionaryEntry {
+    word: "integral",
+    definition: "A mathematical object that can be interpreted as the area under a curve or the accumulation of a quantity.",
+    partOfSpeech: "noun",
+    domain: "mathematics",
+    status: "approved"
+  }
+
+---
+
+LAYER: ACQUIRED
+
+These nodes are created by the ingestion pipeline or manually curated.  They
+represent modern knowledge mapped onto the atomic ontology.  They always link
+back into ATOMIC nodes but are not atomic themselves.
+
+Node type:
+
+  Concept
+    fields:
+      - name          (string, unique key)
+      - layer         ("acquired")
+      - domain        (string)
+      - summary       (string, plain-English summary for response generation)
+
+Relationship types in this layer (all carry a confidence score 0.0–1.0):
+
+  HAS_POLARITY   ( directed: acquired-concept -> Polarity )
+  HAS_ELEMENT    ( directed: acquired-concept -> Element )
+  HAS_TRIGRAM    ( directed: acquired-concept -> Trigram )
+  MAPPED_TO      ( directed: acquired-concept -> atomic-concept )
+  ASSOCIATED_WITH ( directed: acquired-concept -> acquired-concept )
+  SYNONYM_OF      ( undirected or bidirectional )
+
+Confidence score meaning:
+  - 1.0: human-curated, certain
+  - 0.8–0.99: high-confidence LLM extraction with clear textual evidence
+  - 0.5–0.79: plausible inference, weak textual evidence
+  - < 0.5: speculative, flagged for review, excluded from answers by default
+
+Example acquired subgraph:
+
+  Concept { name: "derivative", domain: "mathematics" }
+    -> HAS_POLARITY { confidence: 0.92 } -> Yang
+    -> HAS_ELEMENT  { confidence: 0.88 } -> Fire
+    -> MAPPED_TO    { confidence: 0.95 } -> "instantaneous rate of change" (concept)
+    -> DEFINED_AS    -> DictionaryEntry "derivative"
+
+  Concept { name: "integral", domain: "mathematics" }
+    -> HAS_POLARITY { confidence: 0.91 } -> Yin
+    -> HAS_ELEMENT  { confidence: 0.87 } -> Water
+    -> MAPPED_TO    { confidence: 0.94 } -> "accumulation" (concept)
+    -> DEFINED_AS    -> DictionaryEntry "integral"
+
+  Concept { name: "high pressure system", domain: "meteorology" }
+    -> HAS_POLARITY { confidence: 0.85 } -> Yang
+    -> HAS_ELEMENT  { confidence: 0.72 } -> Fire
+    -> summary: "A region where atmospheric pressure is higher than surrounding areas, associated with sinking air and clear skies."
+
+---
+
+LAYER: SOURCE
+
+These nodes track where acquired knowledge came from.  Every fact in the graph is
+debatable because every fact has a source.
+
+Node type:
+
+  TextPassage
+    fields:
+      - id            (string, unique)
+      - sourceTitle   (string)
+      - chapter       (number or string)
+      - page          (number)
+      - rawText       (string)
+      - language      (string, e.g. "zh", "en")
+
+Relationship types:
+
+  SOURCED_FROM ( directed: concept -> text-passage )
+  SOURCED_FROM ( directed: relationship -> text-passage )
+    Every acquired node and every acquired relationship links back to the passage
+    from which it was extracted.
+
+Example:
+
+  (:TextPassage {
+    id: "neijing-suwen-ch1-p3",
+    sourceTitle: "Huangdi Neijing - Suwen",
+    chapter: 1,
+    page: 3,
+    rawText: "The Yellow Emperor said: In winter, the pulse is deep and firm...",
+    language: "zh"
+  })
+
+---
+
+LAYER: TRAINING AUDIT
+
+These nodes track how the LLM trained the graph.  Because the graph is the static
+model and the LLM is the trainer, every adjustment the LLM makes to the graph is
+logged for review, rollback, and reproducibility.
+
+Node type:
+
+  GraphAdjustment
+    fields:
+      - id            (string, unique)
+      - adjustmentType ("ADD_RELATIONSHIP" | "REMOVE_RELATIONSHIP" | "UPDATE_CONFIDENCE" | "DEPRECATE" | "RELINK")
+      - targetNode    (string, node ID affected)
+      - targetEdge    (string, edge ID affected, if applicable)
+      - oldValue      (string or number, previous state)
+      - newValue      (string or number, new state)
+      - reason        (string, LLM-generated explanation for the change)
+      - evaluationQuestion (string, the test question that triggered this adjustment)
+      - expectedAnswer (string, the correct answer the graph failed to produce)
+      - graphAnswer   (string, the incorrect answer the graph actually produced)
+      - confidenceBefore (number)
+      - confidenceAfter  (number)
+      - status        ("applied" | "reverted" | "flagged")
+
+Relationship types:
+
+  ADJUSTED_BY ( directed: concept -> graph-adjustment )
+  ADJUSTED_BY ( directed: relationship -> graph-adjustment )
+    Links an affected node or relationship to the adjustment that modified it.
+
+  TRIGGERED_BY ( directed: graph-adjustment -> text-passage )
+    Links the adjustment back to the passage that triggered the evaluation.
+
+Example:
+
+  (:GraphAdjustment {
+    id: "adj-2026-05-20-001",
+    adjustmentType: "UPDATE_CONFIDENCE",
+    targetEdge: "derivative-HAS_POLARITY-Yang",
+    oldValue: 0.92,
+    newValue: 0.65,
+    reason: "Graph answered 'derivative is Yang' but the source text emphasizes accumulation and wholeness, which is Yin. The initial mapping was too hasty.",
+    evaluationQuestion: "Is the derivative more Yin or Yang?",
+    expectedAnswer: "Yin, because it represents the accumulation of infinitesimal changes into a whole.",
+    graphAnswer: "Yang, because it represents instantaneous change.",
+    confidenceBefore: 0.92,
+    confidenceAfter: 0.65,
+    status: "applied"
+  })
+    -> TRIGGERED_BY -> TextPassage "math-text-ch3-p45"
+
+This makes the training process fully auditable. You can see exactly why the
+LLM changed a relationship, what question it was trying to fix, and whether
+the fix worked.
+
+---
+
+QUERY SEMANTICS & QUERYINTENT
+
+When a user asks a question, the pipeline is:
+
+  1. INPUT ENCODER (neural, local, ONNX)
+     - Embed the user text.
+     - Fuzzy-match against all node names (atomic + dictionary + acquired).
+     - Return a QueryIntent, not just a node name.
+
+  QueryIntent (TypeScript interface):
+  interface QueryIntent {
+    matchedNodes: string[];          // e.g., ["derivative"]
+    intentType: "definition" | "comparison" | "ontology_explanation" | "causal_chain" | "unknown";
+    domainHint?: string;             // e.g., "mathematics"
+    includeOntology: boolean;        // true if user explicitly asks about yin/yang
+    traversalDepth: number;          // how many relationship hops to follow
+    confidenceThreshold: number;     // minimum relationship confidence to include
+  }
+
+  2. REASONING ENGINE (symbolic, TypeScript)
+     - Read the QueryIntent.
+     - If intentType is "ontology_explanation" or includeOntology is true:
+         traverse into atomic polarity/element nodes.
+     - If intentType is "definition" and includeOntology is false:
+         stop at the dictionary definition and the concept summary.
+         Do NOT traverse HAS_POLARITY or HAS_ELEMENT.
+     - For every relationship traversed, check confidence >= confidenceThreshold.
+     - Gather summaries, definitions, and MAPPED_TO explanations.
+     - Optionally retrieve source passages via SOURCED_FROM if the user asks
+       "Where did you learn that?"
+
+  3. RESPONSE GENERATOR (neural, local, ONNX)
+     - Receive the raw graph facts and the includeOntology flag.
+     - Produce natural English.
+     - IMPORTANT: The response generator MUST NOT emit polarity or element
+       names unless includeOntology is true.
+
+  Example A: "What is a derivative in math?"
+    QueryIntent:
+      matchedNodes: ["derivative"]
+      intentType: "definition"
+      includeOntology: false
+      confidenceThreshold: 0.8
+    Reasoning engine stops at:
+      DictionaryEntry "derivative" + summary
+    Response:
+      "A derivative is a measure of how a function changes as its input changes.
+       It represents the instantaneous rate of change at a particular point."
+
+  Example B: "How does the concept of derivative fit into ancient Chinese science?"
+    QueryIntent:
+      matchedNodes: ["derivative"]
+      intentType: "ontology_explanation"
+      includeOntology: true
+      confidenceThreshold: 0.7
+    Reasoning engine traverses:
+      derivative -> HAS_POLARITY (0.92) -> Yang
+      derivative -> HAS_ELEMENT (0.88) -> Fire
+    Response:
+      "In this framework, the derivative is associated with Yang and the Fire element,
+       because it represents instantaneous, active, breaking-apart change."
+
+---
+
+PERSISTENCE FORMATS
+
+### In-memory / JSON (prototyping)
+
+{
+  "nodes": [
+    { "id": "Yin", "type": "Polarity", "layer": "atomic", "properties": { ... } },
+    { "id": "derivative", "type": "Concept", "layer": "acquired", "properties": { ... } },
+    { "id": "derivative_dict", "type": "DictionaryEntry", "layer": "dictionary", "properties": { ... } },
+    { "id": "neijing-suwen-ch1-p3", "type": "TextPassage", "layer": "source", "properties": { ... } }
+  ],
+  "edges": [
+    { "from": "derivative", "to": "Yang", "type": "HAS_POLARITY", "confidence": 0.92 },
+    { "from": "derivative", "to": "derivative_dict", "type": "DEFINED_AS" },
+    { "from": "derivative", "to": "neijing-suwen-ch1-p3", "type": "SOURCED_FROM" }
+  ]
+}
+
+### Neo4j (production / scaled ingestion)
+
+Nodes become Neo4j nodes with labels (:Atomic, :DictionaryEntry, :Concept, :TextPassage).
+Relationships become Neo4j relationships with a `confidence` property where applicable.
+Cypher queries express the same traversals as the JSON adjacency list.
+
+---
+
+INGESTION RULES
+
+When the ingestion LLM proposes a new acquired concept from a text passage:
+
+  1. DICTIONARY AUTHORITY CHECK
+     Query the graph: MATCH (d:DictionaryEntry {word: $proposedName})
+     - If a DictionaryEntry exists:
+         * Adopt its definition as canonical. Do not override.
+         * Link the new concept to the existing DictionaryEntry via DEFINED_AS.
+     - If no DictionaryEntry exists:
+         * Create a new DictionaryEntry with status "proposed".
+         * Store the LLM-proposed definition.
+         * Flag it for human review in the dashboard.
+
+  2. CONCEPT DEDUPLICATION
+     Query the graph: MATCH (c:Concept {name: $proposedName})
+     - If the concept exists:
+         * For each proposed relationship, compare with existing relationships.
+         * If the relationship type and target match: keep the higher confidence.
+         * If the relationship conflicts (e.g., existing HAS_POLARITY -> Yin,
+           proposed HAS_POLARITY -> Yang): keep the higher confidence,
+           flag the conflict for review.
+     - If the concept does not exist:
+         * Create it.
+
+  3. ATOMIC LINK VALIDATION
+     All proposed polarity and element mappings must target existing ATOMIC nodes.
+     If the target does not exist, reject the proposal.
+     If the mapping is ambiguous (e.g., the LLM cannot decide between Fire and
+     Metal), store the higher-confidence choice and flag the ambiguity.
+
+  4. SOURCE TRACKING
+     Create a TextPassage node for the source chunk.
+     Link every new concept node and every new relationship to that TextPassage
+     via SOURCED_FROM.
+
+  5. CONFIDENCE ASSIGNMENT
+     The ingestion LLM assigns an initial confidence score based on how directly
+     the text supports the extraction:
+     - Direct quote or explicit statement: 0.90–1.0
+     - Strong inference with textual support: 0.70–0.89
+     - Weak inference or analogy: 0.50–0.69
+     - Below 0.50: reject, do not insert.
+
+  6. PERSISTENCE
+     For Neo4j: run the insertions inside a transaction.
+     For JSON: rewrite the file atomically (write to temp, rename).
+
+---
+
+CONFLICT RESOLUTION
+
+When two or more sources produce conflicting mappings for the same concept:
+
+  1. Compare confidence scores.  Retain the higher-confidence mapping as active.
+  2. Flag the conflict in the dashboard with both source passages visible.
+  3. A human reviewer can override, merge, or deprecate either mapping.
+  4. Deprecating a mapping does not delete it; it sets a `status: "deprecated"`
+     flag so the reasoning engine excludes it but the audit trail remains.
+
+This makes the graph a living structure that improves with each ingested text
+and with human curation, rather than a static dump of extracted entities.

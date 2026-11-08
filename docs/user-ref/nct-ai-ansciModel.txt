@@ -1,0 +1,70 @@
+nct-ai-ansciModel
+
+We will use an LLM to help us
+construct, but it has to have a goal while making an AI that
+can respond with a knowledge base.
+First version built around OpenAI API, the LLM's prompt-response
+software structure. Thus our model, while having a totally different
+underlying architecture, will have LLM API interface parity
+and should be able to be listed on OpenRouter, for example.
+We won't stop it from remembering things if our technologies
+and software architecture naturally enable it, but at first
+we are saying that our architecture just has to 
+reach feature parity with an LLM so that it can be listed on
+OpenRouter and what this does is bring in all of the implications,
+like how would it take in training data (talked about below),
+how would it deal.
+
+A goal was to have an AI agent (LLM) in a loop adjust the 
+technologies we are using to do this, such as a knowledge
+graph until it produces consistently correct output.
+The LLM itself is in a position to evaluate this.
+AI is already used to improve AI models and this would
+just be a case where the AI has a foundation, which is
+the ontology and the technologies, and adjusts its information
+graph and technologies used. An LLM will play the role
+of processing ancient texts or other texts we give it
+and building up the graph to produce results.
+
+
+We can build it around the core knowledge. Then
+the need to answer questions brings in the architecture needs.
+"What is the capital of France?" "Paris".
+
+How does our model understand that sentence in its 
+architecture, how does it go from the atomic knowledge
+we build into it about yin and yang, the Five Elements,
+and fundamental aspects of the world (which we use an LLM
+to build into whatever technologies we are using), to acquiring
+and knowing specifics and being able to take in new information
+and answer questions?
+
+Text input will naturally often have typos and variations, as
+well as grammatical changes, etc. LLMs deal with this through
+taking in the whole in trained tokens on neural nets. 
+For us, we would say yin accounts for nebulous,
+errors, inaccuracies while yang is the proper or correct
+outcome.  Sometimes it isn't clear (unclear is yin) whether
+something is the right thing (yang), and so on.
+
+
+
+- How do we get our model to know things after the atomic knowledge
+or is it going to be evident after we put it in, since we
+from the outset already have many things covered, even sophisticated
+relationships? The Five Elements have many associations for
+each element, from numbers to.  Because of the truth of this
+ontology, with the LLM, we can easily bring in knowledge about
+every field.  We can also provide it an understanding of the human
+body.  Ideally we would have the LLM go through ancient Chinese
+texts like Yellow Emperor's Classic on Internal Medicine
+and read it one page at a time and fit its descriptions into
+our model for atomic knowledge like things about the human body.
+
+-- How will it answer questions?  Naturally in English (or other
+languages)?  How will the order of a sentence and its meanings
+be process and produced? It can, in our model, actually change
+the graph outside of the atomic knowledge.
+-- Take in training data? It won't work the same
+way and it may just be trainable through the OpenAI interface.
+-- Have a base put in by the llm and then be able to process new information?
