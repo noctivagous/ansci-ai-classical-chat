@@ -1,0 +1,10 @@
+# CSKG spike — exploratory turns for the undesigned-behaviour watch.
+# Run: CSKG_CHAT_LOCATION=Chicago node dist/src/cskg/chat.js --script scripts/cskg-explore.txt --debug
+I'm planning a camping trip in the mountains.
+How are rain and snow related?
+What is the opposite of hot?
+I feel tired all the time.
+What about coffee?
+Tell me about winter.
+What do people take to the beach?
+Why do we sleep?

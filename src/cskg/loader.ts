@@ -1,0 +1,381 @@
+/**
+ * loader.ts — CSKG spike: stream-parse the CSKG KGTK TSV (Ilievski et
+ * al., ESWC 2021; Zenodo record 4331372) into an in-memory adjacency
+ * index keyed by normalised English terms.
+ *
+ * SPIKE SCOPE: this package is a self-contained experiment (2026-11-09
+ * rescope). It does NOT touch the ontology pipeline (src/graph.ts,
+ * src/wordnet.ts, src/framenet.ts, src/router.ts …). No MAPPED_TO
+ * bridging, no propagation, no Wuxing. The question it answers is
+ * narrower: can conversational management, thought tracing, session
+ * memory and grounded rendering work over CSKG alone?
+ *
+ * Real schema of data/raw/cskg/cskg.tsv.gz (verified from the file):
+ *   id, node1, relation, node2, node1;label, node2;label,
+ *   relation;label, relation;dimension, source, sentence
+ * `source` is the dataset column (CN, AT, RG, VG, WD, WN, FNC, FN, and
+ * unions like "CN|WN") — preserved per edge as a bitmask and used as
+ * the confidence proxy: support = number of distinct datasets
+ * attesting the same (term, relation, term). CSKG carries no per-edge
+ * numeric weight in this file, so support is all we have; the
+ * renderer hedges on it.
+ *
+ * Node ids come in three shapes:
+ *   /c/en/<term>                     plain ConceptNet-style term
+ *   /c/en/<term>/n/wn/<sense>        WordNet-sensed term
+ *   at:personx_<event_phrase>        ATOMIC event (PersonX …)
+ * Normalisation: strip the prefix, cut any /<pos>/wn/… suffix,
+ * underscores → spaces, drop the "personx" actor token from ATOMIC
+ * events. CSKG has no glosses — "what is X" answers must be built from
+ * the IsA / HasProperty neighbourhood (see converse.ts).
+ *
+ * Kept relations (spike vocabulary, CSKG's own names preserved):
+ * the ConceptNet conversational core (IsA, HasProperty, UsedFor,
+ * Causes, AtLocation, CapableOf, PartOf, HasA, MadeOf, RelatedTo,
+ * Synonym, Antonym, SimilarTo, LocatedNear, HasSubevent,
+ * HasPrerequisite, CausesDesire, MotivatedByGoal, Desires, CreatedBy,
+ * Entails, HasFirstSubevent, HasLastSubevent, DefinedAs, InstanceOf,
+ * ReceivesAction, MannerOf), mw:MayHaveProperty, and the ATOMIC
+ * event relations (xEffect, oEffect, xWant, oWant, xReact, oReact,
+ * xNeed, xIntent, xAttr).
+ * Dropped, counted in the load report: FormOf / DerivedFrom /
+ * Etymologically* (word-shape, not conversation), HasContext (~238k
+ * rows of register tags), fn:HasLexicalUnit (frame plumbing already
+ * covered by the main pipeline), /r/dbpedia/* (encyclopedic trivia),
+ * Not* negations (fewer than 700 rows), DistinctFrom, SymbolOf.
+ * Non-English endpoints are dropped and counted (either side).
+ *
+ * STORAGE: edges live in parallel typed arrays (from/to as Int32,
+ * relation as Uint8 index, provenance as a dataset bitmask), deduped
+ * by a numeric sort, with CSR adjacency in both directions. A first
+ * cut with per-edge objects and a string-keyed dedup Map OOMed Node's
+ * default heap on the full file; this layout loads the whole kept
+ * vocabulary in well under it. CskgEdge objects are materialised on
+ * demand by the query methods and never stored.
+ */
+import * as fs from "fs";
+import * as readline from "readline";
+import * as zlib from "zlib";
+
+export const KEEP_RELATIONS: ReadonlySet<string> = new Set([
+  "/r/IsA", "/r/HasProperty", "/r/UsedFor", "/r/Causes", "/r/AtLocation",
+  "/r/CapableOf", "/r/PartOf", "/r/HasA", "/r/MadeOf", "/r/RelatedTo",
+  "/r/Synonym", "/r/Antonym", "/r/SimilarTo", "/r/LocatedNear",
+  "/r/HasSubevent", "/r/HasPrerequisite", "/r/CausesDesire",
+  "/r/MotivatedByGoal", "/r/Desires", "/r/CreatedBy", "/r/Entails",
+  "/r/HasFirstSubevent", "/r/HasLastSubevent", "/r/DefinedAs",
+  "/r/InstanceOf", "/r/ReceivesAction", "/r/MannerOf",
+  "mw:MayHaveProperty",
+  "at:xEffect", "at:oEffect", "at:xWant", "at:oWant", "at:xReact",
+  "at:oReact", "at:xNeed", "at:xIntent", "at:xAttr",
+]);
+
+const REL_INDEX = new Map<string, number>();
+const REL_NAMES: string[] = [];
+for (const r of KEEP_RELATIONS) {
+  REL_INDEX.set(r, REL_NAMES.length);
+  REL_NAMES.push(r);
+}
+
+const SRC_BIT = new Map<string, number>();
+const SRC_NAMES: string[] = [];
+function srcBit(code: string): number {
+  let b = SRC_BIT.get(code);
+  if (b === undefined) {
+    b = SRC_NAMES.length;
+    SRC_BIT.set(code, b);
+    SRC_NAMES.push(code);
+  }
+  return b;
+}
+function maskSources(mask: number): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < SRC_NAMES.length; i++) if (mask & (1 << i)) out.push(SRC_NAMES[i]);
+  return out;
+}
+function popcount(n: number): number {
+  let c = 0;
+  while (n) { n &= n - 1; c++; }
+  return c;
+}
+
+export interface CskgEdge {
+  from: number; // term id
+  rel: string;
+  to: number; // term id
+  /** distinct datasets attesting this (from, rel, to) */
+  support: number;
+  /** dataset codes, e.g. ["CN","WN"] */
+  sources: string[];
+}
+
+export interface LoadStats {
+  rowsSeen: number;
+  rowsKept: number;
+  droppedRelation: number;
+  droppedNonEnglish: number;
+  droppedMalformed: number;
+  duplicateRows: number;
+  terms: number;
+  edges: number;
+  loadMs: number;
+}
+
+/** Normalise a raw CSKG node id to a term string, or null if unusable. */
+export function normaliseNode(raw: string): string | null {
+  if (!raw) return null;
+  let s = raw;
+  if (s.startsWith("/c/")) {
+    const parts = s.split("/");
+    // /c/en/<term>[/<pos>/wn/<sense>…] — language is parts[2]
+    if (parts[2] !== "en") return null;
+    s = parts[3] ?? "";
+  } else if (s.startsWith("at:")) {
+    s = s.slice(3);
+  } else if (/^[a-z]+:/.test(s)) {
+    // fn:/wd:/vg: prefixed ids (star file): keep the lexical tail
+    s = s.slice(s.indexOf(":") + 1);
+    const slash = s.indexOf("/");
+    if (slash >= 0) s = s.slice(0, slash);
+  } else {
+    const slash = s.indexOf("/");
+    if (slash >= 0) s = s.slice(0, slash);
+  }
+  s = s.replace(/_/g, " ").toLowerCase().trim();
+  // ATOMIC actor tokens are scaffolding, not content
+  s = s.replace(/\bpersonx\b/g, "").replace(/\bperson x\b/g, "");
+  s = s.replace(/\s+/g, " ").trim();
+  if (!s || !/[a-z]/.test(s)) return null;
+  return s;
+}
+
+export class CskgGraph {
+  terms: string[] = [];
+  termId = new Map<string, number>();
+  /** max words in any indexed term (bounds longest-match scanning) */
+  maxTermWords = 1;
+  stats: LoadStats | null = null;
+
+  // typed edge store (filled by loadCskg)
+  eFrom = new Int32Array(0);
+  eTo = new Int32Array(0);
+  eRel = new Uint8Array(0);
+  eMask = new Uint32Array(0);
+  // CSR adjacency: edge indices grouped by endpoint
+  outOff = new Int32Array(0);
+  outIdx = new Int32Array(0);
+  inOff = new Int32Array(0);
+  inIdx = new Int32Array(0);
+
+  id(term: string): number | undefined {
+    return this.termId.get(term);
+  }
+
+  intern(term: string): number {
+    let id = this.termId.get(term);
+    if (id === undefined) {
+      id = this.terms.length;
+      this.terms.push(term);
+      this.termId.set(term, id);
+      const w = term.split(" ").length;
+      if (w > this.maxTermWords) this.maxTermWords = w;
+    }
+    return id;
+  }
+
+  get edgeCount(): number {
+    return this.eFrom.length;
+  }
+
+  materialise(i: number): CskgEdge {
+    const mask = this.eMask[i];
+    return {
+      from: this.eFrom[i],
+      rel: REL_NAMES[this.eRel[i]],
+      to: this.eTo[i],
+      support: popcount(mask),
+      sources: maskSources(mask),
+    };
+  }
+
+  /** Materialised edges of one relation (small relations only). */
+  edgesOf(rel: string): CskgEdge[] {
+    const ri = REL_INDEX.get(rel);
+    if (ri === undefined) return [];
+    const out: CskgEdge[] = [];
+    for (let i = 0; i < this.eRel.length; i++) {
+      if (this.eRel[i] === ri) out.push(this.materialise(i));
+    }
+    return out;
+  }
+
+  private gather(off: Int32Array, idx: Int32Array, id: number, rel?: string): CskgEdge[] {
+    const res: CskgEdge[] = [];
+    const ri = rel !== undefined ? REL_INDEX.get(rel) : undefined;
+    if (rel !== undefined && ri === undefined) return res;
+    for (let k = off[id]; k < off[id + 1]; k++) {
+      const i = idx[k];
+      if (ri === undefined || this.eRel[i] === ri) res.push(this.materialise(i));
+    }
+    return res;
+  }
+
+  outEdges(id: number, rel?: string): CskgEdge[] {
+    return this.gather(this.outOff, this.outIdx, id, rel);
+  }
+
+  inEdgesFor(id: number, rel?: string): CskgEdge[] {
+    return this.gather(this.inOff, this.inIdx, id, rel);
+  }
+
+  /** Best (highest-support, then shortest-label) edges of one relation. */
+  topEdges(id: number, rel: string, dir: "out" | "in", n = 3): CskgEdge[] {
+    const all = dir === "out" ? this.outEdges(id, rel) : this.inEdgesFor(id, rel);
+    return all
+      .sort(
+        (a, b) =>
+          b.support - a.support ||
+          this.terms[dir === "out" ? a.to : a.from].length -
+            this.terms[dir === "out" ? b.to : b.from].length,
+      )
+      .slice(0, n);
+  }
+
+  degree(id: number): number {
+    return (
+      this.outOff[id + 1] - this.outOff[id] + (this.inOff[id + 1] - this.inOff[id])
+    );
+  }
+}
+
+export async function loadCskg(path: string): Promise<CskgGraph> {
+  const started = Date.now();
+  const g = new CskgGraph();
+  const stats: LoadStats = {
+    rowsSeen: 0, rowsKept: 0, droppedRelation: 0, droppedNonEnglish: 0,
+    droppedMalformed: 0, duplicateRows: 0, terms: 0, edges: 0, loadMs: 0,
+  };
+  const fArr: number[] = [];
+  const rArr: number[] = [];
+  const tArr: number[] = [];
+  const mArr: number[] = [];
+
+  const stream = path.endsWith(".gz")
+    ? fs.createReadStream(path).pipe(zlib.createGunzip())
+    : fs.createReadStream(path);
+  const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
+
+  let col: { n1: number; rel: number; n2: number; src: number } | null = null;
+  for await (const line of rl) {
+    if (!line) continue;
+    const fields = line.split("\t");
+    if (col === null) {
+      col = {
+        n1: fields.indexOf("node1"),
+        rel: fields.indexOf("relation"),
+        n2: fields.indexOf("node2"),
+        src: fields.indexOf("source"),
+      };
+      if (col.n1 < 0 || col.rel < 0 || col.n2 < 0 || col.src < 0) {
+        throw new Error(`CSKG header missing expected columns: ${fields.join(",")}`);
+      }
+      continue;
+    }
+    stats.rowsSeen++;
+    const relation = fields[col.rel] ?? "";
+    const relIdx = REL_INDEX.get(relation);
+    if (relIdx === undefined) {
+      stats.droppedRelation++;
+      continue;
+    }
+    const raw1 = fields[col.n1] ?? "";
+    const raw2 = fields[col.n2] ?? "";
+    const t1 = normaliseNode(raw1);
+    const t2 = normaliseNode(raw2);
+    if (t1 === null || t2 === null) {
+      if (
+        (raw1.startsWith("/c/") && !raw1.startsWith("/c/en/")) ||
+        (raw2.startsWith("/c/") && !raw2.startsWith("/c/en/"))
+      ) {
+        stats.droppedNonEnglish++;
+      } else {
+        stats.droppedMalformed++;
+      }
+      continue;
+    }
+    if (t1 === t2) {
+      stats.droppedMalformed++;
+      continue;
+    }
+    let mask = 0;
+    for (const code of (fields[col.src] ?? "").split("|")) {
+      if (code) mask |= 1 << srcBit(code);
+    }
+    fArr.push(g.intern(t1));
+    rArr.push(relIdx);
+    tArr.push(g.intern(t2));
+    mArr.push(mask);
+    stats.rowsKept++;
+  }
+
+  // numeric sort by (from, rel, to) -> merge duplicate attestations
+  const order = new Int32Array(fArr.length);
+  for (let i = 0; i < order.length; i++) order[i] = i;
+  order.sort((a, b) => {
+    if (fArr[a] !== fArr[b]) return fArr[a] - fArr[b];
+    if (rArr[a] !== rArr[b]) return rArr[a] - rArr[b];
+    if (tArr[a] !== tArr[b]) return tArr[a] - tArr[b];
+    return 0;
+  });
+  const eFrom: number[] = [];
+  const eTo: number[] = [];
+  const eRel: number[] = [];
+  const eMask: number[] = [];
+  for (const i of order) {
+    const last = eFrom.length - 1;
+    if (
+      last >= 0 &&
+      eFrom[last] === fArr[i] && eRel[last] === rArr[i] && eTo[last] === tArr[i]
+    ) {
+      eMask[last] |= mArr[i];
+      stats.duplicateRows++;
+      continue;
+    }
+    eFrom.push(fArr[i]);
+    eRel.push(rArr[i]);
+    eTo.push(tArr[i]);
+    eMask.push(mArr[i]);
+  }
+  g.eFrom = Int32Array.from(eFrom);
+  g.eTo = Int32Array.from(eTo);
+  g.eRel = Uint8Array.from(eRel);
+  g.eMask = Uint32Array.from(eMask);
+
+  // CSR adjacency, both directions
+  const nTerms = g.terms.length;
+  const nEdges = g.eFrom.length;
+  g.outOff = new Int32Array(nTerms + 1);
+  g.inOff = new Int32Array(nTerms + 1);
+  for (let i = 0; i < nEdges; i++) {
+    g.outOff[g.eFrom[i] + 1]++;
+    g.inOff[g.eTo[i] + 1]++;
+  }
+  for (let i = 0; i < nTerms; i++) {
+    g.outOff[i + 1] += g.outOff[i];
+    g.inOff[i + 1] += g.inOff[i];
+  }
+  g.outIdx = new Int32Array(nEdges);
+  g.inIdx = new Int32Array(nEdges);
+  const outCursor = Int32Array.from(g.outOff);
+  const inCursor = Int32Array.from(g.inOff);
+  for (let i = 0; i < nEdges; i++) {
+    g.outIdx[outCursor[g.eFrom[i]]++] = i;
+    g.inIdx[inCursor[g.eTo[i]]++] = i;
+  }
+
+  stats.terms = nTerms;
+  stats.edges = nEdges;
+  stats.loadMs = Date.now() - started;
+  g.stats = stats;
+  return g;
+}

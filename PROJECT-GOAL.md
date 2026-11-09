@@ -12,3 +12,15 @@ No one has built a notable **chatbot** that specifically fuses all three — Con
 
 **In short:** the integration layer already exists in ConceptNet (for WordNet) and in CSKG (for all three), but nobody has built a dedicated *conversational* agent on top of that full stack. The gap is really the dialogue management / response generation layer, not the knowledge integration.
 
+
+## Milestone 1 — a chat on these graphs that talks like a chat
+
+Milestone 1 is a working chat built on CSKG — the unified graph above (ConceptNet, WordNet, FrameNet, ATOMIC, Roget, a Wikidata subset, Visual Genome) — with our own conversation machinery on top of it: term resolution, questions answered from the graph's relations, statements received and remembered, a thought trace behind every answer, session memory with corrections, and a renderer that says only what the graph supports.
+
+The chat stands on a situated foundation. It knows where it is and what time it is — place from configuration, time from the clock, season from the date and the hemisphere — computed fresh each turn. Situatedness is part of the foundation, not a feature to be added later: the system starts from a self in a world, not from a word-completion model wrapped in shells.
+
+Acceptance is by transcript. We run free conversation — statements as well as questions, follow-ups, corrections, changes of topic — and read the transcripts. Where a transcript reads like talking with something, the milestone is being met. Where it reads like querying a database, the engine behind the chat gets another round of work; the iteration is always on the engine, never on hand-written answers. The projected transcript in docs/milestone-1.md belongs to the earlier plan and does not limit this milestone.
+
+Deferred past this milestone: the ancient Chinese ontology (yin/yang, Wuxing) as the direction layer; building our own unified graph from the separate nets; bringing in outside information; and modifying the knowledge base. Those return once a real chat exists for them to serve.
+
+Also watched for, under the project's emergence stance: behaviour the transcripts show that no rule was written to produce — recorded with its trace and classified honestly, as a coherent derivation, an artefact, or a bug.
