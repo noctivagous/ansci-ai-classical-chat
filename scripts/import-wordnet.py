@@ -40,6 +40,14 @@ Extract format v3 (chunked):
   into a part until adding the next record's serialized bytes would
   exceed the byte budget, so re-running the importer reproduces
   byte-identical parts.
+  Form parts (slice 2b, design §7.3) are JSON arrays of [surface, lemma, pos]
+  records — the closed morphology index the router resolves inflected
+  words through. It is built from two attested sources only: the WNDB
+  exception files (noun.exc / verb.exc / adj.exc) and WordNet's Morphy
+  detachment rules applied in reverse to the attested lemma inventory.
+  Only non-identity forms whose base lemma + POS is itself attested in
+  the extract are emitted, so the index stays closed and reviewable; a
+  form maps to lemma + POS candidates, never directly to a synset.
 A synset's stable id is derived: "wn-" + pos + zero-padded offset (8 digits).
 Glosses keep the definition text; quoted usage examples after the definition
 are dropped (they are the bulk of the gloss bytes and add no relations).
@@ -54,6 +62,7 @@ definition survive untouched.
 """
 import json
 import os
+import re
 import sys
 import urllib.request
 import zipfile
@@ -263,6 +272,106 @@ def build_extract(synsets, relations):
     return extract, stats
 
 
+EXC_FILES = {"n": "noun.exc", "v": "verb.exc", "a": "adj.exc"}
+
+
+def parse_exc(wndb_dir: str):
+    """WNDB exception files: 'surface lemma' pairs of irregular forms."""
+    pairs = []  # (surface, lemma, pos)
+    for pos, fname in EXC_FILES.items():
+        path = os.path.join(wndb_dir, fname)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                toks = line.split()
+                if len(toks) != 2:
+                    continue
+                surface, lemma = (t.replace("_", " ") for t in toks)
+                pairs.append((surface, lemma, pos))
+    return pairs
+
+
+def _cvc(word: str) -> bool:
+    """Ends consonant + single vowel + single consonant (not w/x/y):
+    the shape whose final consonant doubles before -ed/-ing/-er/-est."""
+    return re.search(r"[^aeiou][aeiou][^aeiouwxy]$", word) is not None
+
+
+def _noun_forms(lemma: str):
+    if lemma.endswith("man"):
+        return {lemma[:-3] + "men"}
+    if re.search(r"[^aeiou]y$", lemma):
+        return {lemma[:-1] + "ies"}
+    if re.search(r"(s|x|z|ch|sh)$", lemma):
+        return {lemma + "es"}
+    return {lemma + "s"}
+
+
+def _verb_forms(lemma: str):
+    forms = set()
+    # third person singular
+    if re.search(r"(s|x|z|ch|sh|o)$", lemma):
+        forms.add(lemma + "es")
+    elif re.search(r"[^aeiou]y$", lemma):
+        forms.add(lemma[:-1] + "ies")
+    else:
+        forms.add(lemma + "s")
+    # -ed (past / past participle)
+    if lemma.endswith("e"):
+        forms.add(lemma + "d")
+    elif re.search(r"[^aeiou]y$", lemma):
+        forms.add(lemma[:-1] + "ied")
+    elif _cvc(lemma):
+        forms.add(lemma + lemma[-1] + "ed")
+    else:
+        forms.add(lemma + "ed")
+    # -ing
+    if lemma.endswith("ie"):
+        forms.add(lemma[:-2] + "ying")
+    elif lemma.endswith("e") and not lemma.endswith(("ee", "ye", "oe")):
+        forms.add(lemma[:-1] + "ing")
+    elif _cvc(lemma):
+        forms.add(lemma + lemma[-1] + "ing")
+    else:
+        forms.add(lemma + "ing")
+    return forms
+
+
+def _adj_forms(lemma: str):
+    if re.search(r"[^aeiou]y$", lemma):
+        return {lemma[:-1] + "ier", lemma[:-1] + "iest"}
+    if lemma.endswith("e"):
+        return {lemma + "r", lemma + "st"}
+    if _cvc(lemma):
+        return {lemma + lemma[-1] + "er", lemma + lemma[-1] + "est"}
+    return {lemma + "er", lemma + "est"}
+
+
+_FORM_GENERATORS = {"n": _noun_forms, "v": _verb_forms, "a": _adj_forms}
+
+
+def build_forms_index(synset_records, exc_pairs):
+    """The closed surface-form index (design §7.3): records of
+    [surface, lemma, pos], sorted, non-identity forms only, every base
+    lemma + POS attested in the extract."""
+    attested = set()  # (lemma, pos)
+    for _offset, pos, _gloss, lemmas in synset_records:
+        for lemma in lemmas:
+            attested.add((lemma.lower(), pos))
+    forms = set()  # (surface, lemma, pos)
+    for surface, lemma, pos in exc_pairs:
+        if surface != lemma and (lemma.lower(), pos) in attested:
+            forms.add((surface, lemma.lower(), pos))
+    for lemma, pos in sorted(attested):
+        if " " in lemma:
+            continue  # inflecting inside a multiword phrase is not claimed (§7.3)
+        for surface in _FORM_GENERATORS[pos](lemma):
+            if surface != lemma:
+                forms.add((surface, lemma, pos))
+    return [[surface, lemma, pos] for surface, lemma, pos in sorted(forms)]
+
+
 def extract_records(extract):
     """Flatten the compact extract into chunkable record arrays.
 
@@ -310,22 +419,28 @@ def chunk_records(records, budget):
     return parts
 
 
-def build_parts(synset_records, relation_records, budget):
-    """Chunk both record arrays at `budget`; returns [(kind, count, bytes)]."""
+def build_parts(record_groups, budget):
+    """Chunk every record array at `budget`; returns [(kind, count, bytes)]."""
     out = []
-    for kind, records in (("synsets", synset_records), ("relations", relation_records)):
+    for kind, records in record_groups:
         for count, blob in chunk_records(records, budget):
             out.append((kind, count, blob))
     return out
 
 
-def write_extract(extract, stats) -> None:
+def write_extract(extract, stats, exc_pairs) -> None:
     synset_records, relation_records = extract_records(extract)
-    parts = build_parts(synset_records, relation_records, PART_BUDGET_CAP)
+    form_records = build_forms_index(synset_records, exc_pairs)
+    groups = (
+        ("synsets", synset_records),
+        ("relations", relation_records),
+        ("forms", form_records),
+    )
+    parts = build_parts(groups, PART_BUDGET_CAP)
     if parts and max(len(b) for _k, _c, b in parts) >= 0.95 * PART_BUDGET_CAP:
         # Accumulation fills parts to near the budget; keep a real margin
         # under the transport cap instead of landing within 5% of it.
-        parts = build_parts(synset_records, relation_records, PART_BUDGET_SAFE)
+        parts = build_parts(groups, PART_BUDGET_SAFE)
     os.makedirs(OUT_DIR, exist_ok=True)
     # Remove stale parts/manifest from any previous run so the directory
     # holds exactly this run's output.
@@ -349,6 +464,7 @@ def write_extract(extract, stats) -> None:
         "counts": {
             "synsets": stats["synsets"],
             "relations": sum(stats["relations"].values()),
+            "forms": len(form_records),
         },
         "parts": part_entries,
     }
@@ -366,12 +482,14 @@ def write_extract(extract, stats) -> None:
 def main() -> None:
     wndb_dir = download_and_unpack()
     synsets, relations, skipped = parse_wndb(wndb_dir)
+    exc_pairs = parse_exc(wndb_dir)
     extract, stats = build_extract(synsets, relations)
     print(f"synsets: {stats['synsets']}")
     print(f"relations: {stats['relations']} (total {sum(stats['relations'].values())})")
     print(f"derivationally-related edges parsed but trimmed: {stats['derived_dropped']}")
     print(f"pointers to missing synsets skipped: {skipped}")
-    write_extract(extract, stats)
+    print(f"exception-file pairs parsed: {len(exc_pairs)}")
+    write_extract(extract, stats, exc_pairs)
 
 
 if __name__ == "__main__":

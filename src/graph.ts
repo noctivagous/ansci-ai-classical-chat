@@ -12,6 +12,29 @@
 
 export type Layer = "atomic" | "dictionary" | "acquired" | "source" | "audit" | "base";
 
+/**
+ * Closed aspect-key vocabulary (design §6.11): the seed's free-text
+ * aspects are glossed by one of these keys, and the engine (§6.6) keys
+ * conflict, joins and propagation by them. `temporal` is the engine's
+ * own aspect (§6.10 successor leanings, §6.5 cycle-position statements)
+ * — it never appears on a seed edge. An edge with no key reads as
+ * `overall` (§6.6: the default aspect, overall character).
+ */
+export type AspectKey =
+  | "overall"
+  | "light"
+  | "temperature"
+  | "activity"
+  | "pitch"
+  | "voice-origin"
+  | "air-motion"
+  | "formation"
+  | "state"
+  | "temporal";
+
+/** Graded polarity degree (§6.7): canonical bands read off proportions. */
+export type DegreeBand = "predominant" | "present" | "faint";
+
 export type NodeType =
   | "Polarity"
   | "Element"
@@ -58,7 +81,26 @@ export type EdgeType =
   | "SIMILAR_TO"
   | "DERIVED_FROM"
   | "ENTAILS"
-  | "CAUSES";
+  | "CAUSES"
+  // commonsense nets (ConceptNet, slice 2e — see design §6.2's rule
+  // table: the propagation rules for these types are implemented in
+  // slice 2c, ahead of the data they will run over)
+  | "HAS_PROPERTY" // bearer -> property concept
+  | "CAPABLE_OF" // bearer -> capability concept
+  // FrameNet (slice 2d, design §6.2): lexical unit -> frame it evokes
+  | "EVOKES";
+
+/**
+ * A curated set of everyday-language phrases describing how a concept
+ * characteristically shows up in ordinary speech (design §9.3). Carried
+ * by DictionaryEntry nodes; the plain-mode renderer's only sanctioned
+ * vocabulary for talking about a prior-level concept without naming it.
+ */
+export interface ManifestationSet {
+  /** "weather" | "mood" | "body" | … — the edge-aspect vocabulary. */
+  aspect?: string;
+  phrases: string[];
+}
 
 export type DictionaryStatus = "approved" | "proposed" | "deprecated";
 export type AdjustmentStatus = "applied" | "reverted" | "flagged";
@@ -83,6 +125,8 @@ export interface GraphNode {
   definition?: string;
   partOfSpeech?: string;
   status?: DictionaryStatus;
+  /** DictionaryEntry only (design §9.3): sanctioned plain-speech phrases. */
+  manifestations?: ManifestationSet[];
   /** TextPassage fields (spec). */
   sourceTitle?: string;
   chapter?: number | string;
@@ -118,6 +162,21 @@ export interface GraphEdge {
    * bass HAS_POLARITY Yang {aspect: "voice origin"} but Yin {aspect: "pitch"}.
    */
   aspect?: string;
+  /**
+   * The closed aspect key (§6.11) glossing `aspect`. Classification
+   * edges (HAS_POLARITY / HAS_ELEMENT / ELEMENT_OF / POLARITY_OF) carry
+   * one; other edge types overload `aspect` with non-aspect data
+   * (meronym subtype, antonym lemma pair) and leave this undefined.
+   */
+  aspectKey?: AspectKey;
+  /**
+   * Degree on polarity statements (§6.7/§6.11): the band, plus the
+   * optional 0..1 proportion it was read off. Mandatory on propagated
+   * leanings (those live on overlay records, §6.1); curated seed
+   * classifications are backfilled later (§6.11).
+   */
+  band?: DegreeBand;
+  proportion?: number;
   status?: "active" | "deprecated";
 }
 
@@ -136,6 +195,7 @@ export interface PathStep {
   toName: string;
   confidence?: number;
   aspect?: string;
+  aspectKey?: AspectKey;
   /** "forward" follows the edge direction; "reverse" walks it backwards. */
   direction: "forward" | "reverse";
 }
@@ -254,6 +314,7 @@ export class Graph {
           toName: displayName(this.getNode(edge.to), edge.to),
           confidence: edge.confidence,
           aspect: edge.aspect,
+          aspectKey: edge.aspectKey,
           direction: "forward",
         };
         const steps = [...cur.steps, step];

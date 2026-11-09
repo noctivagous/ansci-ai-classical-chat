@@ -54,6 +54,11 @@ export interface SynsetRecord {
   lemmas: string[];
 }
 
+export interface FormCandidate {
+  lemma: string;
+  pos: "n" | "v" | "a";
+}
+
 export interface WordNetExtract {
   source: string;
   edition: string;
@@ -61,6 +66,12 @@ export interface WordNetExtract {
   synsets: SynsetRecord[];
   /** Raw flat relation arrays, keyed by kind (see STRIDES). */
   relations: Record<string, number[] | (number | string)[]>;
+  /**
+   * The closed morphology index (design §7.3): surface form -> lemma+POS
+   * candidates, materialised by the importer from the WNDB exception
+   * files + reverse Morphy. Only non-identity forms are present.
+   */
+  forms: Map<string, FormCandidate[]>;
 }
 
 export function synsetId(pos: string, offset: number): string {
@@ -81,14 +92,16 @@ interface ExtractManifest {
   source: string;
   edition: string;
   license: string;
-  counts: { synsets: number; relations: number };
-  parts: { file: string; kind: "synsets" | "relations"; count: number; bytes: number }[];
+  counts: { synsets: number; relations: number; forms?: number };
+  parts: { file: string; kind: "synsets" | "relations" | "forms"; count: number; bytes: number }[];
 }
 
 /** A synset record as stored in a synset part: [offset, pos, gloss, lemmas]. */
 type SynsetPartRecord = [number, "n" | "v" | "a", string, string[]];
 /** A relation record as stored in a relation part: [kind, ...flat tuple]. */
 type RelationPartRecord = [string, ...(number | string)[]];
+/** A form record as stored in a forms part: [surface, lemma, pos]. */
+type FormPartRecord = [string, string, "n" | "v" | "a"];
 
 /**
  * Load the chunked extract: read manifest.json in `dir`, then concatenate
@@ -102,11 +115,23 @@ export function loadWordNetExtract(dir: string = DEFAULT_EXTRACT_PATH): WordNetE
   ) as ExtractManifest;
   const synsets: SynsetRecord[] = [];
   const relations: Record<string, (number | string)[]> = {};
+  const forms = new Map<string, FormCandidate[]>();
   for (const part of manifest.parts) {
     const records = JSON.parse(fs.readFileSync(path.join(dir, part.file), "utf-8")) as (
       | SynsetPartRecord
       | RelationPartRecord
+      | FormPartRecord
     )[];
+    if (part.kind === "forms") {
+      for (const [surface, lemma, pos] of records as FormPartRecord[]) {
+        const list = forms.get(surface);
+        const cand = { lemma, pos };
+        if (list) {
+          if (!list.some((c) => c.lemma === lemma && c.pos === pos)) list.push(cand);
+        } else forms.set(surface, [cand]);
+      }
+      continue;
+    }
     if (part.kind === "synsets") {
       for (const [offset, pos, gloss, lemmas] of records as SynsetPartRecord[]) {
         synsets.push({
@@ -132,7 +157,15 @@ export function loadWordNetExtract(dir: string = DEFAULT_EXTRACT_PATH): WordNetE
     license: manifest.license,
     synsets,
     relations,
+    forms,
   };
+}
+
+/** The default extract, loaded once per process (router + chat share it). */
+let defaultExtract: WordNetExtract | undefined;
+export function getDefaultExtract(): WordNetExtract {
+  if (!defaultExtract) defaultExtract = loadWordNetExtract();
+  return defaultExtract;
 }
 
 /** lemma (lowercase) -> synset records, built once per extract. */
@@ -152,6 +185,43 @@ export function synsetsForLemma(extract: WordNetExtract, lemma: string): SynsetR
     lemmaIndexCache.set(extract, idx);
   }
   return idx.get(lemma.toLowerCase()) ?? [];
+}
+
+export interface SurfaceLookup {
+  synsets: SynsetRecord[];
+  /** How the surface resolved: as an exact lemma, or through the forms index. */
+  via: "lemma" | "form";
+  /** Lemma+POS candidates (the surface itself when via === "lemma"). */
+  candidates: FormCandidate[];
+}
+
+/**
+ * Surface-aware lookup (design §7.3): exact lemma first, then the
+ * importer's closed forms index. Inflection is resolved here, from
+ * attested data — the router never guesses a stem at runtime.
+ */
+export function synsetsForSurface(extract: WordNetExtract, surface: string): SurfaceLookup {
+  const key = surface.toLowerCase();
+  const exact = synsetsForLemma(extract, key);
+  if (exact.length > 0) {
+    const poses = [...new Set(exact.map((s) => s.pos))];
+    return {
+      synsets: exact,
+      via: "lemma",
+      candidates: poses.map((pos) => ({ lemma: key, pos })),
+    };
+  }
+  const candidates = extract.forms.get(key) ?? [];
+  const synsets: SynsetRecord[] = [];
+  const seen = new Set<string>();
+  for (const cand of candidates) {
+    for (const s of synsetsForLemma(extract, cand.lemma)) {
+      if (s.pos !== cand.pos || seen.has(s.id)) continue;
+      seen.add(s.id);
+      synsets.push(s);
+    }
+  }
+  return { synsets, via: "form", candidates };
 }
 
 const MERONYM_SUBTYPES: Record<string, string> = { p: "part", s: "substance", m: "member" };
@@ -243,6 +313,10 @@ export const SENSE_MAPPINGS: Record<string, string> = {
   precipitation: "wn-n11717219", // the falling to earth of any form of water
   snow: "wn-n11730995", // precipitation falling as ice crystals (also "snowfall")
   frost: "wn-n11662615", // freeze: weather cold enough to cause freezing
+  // Slice 2b (§7.5, Fire branch 3): the combustion phenomenon sense, bridged
+  // to the Fire element it is classed under — gloss-verified ("the process
+  // of combustion of inflammable materials producing heat and light").
+  fire: "wn-n13713767", // combustion: heat and light from burning material
 };
 
 /** Bridge seed concepts to their synsets with MAPPED_TO edges. */

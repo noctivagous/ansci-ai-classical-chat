@@ -10,7 +10,8 @@
   ],
   "counts": {
     "synsets": 117008,
-    "relations": 153758
+    "relations": 153758,
+    "forms": 129800
   },
   "parts": [
     {
@@ -48,6 +49,18 @@
       "kind": "relations",
       "count": 25691,
       "bytes": 657432
+    },
+    {
+      "file": "part-007.json",
+      "kind": "forms",
+      "count": 104106,
+      "bytes": 3199963
+    },
+    {
+      "file": "part-008.json",
+      "kind": "forms",
+      "count": 25694,
+      "bytes": 789420
     }
   ]
 }
