@@ -18,6 +18,21 @@ are acquired by mapping their concepts onto those same priors, with confidence s
 **The graph is the model. An LLM, when one is used at all, is only ever the trainer or
 the translator — never the reasoner.**
 
+## Try the CSKG chat
+
+A self-contained spike in `src/cskg/` puts a working chat on CSKG, the unified
+commonsense graph (ConceptNet, WordNet, FrameNet, ATOMIC, Roget's Thesaurus,
+a Wikidata subset, Visual Genome). One install command fetches the data
+(~112 MB) and builds everything; you can then chat with it in a small web UI
+or in the terminal:
+
+```sh
+node scripts/install.mjs
+```
+
+See [demo/README.md](demo/README.md) for the quickstart, the three ways to
+chat, configuration, and what to expect.
+
 ## Architecture
 
 AnSci's base is a **combination of the classical word nets**: WordNet first
@@ -107,10 +122,33 @@ The first base net is in, and the ontology is exercised over it end-to-end:
 - `test/wordnet.test.ts` — extract counts, cold disambiguation, both climb paths,
   no-leak definitions over WordNet words, and the scripted chat run.
 
+## Slice 2d — FrameNet layer (built; installed on demand)
+
+FrameNet (design doc §5) is the second base net: frames — situation
+schemas with roles — rather than words. It is **not bundled in this
+repo**; it is installed by one command, which downloads the release
+from a public mirror (NLTK's nltk_data; no Berkeley form) and imports
+the complete inventory:
+
+```bash
+python3 scripts/import-framenet.py   # fetch (if needed) + import
+```
+
+That writes the bundle to `data/framenet/` (gitignored, like the raw
+download). Until it is run, the chat works exactly as before and frame
+questions decline honestly ("FrameNet is not installed — run the
+installer"). Once installed, questions like *"who are the participants
+when someone buys something?"* answer Buyer/Goods/Seller/Money from
+frame structure (`Commerce_buy`), and propagation can lean on frames
+through their evoking words (§6.2's EVOKES rule). FrameNet Release 1.5
+is CC BY 3.0 — see `NOTICE`. A small checked-in fixture
+(`test/fixtures/framenet/`) backs the offline test suite.
+
 ## Try it
 
 ```bash
 npm install
+python3 scripts/import-framenet.py   # optional: the FrameNet layer
 npm test
 
 npm run ask -- "why is winter cold?"

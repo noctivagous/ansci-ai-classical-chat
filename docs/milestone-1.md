@@ -52,7 +52,7 @@ the engine behind the chat gets another round of work. Iteration is
 always on the engine — resolution, selection, memory, rendering —
 never on hand-written answers.
 
-The first evaluation is the CSKG spike battery: everyday statements and
+The first evaluation is the CSKG spike evaluation: everyday statements and
 questions across cooking, weather, home objects, travel, money and
 tiredness; the known hard cases (why eyes water chopping onions; opening
 a wine bottle without a corkscrew); situation-conditioned turns (the

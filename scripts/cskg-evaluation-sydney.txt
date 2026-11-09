@@ -1,0 +1,5 @@
+# CSKG spike evaluation — Sydney run: same month (November), opposite season.
+# Run: CSKG_CHAT_LOCATION=Sydney node dist/src/cskg/chat.js --script scripts/cskg-evaluation-sydney.txt --debug
+What season is it?
+I'm thinking of buying a winter coat.
+What is a coat used for?

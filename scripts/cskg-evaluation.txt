@@ -1,0 +1,35 @@
+# CSKG spike evaluation — one session, run in order.
+# Run: CSKG_CHAT_LOCATION=Chicago node dist/src/cskg/chat.js --script scripts/cskg-evaluation.txt --debug
+# --- A. statements (the post-2d system's total failures) ---
+I'm making a big pot of soup on Saturday.
+My brother is bringing his new girlfriend.
+I'm thinking of selling my bike online.
+# --- B. the two ConceptNet-shaped questions ---
+Why do my eyes water when I chop onions?
+What can I open a wine bottle with if I don't have a corkscrew?
+# --- C. Milestone-1 subset ---
+My bananas have gone all brown.
+Can I still make banana bread with them?
+It's the third day of rain here.
+I'm thinking of buying a winter coat.
+Is ginger tea a warming food?
+# --- D. free everyday questions ---
+What is a headache?
+Why do people get headaches?
+What can I use a hammer for?
+Where would I find a penguin?
+What is a passport used for?
+How are a coat and a jacket related?
+What is money used for?
+What happens when it rains?
+Is a wheel part of a bicycle?
+What is a bicycle made of?
+# --- E. multi-turn: topic, correction, follow-up, bare why, replay, situation ---
+What is a cold?
+No, I meant the common cold
+What about the flu?
+Why?
+Why did you say that?
+What season is it?
+What time is it?
+Where are you?
