@@ -349,6 +349,33 @@ e(highPressure, "HAS_ELEMENT", fire, { confidence: 0.72 });
 e(lowPressure, "HAS_POLARITY", yin, { confidence: 0.84, aspect: "overall character (gathering, condensing, moist)" });
 e(lowPressure, "HAS_POLARITY", yang, { confidence: 0.78, aspect: "rising air" });
 
+// Weather anchors (slice 2a) — curated mappings chosen so WordNet synsets
+// can climb IS_A chains into the ontology: precipitation is the hypernym
+// of snow, sleet and hail in WordNet, so mapping this one synset gives the
+// reasoner a whole family of weather words it was never handed directly.
+// Their WordNet sense links live in src/wordnet.ts (SENSE_MAPPINGS).
+const precipitation = concept(
+  "precipitation",
+  "meteorology",
+  "Water falling from clouds to earth in any form — rain, snow, hail, sleet or mist.",
+);
+e(precipitation, "HAS_POLARITY", yin, { confidence: 0.85, aspect: "falling water from the sky" });
+e(precipitation, "HAS_ELEMENT", water, { confidence: 0.88 });
+const snow = concept(
+  "snow",
+  "meteorology",
+  "Precipitation as ice crystals: the still, white, cold form of falling water.",
+);
+e(snow, "HAS_POLARITY", yin, { confidence: 0.88 });
+e(snow, "HAS_ELEMENT", water, { confidence: 0.9 });
+const frost = concept(
+  "frost",
+  "meteorology",
+  "Ice crystals forming on cold surfaces; weather cold enough to cause freezing.",
+);
+e(frost, "HAS_POLARITY", yin, { confidence: 0.87, aspect: "freezing formation on surfaces" });
+e(frost, "HAS_ELEMENT", water, { confidence: 0.85 });
+
 // Music — the treble/bass multi-aspect case from the user's notes:
 // a concept is not Yin OR Yang; it is one in one aspect, the other in another.
 const bass = concept("bass", "music", "The lowest vocal or instrumental range.", ["bass clef"]);

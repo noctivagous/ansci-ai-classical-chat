@@ -1,0 +1,6 @@
+# AnSci slice-2a demo: ontology + WordNet chat.
+# One question per line; run with: npm run chat -- --script examples/chat-demo.txt
+why is winter cold?
+why is sleet cold?
+how does hail fit into ancient Chinese science?
+what is the common cold?

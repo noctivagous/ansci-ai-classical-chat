@@ -10,7 +10,7 @@
  *   one concept can be Yang in one aspect and Yin in another.
  */
 
-export type Layer = "atomic" | "dictionary" | "acquired" | "source" | "audit";
+export type Layer = "atomic" | "dictionary" | "acquired" | "source" | "audit" | "base";
 
 export type NodeType =
   | "Polarity"
@@ -22,6 +22,7 @@ export type NodeType =
   | "Quality"
   | "Correspondence"
   | "Concept"
+  | "Synset"
   | "DictionaryEntry"
   | "TextPassage"
   | "GraphAdjustment";
@@ -49,7 +50,15 @@ export type EdgeType =
   // source + audit
   | "SOURCED_FROM"
   | "ADJUSTED_BY"
-  | "TRIGGERED_BY";
+  | "TRIGGERED_BY"
+  // base nets (WordNet, slice 2a — see src/wordnet.ts)
+  | "IS_A" // synset -> hypernym synset
+  | "PART_OF" // meronym synset -> holonym synset (subtype in `aspect`)
+  | "ANTONYM_OF"
+  | "SIMILAR_TO"
+  | "DERIVED_FROM"
+  | "ENTAILS"
+  | "CAUSES";
 
 export type DictionaryStatus = "approved" | "proposed" | "deprecated";
 export type AdjustmentStatus = "applied" | "reverted" | "flagged";
@@ -290,5 +299,9 @@ export function renderPath(steps: PathStep[]): string {
 /** Display name for paths: dictionary entries are shown as DictionaryEntry("word"). */
 export function displayName(node: GraphNode | undefined, fallback: string): string {
   if (!node) return fallback;
-  return node.type === "DictionaryEntry" ? `DictionaryEntry("${node.word ?? node.name}")` : node.name;
+  if (node.type === "DictionaryEntry") return `DictionaryEntry("${node.word ?? node.name}")`;
+  // Synsets display with their sense id: the lemma alone is ambiguous — the
+  // id is what distinguishes "cold" the temperature from "cold" the illness.
+  if (node.type === "Synset") return `${node.name} (${node.id})`;
+  return node.name;
 }

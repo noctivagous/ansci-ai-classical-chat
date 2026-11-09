@@ -18,6 +18,25 @@ are acquired by mapping their concepts onto those same priors, with confidence s
 **The graph is the model. An LLM, when one is used at all, is only ever the trainer or
 the translator — never the reasoner.**
 
+## Architecture
+
+AnSci's base is a **combination of the classical word nets**: WordNet first
+(synsets — the disambiguated senses that ontological mappings are keyed to),
+FrameNet (with VerbNet as adjunct) for event and frame structure, and ConceptNet
+for broad common-sense relations. WordNet and FrameNet are CC BY and bundle
+trimmed in-repo; ConceptNet is CC BY-SA, is self-hosted, and lives in its own
+overlay partition, so the permissive core is never contaminated by share-alike.
+AnSci's own contribution is the **direction** those nets are taken in:
+their concepts and frames are mapped onto the yin/yang + Wuxing prior graph, so
+associations are derived from shared priors instead of learned statistically.
+The base data is never edited in place — everything AnSci adds
+lives in a small, audited **overlay**. Full design:
+[docs/design-base-nets-and-chat.md](docs/design-base-nets-and-chat.md).
+Slice 1 below is the direction layer only; the net base and router are slices 2a–2e
+of that design. The next slice, **2b**, is the router (design doc §7): lookup-first
+question routing with clarification and session memory, ahead of propagation (2c),
+FrameNet (2d) and ConceptNet (2e).
+
 ## Slice 1 — what is built here
 
 A working, tested symbolic core. No server, no database, no neural components yet:
@@ -56,6 +75,38 @@ the graph + reasoner is the point.
 - `src/cli.ts` — a small CLI.
 - `test/reason.test.ts` — tests on Node's built-in test runner (see below).
 
+## Slice 2a — WordNet base layer + chat (built)
+
+The first base net is in, and the ontology is exercised over it end-to-end:
+
+- `scripts/import-wordnet.py` — reproducible importer: downloads the **Open English
+  WordNet 2024** WNDB release (CC BY 4.0, see `NOTICE`) and writes a compact trimmed
+  extract to `data/wordnet/extract/` — a `manifest.json` plus chunked
+  `part-*.json` files, each ≤ 3.2 MB (117,008 synsets; 153,758 relations;
+  16.05 MB total). The extract is chunked because the original single
+  13.2 MB file exceeded the GitHub snapshot-push transport limit (HTTP 413).
+  Kept: all noun/verb/adjective synsets with glosses, hypernym (+instance), meronym
+  (subtype preserved), antonym, similar-to, entailment, causes. Trimmed: adverb
+  synsets, derivationally-related edges, and gloss usage examples (definitions kept
+  in full). Raw downloads land in `data/raw/` (gitignored).
+- `src/wordnet.ts` — loads the extract as `Synset` nodes on a new `base` layer
+  (provenance `source: "wordnet"`), maps relations to `IS_A` / `PART_OF` /
+  `ANTONYM_OF` / `SIMILAR_TO` / `ENTAILS` / `CAUSES` edges, and bridges seed concepts
+  to exact **sense ids** (`SENSE_MAPPINGS`): the quality *cold* maps to the temperature
+  adjective synset `wn-a01258433` only — the illness synset `wn-n14389489` ("common
+  cold") is a different node and stays unmapped.
+- Reasoner, additively: a word with no seed node resolves to its synsets, and the
+  engine **climbs `IS_A`** (≤ 6 hops, confidence ×0.9 per hop) to a mapped anchor —
+  *sleet* and *hail* were never hand-mapped, but both climb to *precipitation*
+  (a curated Water/Yin anchor, alongside *snow* and *frost*), so the chat answers
+  "why is sleet cold?" with the full WordNet segment visible in its path. Sense
+  choice is by climbability: hail-the-greeting climbs nowhere, hail-the-ice-pellets
+  climbs in one hop.
+- `src/chat.ts` — the chat: `npm run chat` (REPL; `/quit` or EOF exits) or
+  `npm run chat -- --script examples/chat-demo.txt` for a scripted run.
+- `test/wordnet.test.ts` — extract counts, cold disambiguation, both climb paths,
+  no-leak definitions over WordNet words, and the scripted chat run.
+
 ## Try it
 
 ```bash
@@ -70,6 +121,9 @@ npm run ask -- "what season follows winter?"
 npm run ask -- "what is the yin yang polarity of bass?"   # both aspects, not one label
 npm run ask -- "how does mercury fit into ancient Chinese science?"        # 0.55 mapping held back
 npm run ask -- "how does mercury fit into ancient Chinese science?" --threshold=0.5
+
+npm run chat                                       # WordNet + ontology REPL
+npm run chat -- --script examples/chat-demo.txt    # scripted demo: sleet/hail climb, common-cold sense
 ```
 
 ## Tooling choices (kept minimal on purpose)

@@ -1,0 +1,53 @@
+{
+  "v": 3,
+  "source": "Open English WordNet 2024 (WNDB format)",
+  "edition": "2024",
+  "license": "CC BY 4.0",
+  "trimmed": [
+    "adverb synsets omitted (noun/verb/adjective kept in full)",
+    "derivationally-related edges omitted",
+    "gloss usage examples omitted (definitions kept in full)"
+  ],
+  "counts": {
+    "synsets": 117008,
+    "relations": 153758
+  },
+  "parts": [
+    {
+      "file": "part-001.json",
+      "kind": "synsets",
+      "count": 29887,
+      "bytes": 3199965
+    },
+    {
+      "file": "part-002.json",
+      "kind": "synsets",
+      "count": 29365,
+      "bytes": 3199918
+    },
+    {
+      "file": "part-003.json",
+      "kind": "synsets",
+      "count": 24824,
+      "bytes": 3199922
+    },
+    {
+      "file": "part-004.json",
+      "kind": "synsets",
+      "count": 32932,
+      "bytes": 2594610
+    },
+    {
+      "file": "part-005.json",
+      "kind": "relations",
+      "count": 128067,
+      "bytes": 3199992
+    },
+    {
+      "file": "part-006.json",
+      "kind": "relations",
+      "count": 25691,
+      "bytes": 657432
+    }
+  ]
+}

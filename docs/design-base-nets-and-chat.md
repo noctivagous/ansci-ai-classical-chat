@@ -2,7 +2,10 @@
 
 \*Status: design, 2026-11-08. Slice 1 (the direction layer) is built. \*\*Slice 2a
 (WordNet + chat) is built\*\* (2026-11-08): OEWN 2024 extract bundled (117,008 synsets,
-13.2 MB — over the 10 MB target, under the 16 MB snapshot cap; adverb synsets,
+13.2 MB — over the 10 MB target, under the 16 MB snapshot cap; the extract is
+stored chunked under `data/wordnet/extract/` (manifest + parts of ≤ 3.2 MB)
+because the single file exceeded the snapshot-push transport limit (HTTP 413);
+adverb synsets,
 derivational edges and gloss examples trimmed), sense-keyed mappings, IS\_A climbing,
 `npm run chat`; 21/21 tests. **The router (§7) is designed, build pending:** it
 becomes slice **2b**, ahead of propagation. \*\*Thought and memory (§8) are

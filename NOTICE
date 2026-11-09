@@ -1,0 +1,29 @@
+NOTICE — third-party data used by AnSci
+
+WordNet base layer (data/wordnet/extract/, src/wordnet.ts)
+---------------------------------------------------------------
+The WordNet extract in this repository is derived from the
+
+  Open English WordNet 2024
+  © Global WordNet Association and the Open English WordNet contributors
+
+licensed under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+
+Source: https://en-word.net/ (WNDB-format release, english-wordnet-2024).
+The extract is a trimmed, re-encoded subset (synsets for nouns, verbs and
+adjectives with their glosses; hypernym, meronym, antonym, similar-to,
+entailment and causation relations). It was produced by
+scripts/import-wordnet.py; see that script and docs/design-base-nets-and-chat.md
+for exactly what was kept and what was trimmed.
+
+Open English WordNet is itself derived from Princeton WordNet:
+
+  WordNet 3.1 © 2011 Princeton University
+  https://wordnet.princeton.edu — used under the WordNet License
+  (BSD-style, permissive): https://wordnet.princeton.edu/license-and-commercial-use
+
+Everything else in this repository — the ontology graph, seed data, reasoner
+and chat — is original AnSci work (see README.md). FrameNet and ConceptNet
+are planned base nets (design doc §1.2/§1.3) and are not yet bundled; when
+they land, their attributions will be added here.

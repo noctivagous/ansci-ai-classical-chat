@@ -21,6 +21,7 @@ import {
   passesThreshold,
   renderPath,
 } from "./graph";
+import { climbToAnchor, mappedConceptForSynset } from "./wordnet";
 
 export interface QueryIntent {
   matchedNodes: string[]; // node ids, subject first
@@ -76,7 +77,9 @@ function levenshtein(a: string, b: string): number {
 
 /** Find graph nodes named (or synonym-named, or near-named) in the question. */
 export function matchNodes(graph: Graph, question: string): GraphNode[] {
-  const q = ` ${question.toLowerCase()} `;
+  // Punctuation counts as a word boundary: "common cold?" must still match
+  // the phrase "common cold" (slice 2a — synset multiword lemmas need this).
+  const q = ` ${question.toLowerCase().replace(/[^a-z0-9]+/g, " ")} `;
   const tokens = question.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const exact: { node: GraphNode; score: number }[] = [];
   const fuzzy: { node: GraphNode; score: number }[] = [];
@@ -84,16 +87,23 @@ export function matchNodes(graph: Graph, question: string): GraphNode[] {
     if (node.type === "DictionaryEntry" || node.type === "TextPassage" || node.type === "GraphAdjustment")
       continue;
     const phrases = [node.name.toLowerCase(), ...graph.synonymsOf(node).map((s) => s.toLowerCase())];
-    let hit = false;
+    // Score by the LONGEST matching phrase: a node whose two-word lemma
+    // ("common cold") matches must outrank nodes matching only "common" or
+    // only "cold" — that is the whole point of sense-keyed matching.
+    let best = -1;
     for (const phrase of phrases) {
       if (q.includes(` ${phrase} `) || q.includes(` ${phrase}?`) || q.trim().endsWith(phrase)) {
-        exact.push({ node, score: phrase.length });
-        hit = true;
-        break;
+        best = Math.max(best, phrase.length);
       }
     }
-    if (hit) continue;
+    if (best >= 0) {
+      exact.push({ node, score: best });
+      continue;
+    }
     // Fuzzy fallback: a question token within edit distance of a name token.
+    // Synsets are exempt: with ~117k of them, fuzzy matching is both slow and
+    // wrong-headed — WordNet lookup is by lemma, exact by design (slice 2a).
+    if (node.type === "Synset") continue;
     const nameTokens = node.name.toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length >= 4);
     for (const qt of tokens) {
       if (qt.length < 4) continue;
@@ -192,6 +202,11 @@ function stepOf(graph: Graph, edge: GraphEdge, direction: "forward" | "reverse" 
 }
 
 function definitionOf(graph: Graph, node: GraphNode): { text: string; edge?: GraphEdge } {
+  // A synset's definition is its WordNet gloss — no DEFINED_AS edge needed.
+  if (node.type === "Synset") {
+    const gloss = node.properties["gloss"];
+    return { text: typeof gloss === "string" ? gloss : `${node.name}: no gloss recorded.` };
+  }
   const defEdge = graph.outEdges(node.id, "DEFINED_AS")[0];
   const entry = defEdge ? graph.getNode(defEdge.to) : undefined;
   const base = entry?.definition ?? node.summary ?? `${node.name}: no definition recorded yet.`;
@@ -235,6 +250,10 @@ export function answer(
     TimeOfDay: 1,
     Correspondence: 2,
     Trigram: 2,
+    // A synset subject loses to a hand-built seed node for the same word
+    // (the seed node carries the ontology), but beats a Quality: in "why is
+    // sleet cold?" the synset is the subject, the quality the predicate.
+    Synset: 2,
     Element: 3,
     Polarity: 4,
     Quality: 5,
@@ -243,6 +262,171 @@ export function answer(
     [...matched].sort((a, b) => (SUBJECT_RANK[a.type] ?? 9) - (SUBJECT_RANK[b.type] ?? 9))[0] ??
     matched[0];
   const quality = matched.find((nd) => nd.type === "Quality");
+
+  /* ---- WordNet subject (slice 2a): resolve the sense, then climb ----
+   * A bare word usually matches several synsets. Sense selection here is
+   * ontological, not statistical: prefer a synset a seed concept maps to;
+   * otherwise prefer the sense whose IS_A chain actually REACHES a mapped
+   * anchor (hail-the-greeting climbs nowhere; hail-the-ice-pellets climbs
+   * to precipitation in one hop). Synsets that merely restate a matched
+   * seed node or the quality word are predicate/context, not candidates. */
+  if (subject.type === "Synset" && intent.intentType !== "comparison") {
+    const otherNames = new Set(
+      matched.filter((nd) => nd.type !== "Synset").map((nd) => nd.name.toLowerCase()),
+    );
+    let candidates = matched.filter(
+      (nd) =>
+        nd.type === "Synset" &&
+        !(Array.isArray(nd.properties["lemmas"])
+          ? (nd.properties["lemmas"] as string[])
+          : []
+        ).some((l) => otherNames.has(l.toLowerCase())),
+    );
+    if (candidates.length === 0) candidates = [subject];
+    candidates = [...candidates].sort(
+      (a, b) =>
+        (mappedConceptForSynset(graph, a.id) ? 0 : 1) - (mappedConceptForSynset(graph, b.id) ? 0 : 1),
+    );
+    const wordOf = (s: GraphNode): string => {
+      const lemmas = Array.isArray(s.properties["lemmas"]) ? (s.properties["lemmas"] as string[]) : [s.name];
+      // Longest lemma first: "common cold" beats "cold" when both appear.
+      return (
+        [...lemmas]
+          .sort((a, b) => b.length - a.length)
+          .find((l) => question.toLowerCase().includes(l.toLowerCase())) ?? s.name
+      );
+    };
+    const wantsOntology =
+      intent.intentType === "ontology_explanation" ||
+      (intent.includeOntology && intent.intentType !== "definition");
+    const wantsCausal = intent.intentType === "causal_chain" && !!quality && subject.id !== quality.id;
+
+    if (wantsCausal || wantsOntology) {
+      for (const cand of candidates) {
+        const climb = climbToAnchor(graph, cand.id, 6);
+        if (!climb) continue;
+        const word = wordOf(cand);
+        const climbSteps: PathStep[] = climb.chain.map((e, i) => {
+          use(e);
+          // Propagation decay: each IS_A hop multiplies confidence by 0.9
+          // (design §4). Shown on the step; base edges themselves are facts.
+          return { ...stepOf(graph, e), confidence: Math.round(0.9 ** (i + 1) * 100) / 100 };
+        });
+        use(climb.bridge);
+        const bridgeStep = stepOf(graph, climb.bridge, "reverse");
+
+        if (wantsCausal && quality) {
+          const tail = graph.findPath(climb.anchor.id, quality.id, {
+            edgeTypes: ["ELEMENT_OF", "HAS_ELEMENT", "POLARITY_OF", "HAS_POLARITY", "HAS_QUALITY", "MAPPED_TO", "ASSOCIATED_WITH"],
+            confidenceThreshold: threshold,
+            maxDepth: intent.traversalDepth + 1,
+          });
+          if (!tail) continue;
+          tail.steps.forEach((s) => {
+            const e = graph.allEdges().find((x) => x.id === s.edgeId);
+            if (e) use(e);
+          });
+          const steps = [...climbSteps, bridgeStep, ...tail.steps];
+          const path: Path = { steps, text: renderPath(steps) };
+          paths.push(path);
+          const priors = tail.steps
+            .slice(0, -1)
+            .map((s) => s.toName)
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .join(" and ");
+          const hops = climb.chain.length;
+          return {
+            question,
+            intent,
+            text:
+              `Yes — ${word} is ${quality.name} in this system, derived through WordNet, not stored: ` +
+              `${word} climbs ${hops} IS_A step${hops === 1 ? "" : "s"} to ${displayName(climb.anchorSynset, climb.anchorSynset.id)}, ` +
+              `the sense mapped to ${climb.anchor.name}, and ${climb.anchor.name} and ${quality.name} meet at the shared prior${priors ? ` (${priors})` : ""}. ` +
+              `Path: ${path.text}.`,
+            paths,
+            usedEdges,
+          };
+        }
+
+        // Ontology explanation via the anchor concept.
+        const ontoEdges = graph
+          .outEdges(climb.anchor.id)
+          .filter((e) => ["HAS_POLARITY", "HAS_ELEMENT", "HAS_TRIGRAM", "MAPPED_TO", "MUTUALLY_ROOTED_WITH", "POLARITY_OF", "ELEMENT_OF"].includes(e.type))
+          .filter((e) => passesThreshold(e, threshold));
+        if (ontoEdges.length === 0) continue;
+        const climbPath: Path = {
+          steps: [...climbSteps, bridgeStep],
+          text: renderPath([...climbSteps, bridgeStep]),
+        };
+        paths.push(climbPath);
+        for (const e of ontoEdges) {
+          use(e);
+          const steps = [stepOf(graph, e)];
+          paths.push({ steps, text: renderPath(steps) });
+        }
+        const phrases = ontoEdges.map((e) => {
+          const target = graph.getNode(e.to)?.name ?? e.to;
+          const kind =
+            e.type === "HAS_ELEMENT" || e.type === "ELEMENT_OF"
+              ? `the ${target} element`
+              : e.type === "MUTUALLY_ROOTED_WITH"
+                ? `mutually rooted with ${target}`
+                : e.type === "MAPPED_TO"
+                  ? `mapped to ${target}`
+                  : target;
+          const aspect = e.aspect ? `, in the aspect of ${e.aspect}` : "";
+          const conf = e.confidence !== undefined ? ` (confidence ${e.confidence.toFixed(2)})` : "";
+          return `${kind}${aspect}${conf}`;
+        });
+        return {
+          question,
+          intent,
+          text:
+            `${word} is not mapped directly. Through WordNet it is a kind of ${climb.anchorSynset.name} ` +
+            `(${climb.anchorSynset.id}) — the sense this graph maps to ${climb.anchor.name}. ` +
+            `In this framework, ${climb.anchor.name} is associated with ${phrases.join("; ")}.` +
+            `${climb.anchor.summary ? ` That fits because: ${climb.anchor.summary}` : ""} ` +
+            `WordNet path: ${climbPath.text}.`,
+          paths,
+          usedEdges,
+        };
+      }
+      // No candidate's chain reached a mapped anchor.
+      const cand = candidates[0];
+      const gloss = definitionOf(graph, cand).text;
+      return {
+        question,
+        intent,
+        text: wantsCausal
+          ? `The graph derives no path from ${wordOf(cand)} to ${quality!.name}: in WordNet, ${wordOf(cand)} means "${gloss}", and neither that sense nor its hypernym chain (6 IS_A hops) reaches a concept mapped onto the ontology, so I won't assert that association.`
+          : `${wordOf(cand)} is in WordNet — "${gloss}" — but neither it nor its hypernym chain (6 IS_A hops) reaches a concept mapped onto the ontology yet.`,
+        paths,
+        usedEdges,
+      };
+    }
+
+    // Definition / plain ask over a synset: the gloss, nothing else. The
+    // subject here is matchNodes' longest-phrase winner — for "what is the
+    // common cold?" that is the illness synset itself (matched via its
+    // two-word lemma), NOT a candidate list filtered against the quality
+    // word: the illness sense is a sense OF that word, and excluding it
+    // would leave only unrelated "common" synsets.
+    const chosen = subject;
+    const d = definitionOf(graph, chosen);
+    const sameWord = matched.filter(
+      (nd) => nd.type === "Synset" && wordOf(nd).toLowerCase() === wordOf(chosen).toLowerCase(),
+    ).length;
+    let text = `${wordOf(chosen)}: ${d.text}`;
+    if (sameWord > 1) {
+      text += ` (WordNet lists ${sameWord} senses for "${wordOf(chosen)}" here; ${
+        mappedConceptForSynset(graph, chosen.id)
+          ? "this is the sense the ontology maps"
+          : "this is the first"
+      }.)`;
+    }
+    text = intent.includeOntology ? text : guardNoLeakage(text);
+    return { question, intent, text, paths, usedEdges };
+  }
 
   /* ---- Cycle question: "what season follows winter?" ---- */
   if (intent.intentType === "causal_chain" && CYCLE_WORDS.some((w) => question.toLowerCase().includes(w))) {

@@ -8,6 +8,7 @@
   "private": true,
   "scripts": {
     "ask": "npm run build --silent && node dist/src/cli.js",
+    "chat": "npm run build --silent && node dist/src/chat.js",
     "build": "tsc",
     "test": "npm run build && node --test dist/test/*.test.js",
     "typecheck": "tsc --noEmit"
