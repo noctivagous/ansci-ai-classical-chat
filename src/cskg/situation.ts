@@ -273,15 +273,26 @@ function verbBase(word: string): string | null {
  * irregular out-of-list pasts (spent) remain limits, as do
  * -ing nouns with a real lemma (evening→even).
  */
-function verbBasePerTurn(g: CskgGraph, word: string): string | null {
-  const listed = verbBase(word);
-  if (listed) return listed;
+/**
+ * The graph-derived half of per-turn verb proof (no hand list):
+ * an inflected surface whose FormOf lemma maps back, closed
+ * classes and junk rows excluded (off→ov, the→lack of supplies).
+ * A bare base ("paint") is genuinely ambiguous — noun or verb —
+ * so it never qualifies here; inflected forms ("peeling") do.
+ */
+export function verbLemmaPerTurn(g: CskgGraph, word: string): string | null {
   if (PRONOUNS.has(word) || CONNECTIVE_WORDS.has(word)) return null;
   if (word === "i" || word === "we" || word === "you") return null;
   if (!/(ed|en|ing)$/.test(word)) return null;
   const lemma = g.lemmaOf(word);
   if (!lemma || !/^[a-z]{2,}$/.test(lemma)) return null;
   return lemma;
+}
+
+export function verbBasePerTurn(g: CskgGraph, word: string): string | null {
+  const listed = verbBase(word);
+  if (listed) return listed;
+  return verbLemmaPerTurn(g, word);
 }
 
 /** Is this referent filed under food, within two IsA steps? */

@@ -1098,7 +1098,12 @@ our machinery begins, and the boundary moves as we measure. A census of the grap
   needs the WordNet gloss join), and RelatedTo alone is 1.7M
   edges of useful haze — graph-first raises the premium on
   ranking and declines (E3's work); it does not replace the
-  machinery. CSKG knows *about* conversation; the conversation
+  machinery. FormOf carries junk mappings (i→y, off→ov,
+  the→lack of supplies, metalling→metal): per-turn derivation
+  must prove verb shape (inflectional ending, single-token base,
+  closed-class exclusions) and never trust a bare lemma —
+  the standing lesson of items 2 and gap 4, enforced in code,
+  not just noted here. CSKG knows *about* conversation; the conversation
   manager is still ours to build — but it should be built thin,
   pointing at the graph.
 
@@ -1280,11 +1285,21 @@ machinery — and the reply is the product of that. A direct
 graph query result pasted as a response ("Ladder is a type of
 degree") is an architecture violation, wherever it occurs: each
 intervening piece must transform what it touches (weigh,
-combine, contextualise), never merely relay. On statement
-turns there is no graph-to-response path at all; testimony may
-inform a statement reply only as arbitrated, combined
-conclusions that serve the conversation, and otherwise the
-situation machinery answers with a clean acknowledgement.
+combine, contextualise), never merely relay. Traceable is
+not identical: a conclusion the engine forms by processing
+what the edges attest — combined under arbitration (E3),
+selected and grouped (compose), inferred and stamped as
+inferred — does not exist verbatim in the graph, and need not.
+Every element it is built from is attested, and the trace shows
+the derivation. What is banned is unattested content smuggled
+in any form — a new entity, a new relation, a number no edge
+holds — never transformation itself. Heavy processing of what
+the edges have is the job; pasting what they have is the
+violation. On statement turns there is no graph-to-response
+path at all; testimony may inform a statement reply only as
+arbitrated, combined conclusions that serve the conversation,
+and otherwise the situation machinery answers with a clean
+acknowledgement.
 
 **Questions come from the adaptive tree.** A question is a
 conclusion the architecture reaches by processing the specific

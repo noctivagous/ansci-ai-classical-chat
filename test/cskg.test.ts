@@ -30,8 +30,9 @@ import {
   loadDefinitionsStore,
 } from "../src/cskg/definitions";
 import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
+import { verbLemmaPerTurn } from "../src/cskg/situation";
 import { detectPhatic, detectToolQuery } from "../src/cskg/intent";
-import { contextFit } from "../src/cskg/solve";
+import { contextFit, preferHappeningSubject } from "../src/cskg/solve";
 import { cachePathFor, loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
 import {
@@ -272,6 +273,33 @@ test("adaptive offer: a planned coat-buying asks when, end to end", async () => 
   assert.match(r.text, /thinking of buying a winter coat\. When's that happening\?/);
 });
 
+test("why poles: the happening outranks the top-scored noun", () => {
+  const subjects = [{ text: "wall" }, { text: "paint" }, { text: "peeling" }];
+  const isVerb = (w: string): boolean => w === "peeling";
+  assert.deepEqual(preferHappeningSubject(subjects, isVerb), { text: "peeling" });
+  assert.equal(
+    preferHappeningSubject([{ text: "wall" }], isVerb),
+    null,
+    "no happening named — the caller keeps the top subject",
+  );
+  assert.deepEqual(
+    preferHappeningSubject([], isVerb),
+    null,
+    "no subjects at all — the caller falls back down the chain",
+  );
+});
+
+test("verb proof tiers: inflected forms testify, bare bases stay ambiguous", async () => {
+  const g = await depthGraph();
+  assert.equal(verbLemmaPerTurn(g, "apologizing"), "apologize");
+  assert.equal(verbLemmaPerTurn(g, "apologizes"), null,
+    "third-singular shares its ending with plural nouns, so it stays out");
+  assert.equal(verbLemmaPerTurn(g, "apologize"), null,
+    "the bare base proves nothing by itself");
+  assert.equal(verbLemmaPerTurn(g, "banana"), null,
+    "a noun with no inflection and no lemma is not a verb");
+});
+
 test("phatic: greeting, thanks and farewell take the social route", () => {
   assert.deepEqual(detectPhatic("hi there!"), { kind: "greeting", word: "hi there" });
   assert.deepEqual(detectPhatic("Thanks!"), { kind: "thanks", word: "thanks" });
@@ -487,6 +515,7 @@ const DEPTH_ROWS = [
   row("at:personx_apologizes", "at:xIntent", "/c/en/make_amends", "AT"),
   row("at:personx_apologizes", "at:oReact", "/c/en/forgiving", "AT"),
   row("/c/en/apologizes", "/r/FormOf", "/c/en/apologize", "CN"),
+  row("/c/en/apologizing", "/r/FormOf", "/c/en/apologize", "CN"),
   // "apologize" as a term in its own right (as in the real graph):
   // without it discourse's empty-knowledge gate declines the
   // intent question before solve ever runs.
@@ -524,7 +553,7 @@ test("depth: the loader retains the sentence column per edge and counts the side
     "the first non-empty sentence is adopted across the dedupe");
   assert.equal(g.stats!.sentencesKept, 3, "every sentence row is retained");
   assert.equal(g.stats!.contextTerms, 1, "HasContext lands in the side store");
-  assert.equal(g.stats!.formRows, 1, "FormOf lands in the side store");
+  assert.equal(g.stats!.formRows, 2, "FormOf lands in the side store");
   // the side relations never became edges
   const brother = g.id("brother")!;
   assert.equal(g.outEdges(brother, "/r/HasContext").length, 0);

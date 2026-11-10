@@ -1,0 +1,20 @@
+# Probe: why-question effect poles (gap 4).
+#
+# The empty-set decline must name the happening it could not
+# place, not the top-scored noun. The causal search itself tries
+# every subject; only the naming is order-sensitive. Diagnose runs
+# a fixed probe set, so this file is judged by the declaration gate.
+#
+# Baseline 2026-11-10 (pre-fix): "no cause for wall" for a
+# peeling question; the onion when-branch control declines naming
+# onions and must not move.
+#
+# Verified 2026-11-10 (gap 4b, verdict PASS): the decline names the
+# happening — "no cause for peeling off" — via inflection-tier
+# verb proof with hand-list bases as fallback. Only the peeling
+# turn moved; the onion control is byte-identical. (First shape
+# blocked per the two-verdict rule: bare-lemma proof admitted
+# junk rows, then hand-list bases; evidence kept in the tree.)
+
+Why is paint peeling off the walls?
+Why do my eyes water when I chop onions?

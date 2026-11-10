@@ -83,6 +83,7 @@ import {
 } from "./intent";
 import type { CskgEdge, CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
+import { verbBasePerTurn, verbLemmaPerTurn } from "./situation";
 import { noteStep, type TurnWorkspace } from "./workspace";
 
 /** E's one write: add conclusions to the workspace. */
@@ -624,6 +625,19 @@ export type WhyResult =
  * answered a question about onions. The neighbouring set is never
  * substituted.
  */
+/**
+ * Gap 4: of the turn's subjects, the happening — a verb form,
+ * established by the caller's per-turn proof (the graph's FormOf
+ * testimony in production) — or null when the question names no
+ * happening. Rank order is preserved: the first happening wins.
+ */
+export function preferHappeningSubject<T extends { text: string }>(
+  subjects: T[],
+  isVerbForm: (word: string) => boolean,
+): T | null {
+  return subjects.find((s) => isVerbForm(s.text)) ?? null;
+}
+
 export function answerWhyQuestion(
   g: CskgGraph,
   ws: TurnWorkspace,
@@ -777,11 +791,32 @@ export function answerWhyQuestion(
       return { kind: "answer", text: renderAll(g, cs), chained: false };
     }
   }
+  // Gap 4: the decline names the happening, not the top-scored
+  // noun. The search above tries every subject, so ranking order
+  // is irrelevant to recall — but subjects[0] can be a noun
+  // ("wall") when the question asks about an event ("peeling").
+  // Prefer a verb-form subject, proven per turn by the graph's
+  // own FormOf testimony, exactly like the event scan's
+  // derivation (item 2); otherwise keep the top subject.
+  // Two tiers: an inflected verb phrase ("peeling off") names the
+  // happening; a bare base ("paint") is noun-or-verb ambiguous,
+  // so it only serves as fallback. Either way the search above
+  // already tried every subject — this orders only the naming.
+  const wordsOf = (t: string): string[] =>
+    t.toLowerCase().split(/[^a-z']+/).filter(Boolean);
+  const inflected = (t: string): boolean =>
+    wordsOf(t).some((w) => verbLemmaPerTurn(g, w) !== null);
+  const anyVerb = (t: string): boolean =>
+    wordsOf(t).some((w) => verbBasePerTurn(g, w) !== null);
+  const effectSubject =
+    preferHappeningSubject(subjects, inflected) ??
+    preferHappeningSubject(subjects, anyVerb) ??
+    subjects[0];
   noteStep(ws, "solve", "decline",
-    `causal set empty: no Causes edges for "${subjects[0]?.text ?? "the subject"}"`);
+    `causal set empty: no Causes edges for "${effectSubject?.text ?? "the subject"}"`);
   return {
     kind: "decline",
-    effectText: subjects[0]?.text ?? resolved[0]?.text ?? "that",
+    effectText: effectSubject?.text ?? resolved[0]?.text ?? "that",
     causeText: null,
   };
 }
