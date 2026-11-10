@@ -45,15 +45,18 @@ import {
   type Situation,
 } from "./awareness";
 import {
+  composeConclusions,
   edgeText,
   renderAll,
   renderBecauseLines,
   renderCausalLinkLine,
   renderCausedByLines,
+  renderComposed,
   renderConclusion,
   renderDefinition,
   renderMeeting,
   renderStatePattern,
+  type ComposedConclusion,
   type Conclusion,
 } from "./articulate";
 import { chooseDefinition, definitionTraceNote } from "./definitions";
@@ -476,7 +479,19 @@ export function solveSurfaceIntent(
       noteStep(ws, "solve", "conclude", kind, [edgeText(g, c.edge)]);
     }
     remember(session, cand.id);
-    if (!choice) return renderAll(g, cs);
+    if (!choice) {
+      if (kind === "purpose") {
+        // Item 3: the first composed path — purpose conclusions
+        // form a singular Conclusion (headline + support) and
+        // render from it; the trace shows the Conclusion itself.
+        const composed: ComposedConclusion = composeConclusions(g, cs);
+        noteStep(ws, "articulate", "compose",
+          `composed ${cs.length} purpose conclusions → headline ${composed.headline.length} + support ${composed.support.length}`,
+          cs.map((c) => edgeText(g, c.edge)));
+        return renderComposed(g, composed);
+      }
+      return renderAll(g, cs);
+    }
     const definition = renderDefinition(g.terms[cand.id], choice.chosen.gloss);
     return cs.length ? `${definition} ${renderAll(g, cs)}` : definition;
   }

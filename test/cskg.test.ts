@@ -11,7 +11,13 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { test } from "node:test";
-import { sentenceForEdge } from "../src/cskg/articulate";
+import {
+  composeConclusions,
+  renderAll,
+  renderComposed,
+  renderConclusion,
+  sentenceForEdge,
+} from "../src/cskg/articulate";
 import { seasonFor } from "../src/cskg/awareness";
 import {
   buildDefinitionsStore,
@@ -855,6 +861,87 @@ test("definitions: non-definition questions keep their routing (purpose, made-of
   assert.equal(m.grounded, true);
   assert.match(m.text, /made of glass/);
   assert.doesNotMatch(m.text, /^Wine bottle:/, "no definition lead on a made-of turn");
+});
+
+// ---------------------------------------------------------------------------
+// Item 3 — the singular Conclusion. A fixture with three weak
+// UsedFor edges (hammer), a strong pair (mallet, support 2), one
+// banked UsedFor sentence, and the FormOf rows the per-turn verb
+// proof reads.
+
+const COMPOSE_ROWS = [
+  row("/c/en/hammer", "/r/UsedFor", "/c/en/hit", "CN"),
+  row("/c/en/hammer", "/r/UsedFor", "/c/en/pound", "CN"),
+  row("/c/en/hammer", "/r/UsedFor", "/c/en/whack", "CN"),
+  rowS("/c/en/hammer", "/r/UsedFor", "/c/en/nails", "CN", "[[Hammer]] drives [[nails]]"),
+  row("/c/en/hammer", "/r/IsA", "/c/en/tool", "CN"),
+  row("/c/en/mallet", "/r/UsedFor", "/c/en/tap", "CN"),
+  row("/c/en/mallet", "/r/UsedFor", "/c/en/tap", "WN"),
+  row("/c/en/mallet", "/r/UsedFor", "/c/en/rap", "CN"),
+  row("/c/en/mallet", "/r/UsedFor", "/c/en/rap", "WN"),
+  row("/c/en/hitting", "/r/FormOf", "/c/en/hit", "CN"),
+  row("/c/en/pounding", "/r/FormOf", "/c/en/pound", "CN"),
+  row("/c/en/whacking", "/r/FormOf", "/c/en/whack", "CN"),
+  row("/c/en/tapping", "/r/FormOf", "/c/en/tap", "CN"),
+  row("/c/en/rapping", "/r/FormOf", "/c/en/rap", "CN"),
+];
+
+let composePromise: Promise<CskgGraph> | null = null;
+function composeGraph(): Promise<CskgGraph> {
+  if (!composePromise) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cskg-compose-"));
+    const file = path.join(dir, "fixture.tsv");
+    fs.writeFileSync(file, [HEADER, ...COMPOSE_ROWS].join("\n") + "\n");
+    composePromise = loadCskg(file);
+  }
+  return composePromise;
+}
+
+function composeEdges(g: CskgGraph, from: string, rel: string, tos: string[]): import("../src/cskg/articulate").Conclusion[] {
+  const id = g.id(from)!;
+  const wanted = new Set(tos);
+  return g.outEdges(id, rel)
+    .filter((e) => wanted.has(g.terms[e.to]))
+    .sort((a, b) => (tos.indexOf(g.terms[a.to]) - tos.indexOf(g.terms[b.to])))
+    .map((edge) => ({ edge, about: "from" as const }));
+}
+
+test("compose: three weak UsedFor conclusions aggregate into one headline", async () => {
+  const g = await composeGraph();
+  const cs = composeEdges(g, "hammer", "/r/UsedFor", ["hit", "pound", "whack"]);
+  assert.equal(cs.length, 3);
+  const cc = composeConclusions(g, cs);
+  assert.equal(cc.headline.length, 3, "one group leads");
+  assert.equal(cc.support.length, 0);
+  assert.equal(renderComposed(g, cc), "A hammer can be used to hit, pound and whack.");
+  assert.ok(cs.every((c) => c.via === "template"));
+});
+
+test("compose: strong support takes the plain modal", async () => {
+  const g = await composeGraph();
+  const cs = composeEdges(g, "mallet", "/r/UsedFor", ["tap", "rap"]);
+  assert.equal(renderComposed(g, composeConclusions(g, cs)), "A mallet is used to tap and rap.");
+});
+
+test("compose: a banked conclusion keeps its sentence; templates still aggregate", async () => {
+  const g = await composeGraph();
+  const hid = g.id("hammer")!;
+  const byTo = new Map(g.outEdges(hid, "/r/UsedFor").map((e) => [g.terms[e.to], e]));
+  const cs = ["hit", "nails", "whack"].map((t) => ({ edge: byTo.get(t)!, about: "from" as const }));
+  assert.equal(
+    renderComposed(g, composeConclusions(g, cs)),
+    "A hammer can be used to hit and whack. Hammer drives nails.",
+  );
+});
+
+test("compose: mixed relations and singletons render exactly as before", async () => {
+  const g = await composeGraph();
+  const hid = g.id("hammer")!;
+  const isa = g.outEdges(hid, "/r/IsA")[0];
+  const hit = composeEdges(g, "hammer", "/r/UsedFor", ["hit"])[0];
+  const mixed = [{ edge: isa, about: "from" as const }, hit];
+  assert.equal(renderComposed(g, composeConclusions(g, mixed)), renderAll(g, mixed));
+  assert.equal(renderComposed(g, composeConclusions(g, [hit])), renderConclusion(g, hit));
 });
 
 // ---------------------------------------------------------------------------

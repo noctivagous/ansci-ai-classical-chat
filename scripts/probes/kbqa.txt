@@ -5,6 +5,10 @@
 # part-of, made-of, relatedness, event consequence.
 #
 # Known-failing: none — 8/8 verified by diagnose on 2026-11-10.
+#
+# Item 3 (2026-11-10, verdict PASS): purpose conclusions compose into a
+# singular Conclusion — template runs aggregate (hammer: one headline),
+# banked conclusions keep their sentences. Only the hammer turn moved.
 
 What can I use a hammer for?
 #! expect=grounded contains=hammer

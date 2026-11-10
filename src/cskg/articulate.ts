@@ -251,6 +251,154 @@ export function renderAll(g: CskgGraph, cs: Conclusion[]): string {
   return cs.map((c) => renderConclusion(g, c)).join(" ");
 }
 
+/* ---------------- compose: the singular Conclusion (Item 3, S1/S2/S13) ---
+ *
+ * Design §2 F: compose forms a Conclusion — the structured set of
+ * things this reply will communicate, selected, ordered and
+ * grouped — from the turn's reasoning, and articulation renders
+ * it. The Conclusion carries each item's attestation (the edge),
+ * and the turn logs it in the trace, so "why did you say that?"
+ * can point at it.
+ *
+ * This leaf wires the first path through it: same-relation
+ * template conclusions about one subject aggregate into one
+ * headline sentence instead of N staccato template sentences
+ * (S1 aggregation, S13 set presentation). Banked conclusions keep
+ * their dataset phrasing and render separately; mixed-relation
+ * sets and singletons render exactly as renderAll would, so only
+ * an aggregatable group moves a transcript. Limits: aggregation
+ * covers /r/UsedFor about-from this leaf; support mixes split
+ * into separate sentences (no understating); a verb object is
+ * proven per turn by its gerund mapping back through the graph's
+ * FormOf (junk gerund rows remain a limit).
+ */
+
+export interface ComposedConclusion {
+  /** the leading group: what the reply leads with */
+  headline: Conclusion[];
+  /** everything else, attested backup said after */
+  support: Conclusion[];
+}
+
+/** one aggregatable run: same relation, subject, modal and phrasing path */
+interface ComposeRun {
+  key: string;
+  members: Conclusion[];
+  banked: boolean;
+}
+
+function composeSubject(g: CskgGraph, c: Conclusion): string {
+  return c.about === "from" ? g.terms[c.edge.from] : g.terms[c.edge.to];
+}
+
+function composeObject(g: CskgGraph, c: Conclusion): string {
+  return c.about === "from" ? g.terms[c.edge.to] : g.terms[c.edge.from];
+}
+
+function composeStrong(c: Conclusion): boolean {
+  return c.edge.support >= 2;
+}
+
+/**
+ * Per-turn verb proof for an aggregation object: the gerund the
+ * data would form for it maps straight back through the graph's
+ * own FormOf testimony (hitting→hit, but metalling→metal is the
+ * documented junk-row limit). Multi-word objects never qualify.
+ */
+function isVerbObject(g: CskgGraph, obj: string): boolean {
+  if (!/^[a-z]{2,}$/.test(obj)) return false;
+  if (/\s/.test(obj)) return false;
+  return g.lemmaOf(gerundOf(obj)) === obj;
+}
+
+function joinList(items: string[]): string {
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/**
+ * A run aggregates this leaf only for the covered shape:
+ * 2+ template conclusions, one /r/UsedFor about-from subject,
+ * one modal, every object a per-turn proven verb.
+ */
+function aggregateFrame(
+  g: CskgGraph,
+  run: ComposeRun,
+): string | null {
+  if (run.banked || run.members.length < 2) return null;
+  const first = run.members[0];
+  if (first.edge.rel !== "/r/UsedFor" || first.about !== "from") return null;
+  const subject = composeSubject(g, first);
+  const objects = run.members.map((c) => composeObject(g, c));
+  if (!objects.every((o) => isVerbObject(g, o))) return null;
+  const modal = run.members.every(composeStrong) ? "is" : "can be";
+  for (const c of run.members) c.via = "template";
+  return `${cap(article(subject))} ${subject} ${modal} used to ${joinList(objects)}.`;
+}
+
+/**
+ * Select, order and group: runs keep encounter (rank) order, the
+ * first run is the headline, the rest is support. Order never
+ * changes here — ranking stays solve's work (S2 selection beyond
+ * headline/support is a later leaf).
+ */
+export function composeConclusions(
+  g: CskgGraph,
+  cs: Conclusion[],
+  headlineMax = 3,
+): ComposedConclusion {
+  if (!cs.length) return { headline: [], support: [] };
+  const runs: ComposeRun[] = [];
+  for (const c of cs) {
+    const banked = sentenceForEdge(g, c.edge) !== null;
+    const key = [
+      c.edge.rel, c.about, composeSubject(g, c),
+      composeStrong(c) ? "strong" : "weak",
+      banked ? "bank" : "template",
+    ].join("|");
+    const run = runs.find((r) => r.key === key);
+    if (run) run.members.push(c);
+    else runs.push({ key, members: [c], banked });
+  }
+  const headline = runs[0].members.slice(0, headlineMax);
+  const overflow = runs[0].members.slice(headlineMax);
+  const support = [...overflow, ...runs.slice(1).flatMap((r) => r.members)];
+  return { headline, support };
+}
+
+/** Render the composed Conclusion: aggregated runs collapse, all else renders as before. */
+export function renderComposed(g: CskgGraph, cc: ComposedConclusion): string {
+  const parts: string[] = [];
+  const renderRun = (members: Conclusion[]): void => {
+    const banked = members.length
+      ? sentenceForEdge(g, members[0].edge) !== null
+      : false;
+    const framed = aggregateFrame(g, { key: "", members, banked });
+    if (framed !== null) parts.push(framed);
+    else for (const c of members) parts.push(renderConclusion(g, c));
+  };
+  // re-group each side by run so support keeps its own grouping
+  const regroup = (ms: Conclusion[]): Conclusion[][] => {
+    const runs: ComposeRun[] = [];
+    for (const c of ms) {
+      const banked = sentenceForEdge(g, c.edge) !== null;
+      const key = [
+        c.edge.rel, c.about, composeSubject(g, c),
+        composeStrong(c) ? "strong" : "weak",
+        banked ? "bank" : "template",
+      ].join("|");
+      const run = runs.find((r) => r.key === key);
+      if (run) run.members.push(c);
+      else runs.push({ key, members: [c], banked });
+    }
+    return runs.map((r) => r.members);
+  };
+  for (const runMembers of regroup(cc.headline)) renderRun(runMembers);
+  for (const runMembers of regroup(cc.support)) renderRun(runMembers);
+  return parts.join(" ");
+}
+
 /* ---------------- the state pattern (L2-M3) ----------------
  *
  * A stated feeling is answered with the GENERAL PATTERN it
