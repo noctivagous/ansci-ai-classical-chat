@@ -789,7 +789,16 @@ export function renderCorrectionFact(
   return `Got it — ${termText}. ${factSentence}`;
 }
 
-export function renderCorrectionNoFact(termText: string): string {
+export function renderCorrectionNoFact(
+  termText: string,
+  prevTopicText: string | null = null,
+): string {
+  if (
+    prevTopicText &&
+    prevTopicText.toLowerCase() !== termText.toLowerCase()
+  ) {
+    return `I had that as ${prevTopicText} — you meant ${termText}. I don't have much on ${termText} in this graph yet.`;
+  }
   return `Got it — ${termText}. I don't have much on it in this graph yet.`;
 }
 

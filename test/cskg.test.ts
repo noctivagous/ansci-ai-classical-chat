@@ -17,6 +17,7 @@ import {
   renderComposed,
   renderConclusion,
   renderCorrectionFact,
+  renderCorrectionNoFact,
   sentenceForEdge,
 } from "../src/cskg/articulate";
 import { seasonFor } from "../src/cskg/awareness";
@@ -227,6 +228,23 @@ test("repair frame: the role pack selects it, same repair either way", () => {
     renderCorrectionFact("peel", "Peel is a skin.", "banana", "unknown-strategy"),
     /^I had that as banana — you meant peel\./,
     "an unknown strategy falls back to the plain owning frame",
+  );
+});
+
+test("repair frame: the no-fact correction names the superseded topic too", () => {
+  assert.match(
+    renderCorrectionNoFact("oobleck", "banana"),
+    /^I had that as banana — you meant oobleck\. I don't have much on oobleck/,
+  );
+  assert.match(
+    renderCorrectionNoFact("oobleck"),
+    /^Got it — oobleck\. I don't have much on it/,
+    "no previous topic keeps the plain acknowledgement",
+  );
+  assert.match(
+    renderCorrectionNoFact("oobleck", "oobleck"),
+    /^Got it — oobleck\./,
+    "a correction to the same topic is not a repair",
   );
 });
 

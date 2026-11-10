@@ -319,7 +319,7 @@ export function runTurn(
         noteStep(ws, "solve", "conclude", "answered about the corrected term", [edgeText(g, fact.edge)]);
         return finish(renderCorrectionFact(g.terms[term.id], renderConclusion(g, fact), prevTopicText, role.statementStrategy), "correction", true);
       }
-      return finish(renderCorrectionNoFact(g.terms[term.id]), "correction", false);
+      return finish(renderCorrectionNoFact(g.terms[term.id], prevTopicText), "correction", false);
     }
     return finish(renderCorrectionUnplaced(corr.phrase), "correction", false);
   }
