@@ -9,14 +9,15 @@
  * Data: data/raw/cskg/cskg.tsv.gz by default (override with CSKG_PATH;
  * the pre-merge cskg_star.tsv.gz also loads — same columns). Location
  * for the situated self: CSKG_CHAT_LOCATION / CSKG_CHAT_HEMISPHERE
- * (see situation.ts). Loading takes a while on first parse; progress
+ * (see awareness.ts). Loading takes a while on first parse; progress
  * goes to stderr so scripted transcripts stay clean on stdout.
  */
 import * as fs from "fs";
 import * as path from "path";
 import * as readline from "readline";
-import { createSession, runTurn, type SessionState } from "./converse";
 import { loadCskg, type CskgGraph } from "./loader";
+import { createSession, type SessionState } from "./memory";
+import { runTurn } from "./turn";
 
 function printTurn(
   g: CskgGraph,
@@ -30,7 +31,7 @@ function printTurn(
   if (debug) {
     console.log(`[intent: ${res.trace.intent}, grounded: ${res.grounded}]`);
     for (const s of res.trace.steps) {
-      console.log(`  · ${s.kind}: ${s.detail}`);
+      console.log(`  · [${s.piece}] ${s.kind}: ${s.detail}`);
       if (s.edges) for (const e of s.edges) console.log(`      ${e}`);
     }
   }
@@ -89,7 +90,7 @@ async function main(): Promise<void> {
         console.log(res.text);
         if (debug) {
           console.log(`[intent: ${res.trace.intent}, grounded: ${res.grounded}]`);
-          for (const s of res.trace.steps) console.log(`  · ${s.kind}: ${s.detail}`);
+          for (const s of res.trace.steps) console.log(`  · [${s.piece}] ${s.kind}: ${s.detail}`);
         }
       }
       ask();

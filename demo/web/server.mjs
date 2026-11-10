@@ -9,7 +9,8 @@
  * page and a two-route JSON API. The CSKG graph is loaded ONCE at
  * startup (~27 s for the 4.8M-edge index) from the compiled spike in
  * dist/src/cskg/ — all conversation behaviour comes from that code
- * (converse.ts); this file only carries messages to and from it.
+ * (the conversation engine: turn.ts and its pieces); this file only
+ * carries messages to and from it.
  * One demo session lives server-side, so follow-ups, corrections and
  * "why did you say that?" work across posts.
  *
@@ -27,8 +28,9 @@ const PORT = Number(process.env.PORT) || 4173;
 const require = createRequire(import.meta.url);
 
 const { loadCskg } = require(join(ROOT, "dist", "src", "cskg", "loader.js"));
-const { createSession, runTurn } = require(join(ROOT, "dist", "src", "cskg", "converse.js"));
-const { computeSituation } = require(join(ROOT, "dist", "src", "cskg", "situation.js"));
+const { createSession } = require(join(ROOT, "dist", "src", "cskg", "memory.js"));
+const { runTurn } = require(join(ROOT, "dist", "src", "cskg", "turn.js"));
+const { computeSituation } = require(join(ROOT, "dist", "src", "cskg", "awareness.js"));
 
 const DATA_FILE =
   process.env.CSKG_PATH ?? join(ROOT, "data", "raw", "cskg", "cskg.tsv.gz");
@@ -39,7 +41,7 @@ if (!existsSync(DATA_FILE)) {
   );
   process.exit(1);
 }
-if (!existsSync(join(ROOT, "dist", "src", "cskg", "converse.js"))) {
+if (!existsSync(join(ROOT, "dist", "src", "cskg", "turn.js"))) {
   console.error(
     "The CSKG chat is not built yet (dist/ is missing).\nRun the install first, from the repo root:\n\n  node scripts/install.mjs\n",
   );

@@ -1,0 +1,19 @@
+# CSKG depth-pass evaluation — event / feeling / want / need questions
+# in varied phrasings. Declared BEFORE the depth pass ran (2026-11-09).
+# The families under test: reactions to events (at:xReact / at:oReact),
+# wants (at:xWant), needs (at:xNeed), intentions (at:xIntent), and
+# event consequence ("what happens"). ATOMIC keys its events as
+# PersonX templates ("personx loses their house keys"), which no
+# literal term match in these questions names — so these turns test
+# the template matcher and the derivation layers over it, and each
+# outcome (grounded via which edges / declined) is reported as it
+# comes out.
+# Run: CSKG_CHAT_LOCATION=Chicago node dist/src/cskg/chat.js --script scripts/cskg-evaluation-events.txt --debug
+How do people feel when they lose their keys?
+What do people want when they can't sleep?
+What happens when you stay up all night?
+How do people react when someone apologizes?
+How do people feel when they get lost?
+What do people need when they go to the beach?
+What do people intend when they apologize?
+How do people feel when it rains?

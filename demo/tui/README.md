@@ -12,7 +12,8 @@ prompt — so you end up chatting either way.
 ## What a full TUI will be
 
 A keyboard-driven terminal front end over the same CSKG chat engine
-(`src/cskg/converse.ts`), in the spirit of the chat it will sit beside:
+(`src/cskg/turn.ts` and the pieces it coordinates), in the spirit of
+the chat it will sit beside:
 
 - a conversation pane with the same grounded answers the web UI gives;
 - a side pane showing the thought trace behind the last answer — the

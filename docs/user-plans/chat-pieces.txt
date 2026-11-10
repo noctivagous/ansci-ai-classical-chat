@@ -1,0 +1,74 @@
+
+ANALYSIS OF COMMUNICATION
+
+parallel track (informs)
+
+engine maintains, arranged in a graph, can be
+OOP modules that send messages:
+A. world state, orienation and awareness module
+  - awareness of  self, surroundings, can query
+  knowledge of world.
+
+B. information processor module
+C. intent analyzer module
+D. memory module: short term, long-term
+E. query / problem solving module
+F. communication articulation module
+G. technology interface module.
+
+engine can make use of graph s
+of its own for ease of classifying relations on a graph
+for anything.  set theory seems related here
+for some aspects.
+
+1.  query world state and awareness module
+
+who the person is who is talking 
+[unknown -> general | specific person]
+[ specific person, then loads context into analysis] 
+
+2. query information processor
+
+What is the person saying?   Who is the person
+talking about?  Breakdown of things in a graph.
+
+paragraph, sentence, overall composition
+
+3. query intent analyzer module
+
+What is the person's intent / objective?
+
+2 and 3 may be one move or overlapping module
+
+4. Where does it fit into the overall memory
+and logic train of the conversation?
+   memory
+   logic train
+   objective
+   relationship to the chatter ("I know the person chatting")
+   
+RESPONSE WORK
+
+query / problem solving module
+
+
+Is a problem to solve?
+--> 
+Is information to retrieve?
+A combination? (set theory operations)
+
+
+RESPONSE FORMULATION
+
+communication articulation module
+
+What to say and how to say it.
+
+Location for subtask of formulating response based
+on goals, objectives.  Style of prose
+or response.  For now should be
+just getting normal responses.
+
+SEND RESPONSE TO CHAT
+
+

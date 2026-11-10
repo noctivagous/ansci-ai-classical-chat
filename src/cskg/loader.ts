@@ -38,12 +38,34 @@
  * ReceivesAction, MannerOf), mw:MayHaveProperty, and the ATOMIC
  * event relations (xEffect, oEffect, xWant, oWant, xReact, oReact,
  * xNeed, xIntent, xAttr).
- * Dropped, counted in the load report: FormOf / DerivedFrom /
- * Etymologically* (word-shape, not conversation), HasContext (~238k
- * rows of register tags), fn:HasLexicalUnit (frame plumbing already
- * covered by the main pipeline), /r/dbpedia/* (encyclopedic trivia),
- * Not* negations (fewer than 700 rows), DistinctFrom, SymbolOf.
+ * Dropped, counted in the load report: DerivedFrom /
+ * Etymologically* (word-shape, not conversation), fn:HasLexicalUnit
+ * (frame plumbing already covered by the main pipeline),
+ * /r/dbpedia/* (encyclopedic trivia), Not* negations (fewer than
+ * 700 rows), DistinctFrom, SymbolOf.
  * Non-English endpoints are dropped and counted (either side).
+ *
+ * DEPTH PASS (2026-11-09, design §8/§10 graph-first): three more
+ * seams of the file are retained, each in a SIDE STORE outside the
+ * CSR edge index, so no degree, neighbourhood or ranking computed
+ * over the main index can shift:
+ *   - the SENTENCE column: 604,768 rows carry a natural assertion
+ *     sentence ("[[A banana]] has [[a peel]]"). The first non-empty
+ *     sentence per deduped edge is kept and exposed on CskgEdge —
+ *     S9's phrasing bank (articulate renders it when its bracketed
+ *     terms match the edge's endpoints).
+ *   - HasContext (~238k rows): register/context tags per term,
+ *     kept as termId → tag list (graph.contextsOf) — the evidence
+ *     seam for E4's resolver and EverydaySense; contents records
+ *     the tags in the trace, nothing scores with them yet.
+ *   - FormOf (~379k rows): inflected form → lemma, kept as a
+ *     string map (graph.lemmaOf) — the event template matcher's
+ *     expansion source (discourse.ts), alongside /r/Synonym.
+ * Every string a side store retains passes through freshString():
+ * a raw split field is a V8 sliced string that keeps its whole
+ * source line (and, through the gzip stream, large decompressor
+ * chunks) alive — retaining 585k raw sentence fields pinned
+ * ~680 MB of heap; the copies cost ~30 MB.
  *
  * STORAGE: edges live in parallel typed arrays (from/to as Int32,
  * relation as Uint8 index, provenance as a dataset bitmask), deduped
@@ -107,6 +129,12 @@ export interface CskgEdge {
   support: number;
   /** dataset codes, e.g. ["CN","WN"] */
   sources: string[];
+  /**
+   * The row's natural assertion sentence, when one attests this
+   * edge ("[[A banana]] has [[a peel]]") — the depth pass's
+   * sentence bank. First non-empty sentence wins at dedupe time.
+   */
+  sentence?: string;
 }
 
 export interface LoadStats {
@@ -119,6 +147,30 @@ export interface LoadStats {
   terms: number;
   edges: number;
   loadMs: number;
+  /** deduped edges carrying a retained assertion sentence */
+  sentencesKept: number;
+  /** HasContext rows stored in the side store */
+  contextRows: number;
+  /** terms carrying at least one HasContext tag */
+  contextTerms: number;
+  /** FormOf pairs stored in the side store */
+  formRows: number;
+}
+
+/** Relation indices of the ATOMIC (at:) family, for event tests. */
+const AT_REL_INDICES: ReadonlySet<number> = new Set(
+  REL_NAMES.map((r, i) => (r.startsWith("at:") ? i : -1)).filter((i) => i >= 0),
+);
+
+/**
+ * A fresh, flat copy of a string the loader will RETAIN in a side
+ * store. A split field is a V8 sliced string: it keeps its entire
+ * source line alive — and, lines being slices of decompressor
+ * chunks, potentially a whole chunk. The Buffer round-trip forces
+ * an independent string of the field's own size.
+ */
+function freshString(s: string): string {
+  return s ? Buffer.from(s, "utf8").toString("utf8") : s;
 }
 
 /** Normalise a raw CSKG node id to a term string, or null if unusable. */
@@ -167,8 +219,50 @@ export class CskgGraph {
   inOff = new Int32Array(0);
   inIdx = new Int32Array(0);
 
+  // Depth-pass side stores (NOT part of the edge index — see the
+  // header note): per-edge assertion sentences by edge index,
+  // HasContext tags by term id, FormOf form → lemma by string.
+  edgeSentences = new Map<number, string>();
+  contextTags = new Map<number, string[]>();
+  formLemmas = new Map<string, string>();
+  private eventIds: number[] | null = null;
+
   id(term: string): number | undefined {
     return this.termId.get(term);
+  }
+
+  /** The retained assertion sentence for an edge index, if any. */
+  sentenceAt(edgeIndex: number): string | undefined {
+    return this.edgeSentences.get(edgeIndex);
+  }
+
+  /** HasContext register tags recorded for a term (evidence only). */
+  contextsOf(id: number): string[] {
+    return this.contextTags.get(id) ?? [];
+  }
+
+  /** FormOf: the lemma recorded for an inflected form, if any. */
+  lemmaOf(form: string): string | undefined {
+    return this.formLemmas.get(form);
+  }
+
+  /** True when the term carries ATOMIC (at:) out-edges — an event. */
+  isAtomicEvent(id: number): boolean {
+    for (let k = this.outOff[id]; k < this.outOff[id + 1]; k++) {
+      if (AT_REL_INDICES.has(this.eRel[this.outIdx[k]])) return true;
+    }
+    return false;
+  }
+
+  /** All ATOMIC event term ids (built once, cached). */
+  eventTermIds(): number[] {
+    if (this.eventIds) return this.eventIds;
+    const out: number[] = [];
+    for (let id = 0; id < this.terms.length; id++) {
+      if (this.isAtomicEvent(id)) out.push(id);
+    }
+    this.eventIds = out;
+    return out;
   }
 
   intern(term: string): number {
@@ -189,13 +283,16 @@ export class CskgGraph {
 
   materialise(i: number): CskgEdge {
     const mask = this.eMask[i];
-    return {
+    const edge: CskgEdge = {
       from: this.eFrom[i],
       rel: REL_NAMES[this.eRel[i]],
       to: this.eTo[i],
       support: popcount(mask),
       sources: maskSources(mask),
     };
+    const sentence = this.edgeSentences.get(i);
+    if (sentence !== undefined) edge.sentence = sentence;
+    return edge;
   }
 
   /** Materialised edges of one relation (small relations only). */
@@ -254,18 +351,26 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
   const stats: LoadStats = {
     rowsSeen: 0, rowsKept: 0, droppedRelation: 0, droppedNonEnglish: 0,
     droppedMalformed: 0, duplicateRows: 0, terms: 0, edges: 0, loadMs: 0,
+    sentencesKept: 0, contextRows: 0, contextTerms: 0, formRows: 0,
   };
   const fArr: number[] = [];
   const rArr: number[] = [];
   const tArr: number[] = [];
   const mArr: number[] = [];
+  const sArr: string[] = [];
+  // Depth-pass side stores, keyed by STRING during the parse: the
+  // main vocabulary is interned only from kept edges, and a term
+  // that appears solely in a HasContext row must not become a
+  // resolvable mention (that would change discourse's behaviour).
+  // The context map is re-keyed by term id once the index exists.
+  const contextByTerm = new Map<string, Set<string>>();
 
   const stream = path.endsWith(".gz")
     ? fs.createReadStream(path).pipe(zlib.createGunzip())
     : fs.createReadStream(path);
   const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
 
-  let col: { n1: number; rel: number; n2: number; src: number } | null = null;
+  let col: { n1: number; rel: number; n2: number; src: number; sen: number } | null = null;
   for await (const line of rl) {
     if (!line) continue;
     const fields = line.split("\t");
@@ -275,6 +380,7 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
         rel: fields.indexOf("relation"),
         n2: fields.indexOf("node2"),
         src: fields.indexOf("source"),
+        sen: fields.indexOf("sentence"),
       };
       if (col.n1 < 0 || col.rel < 0 || col.n2 < 0 || col.src < 0) {
         throw new Error(`CSKG header missing expected columns: ${fields.join(",")}`);
@@ -283,13 +389,40 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
     }
     stats.rowsSeen++;
     const relation = fields[col.rel] ?? "";
+    const raw1 = fields[col.n1] ?? "";
+    const raw2 = fields[col.n2] ?? "";
+
+    // Depth-pass side relations: retained, but never in the edge
+    // index (see the header note). Endpoints are normalised as
+    // strings only — nothing is interned for a side row.
+    if (relation === "/r/HasContext" || relation === "/r/FormOf") {
+      const t1 = normaliseNode(raw1);
+      const t2 = normaliseNode(raw2);
+      if (t1 === null || t2 === null || t1 === t2) {
+        stats.droppedMalformed++;
+        continue;
+      }
+      if (relation === "/r/HasContext") {
+        let tags = contextByTerm.get(t1);
+        if (!tags) {
+          tags = new Set();
+          contextByTerm.set(freshString(t1), tags);
+        }
+        if (!tags.has(t2)) {
+          tags.add(freshString(t2));
+          stats.contextRows++;
+        }
+      } else if (!g.formLemmas.has(t1)) {
+        g.formLemmas.set(freshString(t1), freshString(t2));
+      }
+      continue;
+    }
+
     const relIdx = REL_INDEX.get(relation);
     if (relIdx === undefined) {
       stats.droppedRelation++;
       continue;
     }
-    const raw1 = fields[col.n1] ?? "";
-    const raw2 = fields[col.n2] ?? "";
     const t1 = normaliseNode(raw1);
     const t2 = normaliseNode(raw2);
     if (t1 === null || t2 === null) {
@@ -315,6 +448,8 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
     rArr.push(relIdx);
     tArr.push(g.intern(t2));
     mArr.push(mask);
+    const sen = col.sen >= 0 ? (fields[col.sen] ?? "").trim() : "";
+    sArr.push(sen ? freshString(sen) : "");
     stats.rowsKept++;
   }
 
@@ -331,6 +466,7 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
   const eTo: number[] = [];
   const eRel: number[] = [];
   const eMask: number[] = [];
+  const eSent: string[] = [];
   for (const i of order) {
     const last = eFrom.length - 1;
     if (
@@ -338,6 +474,9 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
       eFrom[last] === fArr[i] && eRel[last] === rArr[i] && eTo[last] === tArr[i]
     ) {
       eMask[last] |= mArr[i];
+      // a duplicate attestation may carry the sentence the first
+      // row lacked; the first non-empty sentence wins
+      if (eSent[last] === "" && sArr[i] !== "") eSent[last] = sArr[i];
       stats.duplicateRows++;
       continue;
     }
@@ -345,7 +484,12 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
     eRel.push(rArr[i]);
     eTo.push(tArr[i]);
     eMask.push(mArr[i]);
+    eSent.push(sArr[i]);
   }
+  for (let i = 0; i < eSent.length; i++) {
+    if (eSent[i] !== "") g.edgeSentences.set(i, eSent[i]);
+  }
+  stats.sentencesKept = g.edgeSentences.size;
   g.eFrom = Int32Array.from(eFrom);
   g.eTo = Int32Array.from(eTo);
   g.eRel = Uint8Array.from(eRel);
@@ -372,6 +516,16 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
     g.outIdx[outCursor[g.eFrom[i]]++] = i;
     g.inIdx[inCursor[g.eTo[i]]++] = i;
   }
+
+  // Re-key the HasContext side store by term id, now that the
+  // vocabulary exists; tags for terms the kept index never
+  // interned are dropped (they name nothing the engine can reach).
+  for (const [term, tags] of contextByTerm) {
+    const id = g.termId.get(term);
+    if (id !== undefined) g.contextTags.set(id, [...tags]);
+  }
+  stats.contextTerms = g.contextTags.size;
+  stats.formRows = g.formLemmas.size;
 
   stats.terms = nTerms;
   stats.edges = nEdges;

@@ -260,3 +260,426 @@ classified honestly — **no (a)-class genuine emergence was observed**:
 - **Start fast.** ~27 s load per process; no serialised index yet.
 - Tests: spike adds 9 (fixture-based) — project suite 99/99, the
   pre-existing 90 untouched; `tsc` clean.
+
+## E1 restructure note (2026-11-09)
+
+Slice E1 of the conversation-engine design (docs/design-conversation-engine.md
+§8) split the spike's single converse.ts into the design's pieces —
+awareness, discourse, intent, memory, solve, articulate — over a typed
+turn workspace, with the module graph as data in engine-map.ts and
+trace steps citing its node ids. Structure only; no behaviour was
+meant to change, and the transcripts say it didn't:
+
+- Baselines for both evaluation scripts were captured with the
+  pre-restructure build, then re-run after. Sydney: byte-identical.
+  Chicago: 27 of 28 answers identical; the single differing line is
+  "What time is it?" (11:48 PM in the baseline run, 11:55 PM in the
+  later one) — the answer is read from the real clock at run time,
+  and the runs were minutes apart. A clock artefact, not a code
+  difference; nothing to fix.
+- Project suite 99/99 (the spike's 9 fixture tests included, import
+  paths moved, assertions untouched); `tsc` clean. Demo web UI
+  re-verified end to end (status + a chat exchange, Chicago).
+
+## E2 discourse note (2026-11-09)
+
+Slice E2 of the conversation-engine design (§8) rebuilt discourse's
+side of the turn: the breakdown is now a small composition graph —
+mentions with character spans, every candidate graph node per
+mention (exact, article-stripped, form variant), phrase grouping
+with head/modifier/coordinated roles, coordination splitting — and
+topic choice is scored (phrase role, modifier class, sentence
+position, surface-form presumption, attestation, and overlap with
+memory's active topics: the memory → discourse edge, read for the
+first time). The trace shows one step per mention: span, phrase,
+role, candidate scores, the chosen referent and its reasons, and an
+ambiguity note where rival candidates' neighbourhoods are disjoint.
+Statement topic selection and question subject selection both
+consume the ranking.
+
+Totals (Chicago script, 28 turns): **25 grounded / 1 ungrounded /
+1 declined / 1 wrong-sense**, up from 23 / 1 / 1 / 3. Every changed
+turn, before → after:
+
+- "My bananas have gone all brown." — "Bananas is a film." →
+  "Banana is a herb." (wrong-sense → grounded; the film node and
+  the fruit node are rival candidates of one mention, disjoint
+  neighbourhoods, ambiguity recorded in the trace; the fruit node
+  wins on attestation plus food-context overlap with the soup
+  topic). Named turn (ii): improved.
+- "It's the third day of rain here." — "Third is an echelon." →
+  "Rain is a fresh water." (wrong-sense → grounded; "third" is a
+  modifier-class mention attached to the "day of rain" phrase,
+  whose head is rain; the standalone form "It is the third day of
+  rain." answers the same). Named turn (i): improved.
+- "What happens when it rains?" — "Rains involves most people stay
+  inside homes." → "Rain is a fresh water." (grounded → grounded;
+  the one quality dip. The mention's chosen referent is now
+  "rain" — better attested and the conversation's established
+  precipitation topic — where the spike's flat resolution kept the
+  surface node "rains" and its event content. Listed openly: the
+  answer is true and on-topic but definitional, where the old one
+  answered the question asked.)
+
+Sydney script (3 turns): one change, grounded → grounded — "I'm
+putting on a winter coat." now draws "Winter coat is a coat."
+instead of "Coat is a clothing." (the fuller mention outranks its
+own head-word expansion as the statement's topic).
+
+Watch turn: "My brother is bringing his new girlfriend." still
+answers "Brother is a monk." — unchanged. The breakdown now shows
+why E2 cannot fix it: CSKG's loader merges WordNet senses onto one
+node, so "brother" has no rival sense nodes to choose between
+(sibling, male, monk and member are edges of a single node, and
+the monk edge's support 2 beats sibling's 1 inside solve's fact
+scoring). That is a within-node sense mixture — E3 (solve)
+territory, not a topic-choice failure. The girlfriend phrase is
+meanwhile scored as a topic in its own right; it simply does not
+outscore the subject — and "new girlfriend" itself carries no
+fact-bearing edge, only its head-word expansion "girlfriend" does.
+
+Two scoring lessons recorded while tuning, both measured on the
+live graph: overlap against the *union* of all topic neighbourhoods
+is hub noise ("buying" shared 29 neighbours with a mid-conversation
+union, the word "a" shared 40), so overlap is now the best
+single-topic affinity at tiebreak strength (+1 per shared
+neighbour, capped +15); and a gerund's object, not the gerund, is a
+statement's topic ("buying a winter coat" briefly answered "Buying
+is a buying activity." before the gerund–object phrase rule).
+
+Tests: three fixture tests added (coordination splitting, ordinal
+topic scoring, bananas sense choice); one pre-existing loader test
+now filters to the edge it names, since the fixture's banana gained
+a second IsA edge. Project suite 102/102; `tsc` clean. Nothing
+pushed.
+
+## E3 solve note (2026-11-09)
+
+Slice E3 of the conversation-engine design (§6, §7, §8) rebuilt
+solve's side of the turn, in two steps.
+
+**Step 0 — the contents breakdown, factored out.** The §2
+submodule inside B now lives in its own unit
+(`src/cskg/contents.ts`), consumed by discourse: every mention
+with a chosen referent is categorised into **people / places /
+things / times** (the open kind set; times recognised from the
+start). Each entry carries its mention, its candidate kinds WITH
+scores and the signals that produced them, its chosen kinds (dual
+membership allowed — "winter coat" records time+thing), its
+chosen referent, and the speaker / here-elsewhere markers.
+Signals are graph-derived where possible (IsA ancestry into
+per-kind anchor sets, AtLocation participation for places) and
+surface patterns for times (day and month names, seasons,
+durations, "…day" expressions). Kind choices are noted in the
+trace like every other choice B makes. **Diff check: both
+evaluation scripts re-run after the factoring are byte-identical
+to the pre-factoring runs (the clock line excepted)** — the step
+changed no score, no choice, no answer, as declared.
+
+**Step 1 — solve.** Four mechanisms, all recorded in the trace:
+
+- **Triage, explicit.** Every turn that reaches solve notes its
+  classification — retrieve | solve | combination — and what set
+  the question asks about. "What happens when X?" is triaged as
+  an event-consequence question and routed accordingly (below).
+- **Set operations for tool problems.** The strict set (reverse
+  UsedFor), DIFFERENCE for the person's stated exclusions (parsed
+  by intent: "without a corkscrew", "don't have a corkscrew"),
+  ranking inside the set, and the RelatedTo/IsA fallback widened
+  only when the strict set is empty — disclosed in the reply and
+  the trace (a combination). Tools are deduplicated by node, and
+  conclusions are now about the tool itself (the old "to"
+  citation named the tool's neighbour — half the corkscrew
+  garble).
+- **Ranking floor.** Conclusion sets rank by support, then by the
+  other endpoint's affinity to the subject (specificity-weighted
+  neighbourhood overlap: a shared neighbour counts 3 when its
+  degree ≤ 120, 1 when ≤ 600, 0 for hubs). A support-1,
+  zero-affinity member is not featured when at least n members
+  are better attested or better connected.
+- **Empty-set decline + within-node choice.** A why-question is
+  answered only from a direct causal edge between two mentioned
+  terms, the subject's own causal edges, a traced two-step chain
+  through a stated cause (when-clause questions must LAND on the
+  stated effect), or a mentioned ATOMIC event's xEffect — else it
+  declines and names the missing causation. And rival edges of
+  one merged node are scored by context fit as well as support:
+  the best single corroboration between the edge TARGET's
+  neighbourhood and the turn's contents + active context, worth
+  at most +8 (never across a relation-priority level).
+
+Totals (Chicago script, 28 turns): **26 grounded / 0 ungrounded /
+2 declined / 0 wrong-sense**, from 25 / 1 / 1 / 1. No
+previously-grounded turn became wrong-sense or declined; the one
+new decline is the onion turn, which was the ungrounded one. The
+named turns, before → after:
+
+- (i) Onion — "Water can be caused by soaking in hotspring." →
+  "This graph doesn't record that causation: it has no Causes
+  edge from "chop onions" toward "water", and I won't borrow one
+  from a neighbouring word." The data refused, honestly: onion
+  carries NO Causes edge in CSKG at all (its nearest approach is
+  RelatedTo: cry, crying, tears, eyes), so the causal set is
+  empty by construction.
+- (ii) Corkscrew — "You could use opener or corkscrew or
+  corkscrew — Bottle opener is related to opener." → "You could
+  use opener — Opener is related to bottle opener. It isn't
+  recorded as directly used for that — I reached it through
+  related terms instead." The excluded corkscrew is absent; no
+  duplicated label; the trace records triage *combination* with
+  the difference applied and route: fallback. (The strict set
+  was empty even before the difference — the merged corkscrew
+  node has no UsedFor edge; that is the data gap the fallback
+  exists for.)
+- (iii) Brother — "Brother is a monk." → "Brother is a male."
+  Within-node scores: male 151 (support 1 → 143, fit +8: its
+  neighbourhood shares girlfriend's romantic cluster — beau,
+  boyfriend, harem, bros before hoes, manfriend), ally 150,
+  member 147, monk 146, sibling 143. "Sibling" itself scores
+  ZERO fit — its only shared neighbour with "girlfriend" is the
+  hub "daughter" — so the family reading wins through "male",
+  one of the two targets the design named as acceptable.
+- (iv) Sydney coat — "…keeping warm. Coat can be used for catch
+  pigeons." → "Coat can be used for keeping warm in winter. Coat
+  can be used for keeping warm. Coat can be used for keep body
+  warm." All eleven of coat's UsedFor edges carry support 1; the
+  warmth uses share specific neighbours with "coat" (jacket,
+  winter jacket), "catch pigeons" shares none — the floor leaves
+  it out of the featured set rather than merely ranking it last.
+- (v) Flu "why?" — the honest decline stands, unchanged. (The
+  follow-up's fact flipped "Flu is a virus." → "Flu is an
+  influenza." — grounded either way; influenza's neighbourhood
+  corroborates against the cold context.)
+- (vi) "What happens when it rains?" — "Rain is a fresh water."
+  → "Rain can cause flooding. Rain can cause floods."
+  Event-consequence routing: the subject is re-selected from all
+  rival candidates (discourse's chosen "rain" over the surface
+  "rains") for the first candidate carrying consequence edges;
+  rain's own Causes edges answer. (In a fresh session the same
+  question takes "rains" and its HasSubevent edges instead.)
+
+Every other changed Chicago turn, before → after (all grounded →
+grounded):
+
+- "It's the third day of rain here." — "Rain is a fresh water."
+  → "Rain is a precipitation." (fit vs the active water topic;
+  the cleaner class of the two multiply-attested rivals).
+- "Where would I find a penguin?" — zoo-then-antarctica →
+  antarctica-then-zoo (affinity ranks antarctica's ice/snow
+  neighbourhood first; both attested).
+- "What is money used for?" — rich/needs/saving → buying/rich/
+  pay for (affinity ranking inside the UsedFor set; "needs"
+  shared only a hub and a stray with money's world).
+- "Is a wheel part of a bicycle?" — chain/two tires/two wheels
+  → chain/two wheels/two tires (same set, affinity order).
+
+Sydney script (3 turns): the coat-purpose turn above is the only
+change; season and the winter-coat statement are identical — the
+statement briefly flipped to "Winter coat is a warm clothes."
+during tuning (the source's own head-word expansion "coat"
+corroborating a near-synonym target) and the own-family
+exclusion below is what restored it, in both scripts.
+
+Fit-scoring lessons, each measured on the live graph and each
+now a stated rule in solve.ts: affinity must be the BEST SINGLE
+corroboration, never a sum (summed, the hypernym "food" scored
+272 against a banana-bread turn's accumulated topics); inherited
+overlap is not corroboration (a context node that IsA the target
+— banana under food, girlfriend under ally — contributes
+nothing); a whisper is not corroboration (a single context node's
+affinity below 4 is coincidence — the fragment "big" shared 31
+weighted neighbours with the hub "place" and briefly made soup a
+place); and the context itself must be filtered — pronouns
+("his" corroborated "member" +13), pure time expressions, and
+negative-score topic fragments never enter it, and neither does
+the source's own lexical family. On exact score ties the
+better-attested fact stands (§6: attestation first).
+
+Undesigned behaviour: none observed. The penguin and money
+reorderings above are the ranking floor's designed mechanism
+acting on turns it was not tuned against; their outputs are
+attested and on-topic, and they are listed rather than hidden.
+
+Tests: eight fixture tests added (contents categorisation,
+exclusion as difference, within-node brother choice, ranking
+floor, why-decline, the two-mentioned-terms causal control, the
+when-clause landing rule, event-consequence routing); the
+pre-existing tool test was split — its question text carries the
+exclusion, so under E3 semantics it now expects the bottle
+opener, and a no-exclusion variant keeps the corkscrew
+expectation. Project suite 110/110; `tsc` clean. Nothing pushed.
+
+## Depth pass note (2026-11-09)
+
+The first move of design §8 after E3: go DEEPER into CSKG before
+building wider (§10 graph-first — derivation layers over the
+graph, no new knowledge stores). Five seams, all in the loader /
+discourse / solve / articulate layer:
+
+1. **The sentence column is retained.** 584,511 of the kept edges
+   now carry the dataset's natural assertion sentence (loader
+   side store, first non-empty per deduped edge), exposed on
+   CskgEdge and via graph.sentenceAt. Two more side stores ride
+   along: HasContext (230,159 rows → tags on 159,333 terms) and
+   FormOf (358,117 form→lemma pairs). Side stores sit outside
+   the CSR index, so no degree, neighbourhood or ranking over
+   the main index can shift.
+2. **Event keying for ATOMIC.** A scored, traced template
+   matcher (discourse.matchEventTemplate): the utterance's event
+   clause is reduced to content lemmas, expanded by affix forms,
+   the FormOf store and top /r/Synonym neighbours (every
+   expansion recorded in the trace), and scored against the
+   graph's ATOMIC event templates by weighted lemma overlap
+   (exact 2 / form 1.5 / synonym 1 / root 0.75; F1 ranking).
+   Acceptance needs F1 ≥ 0.5, at least one exact-or-form pair,
+   matched weight ≥ 1.5, and COVERAGE ≥ 0.6 (below). It feeds
+   solve's event-consequence path (a strong match, F1 ≥ 0.65,
+   leads; a passing match is the fallback) and a new reaction
+   path answering feel / react / want / need / intent questions
+   from the matched event's own at: edges.
+3. **Sequence knowledge.** "What happens when X" now composes
+   HasFirstSubevent → HasSubevent → HasLastSubevent chains in
+   attested order before the remaining consequence relations
+   fill the set (to three, as E3 had it, or to the sequence's
+   length when longer). A subject with no subevent edges
+   produces exactly E3's set.
+4. **Context evidence.** The contents breakdown records each
+   chosen referent's HasContext tags into the trace (brother →
+   religion, roman catholic, african american vernacular
+   english, in the live graph). Trace-only; nothing scores with
+   them yet — the seam for E4's resolver and EverydaySense.
+5. **The sentence bank (S9's first resource).** When a featured
+   edge's sentence has bracketed terms matching the edge's
+   endpoints, articulation renders the cleaned dataset sentence
+   instead of the relation template; the trace logs each spoken
+   conclusion's path ("render paths: … via sentence/template").
+   A sentence whose brackets do not match the endpoints is
+   refused (fixture-pinned: a sentence claiming "melon" on a
+   banana—IsA→fruit edge is never rendered).
+
+### Load and memory
+
+Load 28.2 s → 31.0–31.7 s (+~11%: the side-row parsing and the
+string copies below). Peak memory on the same instrument is
+unchanged (heapUsed 464 MB vs 465 MB baseline; RSS 719 MB vs
+735 MB); the side stores' retained cost after GC is ~120 MB
+(585k sentences / 358k form pairs / 159k context-tagged terms).
+One near-miss worth recording: a raw split field is a V8 sliced
+string that keeps its whole source line — and, through the gzip
+stream, large decompressor chunks — alive; the first cut
+retained the sentence fields raw and pinned ~680 MB of extra
+heap. Everything a side store retains now passes through a
+fresh-string copy (~30 MB of strings) and the pinning is gone.
+
+### Chicago and Sydney — no regression
+
+Chicago holds at **26 grounded / 0 ungrounded / 2 declined /
+0 wrong-sense**; Sydney is stable. Eighteen Chicago turns and
+one Sydney turn changed, every one a sentence-bank re-rendering
+of the SAME edge content in the dataset's own words — no
+previously-grounded turn lost, both declines untouched, the
+brother gate fact intact. Named turn, before/after:
+
+- "What happens when it rains?" — before: "Rain can cause
+  flooding. Rain can cause floods." After: "Something that
+  might happen as a consequence of rain is flooding. Something
+  that might happen as a consequence of rain is floods." Same
+  two Causes edges (rain→flooding, rain→floods), now rendered
+  from their attested CN sentences — the banked phrasing even
+  carries its own hedge ("might happen").
+- Elsewhere the bank mostly repairs the templates' article-less
+  English: "Soup is a dish." → "Soup is a type of dish.";
+  "Brother is a male." → "A brother is a male."; "Bicycle has
+  chain." → "A bicycle has a chain."; hammer's middle use →
+  "You can use a hammer to pound."; the Sydney coat's middle
+  use → "A coat is for keeping warm." The penguin locations
+  take CN's locative phrasings ("Somewhere a penguin can be is
+  in antarctica. Something you find at a zoo is a penguin.") —
+  attested and on-topic, if less tidy.
+
+### The event evaluation (new probe script, declared before running)
+
+scripts/cskg-evaluation-events.txt — eight event / feeling /
+want / need / intent questions in varied phrasings, Chicago, one
+session. Before this pass none of these questions could reach
+ATOMIC's person-centred relations at all: no literal term in
+them names an ATOMIC event. Outcomes, as they came out:
+
+1. "How do people feel when they lose their keys?" —
+   GROUNDED via template match "loses 's keys" (F1 0.70,
+   coverage 0.88; lose→loses by form, keys exact): xReact
+   upset, frustrated; xEffect "was late to office". The event
+   label's "'s" is the graph's own possessive remnant, carried
+   into the rendering verbatim.
+2. "What do people want when they can't sleep?" — the matcher's
+   first cut keyed the WRONG event, "lets persony sleep"
+   (F1 0.50 on the single generic pair "sleep"; the
+   discriminative "can't" matched nothing — the graph keys the
+   true event with a misspelling, "can n't fall asleep", whose
+   parts pair too weakly). The acceptance rule gained COVERAGE
+   (weighted precision ≥ 0.6: a match must account for most of
+   what the person said; every true match in this run covers
+   ≥ 0.75, the wrong one 0.50). With the rule, the matcher
+   honestly reports no match over 98 candidates — and the turn
+   falls back exactly as it did before this pass, which exposes
+   a pre-existing flaw in the OLD generic path: it answers with
+   a junk fact about the question's scaffolding word ("People
+   is a better." — the real edge people —/r/IsA→ better [CN]).
+   Recorded here as a known failure class for a later slice:
+   question scaffolding ("people") is not a topic.
+3. "What happens when you stay up all night?" — GROUNDED via
+   STRONG template match "stays up all night studying"
+   (F1 0.83, coverage 0.94), leading the event-consequence
+   turn: xEffect "loses sleep", xReact "exhausted and sleepy".
+4. "How do people react when someone apologizes?" — GROUNDED
+   via "apologizes profusely" (F1 0.67, coverage 1.0; the graph
+   has no plain "personx apologizes" event at all — its ATOMIC
+   apology events are the profusely and to-'s-boss variants):
+   oReact hurt, upset; xReact remorseful.
+5. "How do people feel when they get lost?" — GROUNDED via
+   "gets lost" (F1 0.88): xReact confused, scared; xEffect
+   "goes home".
+6. "What do people need when they go to the beach?" —
+   GROUNDED via "goes at the beach" (F1 0.88 — ATOMIC's own
+   label phrasing): xNeed "get fishing gear", "drive to the
+   beach".
+7. "What do people intend when they apologize?" — GROUNDED
+   via "apologizes profusely" (F1 0.50, coverage 0.75;
+   apologize→apologizes by form): xIntent "to be forgiven",
+   "to make ammends" (ATOMIC's spelling, verbatim).
+8. "How do people feel when it rains?" (the control) —
+   CHANGED, and reported as such: the pass keys it to the
+   ATOMIC event "catches in the rain" (F1 0.50, coverage 0.75;
+   rains→rain bridged by FormOf) and answers from its edges —
+   xReact wet, curious; oReact wet; xEffect "a chill". Before
+   the pass this question had no event route and fell to a
+   generic rain fact. The keying is defensible (being caught in
+   the rain is the event the question is about, and "wet" is
+   the attested feeling), "curious" is attested but exotic —
+   a typicality judgement, which is EverydaySense's future
+   work, not the matcher's. The named Chicago rain turn
+   ("what happens") is unaffected beyond its phrasing (above).
+
+Rendering honesty: the ATOMIC templates remain the spike's
+rough ones ("they was late to office", "want to to sleep too"
+in an earlier cut, "Goes at the beach first needs …"). The
+depth pass changed WHICH edges answer these questions, not how
+prettily event labels read; articulation of event labels is
+saying-side work (design §10), still thin.
+
+### Undesigned behaviour
+
+None observed. The "catches in the rain" keying (turn 8) is the
+matcher's designed mechanism acting on a turn it was not tuned
+against; it is listed rather than hidden. The coverage rule was
+designed from turn 2's failure AFTER the probe was declared —
+the probe did its job — and the rule is stated generally, with
+a fixture test pinning it.
+
+Tests: ten fixture tests added (loader sentence retention and
+side-store counts, contextsOf/lemmaOf, HasContext in the
+contents trace, sentence bank render + lying-brackets refusal,
+template keying of a paraphrased feeling question with its
+expansions traced, intent via xIntent, subevent ordering, the
+coverage rule, the no-match decline). Project suite 120/120;
+`tsc` clean. Nothing pushed.
