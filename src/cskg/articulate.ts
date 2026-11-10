@@ -27,8 +27,11 @@
  * Writes (engine map): `reply` — via speak(), the only assignment.
  */
 import type { Situation } from "./awareness";
+import { BALANCED_DISPOSITION, type Disposition } from "./disposition";
 import type { CskgEdge, CskgGraph } from "./loader";
-import type { TurnWorkspace } from "./workspace";
+import type { RolePack } from "./roles";
+import type { StatementPlan } from "./statement";
+import { noteStep, type TurnWorkspace } from "./workspace";
 
 export interface Conclusion {
   edge: CskgEdge;
@@ -1146,4 +1149,94 @@ export function renderToolDeclinePlain(usedForPhrase: string, open = true): stri
   return open
     ? `I don't know a tool for that — nothing here is recorded as used for ${usedForPhrase}.`
     : `I don't know a tool for that — nothing here is recorded as used to ${usedForPhrase}.`;
+}
+
+/* ---------------- statement plans (compose then articulate) ----
+ *
+ * The statement composer (statement.ts) produces a StatementPlan
+ * — data only: conclusions already sit in the workspace, the
+ * plan names which branch composed and what rides along. This
+ * function words every variant, so the statement route keeps
+ * one writer however the policy grows: F speaks, the policy
+ * never does.
+ */
+export function renderStatementPlan(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  plan: StatementPlan,
+  role: RolePack,
+): string {
+  // Gap 1 stays word-for-word: the phatic-only reply is social
+  // alone — no leading clause, no acknowledgement suffix.
+  if (plan.content.kind === "phatic") {
+    return renderPhatic(plan.content.phatic.kind, plan.content.phatic.word);
+  }
+  // every file write is acknowledged in the role's voice (§5)
+  const ackSuffix =
+    plan.rememberDisplay !== null && plan.rememberDisplay !== undefined
+      ? ` ${renderRememberAck(role.memoryAck, plan.rememberDisplay)}`
+      : plan.roleAck
+        ? ` ${role.memoryAck}`
+        : "";
+  const withLead = (text: string): string =>
+    plan.leading
+      ? `${renderPhatic(plan.leading.kind, plan.leading.word)} ${text}`
+      : text;
+  const connectedClause = plan.connected
+    ? ` ${renderContinuityClause(plan.connected.display, plan.connected.subject)}`
+    : "";
+  const c = plan.content;
+  switch (c.kind) {
+    case "state": {
+      const lead = c.reactionText ? renderFeelingLead(c.feelingText) : null;
+      const base = c.reactionText
+        ? (lead ? `${lead} ${c.reactionText}` : c.reactionText)
+        : renderStateNoted(c.feelingText, c.feelingPattern);
+      return withLead(base + ackSuffix);
+    }
+    case "person-only-remember":
+      return withLead(renderRememberAck(role.memoryAck, c.display));
+    case "person-only-session":
+      return withLead(renderSessionFactAck(plan.sessionAckDisplays));
+    case "person-only-noted":
+      return withLead(renderStatementNoted(c.text));
+    case "leading-only":
+      return plan.leading
+        ? renderPhatic(plan.leading.kind, plan.leading.word)
+        : "";
+    case "doing": {
+      let text = renderEventLead(
+        c.doing.verb, c.doing.action, c.doing.timeText, c.doing.mode, c.doing.intentMarker);
+      if (c.factAboutEvent && c.fact) text += ` ${renderConclusion(g, c.fact)}`;
+      // S8, first adaptive offer (Item 6): the plan is fresh this
+      // turn, its timing genuinely open, the frame willing to
+      // ask, the role an offering one — the question concludes
+      // from the model's own record, not from a slot.
+      const disp: Disposition = ws.disposition ?? BALANCED_DISPOSITION;
+      const offer = offerForPlannedDoing(
+        c.doing.mode, c.doing.timeText, disp.elicitation, role.statementStrategy);
+      if (offer) {
+        noteStep(ws, "statement", "conclude",
+          `adaptive offer: intended doing "${c.doing.action}" has no time; disposition ${disp.elicitation}; role ${role.id}`);
+        text += ` ${offer}`;
+      }
+      return withLead(text + connectedClause + ackSuffix);
+    }
+    case "third-event":
+      return withLead(
+        renderEventLeadFor(c.third.actorLabel, c.third.verb, c.third.action, c.third.timeText) +
+        connectedClause + ackSuffix);
+    case "state-lead":
+      return withLead(
+        renderStateLead(c.lead.label, c.lead.text, c.lead.kind) +
+        connectedClause + ackSuffix);
+    case "fact":
+      return withLead(renderConclusion(g, c.fact) + connectedClause + ackSuffix);
+    case "session-ack":
+      return withLead(
+        renderSessionFactAck(plan.sessionAckDisplays) + connectedClause + ackSuffix);
+    case "noted":
+      return withLead(
+        renderStatementNoted(c.termText) + connectedClause + ackSuffix);
+  }
 }

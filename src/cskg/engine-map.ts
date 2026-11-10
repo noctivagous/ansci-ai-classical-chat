@@ -46,6 +46,7 @@ export type WorkspaceField =
   | "activeContext"
   | "situationModel"
   | "conclusions"
+  | "statementPolicy"
   | "reply"
   | "trace";
 
@@ -140,17 +141,17 @@ export const ENGINE_NODES: EngineNode[] = [
   },
   {
     id: "statement",
-    label: "Statement-turn composition — the reply policy for statements: the conversation's own records lead (situation, person, state), graph testimony only as the graph-distance rule allows (extracted from the turn coordinator, Loop 2)",
+    label: "Statement-turn composition — the reply policy for statements: the conversation's own records lead (situation, person, state), graph testimony only as the graph-distance rule allows; produces conclusions (via solve.addConclusions) and a statementPolicy plan, never a sentence — F words every variant",
     file: "src/cskg/statement.ts",
-    writes: ["reply"],
+    writes: ["statementPolicy"],
     reads: ["breakdown", "intent", "situation", "person", "conclusions", "situationModel", "disposition"],
   },
   {
     id: "articulate",
-    label: "F — Communication articulation",
+    label: "F — Communication articulation: the turn's only speaker (compose then articulate, one writer)",
     file: "src/cskg/articulate.ts",
     writes: ["reply"],
-    reads: ["conclusions", "intent", "person", "situation"],
+    reads: ["conclusions", "statementPolicy", "intent", "person", "situation", "disposition"],
   },
   {
     id: "interface",

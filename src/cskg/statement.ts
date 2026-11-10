@@ -2,15 +2,15 @@
  * Statement-turn composition — the reply policy for STATEMENT
  * turns, extracted from the turn coordinator (Loop 2, L2-X1:
  * policy leaves turn.ts a small piece at a time, each
- * extraction behaviour-neutral and diff-verified; the
- * coordinator keeps order, workspace hand-offs and route
- * arbitration, policy lives in named pieces).
+ * extraction behaviour-neutral; the coordinator keeps order,
+ * workspace hand-offs and route arbitration, policy lives in
+ * named pieces).
  *
  * The policy, in composition order: person knowledge was
  * consulted first (capture + connections, run by the
  * coordinator before this piece); the classifier judges the
  * statement's conversational intent with the graph's evidence
- * weighed in; the reply is then composed from the
+ * weighed in; the reply is then PLANNED from the
  * conversation's own records FIRST — the situation leads
  * (L2-A/C/D), the feeling's general pattern (L2-M3) — with
  * graph testimony admitted only as the graph-distance rule
@@ -19,23 +19,15 @@
  * succeeds socially with the grounded fact it can honestly
  * add PLUS the follow-up its slot licenses; zero graph facts
  * is a complete success for the class, never a decline.
+ *
+ * Consolidation (one writer): this piece produces conclusions
+ * (via solve.addConclusions) and a StatementPlan — data only,
+ * no sentences. articulate.renderStatementPlan words every
+ * variant and speak() voices it, so F is the turn's only
+ * speaker and this piece never imports a renderer.
  */
 import type { Situation } from "./awareness";
-import {
-  edgeText,
-  offerForPlannedDoing,
-  renderConclusion,
-  renderContinuityClause,
-  renderEventLead,
-  renderEventLeadFor,
-  renderPhatic,
-  renderFeelingLead,
-  renderRememberAck,
-  renderSessionFactAck,
-  renderStateLead,
-  renderStateNoted,
-  renderStatementNoted,
-} from "./articulate";
+import { edgeText, type Conclusion } from "./articulate";
 import { STOPWORDS, matchEvent, type Breakdown, type ResolvedTerm } from "./discourse";
 import {
   BALANCED_DISPOSITION,
@@ -90,15 +82,87 @@ export interface StatementDeps {
   sit: Situation;
 }
 
+/** A phatic move, in the person's own word (gap 1). */
+export interface StatementPhatic {
+  kind: "greeting" | "thanks" | "farewell";
+  word: string;
+}
+
+/** The speaker's recorded doing the reply leads with (L2-A). */
+export interface StatementDoing {
+  verb: string;
+  action: string;
+  timeText: string | null;
+  mode: "ongoing" | "intended";
+  intentMarker: string | null;
+}
+
+/** A reported happening about someone else (L2-D). */
+export interface StatementThirdEvent {
+  actorLabel: string;
+  verb: string;
+  action: string;
+  timeText: string | null;
+}
+
+/** A recorded state the reply leads with (L2-C). */
+export interface StatementStateLead {
+  label: string | null;
+  text: string;
+  kind: string;
+}
+
 /**
- * Compose a statement turn's reply, or null when the turn
+ * The statement reply's CONTENT — one branch of the composition
+ * policy, as data. Conclusions already sit in the workspace
+ * (added via addConclusions during composition); the
+ * acknowledgement fact travels as its Conclusion so F words it.
+ * No sentence lives here.
+ */
+export type StatementContent =
+  | { kind: "phatic"; phatic: StatementPhatic }
+  | { kind: "state"; feelingText: string; feelingPattern: string | null; reactionText: string | null }
+  | { kind: "person-only-remember"; display: string }
+  | { kind: "person-only-session" }
+  | { kind: "person-only-noted"; text: string }
+  | { kind: "doing"; doing: StatementDoing; fact: Conclusion | null; factAboutEvent: boolean }
+  | { kind: "third-event"; third: StatementThirdEvent }
+  | { kind: "state-lead"; lead: StatementStateLead }
+  | { kind: "fact"; fact: Conclusion }
+  | { kind: "session-ack" }
+  | { kind: "noted"; termText: string }
+  | { kind: "leading-only" };
+
+/**
+ * The statement-turn plan: what the reply is built from. F
+ * (articulate.renderStatementPlan) words every variant; the
+ * ack suffix and the connected clause ride along as data so the
+ * whole reply is assembled by the one writer.
+ */
+export interface StatementPlan {
+  content: StatementContent;
+  /** the leading social clause on a mixed turn, if any */
+  leading: StatementPhatic | null;
+  /** the session-fact acknowledgement's displays (session-ack branch) */
+  sessionAckDisplays: string[];
+  /** the file write's display for the ack suffix, if any */
+  rememberDisplay: string | null;
+  /** the ack suffix is the bare role voice (a pattern filed, no fact) */
+  roleAck: boolean;
+  /** the connected clause's recorded preference, if one earned it */
+  connected: { display: string; subject: string } | null;
+  grounded: boolean;
+}
+
+/**
+ * Compose a statement turn's plan, or null when the turn
  * carried nothing the policy could take up (no resolved
  * content, no capture) — the coordinator then declines the
  * statement as unplaced, as before.
  */
 export function composeStatementReply(
   deps: StatementDeps,
-): { text: string; grounded: boolean } | null {
+): StatementPlan | null {
   const {
     g, ws, session, env, role, capture, connections, sitResult,
     bd, resolved, salient, words, sit,
@@ -114,25 +178,27 @@ export function composeStatementReply(
     noteStep(ws, "statement", "compose",
       `phatic-only turn (${phatic.kind}): social reply, no topic remembered, no graph testimony`);
     session.lastIntent = "statement";
-    return { text: renderPhatic(phatic.kind, phatic.word), grounded: true };
+    const plan: StatementPlan = {
+      content: { kind: "phatic", phatic },
+      leading: null,
+      sessionAckDisplays: [],
+      rememberDisplay: null,
+      roleAck: false,
+      connected: null,
+      grounded: true,
+    };
+    ws.statementPolicy = plan;
+    return plan;
   }
   // Leading social clause on a mixed turn ("thanks anyway. I'll
-  // go make coffee"): take up the thanks, then compose the rest.
+  // go make coffee"): taken up first, the rest keeps its route.
   const leading = detectLeadingPhatic(ws.input.toLowerCase());
-  const withLead = (
-    r: { text: string; grounded: boolean } | null,
-  ): { text: string; grounded: boolean } | null => {
-    if (!leading) return r;
-    const social = renderPhatic(leading.kind, leading.word);
-    if (!r) return { text: social, grounded: true };
-    return { text: `${social} ${r.text}`, grounded: true };
-  };
-  // (7) statements — E4's set order (§2, piece C): person
-  // knowledge was consulted first (capture + connections,
-  // above); the classifier has judged the statement's
-  // conversational intent with the graph's evidence weighed
-  // in; the reply is formulated only now — per the class, the
-  // role's strategy and follow-up policy, and the operative
+  // (7) statements — E4's set order (§2, piece C's set order):
+  // person knowledge was consulted first (capture +
+  // connections, above); the classifier has judged the
+  // statement's conversational intent with the graph's evidence
+  // weighed in; the reply is planned only now — per the class,
+  // the role's strategy and follow-up policy, and the operative
   // context. A schmooze reply succeeds socially with the
   // grounded fact it can honestly add PLUS the follow-up its
   // slot licenses; zero graph facts is a complete success for
@@ -157,14 +223,15 @@ export function composeStatementReply(
       `statement (${cls.kind}): person knowledge first, classification weighed, reply per role "${role.id}" + operative context`);
     // every file write is acknowledged in the reply, in the
     // role's voice — never silent (§5)
-    const sessionAck = !capture.factsWritten.length && capture.sessionKept.length
-      ? renderSessionFactAck(capture.sessionKept.map((f) => f.display))
-      : "";
-    const ackSuffix = capture.factsWritten.length
-      ? ` ${renderRememberAck(role.memoryAck, capture.factsWritten[0].display)}`
-      : capture.patternsWritten.length
-        ? ` ${role.memoryAck}`
-        : "";
+    const sessionAckDisplays =
+      !capture.factsWritten.length && capture.sessionKept.length
+        ? capture.sessionKept.map((f) => f.display)
+        : [];
+    const rememberDisplay = capture.factsWritten.length
+      ? capture.factsWritten[0].display
+      : null;
+    const roleAck = !capture.factsWritten.length && capture.patternsWritten.length > 0;
+    const base = { leading, sessionAckDisplays, rememberDisplay, roleAck };
 
     // a stated feeling: the reply is drawn from the canonical
     // state record — ATOMIC consulted FROM the record (§5)
@@ -175,34 +242,53 @@ export function composeStatementReply(
       // The default ("ready") is the standing behaviour: the
       // sayability gate inside solveStateReaction decides.
       const disp0: Disposition = ws.disposition ?? BALANCED_DISPOSITION;
-      const reaction = disp0.patternSpeech === "ready"
+      const reactionText = disp0.patternSpeech === "ready"
         ? solveStateReaction(g, ws, capture.feeling.canonical)
         : null;
       if (disp0.patternSpeech !== "ready") {
         noteStep(ws, "disposition", "intent",
           "the feeling's general pattern is not spoken: the disposition's pattern speech is silent — the state stands as captured");
       }
-      // Loop 2 (L2-M3): when the state's general pattern can
-      // be said, the reply first takes up the PERSON's state
-      // in second person — the pattern answers the person,
-      // not the room. No sayable pattern → the plain noted
-      // acknowledgement, as before.
-      const lead = reaction ? renderFeelingLead(capture.feeling.text) : null;
-      const base = reaction
-        ? (lead ? `${lead} ${reaction}` : reaction)
-        : renderStateNoted(capture.feeling.text, capture.feeling.pattern);
       session.lastIntent = "fact";
-      return withLead({ text: base + ackSuffix, grounded: reaction !== null });
+      const plan: StatementPlan = {
+        content: {
+          kind: "state",
+          feelingText: capture.feeling.text,
+          feelingPattern: capture.feeling.pattern,
+          reactionText,
+        },
+        ...base,
+        connected: null,
+        grounded: reactionText !== null,
+      };
+      ws.statementPolicy = plan;
+      return plan;
     }
 
     if (!primary) {
       // nothing resolved, but the statement still landed —
       // as person data (a name, a fact for the file or session)
-      return withLead({ text: capture.factsWritten.length
-          ? renderRememberAck(role.memoryAck, capture.factsWritten[0].display)
-          : sessionAck
-            ? sessionAck
-            : renderStatementNoted(capture.doing ?? capture.newPerson ?? "that"), grounded: !!sessionAck });
+      let content: StatementContent;
+      let grounded: boolean;
+      if (capture.factsWritten.length) {
+        content = { kind: "person-only-remember", display: capture.factsWritten[0].display };
+        grounded = false;
+      } else if (sessionAckDisplays.length) {
+        content = { kind: "person-only-session" };
+        grounded = true;
+      } else {
+        content = { kind: "person-only-noted", text: capture.doing ?? capture.newPerson ?? "that" };
+        grounded = false;
+      }
+      session.lastIntent = "fact";
+      const plan: StatementPlan = {
+        content,
+        ...base,
+        connected: null,
+        grounded,
+      };
+      ws.statementPolicy = plan;
+      return plan;
     }
 
     // the grounded acknowledgement fact, role-shaped in its
@@ -258,8 +344,6 @@ export function composeStatementReply(
         `statement fact suppressed (L2-R, graph-distance rule): a bare classification ("${edgeText(g, fact.edge)}") is testimony, not an utterance — no graph-to-response path on a statement turn; acknowledgement only`);
       fact = null;
     }
-    let text: string;
-    let grounded = false;
     // Loop 2 (L2-A): when the statement recorded the speaker's
     // own event in the situation model, the reply LEADS with
     // that event — the reply is about what the person just
@@ -324,35 +408,45 @@ export function composeStatementReply(
       ? entityById(session.situation,
           thirdEvent.participants.find((p) => p.role === "actor")!.entityId)
       : null;
+    let content: StatementContent;
+    let grounded = false;
     if (doing) {
-      text = renderEventLead(doing.verb, doing.action, doing.timeText, doing.mode, doing.intentMarker);
-      grounded = true; // grounded in the conversation's own record
       if (fact && factAboutEvent) {
         addConclusions(ws, [fact]);
         noteStep(ws, "solve", "conclude", "statement fact about the event itself", [edgeText(g, fact.edge)]);
-        text += ` ${renderConclusion(g, fact)}`;
       }
-      // S8, first adaptive offer (Item 6): the plan is fresh this
-      // turn, its timing genuinely open, the frame willing to
-      // ask, the role an offering one — the question concludes
-      // from the model's own record, not from a slot.
-      const disp = ws.disposition ?? BALANCED_DISPOSITION;
-      const offer = offerForPlannedDoing(
-        doing.mode, doing.timeText, disp.elicitation, role.statementStrategy,
-      );
-      if (offer) {
-        noteStep(ws, "statement", "conclude",
-          `adaptive offer: intended doing "${doing.action}" has no time; disposition ${disp.elicitation}; role ${role.id}`);
-        text += ` ${offer}`;
-      }
+      content = {
+        kind: "doing",
+        doing: {
+          verb: doing.verb,
+          action: doing.action,
+          timeText: doing.timeText,
+          mode: doing.mode,
+          intentMarker: doing.intentMarker,
+        },
+        // grounded in the conversation's own record; the
+        // acknowledgement fact rides along only when it is
+        // about the event term itself
+        fact: factAboutEvent ? fact : null,
+        factAboutEvent,
+      };
+      grounded = true;
     } else if (thirdEvent && thirdActor) {
       // Loop 2 (L2-D): the reply leads with the reported
       // happening — the person told us what someone is doing,
-      // and the reply is about that, not about a filing on
-      // one of its nouns. The topic fact is dropped, as in
-      // the L2-A/L2-C leads.
-      text = renderEventLeadFor(thirdActor.label, thirdEvent.verb, thirdEvent.action, thirdEvent.timeText);
-      grounded = true; // grounded in the conversation's own record
+      // and the reply is about that, not about a filing on one
+      // of its nouns. The topic fact is dropped, as in the
+      // L2-A/L2-C leads.
+      content = {
+        kind: "third-event",
+        third: {
+          actorLabel: thirdActor.label,
+          verb: thirdEvent.verb,
+          action: thirdEvent.action,
+          timeText: thirdEvent.timeText,
+        },
+      };
+      grounded = true;
     } else if (stateLead) {
       // Loop 2 (L2-C): no doing was recorded, but the statement
       // recorded a state — the reply leads with the state as
@@ -361,18 +455,21 @@ export function composeStatementReply(
       // reply is about what the person said is so, not about
       // a filing on the weather noun.
       const ent = entityById(session.situation, stateLead.entityId);
-      text = renderStateLead(ent?.label ?? null, stateLead.text, stateLead.kind);
-      grounded = true; // grounded in the conversation's own record
+      content = {
+        kind: "state-lead",
+        lead: { label: ent?.label ?? null, text: stateLead.text, kind: stateLead.kind },
+      };
+      grounded = true;
     } else if (fact) {
       addConclusions(ws, [fact]);
       noteStep(ws, "solve", "conclude", "statement acknowledgement fact", [edgeText(g, fact.edge)]);
-      text = renderConclusion(g, fact);
+      content = { kind: "fact", fact };
       grounded = true;
-    } else if (sessionAck) {
-      text = sessionAck;
+    } else if (sessionAckDisplays.length) {
+      content = { kind: "session-ack" };
       grounded = true;
     } else {
-      text = renderStatementNoted(g.terms[primary.id]);
+      content = { kind: "noted", termText: g.terms[primary.id] };
     }
     // connected: the reply SAYS the connection the person
     // model found — a recorded preference whose object is the
@@ -380,11 +477,12 @@ export function composeStatementReply(
     // clause is PERSON content, so it does not depend on a
     // graph fact surviving (L2-R): it appends to whatever
     // the composition produced, acknowledgement included.
+    let connected: StatementPlan["connected"] = null;
     if (cls.kind === "connected") {
       const pref = connections.find(
         (c) => c.via === "object" && c.fact.kind === "preference" && c.fact.subject !== "self",
       );
-      if (pref) text += ` ${renderContinuityClause(pref.fact.display, pref.fact.subject)}`;
+      if (pref) connected = { display: pref.fact.display, subject: pref.fact.subject };
     }
     // Template removal (round 3, T1+T2): the follow-up
     // apparatus that once stood here is REMOVED entire — the
@@ -402,9 +500,37 @@ export function composeStatementReply(
     // E5's appended "Noted as an event" clause is gone (Loop 2,
     // L2-A): the recorded event now LEADS the reply above
     // instead of trailing it as machinery narration.
-    text += ackSuffix;
+    //
+    // The adaptive offer (S8, Item 6) fires at render time:
+    // the plan is fresh this turn, its timing genuinely open,
+    // the frame willing to ask, the role an offering one — F's
+    // gate reads the plan's doing against the disposition and
+    // role, so the question concludes from the model's own
+    // record, never from a slot.
     session.lastIntent = "fact";
-    return withLead({ text: text, grounded: grounded });
+    const plan: StatementPlan = {
+      content,
+      ...base,
+      connected,
+      grounded,
+    };
+    ws.statementPolicy = plan;
+    return plan;
   }
-  return withLead(null);
+  // The turn carried nothing the policy could take up, but the
+  // social clause still stands on its own — taken up alone.
+  if (leading) {
+    const plan: StatementPlan = {
+      content: { kind: "leading-only" },
+      leading,
+      sessionAckDisplays: [],
+      rememberDisplay: null,
+      roleAck: false,
+      connected: null,
+      grounded: true,
+    };
+    ws.statementPolicy = plan;
+    return plan;
+  }
+  return null;
 }

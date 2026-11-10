@@ -160,6 +160,23 @@ export function detectLeadingPhatic(
   return null;
 }
 
+/**
+ * An explicit "remember that…": the write discipline's second
+ * door (§5). Matched case-insensitively, but the returned span
+ * keeps the person's own words — it names what is filed, so
+ * display fidelity outranks the lowercasing the other detectors
+ * use. Null when the turn is not a remember ask.
+ */
+export function detectRemember(input: string): string | null {
+  const trimmed = input.trim();
+  const m = trimmed.match(/^(?:please\s+)?remember that\s+(.+?)[.!?]?$/i);
+  if (!m) return null;
+  const stated = trimmed
+    .replace(/^(?:please\s+)?remember that\s+/i, "")
+    .replace(/[.!?]+$/, "");
+  return stated ? stated : null;
+}
+
 /** "do onions go in chicken soup?" — composition of two poles. */
 export function detectComposition(lower: string): { inner: string; outer: string } | null {
   const t = lower.toLowerCase().replace(/[?]+$/, "").trim();

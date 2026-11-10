@@ -16,8 +16,13 @@
  *   situationModel      — Situation analysis (situation.ts, E5):
  *                         a snapshot of the session's live
  *                         situation model as this turn leaves it
- *   conclusions         — solve (via solve.addConclusions)
- *   reply               — articulate (via articulate.speak)
+ *   conclusions         — solve (via solve.addConclusions; the
+ *                         statement composer also contributes via
+ *                         that same function)
+ *   statementPolicy     — statement (the statement reply's plan;
+ *                         articulate words it, never the reverse)
+ *   reply               — articulate (via articulate.speak, the
+ *                         turn's only speaker)
  *   input               — the interface, at construction
  *   trace               — the shared record: every piece appends
  *                         its steps via noteStep(); memory commits
@@ -38,6 +43,7 @@ import type { OperativeContext } from "./context";
 import type { Disposition } from "./disposition";
 import type { Breakdown } from "./discourse";
 import type { EngineNodeId } from "./engine-map";
+import type { StatementPlan } from "./statement";
 import type { Intent } from "./intent";
 import type { QueryRecord } from "./loader";
 import type { ActiveContext } from "./memory";
@@ -87,6 +93,8 @@ export interface TurnWorkspace {
   /** E5: the situation model as this turn leaves it (situation.ts) */
   situationModel: SituationSnapshot | null;
   conclusions: Conclusion[];
+  /** the statement reply's plan, when this turn took the statement route */
+  statementPolicy: StatementPlan | null;
   reply: string | null;
   trace: ThoughtTrace;
   queries: QueryRecord[];
@@ -107,6 +115,7 @@ export function createWorkspace(turn: number, input: string): TurnWorkspace {
     activeContext: null,
     situationModel: null,
     conclusions,
+    statementPolicy: null,
     reply: null,
     trace: { turn, input, intent: "", steps: [], conclusions, answer: "" },
     queries: [],
