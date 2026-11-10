@@ -61,13 +61,19 @@ export interface QueryIntent {
     | "restraint" // §6.5: what keeps X in check (restrainedBy operator)
     | "degree_compare" // §6.7: is A more Yin/Yang than B, in one aspect
     | "balance" // §6.8: a subject profile against a season baseline
+    // Slice 2d (§5): FrameNet structure questions — the participants /
+    // roles of a frame, what evokes it, which frame a word evokes.
+    // Variants: "participants" | "evokers" | "frame_of".
+    | "frame_participants"
     | "unknown";
   domainHint?: string;
   includeOntology: boolean;
   traversalDepth: number;
   confidenceThreshold: number;
   /** §7.7: correspondence category ("organ", "sound", …), when selected.
-   *  For degree_compare (§6.7): the aspect key compared in. */
+   *  For degree_compare (§6.7): the aspect key compared in.
+   *  For frame_participants (§5): the trigger lemma the router resolved
+   *  the frame through ("buy" for Commerce_buy), when it resolved one. */
   category?: string;
   /** Handler variant ("cycle", "incoming-classification", "sense-bridge",
    *  "polarity-check", "whole" | "parts" | "check" for part_of,
@@ -1940,6 +1946,129 @@ function handleBalance(ctx: HandlerCtx): void {
  * return structured results only. When `rec` is given, traversals are
  * recorded as ThoughtTrace steps in it (§8.1).
  */
+/**
+ * §5 frame questions. The handler reads frame structure only — FEs and
+ * evoking units — and emits it as conclusions; a frame is a situation
+ * schema, so no classification machinery touches it here. Element sets
+ * are emitted core-first (FN document order within each group) as ONE
+ * step with many conclusions: reading the set is a single act (§8.3
+ * counts acts, and a 15-element frame must not exhaust the bound).
+ */
+function handleFrame(ctx: HandlerCtx): void {
+  const { graph, rec, intent } = ctx;
+  const frame = intent.matchedNodes
+    .map((id) => graph.getNode(id))
+    .find((nd): nd is GraphNode => !!nd && nd.type === "Frame");
+  if (!frame) return;
+  const variant = intent.variant ?? "participants";
+  const trigger = intent.category;
+
+  const feEdges = graph.outEdges(frame.id, "HAS_FRAME_ELEMENT");
+  const coreEdges = feEdges.filter((e) => e.properties?.core === true);
+  const luEdges = graph
+    .inEdges(frame.id, "EVOKES")
+    .filter((e) => graph.getNode(e.from)?.type === "LexicalUnit");
+
+  rec.addStep({
+    kind: "frame",
+    subQuestion: `what is the frame ${frame.name}?`,
+    inputs: [frame.id],
+    conclusion: {
+      subjectId: frame.id,
+      relation: "FRAME",
+      objectId: frame.id,
+      confidence: 1,
+      facts: {
+        feCount: feEdges.length,
+        coreCount: coreEdges.length,
+        luCount: luEdges.length,
+        ...(trigger ? { trigger } : {}),
+      },
+    },
+  });
+
+  if (variant === "evokers") {
+    const conclusions = luEdges.map((e) => {
+      const lu = graph.getNode(e.from)!;
+      ctx.use(e);
+      return {
+        subjectId: lu.id,
+        relation: "EVOKES",
+        objectId: frame.id,
+        confidence: 1,
+        facts: {
+          lemma: String(lu.properties["lemma"] ?? lu.name),
+          pos: String(lu.properties["pos"] ?? ""),
+        },
+      };
+    });
+    if (conclusions.length > 0) {
+      rec.addStep({
+        kind: "frame",
+        subQuestion: `what evokes ${frame.name}?`,
+        // Inputs name the units read — [frame.id] alone would collide
+        // with the FRAME step above in the §8.3 cycle guard.
+        inputs: [frame.id, ...luEdges.map((e) => e.from)],
+        conclusions,
+      });
+    }
+    return;
+  }
+
+  // participants / frame_of: the evoking link (when a trigger word
+  // resolved this frame) and then the element set.
+  if (trigger) {
+    const luEdge = luEdges.find(
+      (e) => graph.getNode(e.from)?.properties["lemma"] === trigger,
+    );
+    if (luEdge) {
+      ctx.use(luEdge);
+      const lu = graph.getNode(luEdge.from)!;
+      const step = stepOf(graph, luEdge, "forward");
+      rec.addStep({
+        kind: "frame",
+        subQuestion: `what does ${trigger} evoke?`,
+        inputs: [lu.id, frame.id],
+        paths: [renderPath([step])],
+        conclusion: {
+          subjectId: lu.id,
+          relation: "EVOKES",
+          objectId: frame.id,
+          confidence: 1,
+          facts: { lemma: trigger, pos: String(lu.properties["pos"] ?? "") },
+        },
+      });
+      ctx.paths.push({ steps: [step], text: renderPath([step]) });
+    }
+  }
+  const ordered = [
+    ...coreEdges,
+    ...feEdges.filter((e) => e.properties?.core !== true),
+  ];
+  const conclusions = ordered.map((e) => {
+    ctx.use(e);
+    return {
+      subjectId: frame.id,
+      relation: "HAS_FRAME_ELEMENT",
+      objectId: e.to,
+      confidence: 1,
+      facts: { core: e.properties?.core === true ? 1 : 0 },
+    };
+  });
+  if (conclusions.length > 0) {
+    rec.addStep({
+      kind: "frame",
+      subQuestion: `what are the participants in ${frame.name}?`,
+      inputs: [frame.id, ...ordered.map((e) => e.to)],
+      conclusions,
+    });
+    for (const e of coreEdges) {
+      const step = stepOf(graph, e, "forward");
+      ctx.paths.push({ steps: [step], text: renderPath([step]) });
+    }
+  }
+}
+
 export function answerIntent(
   graph: Graph,
   question: string,
@@ -1993,6 +2122,9 @@ export function answerIntent(
         break;
       case "balance":
         handleBalance(ctx);
+        break;
+      case "frame_participants":
+        handleFrame(ctx);
         break;
       case "definition":
       case "unknown":
