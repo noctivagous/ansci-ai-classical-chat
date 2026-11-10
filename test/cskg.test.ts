@@ -16,6 +16,7 @@ import {
   renderAll,
   renderComposed,
   renderConclusion,
+  renderCorrectionFact,
   sentenceForEdge,
 } from "../src/cskg/articulate";
 import { seasonFor } from "../src/cskg/awareness";
@@ -215,6 +216,18 @@ test("S12: a correction with no previous topic keeps the plain acknowledgement",
   const r = runTurn(g, s, "No, I meant the peel");
   assert.equal(r.trace.intent, "correction");
   assert.match(r.text, /^Got it — peel\./);
+});
+
+test("repair frame: the role pack selects it, same repair either way", () => {
+  const assistant = renderCorrectionFact("peel", "Peel is a skin.", "banana");
+  const companion = renderCorrectionFact("peel", "Peel is a skin.", "banana", "react-and-share");
+  assert.match(assistant, /^I had that as banana — you meant peel\./);
+  assert.match(companion, /^Ah — I had that as banana, you meant peel\./);
+  assert.match(
+    renderCorrectionFact("peel", "Peel is a skin.", "banana", "unknown-strategy"),
+    /^I had that as banana — you meant peel\./,
+    "an unknown strategy falls back to the plain owning frame",
+  );
 });
 
 test("season is a function of (date, hemisphere), never of the month alone", () => {

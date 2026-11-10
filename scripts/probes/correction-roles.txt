@@ -1,0 +1,19 @@
+# Probe: correction repair under the companion role (Item 4 leaf 2).
+#
+# The repair frame is selected by the role pack: assistant
+# (acknowledge-and-offer) owns the correction plainly, companion
+# (react-and-share) reacts first and shares it. Diagnose runs a
+# fixed probe set, so this file is judged by the dev-loop
+# declaration gate under CSKG_CHAT_ROLE=companion, not by diagnose.
+#
+# Baseline 2026-11-10 (pre-fix, companion): identical to the
+# assistant frame — no role selection yet.
+#
+# Verified 2026-11-10 (Item 4 leaf 2, verdict PASS under
+# CSKG_CHAT_ROLE=companion): the pack selects the frame —
+# acknowledge-and-offer owns plainly, react-and-share reacts and
+# shares. Only the correction turn moved; assistant replies
+# byte-identical (default param + full suite under default role).
+
+What is a cold?
+No, I meant the common cold

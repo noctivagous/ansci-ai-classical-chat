@@ -307,6 +307,7 @@ export function runTurn(
             g.terms[term.id],
             renderDefinition(g.terms[term.id], choice.chosen.gloss),
             prevTopicText,
+            role.statementStrategy,
           ),
           "correction",
           true,
@@ -316,7 +317,7 @@ export function runTurn(
       if (fact) {
         addConclusions(ws, [fact]);
         noteStep(ws, "solve", "conclude", "answered about the corrected term", [edgeText(g, fact.edge)]);
-        return finish(renderCorrectionFact(g.terms[term.id], renderConclusion(g, fact), prevTopicText), "correction", true);
+        return finish(renderCorrectionFact(g.terms[term.id], renderConclusion(g, fact), prevTopicText, role.statementStrategy), "correction", true);
       }
       return finish(renderCorrectionNoFact(g.terms[term.id]), "correction", false);
     }

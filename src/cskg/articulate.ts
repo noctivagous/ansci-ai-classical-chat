@@ -772,11 +772,18 @@ export function renderCorrectionFact(
   termText: string,
   factSentence: string,
   prevTopicText: string | null = null,
+  /** Item 4 leaf 2: the role pack selects the repair frame —
+   *  acknowledge-and-offer owns the correction plainly,
+   *  react-and-share reacts first and shares it. */
+  statementStrategy: string = "acknowledge-and-offer",
 ): string {
   if (
     prevTopicText &&
     prevTopicText.toLowerCase() !== termText.toLowerCase()
   ) {
+    if (statementStrategy === "react-and-share") {
+      return `Ah — I had that as ${prevTopicText}, you meant ${termText}. ${factSentence}`;
+    }
     return `I had that as ${prevTopicText} — you meant ${termText}. ${factSentence}`;
   }
   return `Got it — ${termText}. ${factSentence}`;
