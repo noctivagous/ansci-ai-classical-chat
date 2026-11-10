@@ -251,6 +251,15 @@ test("E5b causal: a stated because-of the graph cannot check stays asserted, and
   assert.match(why, /graph itself doesn't record/);
 });
 
+test("E5b causal: a bare Why? answers from the standing event first", async () => {
+  const g = await graph();
+  const s = createSession();
+  say(g, s, "It's raining.");
+  say(g, s, "We moved the picnic indoors because of the rain.");
+  assert.match(say(g, s, "Why?"), /that's the reason you gave/,
+    "the model's asserted causal link outranks the topic fallback");
+});
+
 /* ---------------- E5b: social ---------------- */
 
 test("E5b social: a stated relation is the model's, attributed asserted", async () => {

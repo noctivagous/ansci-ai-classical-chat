@@ -516,8 +516,17 @@ export function runTurn(
     return declineUnplaced("followup");
   }
 
-  // (5) bare "why?" — apply to the current topic
+  // (5) bare "why?" — the standing EVENT first, the current
+  // topic after (Item 5: a bare why asks about what is
+  // happening; the model's own causal relations outrank a fresh
+  // topic lookup, the same order stated why-questions use).
   if (isBareWhy(lower)) {
+    const sitWhy = answerSituationWhy(ws, session, true);
+    if (sitWhy) {
+      noteTriage(ws, "retrieve", "the situation model's causal relation for the standing event (E5)");
+      session.lastIntent = "why";
+      return finish(sitWhy.text, "why", sitWhy.grounded);
+    }
     const t = currentTopicId(session);
     if (t === undefined) return finish(renderWhyNoTopic(), "why", false);
     const cause = answerWhy(g, ws, t);

@@ -2043,6 +2043,10 @@ export function answerSituationQuestion(
 export function answerSituationWhy(
   ws: TurnWorkspace,
   session: SessionState,
+  /** Item 5: a bare "Why?" names neither cause nor effect — take
+   *  the standing (latest) causal relation instead of matching
+   *  mentioned words. */
+  bare = false,
 ): SituationAnswer | null {
   const model = session.situation;
   const lower = ws.input.toLowerCase();
@@ -2054,7 +2058,7 @@ export function answerSituationWhy(
       (effectEv ? effectEv.action : effectLabel).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2));
     const mentioned = [...effectWords].some((w) => lower.includes(w)) ||
       lower.includes(nodeLabel(model, rel.from).toLowerCase().replace(/^the /, ""));
-    if (!mentioned) continue;
+    if (!mentioned && !bare) continue;
     const causeLabel = forAddressee(nodeLabel(model, rel.from));
     const effectText = forAddressee(nodeLabel(model, rel.to));
     noteStep(ws, "situationModel", "situate-model",

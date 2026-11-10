@@ -1,0 +1,18 @@
+# Probe: bare why over the standing event (Item 5).
+#
+# A bare "Why?" asks about what is happening: the situation model's
+# own causal relations outrank a fresh topic lookup (same order as
+# stated why-questions). Diagnose runs a fixed probe set, so this
+# file is judged by the dev-loop declaration gate, not by diagnose.
+#
+# Baseline 2026-11-10 (pre-fix): the bare Why? falls through to the
+# current topic and declines naming "indoors", while the model holds
+# the asserted rain -> move link.
+#
+# Verified 2026-11-10 (Item 5, verdict PASS): bare Why? consults the
+# standing event first (same order as stated why-questions). Only the
+# Why? turn moved; the two statements are byte-identical.
+
+It's raining.
+We moved the picnic indoors because of the rain.
+Why?
