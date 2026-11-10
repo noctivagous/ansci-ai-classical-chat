@@ -278,6 +278,23 @@ export interface ComposedConclusion {
   headline: Conclusion[];
   /** everything else, attested backup said after */
   support: Conclusion[];
+  /** selected out as vacuous (object is the subject's own form) */
+  dropped: Conclusion[];
+}
+
+/**
+ * Gap 5, S2 selection: a conclusion whose object resolves to the
+ * subject's own form says nothing beyond the term ("paint is for
+ * painting") — selected out before grouping, whatever its
+ * phrasing path (banked or template). The drop is the
+ * directing layer's selection, not a testimony judgment.
+ */
+export function isTautological(g: CskgGraph, c: Conclusion): boolean {
+  const subject = composeSubject(g, c);
+  const object = composeObject(g, c);
+  if (!object || !subject) return false;
+  if (object.toLowerCase() === subject.toLowerCase()) return true;
+  return g.lemmaOf(object) === subject;
 }
 
 /** one aggregatable run: same relation, subject, modal and phrasing path */
@@ -331,10 +348,18 @@ function aggregateFrame(
   if (first.edge.rel !== "/r/UsedFor" || first.about !== "from") return null;
   const subject = composeSubject(g, first);
   const objects = run.members.map((c) => composeObject(g, c));
-  if (!objects.every((o) => isVerbObject(g, o))) return null;
   const modal = run.members.every(composeStrong) ? "is" : "can be";
   for (const c of run.members) c.via = "template";
-  return `${cap(article(subject))} ${subject} ${modal} used to ${joinList(objects)}.`;
+  if (objects.every((o) => isVerbObject(g, o))) {
+    return `${cap(article(subject))} ${subject} ${modal} used to ${joinList(objects)}.`;
+  }
+  // Gap 5: the noun frame — same relation, subject and modal,
+  // none of them verb-proven. Mixed groups (one verb, one noun)
+  // stay separate: neither frame says them honestly.
+  if (objects.every((o) => !isVerbObject(g, o))) {
+    return `${cap(article(subject))} ${subject} ${modal} used for ${joinList(objects)}.`;
+  }
+  return null;
 }
 
 /**
@@ -348,9 +373,14 @@ export function composeConclusions(
   cs: Conclusion[],
   headlineMax = 3,
 ): ComposedConclusion {
-  if (!cs.length) return { headline: [], support: [] };
+  if (!cs.length) return { headline: [], support: [], dropped: [] };
+  // S2 selection first: vacuous conclusions never reach grouping.
+  // Never strand the turn: if everything would drop, keep the first.
+  let kept = cs.filter((c) => !isTautological(g, c));
+  if (!kept.length) kept = cs.slice(0, 1);
+  const dropped = cs.filter((c) => !kept.includes(c));
   const runs: ComposeRun[] = [];
-  for (const c of cs) {
+  for (const c of kept) {
     const banked = sentenceForEdge(g, c.edge) !== null;
     const key = [
       c.edge.rel, c.about, composeSubject(g, c),
@@ -364,7 +394,7 @@ export function composeConclusions(
   const headline = runs[0].members.slice(0, headlineMax);
   const overflow = runs[0].members.slice(headlineMax);
   const support = [...overflow, ...runs.slice(1).flatMap((r) => r.members)];
-  return { headline, support };
+  return { headline, support, dropped };
 }
 
 /** Render the composed Conclusion: aggregated runs collapse, all else renders as before. */

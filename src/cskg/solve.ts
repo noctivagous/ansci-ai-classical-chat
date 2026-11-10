@@ -487,7 +487,10 @@ export function solveSurfaceIntent(
         // render from it; the trace shows the Conclusion itself.
         const composed: ComposedConclusion = composeConclusions(g, cs);
         noteStep(ws, "articulate", "compose",
-          `composed ${cs.length} purpose conclusions → headline ${composed.headline.length} + support ${composed.support.length}`,
+          `composed ${cs.length} purpose conclusions → headline ${composed.headline.length} + support ${composed.support.length}` +
+          (composed.dropped.length
+            ? `; selected out as vacuous: ${composed.dropped.map((c) => edgeText(g, c.edge)).join("; ")}`
+            : ""),
           cs.map((c) => edgeText(g, c.edge)));
         return renderComposed(g, composed);
       }

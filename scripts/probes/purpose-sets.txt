@@ -1,0 +1,23 @@
+# Probe: purpose-set selection and noun lists (gap 5, composition only).
+#
+# Two composition moves, both directing layer, no graph-trust
+# change: (1) a tautological conclusion — object resolves to the
+# subject's own form — is selected out with a trace note;
+# (2) same-modal template groups of non-verbs aggregate in the
+# relation's for-frame. The ranking floor ("keep sanity") is
+# explicitly out of scope: deferred per the distance-first
+# direction, not fixed here.
+#
+# Baseline 2026-11-10 (pre-fix): "Paint is for painting" leads
+# the primer answer; hammer's verb group already aggregates.
+#
+# Verified 2026-11-10 (gap 5, verdict PASS): tautological
+# conclusions are selected out with a trace note; noun groups
+# aggregate in the for-frame, mixed groups stay separate, and a
+# would-be-empty set keeps its first member. Only the primer
+# turn moved; money and hammer are byte-identical. Floor
+# ("keep sanity") explicitly deferred per distance-first.
+
+What is a paint primer used for?
+What is money used for?
+What can I use a hammer for?

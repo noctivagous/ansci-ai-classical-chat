@@ -1013,6 +1013,12 @@ const COMPOSE_ROWS = [
   row("/c/en/hammer", "/r/UsedFor", "/c/en/hit", "CN"),
   row("/c/en/hammer", "/r/UsedFor", "/c/en/pound", "CN"),
   row("/c/en/hammer", "/r/UsedFor", "/c/en/whack", "CN"),
+  row("/c/en/hammer", "/r/UsedFor", "/c/en/metal", "CN"),
+  row("/c/en/paint", "/r/UsedFor", "/c/en/painting", "CN"),
+  row("/c/en/painting", "/r/FormOf", "/c/en/paint", "CN"),
+  row("/c/en/paint", "/r/UsedFor", "/c/en/coating", "CN"),
+  row("/c/en/mallet", "/r/UsedFor", "/c/en/nails", "CN"),
+  row("/c/en/mallet", "/r/UsedFor", "/c/en/screws", "CN"),
   rowS("/c/en/hammer", "/r/UsedFor", "/c/en/nails", "CN", "[[Hammer]] drives [[nails]]"),
   row("/c/en/hammer", "/r/IsA", "/c/en/tool", "CN"),
   row("/c/en/mallet", "/r/UsedFor", "/c/en/tap", "CN"),
@@ -1072,6 +1078,23 @@ test("compose: a banked conclusion keeps its sentence; templates still aggregate
     renderComposed(g, composeConclusions(g, cs)),
     "A hammer can be used to hit and whack. Hammer drives nails.",
   );
+});
+
+test("compose: a tautological conclusion is selected out, not said", async () => {
+  const g = await composeGraph();
+  const cs = composeEdges(g, "paint", "/r/UsedFor", ["painting", "coating"]);
+  const cc = composeConclusions(g, cs);
+  assert.equal(cc.dropped.length, 1, "painting resolves to the subject's own form");
+  assert.equal(renderComposed(g, cc), "Paint can be used for coating.");
+});
+
+test("compose: noun groups aggregate in the for-frame; mixed groups stay separate", async () => {
+  const g = await composeGraph();
+  const nouns = composeEdges(g, "mallet", "/r/UsedFor", ["nails", "screws"]);
+  assert.equal(renderComposed(g, composeConclusions(g, nouns)), "A mallet can be used for nails and screws.");
+  const mixed = composeEdges(g, "hammer", "/r/UsedFor", ["hit", "metal"]);
+  assert.equal(renderComposed(g, composeConclusions(g, mixed)), renderAll(g, mixed),
+    "one verb plus one noun fits neither frame, so both render as before");
 });
 
 test("compose: mixed relations and singletons render exactly as before", async () => {
