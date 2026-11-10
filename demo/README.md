@@ -19,7 +19,29 @@ that buys and what it costs.
 Prerequisite: **Node >= 20** (any current release). Nothing else —
 no database, no accounts, no API keys.
 
-From the repo root:
+Two ways to get set up, from the repo root:
+
+- **Option A — just launch a chat.** The terminal UI
+  (`node demo/tui/tui.mjs`) and the web UI
+  (`node demo/web/server.mjs`) set themselves up on launch:
+  they build `dist/` when missing, fetch the CSKG data
+  (~112 MB, from Zenodo) when missing, and report the
+  FrameNet bundle's status — install errors shown in place.
+- **Option B — install everything first** (covers all three
+  chats at once, including the command line):
+
+```sh
+node demo/tui/tui.mjs
+```
+
+or:
+
+```sh
+node demo/web/server.mjs
+# then open http://localhost:4173 in a browser
+```
+
+or:
 
 ```sh
 node scripts/install.mjs
@@ -43,7 +65,8 @@ serialised index of the graph (about half a minute, once, beside the
 data file); later launches load through it in a couple of seconds,
 and answers are fast either way.
 
-**Web UI** — a small chat page, served locally:
+**Web UI** — a small chat page, served locally (builds `dist/`
+and fetches the data on launch when either is missing):
 
 ```sh
 node demo/web/server.mjs
@@ -58,12 +81,14 @@ node dist/src/cskg/chat.js
 # /quit exits
 ```
 
-**Terminal UI** — the front door: on launch it runs a short setup
-(data check with an in-place install offer, serialised-index build
-on first run, the FrameNet bundle's status reported — never a
-blocker — and place/person/role prompts), then chats under a header
-carrying the situated frame, with an optional per-turn trace view
-and slash commands (`/help` lists them; see `demo/tui/README.md`).
+**Terminal UI** — the front door: just launch it and on launch
+it runs a short setup (build offer when `dist/` is missing,
+data check with an in-place install offer, serialised-index
+build on first run, the full FrameNet bundle offered — never
+a blocker, install errors shown — and place/person/role
+prompts), then chats under a header carrying the situated
+frame, with an optional per-turn trace view and slash
+commands (`/help` lists them; see `demo/tui/README.md`).
 With piped stdin it hands off to the command-line chat instead:
 
 ```sh

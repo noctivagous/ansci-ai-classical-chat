@@ -27,7 +27,7 @@ import {
   computeSituation,
   situationallyRelevant,
   type Situation,
-} from "./situation";
+} from "./awareness";
 
 /* ---------------- traces & session ---------------- */
 

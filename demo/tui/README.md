@@ -11,10 +11,14 @@ graph, same answers, presentation only.
 
 ## Setup before chat
 
-An interactive launch sets itself up before the first turn,
-reporting each step as it happens; any failure stops before
-chat, with the reason:
+Just launch the TUI — an interactive launch sets itself up
+before the first turn, reporting each step as it happens and
+showing install output and errors in place:
 
+0. **Build** — `dist/` is checked first. If it is missing,
+   the build is offered on the spot (`npm install` when
+   `node_modules/` is missing, then `npm run build`).
+   Decline or fail, and there is no chat.
 1. **Data** — the CSKG file (`CSKG_PATH`, or
    `data/raw/cskg/cskg.tsv.gz`) is checked. If it is missing
    or empty, the install is offered on the spot — the same
@@ -28,7 +32,12 @@ chat, with the reason:
    the loader writes a fresh index beside the data file — a
    one-off cost, paid here, never as a silent hang inside the
    conversation.
-3. **Configure** — place, person, role. Environment values
+3. **FrameNet** — the bundle's status is reported (absent |
+   fixture-only | full) and the full install is offered
+   (`python3 scripts/import-framenet.py`, run in place with
+   its errors shown). Whatever the outcome, the chat proceeds;
+   without a full bundle, event roles use generic names.
+4. **Configure** — place, person, role. Environment values
    (`CSKG_CHAT_LOCATION`, `CSKG_CHAT_PERSON`, `CSKG_CHAT_ROLE`,
    …) win when set; otherwise quick prompts with defaults
    (Chicago / general mode / assistant), each skippable by
@@ -64,8 +73,9 @@ harness use that path; the TUI is the interactive path only.
 ## Cross-platform
 
 Windows and UNIX alike: paths are built with `path.join`,
-child processes are spawned as `node <file>` with argument
-arrays (never through a shell), colour is ANSI and only when
-the terminal supports it (a TTY, and `NO_COLOR` unset), and
-input is Node's readline, which tolerates CRLF line endings.
-No external commands are used.
+child processes are spawned with argument arrays (never
+through a shell), colour is ANSI and only when the terminal
+supports it (a TTY, and `NO_COLOR` unset), and input is
+Node's readline, which tolerates CRLF line endings. Install
+steps spawn only the project's own toolchain (npm, node,
+python3).

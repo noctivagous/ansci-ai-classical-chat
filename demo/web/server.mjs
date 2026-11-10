@@ -16,7 +16,16 @@
  *
  * Location configuration is the same as the CLI chat:
  *   CSKG_CHAT_LOCATION=Chicago CSKG_CHAT_HEMISPHERE=north
+ *
+ * Launching the server sets itself up: when dist/ is missing it
+ * runs the build (npm install when node_modules/ is missing,
+ * then npm run build) with the output shown, and when the CSKG
+ * data file is missing it runs the same verified Zenodo
+ * download scripts/install.mjs performs. Either failing stops
+ * the server with the reason. The FrameNet bundle's status is
+ * reported, never a blocker.
  */
+import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
@@ -25,51 +34,110 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const PORT = Number(process.env.PORT) || 4173;
+const TURN_JS = join(ROOT, "dist", "src", "cskg", "turn.js");
 const require = createRequire(import.meta.url);
-
-const { loadCskg } = require(join(ROOT, "dist", "src", "cskg", "loader.js"));
-const { createSession } = require(join(ROOT, "dist", "src", "cskg", "memory.js"));
-const { runTurn } = require(join(ROOT, "dist", "src", "cskg", "turn.js"));
-const { computeSituation } = require(join(ROOT, "dist", "src", "cskg", "awareness.js"));
 
 const DATA_FILE =
   process.env.CSKG_PATH ?? join(ROOT, "data", "raw", "cskg", "cskg.tsv.gz");
 
-if (!existsSync(DATA_FILE)) {
-  console.error(
-    `CSKG data not found at ${DATA_FILE}.\nRun the install first, from the repo root:\n\n  node scripts/install.mjs\n`,
-  );
-  process.exit(1);
-}
-if (!existsSync(join(ROOT, "dist", "src", "cskg", "turn.js"))) {
-  console.error(
-    "The CSKG chat is not built yet (dist/ is missing).\nRun the install first, from the repo root:\n\n  node scripts/install.mjs\n",
-  );
-  process.exit(1);
+// Assigned in main(), after the build is ensured.
+let loadCskg;
+let createSession;
+let runTurn;
+let computeSituation;
+let frameNetStatus;
+
+/**
+ * Run one setup step with its own output streamed to this
+ * console, so failures are visible where they happen.
+ * Returns true when the step exited 0.
+ */
+function runStep(exe, args, label) {
+  console.log(`\n${label}`);
+  const res = spawnSync(exe, args, { cwd: ROOT, stdio: "inherit" });
+  if (res.error) {
+    console.error(`${label} could not start: ${res.error.message}`);
+    return false;
+  }
+  if (res.status !== 0) {
+    console.error(`${label} failed (exit ${res.status}).`);
+    return false;
+  }
+  return true;
 }
 
 /* ---------------- graph loading (once) ---------------- */
 
 let graph = null;
 let loadError = null;
-const session = createSession();
-const loadStarted = Date.now();
+let session = null;
 
-console.log(`loading CSKG from ${DATA_FILE} … (one-off, ~30 s)`);
-loadCskg(DATA_FILE)
-  .then((g) => {
-    graph = g;
-    const st = g.stats;
-    console.log(
-      `loaded: ${st.edges.toLocaleString()} edges / ${st.terms.toLocaleString()} terms ` +
-        `in ${((Date.now() - loadStarted) / 1000).toFixed(1)}s`,
+async function main() {
+  // 0. build — the compiled chat the server loads.
+  if (!existsSync(TURN_JS)) {
+    console.log("The chat isn't built yet (dist/ is missing) — building now.");
+    if (!existsSync(join(ROOT, "node_modules"))) {
+      if (!runStep("npm", ["install"], "Installing dev dependencies (npm install)")) process.exit(1);
+    } else {
+      console.log("node_modules/ already present — skipping npm install.");
+    }
+    if (!runStep("npm", ["run", "build"], "Building (npm run build)")) process.exit(1);
+    if (!existsSync(TURN_JS)) {
+      console.error("The build did not produce dist/ — run node scripts/install.mjs and try again.");
+      process.exit(1);
+    }
+  }
+
+  ({ loadCskg } = require(join(ROOT, "dist", "src", "cskg", "loader.js")));
+  ({ createSession } = require(join(ROOT, "dist", "src", "cskg", "memory.js")));
+  ({ runTurn } = require(join(ROOT, "dist", "src", "cskg", "turn.js")));
+  ({ computeSituation } = require(join(ROOT, "dist", "src", "cskg", "awareness.js")));
+  ({ frameNetStatus } = require(join(ROOT, "dist", "src", "cskg", "frames.js")));
+
+  // 1. data — the CSKG file, fetched + verified when missing.
+  if (!existsSync(DATA_FILE)) {
+    console.log(`CSKG data not found at ${DATA_FILE} — downloading now (~112 MB).`);
+    const { ensureCskgDataFile } = await import(
+      new URL("../../scripts/install.mjs", import.meta.url)
     );
-    console.log(`\nAnSci CSKG chat UI: http://localhost:${PORT}`);
-  })
-  .catch((err) => {
-    loadError = err;
-    console.error("failed to load CSKG:", err);
+    try {
+      await ensureCskgDataFile(DATA_FILE, (line) => console.log(line));
+    } catch (err) {
+      console.error(`Install failed: ${err.message}`);
+      console.error("The server cannot start without the graph data.");
+      process.exit(1);
+    }
+  }
+
+  // 2. FrameNet — reported, never a blocker.
+  console.log(`FrameNet bundle: ${frameNetStatus()}`);
+
+  session = createSession();
+  const loadStarted = Date.now();
+  console.log(`loading CSKG from ${DATA_FILE} … (one-off, ~30 s)`);
+  loadCskg(DATA_FILE)
+    .then((g) => {
+      graph = g;
+      const st = g.stats;
+      console.log(
+        `loaded: ${st.edges.toLocaleString()} edges / ${st.terms.toLocaleString()} terms ` +
+          `in ${((Date.now() - loadStarted) / 1000).toFixed(1)}s`,
+      );
+      console.log(`\nAnSci CSKG chat UI: http://localhost:${PORT}`);
+    })
+    .catch((err) => {
+      loadError = err;
+      console.error("failed to load CSKG:", err);
+    });
+
+  server.on("error", (err) => {
+    console.error(`web UI could not listen on port ${PORT}: ${err.message}`);
+    process.exit(1);
   });
+  server.listen(PORT, () => {
+    console.log(`web UI listening on http://localhost:${PORT} (graph loading in the background)`);
+  });
+}
 
 /* ---------------- the page ---------------- */
 
@@ -264,6 +332,7 @@ const server = createServer((req, res) => {
   sendJson(res, 404, { error: "not found" });
 });
 
-server.listen(PORT, () => {
-  console.log(`web UI listening on http://localhost:${PORT} (graph loading in the background)`);
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });

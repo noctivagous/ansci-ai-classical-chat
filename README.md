@@ -22,17 +22,28 @@ the translator — never the reasoner.**
 
 A self-contained spike in `src/cskg/` puts a working chat on CSKG, the unified
 commonsense graph (ConceptNet, WordNet, FrameNet, ATOMIC, Roget's Thesaurus,
-a Wikidata subset, Visual Genome). One install command fetches the data
-(~112 MB) and sets up everything the chat runs on; you can then chat with it
-in a small web UI or in the terminal — the terminal UI
-(`node demo/tui/tui.mjs`) runs its own setup on launch (data, serialised
-index, FrameNet status, frame) before the first turn:
+a Wikidata subset, Visual Genome). Get it running either way:
+
+- **Option A — just launch the terminal UI** (recommended):
+  `node demo/tui/tui.mjs` sets itself up on launch (build, data,
+  serialised index, FrameNet install offer, frame) and shows
+  install errors in place — no prior install needed.
+- **Option B — install everything first**:
+  `node scripts/install.mjs`, then chat in the terminal UI, the
+  web UI, or the command line:
+
+```sh
+node demo/tui/tui.mjs
+```
+
+or:
 
 ```sh
 node scripts/install.mjs
 ```
 
-The install, in order: checks Node ≥ 20; fetches and verifies the CSKG data;
+The install (option B, and what option A's setup performs piece
+by piece), in order: checks Node ≥ 20; fetches and verifies the CSKG data;
 installs dev dependencies if missing; builds to `dist/`; verifies the
 **WordNet extract** (`data/wordnet/extract/` — it ships in the repo, so this
 only checks and reports); installs the **full FrameNet bundle**

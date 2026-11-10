@@ -5,15 +5,19 @@
  *   node demo/tui/tui.mjs
  *
  * An interactive launch runs a short SETUP before the first
- * turn (each step reported as it happens; any failure stops
- * before chat, with the reason):
+ * turn (each step reported as it happens; install output and
+ * errors are shown in place):
  *
+ *   0. build — dist/ is checked first. Missing → the build is
+ *      offered there and then (npm install when node_modules/
+ *      is missing, then npm run build). Declined or failed →
+ *      no chat, with the hint for node scripts/install.mjs.
  *   1. data — the CSKG file (CSKG_PATH, or data/raw/cskg/
  *      cskg.tsv.gz) is checked. Missing or empty → the install
  *      is offered there and then (scripts/install.mjs's ensure
- *      step does the download + verification). Declined or
- *      failed → no chat: never enter a conversation on a
- *      missing graph.
+ *      step does the download + verification), its errors
+ *      shown. Declined or failed → no chat: never enter a
+ *      conversation on a missing graph.
  *   2. serialise — the loader's serialised index is probed. A
  *      current one loads in about two seconds and the TUI says
  *      so; a missing, stale or unreadable one means the load
@@ -23,9 +27,12 @@
  *      silent hang inside the conversation.
  *   2b. framenet — the FrameNet bundle's status is REPORTED
  *      (absent | fixture-only | full), never a blocker: the
- *      chat proceeds in every state, and E5's event-role naming
- *      degrades to generic roles where no bundle (or only a
- *      small one) is present.
+ *      install is OFFERED here (python3
+ *      scripts/import-framenet.py, run in place with its own
+ *      output and errors shown), and whatever the outcome the
+ *      chat proceeds — E5's event-role naming degrades to
+ *      generic roles where no bundle (or only a small one) is
+ *      present.
  *   3. configure — place, person, role: environment values
  *      when given, else quick prompts with defaults
  *      (Chicago / general mode / assistant), each skippable
@@ -49,9 +56,10 @@
  * an args array (never a shell string), terminal colour is
  * ANSI, capability-gated (TTY + no NO_COLOR) and dropped
  * entirely when unavailable, and line input is Node's
- * readline, which tolerates CRLF. No external commands.
+ * readline, which tolerates CRLF. Install steps spawn only
+ * the project's own toolchain (npm, node, python3).
  */
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -70,6 +78,60 @@ function printInstallHint() {
   console.error(
     "  The chat isn't built yet. Run the install first, from the repo root:\n\n    node scripts/install.mjs\n",
   );
+}
+
+/**
+ * Run one install step with its own output streamed to this
+ * terminal, so failures are visible where they happen.
+ * Returns true when the step exited 0.
+ */
+function runStep(exe, args, label) {
+  console.log(`\n  ${label}`);
+  const res = spawnSync(exe, args, { cwd: ROOT, stdio: "inherit" });
+  if (res.error) {
+    console.error(`  ${label} could not start: ${res.error.message}`);
+    return false;
+  }
+  if (res.status !== 0) {
+    console.error(`  ${label} failed (exit ${res.status}).`);
+    return false;
+  }
+  return true;
+}
+
+/** One-shot Y/n prompt for main(), before the session readline exists. */
+function askOnce(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+/**
+ * The dist/ check, with the install offered in place: npm
+ * install (when node_modules/ is missing) then npm run build.
+ * Returns true when the chat is built; false leaves the
+ * caller's hint-and-exit path to run.
+ */
+async function ensureBuilt() {
+  if (distReady()) return true;
+  console.log("AnSci — CSKG chat\n");
+  console.log("  The chat isn't built yet (dist/ is missing).");
+  const answer = (await askOnce("  Build it now (npm install + npm run build)? [Y/n] ")).toLowerCase();
+  if (answer === "n" || answer === "no") return false;
+  if (!existsSync(join(ROOT, "node_modules"))) {
+    if (!runStep("npm", ["install"], "Installing dev dependencies (npm install)")) return false;
+  } else {
+    console.log("\n  node_modules/ already present — skipping npm install.");
+  }
+  if (!runStep("npm", ["run", "build"], "Building (npm run build)")) return false;
+  return distReady();
 }
 
 /** Hand off to the command-line chat, untouched (non-interactive use). */
@@ -248,28 +310,57 @@ async function runInteractive() {
     );
   }
 
-  /* ---------------- setup 2b: FrameNet (a reported fact) ---------------- */
-  // The FrameNet bundle is E5's participant-role source. Its
-  // status is REPORTED here, never a blocker: the chat proceeds
-  // in every state, and where the bundle is absent or small the
+  /* ---------------- setup 2b: FrameNet (offered, never a blocker) ---------------- */
+  // The FrameNet bundle is E5's participant-role source. The
+  // install is OFFERED here and whatever the outcome the chat
+  // proceeds: where the bundle is absent or small the
   // situation model's frame consultation degrades to generic
   // roles, saying so in the trace.
   console.log("Setup — FrameNet");
-  if (facts.framenet === "full") {
-    console.log(
-      "  FrameNet bundle: full (1,019 frames) — event roles are named from the frames' own schemas.",
-    );
-  } else if (facts.framenet === "fixture-only") {
-    console.log(
-      "  FrameNet bundle: fixture-only — a small bundle is present, so event roles are frame-named " +
-      "only where one of its frames matches, and generic elsewhere.",
-    );
-    console.log("  Complete it with: python3 scripts/import-framenet.py");
-  } else {
-    console.log(
-      "  FrameNet bundle: absent — the chat proceeds; event roles use generic names (actor, object, …).",
-    );
-    console.log("  Install it with: python3 scripts/import-framenet.py");
+  const reportFrameNet = (status) => {
+    if (status === "full") {
+      console.log(
+        "  FrameNet bundle: full (1,019 frames) — event roles are named from the frames' own schemas.",
+      );
+    } else if (status === "fixture-only") {
+      console.log(
+        "  FrameNet bundle: fixture-only — a small bundle is present, so event roles are frame-named " +
+        "only where one of its frames matches, and generic elsewhere.",
+      );
+    } else {
+      console.log(
+        "  FrameNet bundle: absent — the chat proceeds; event roles use generic names (actor, object, …).",
+      );
+    }
+  };
+  reportFrameNet(facts.framenet);
+  if (facts.framenet !== "full") {
+    const answer = (
+      await ask("  Install the full FrameNet bundle now? [Y/n] ")
+    ).toLowerCase();
+    if (answer === "n" || answer === "no") {
+      console.log("  Skipped — complete it later with: python3 scripts/import-framenet.py");
+    } else if (
+      runStep(
+        "python3",
+        [join(ROOT, "scripts", "import-framenet.py")],
+        "Installing the FrameNet bundle (python3 scripts/import-framenet.py)",
+      )
+    ) {
+      facts = collectSetupFacts(dataPath);
+      reportFrameNet(facts.framenet);
+      if (facts.framenet !== "full") {
+        console.error(
+          "  The importer ran but the bundle is still not full — the chat proceeds; " +
+          "complete it later with: python3 scripts/import-framenet.py",
+        );
+      }
+    } else {
+      console.error(
+        "  FrameNet install failed (see above) — the chat proceeds without it; " +
+        "complete it later with: python3 scripts/import-framenet.py",
+      );
+    }
   }
 
   /* ---------------- setup 3: configure ---------------- */
@@ -451,8 +542,16 @@ async function runInteractive() {
 async function main() {
   const args = process.argv.slice(2);
   if (!distReady()) {
-    printInstallHint();
-    process.exit(1);
+    // Interactive launches install in place (errors shown);
+    // the scripted handoff below needs dist/ now or never.
+    if (!process.stdin.isTTY || args.some((a) => a === "--script")) {
+      printInstallHint();
+      process.exit(1);
+    }
+    if (!(await ensureBuilt())) {
+      printInstallHint();
+      process.exit(1);
+    }
   }
   // The TUI is the interactive path only: piped stdin, or any
   // of the command-line chat's own flags (--script, --debug,

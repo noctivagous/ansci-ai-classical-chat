@@ -48,7 +48,10 @@ export type NodeType =
   | "Synset"
   | "DictionaryEntry"
   | "TextPassage"
-  | "GraphAdjustment";
+  | "GraphAdjustment"
+  | "Frame"
+  | "FrameElement"
+  | "LexicalUnit";
 
 export type EdgeType =
   // atomic
@@ -88,7 +91,11 @@ export type EdgeType =
   | "HAS_PROPERTY" // bearer -> property concept
   | "CAPABLE_OF" // bearer -> capability concept
   // FrameNet (slice 2d, design §6.2): lexical unit -> frame it evokes
-  | "EVOKES";
+  | "EVOKES"
+  | "HAS_FRAME_ELEMENT"
+  | "INHERITS_FROM"
+  | "USES_FRAME"
+  | "SUBFRAME_OF";
 
 /**
  * A curated set of everyday-language phrases describing how a concept
@@ -178,6 +185,12 @@ export interface GraphEdge {
   band?: DegreeBand;
   proportion?: number;
   status?: "active" | "deprecated";
+  /**
+   * Free-form extra properties (FrameNet slice 2d: core flag on
+   * HAS_FRAME_ELEMENT edges, FE correspondences on relation edges,
+   * lemma-pos bridge marks on LU linkages).
+   */
+  properties?: Record<string, unknown>;
 }
 
 export interface GraphData {
