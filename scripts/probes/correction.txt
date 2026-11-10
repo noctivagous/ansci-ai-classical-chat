@@ -6,6 +6,12 @@
 # question shape.
 #
 # Known-failing: none — 4/4 verified by diagnose on 2026-11-10.
+#
+# Item 4 leaf 1, S12 (2026-11-10, verdict PASS): a correction that
+# supersedes a previous topic owns the repair in words ("I had that
+# as X — you meant Y") instead of silent absorption. Topic-less and
+# same-topic corrections keep the plain acknowledgement. Only the
+# "common cold" turn moved.
 
 What is a cold?
 No, I meant the common cold

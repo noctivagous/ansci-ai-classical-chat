@@ -761,7 +761,24 @@ export function renderReplay(edgeLines: string[]): string {
     : `That answer didn't rest on any graph edge — it came from the conversation itself.`;
 }
 
-export function renderCorrectionFact(termText: string, factSentence: string): string {
+/* S12 output repair (Item 4, first morph leaf): a correction that
+ * supersedes a previous topic owns the repair in words — the old
+ * reading and the new one are both named — instead of absorbing
+ * the correction silently. One component, selected by what the
+ * turn knows (previous topic vs none, same vs changed); role and
+ * tuple selection over the repair frame is the next slice.
+ */
+export function renderCorrectionFact(
+  termText: string,
+  factSentence: string,
+  prevTopicText: string | null = null,
+): string {
+  if (
+    prevTopicText &&
+    prevTopicText.toLowerCase() !== termText.toLowerCase()
+  ) {
+    return `I had that as ${prevTopicText} — you meant ${termText}. ${factSentence}`;
+  }
   return `Got it — ${termText}. ${factSentence}`;
 }
 

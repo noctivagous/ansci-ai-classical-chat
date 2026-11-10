@@ -200,6 +200,23 @@ test("correction re-resolves to the corrected term", async () => {
   assert.match(r.text, /common cold/i);
 });
 
+test("S12: a correction that supersedes a topic owns the repair in words", async () => {
+  const g = await graph();
+  const s = createSession();
+  runTurn(g, s, "What is a banana?");
+  const r = runTurn(g, s, "No, I meant the peel");
+  assert.equal(r.trace.intent, "correction");
+  assert.match(r.text, /I had that as banana — you meant peel\./);
+});
+
+test("S12: a correction with no previous topic keeps the plain acknowledgement", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = runTurn(g, s, "No, I meant the peel");
+  assert.equal(r.trace.intent, "correction");
+  assert.match(r.text, /^Got it — peel\./);
+});
+
 test("season is a function of (date, hemisphere), never of the month alone", () => {
   const dec = new Date(2026, 11, 15);
   assert.equal(seasonFor(dec, { name: "Chicago", hemisphere: "north", band: "temperate" }), "winter");
@@ -831,7 +848,7 @@ test("definitions: a correction gives the settled sense's definition", async () 
   const r = runTurn(g, s, "No, I meant the common cold");
   assert.equal(r.trace.intent, "correction");
   assert.equal(r.grounded, true);
-  assert.match(r.text, /^Got it — common cold\. Common cold: a mild viral infection/);
+  assert.match(r.text, /^I had that as banana — you meant common cold\. Common cold: a mild viral infection/);
 });
 
 test("definitions: a term with no gloss falls back to exactly the old answer", async () => {

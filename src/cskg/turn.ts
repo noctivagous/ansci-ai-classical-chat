@@ -281,6 +281,10 @@ export function runTurn(
     const fixed = resolveTerms(g, corr.phrase);
     if (fixed.length) {
       const term = fixed[fixed.length - 1];
+      // S12: the topic being superseded, read before the
+      // re-resolution overwrites it — the repair names it.
+      const prevTopic = currentTopicId(session);
+      const prevTopicText = prevTopic !== undefined ? g.terms[prevTopic] : null;
       remember(session, term.id);
       noteStep(ws, "discourse", "resolve", `re-resolved: ${term.text}`);
       noteTriage(ws, "retrieve", "fact about the corrected term");
@@ -302,6 +306,7 @@ export function runTurn(
           renderCorrectionFact(
             g.terms[term.id],
             renderDefinition(g.terms[term.id], choice.chosen.gloss),
+            prevTopicText,
           ),
           "correction",
           true,
@@ -311,7 +316,7 @@ export function runTurn(
       if (fact) {
         addConclusions(ws, [fact]);
         noteStep(ws, "solve", "conclude", "answered about the corrected term", [edgeText(g, fact.edge)]);
-        return finish(renderCorrectionFact(g.terms[term.id], renderConclusion(g, fact)), "correction", true);
+        return finish(renderCorrectionFact(g.terms[term.id], renderConclusion(g, fact), prevTopicText), "correction", true);
       }
       return finish(renderCorrectionNoFact(g.terms[term.id]), "correction", false);
     }
