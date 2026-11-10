@@ -205,9 +205,8 @@ export function detectRemember(input: string): string | null {
 
 /**
  * "what is the X of Y?" — two sentence parts: a role noun and a
- * bearer. Solve maps the role onto a kept relation (capital →
- * /r/dbpedia/capital) when one shares that name. Not a
- * per-relation detector.
+ * bearer. Solve binds the role to kept relations (name +
+ * direction). This form is never a definition of the phrase.
  */
 export function detectValueOf(lower: string): { role: string; bearer: string } | null {
   const t = lower

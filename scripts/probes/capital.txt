@@ -1,7 +1,9 @@
-# Probe set: capital-of from CSKG's /r/dbpedia/capital edges.
+# Probe set: value-of form (role + bearer).
 #
-# The dump attests oklahoma —/r/dbpedia/capital→ oklahoma city (CN).
-# The question names the city. A gloss of the phrase is not the answer.
+# Mapped role with an edge names the object. Unmapped and empty
+# mapped sets decline — the form is never a gloss of the phrase.
 
 What is the capital of Oklahoma?
 #! expect=grounded contains=Oklahoma,City notcontains=largest,livestock
+What is the population of Oklahoma?
+#! expect=decline notcontains=largest,livestock

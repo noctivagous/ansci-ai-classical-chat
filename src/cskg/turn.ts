@@ -1092,11 +1092,9 @@ export function runTurn(
       },
     });
 
-    // Value-of: the ask names a role and a bearer ("what is
-    // the capital of Oklahoma?"). When a kept relation has that
-    // role as its name, those edges answer; otherwise this row
-    // returns null and the later routes run. Before attestation
-    // and definition so a mapped role is not glossed as a phrase.
+    // Value-of owns "what is the X of Y": mapped bindings answer;
+    // unmapped and empty both decline. The form never falls
+    // through to definition or a neighbouring fact.
     lateRoutes.push({
       form: "value-of",
       detect: "C detectValueOf",
@@ -1106,7 +1104,6 @@ export function runTurn(
         const asked = detectValueOf(lower);
         if (!asked) return null;
         const hit = solveValueOf(g, ws, session, asked.role, asked.bearer);
-        if (hit.status === "unmapped") return null;
         if (hit.status === "hit") {
           noteTriage(ws, "retrieve",
             `value-of: role "${asked.role}" of "${asked.bearer}"`);
@@ -1172,6 +1169,7 @@ export function runTurn(
       run: () => {
         const q = questionCtx;
         if (!q || !(classifySurface(lower) === "whatis" && isDefinitionQuestion(lower))) return null;
+        if (detectValueOf(lower)) return null;
         const cand = q.candidates[0];
         if (!cand) {
           // No content candidate at all resolved: the word the

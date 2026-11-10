@@ -44,7 +44,7 @@ import {
   detectToolQuery,
 } from "../src/cskg/intent";
 import { contextFit, preferHappeningSubject } from "../src/cskg/solve";
-import { cachePathFor, loadCskg, normaliseNode, relationForRoleNoun, termsFromEndpoint, type CskgGraph } from "../src/cskg/loader";
+import { bindingsForRole, cachePathFor, loadCskg, normaliseNode, termsFromEndpoint, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
 import {
   appendTraceRecord,
@@ -518,7 +518,7 @@ test("advice: wear a coat cites UsedFor, not IsA hair", async () => {
   assert.match(empty.text, /UsedFor/);
 });
 
-test("value-of maps the role noun onto a kept relation and names the edge's object", async () => {
+test("value-of owns the form: mapped role names the object; unmapped declines, no gloss", async () => {
   const g = await graph();
   assert.deepEqual(detectValueOf("What is the capital of Oklahoma?"), {
     role: "capital",
@@ -529,8 +529,8 @@ test("value-of maps the role noun onto a kept relation and names the edge's obje
     bearer: "oklahoma",
   });
   assert.equal(detectValueOf("What is a banana?"), null);
-  assert.equal(relationForRoleNoun("capital"), "/r/dbpedia/capital");
-  assert.equal(relationForRoleNoun("purpose"), null);
+  assert.deepEqual(bindingsForRole("capital"), [{ rel: "/r/dbpedia/capital", dir: "out" }]);
+  assert.deepEqual(bindingsForRole("purpose"), []);
   const hit = runTurn(g, createSession(), "What is the capital of Oklahoma?");
   assert.equal(hit.grounded, true);
   assert.match(hit.text, /Oklahoma City/);
@@ -539,6 +539,12 @@ test("value-of maps the role noun onto a kept relation and names the edge's obje
   assert.equal(miss.grounded, false);
   assert.match(miss.text, /capital/i);
   assert.doesNotMatch(miss.text, /Oklahoma City|largest city/i);
+  const unmapped = runTurn(g, createSession(), "What is the population of Oklahoma?");
+  assert.equal(unmapped.grounded, false);
+  assert.match(unmapped.text, /population/i);
+  assert.doesNotMatch(unmapped.text, /largest city|livestock|Oklahoma City/i);
+  const banana = runTurn(g, createSession(), "What is a banana?");
+  assert.equal(banana.grounded, true);
 });
 
 test("composition: does X go in Y uses HasA/PartOf/AtLocation, not IsA of Y", async () => {

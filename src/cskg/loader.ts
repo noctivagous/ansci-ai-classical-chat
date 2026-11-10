@@ -132,21 +132,45 @@ for (const r of KEEP_RELATIONS) {
   REL_NAMES.push(r);
 }
 
+/** A value-of role bound to a kept relation and walk direction. */
+export interface RoleBinding {
+  rel: string;
+  /** out: bearer —rel→ value (dbpedia/capital). in: value —rel→ bearer (2f CAPITAL_OF). */
+  dir: "out" | "in";
+}
+
 /**
- * The kept relation whose last path segment is the role noun
- * from a value-of ask ("capital" → `/r/dbpedia/capital`). Null
- * when no kept relation has that name — the ask then keeps its
- * other routes.
+ * Named roles whose relation is not the path tail, or whose walk
+ * is not out. Slice 2f adds `{ rel: "CAPITAL_OF", dir: "in" }` to
+ * capital once that relation is kept.
  */
-export function relationForRoleNoun(role: string): string | null {
+const ROLE_BINDINGS: Record<string, readonly RoleBinding[]> = {
+  capital: [{ rel: "/r/dbpedia/capital", dir: "out" }],
+};
+
+/**
+ * Bindings for a value-of role noun. Explicit aliases first, then
+ * any kept relation whose last path segment is the role (default
+ * out). Unknown roles return [].
+ */
+export function bindingsForRole(role: string): RoleBinding[] {
   const key = role.trim().toLowerCase().replace(/\s+/g, "_");
-  if (!key) return null;
-  let hit: string | null = null;
+  if (!key) return [];
+  const out: RoleBinding[] = [];
+  const seen = new Set<string>();
+  const take = (b: RoleBinding): void => {
+    if (!REL_INDEX.has(b.rel)) return;
+    const id = `${b.rel}:${b.dir}`;
+    if (seen.has(id)) return;
+    seen.add(id);
+    out.push(b);
+  };
+  for (const b of ROLE_BINDINGS[key] ?? []) take(b);
   for (const rel of KEEP_RELATIONS) {
     const tail = rel.split("/").pop()?.toLowerCase();
-    if (tail === key) hit = rel;
+    if (tail === key) take({ rel, dir: "out" });
   }
-  return hit;
+  return out;
 }
 
 const SRC_BIT = new Map<string, number>();

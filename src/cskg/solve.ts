@@ -82,7 +82,7 @@ import {
   type EventQuestionKind,
   type SurfaceIntentKind,
 } from "./intent";
-import { relationForRoleNoun, type CskgEdge, type CskgGraph } from "./loader";
+import { bindingsForRole, type CskgEdge, type CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
 import { entityById, verbBasePerTurn, verbLemmaPerTurn } from "./situation";
 import { noteStep, type TurnWorkspace } from "./workspace";
@@ -565,15 +565,13 @@ export function solveComposition(
 
 export type ValueOfSolve =
   | { status: "hit"; text: string }
-  | { status: "empty"; role: string; bearer: string }
-  | { status: "unmapped" };
+  | { status: "empty"; role: string; bearer: string };
 
 /**
- * Value-of: the ask named a role and a bearer. When a kept
- * relation has that role as its name, the bearer's edges of
- * that relation are the answer. Unmapped roles fall through
- * (not a decline). Empty mapped sets decline; a neighbouring
- * IsA or a gloss of the phrase is not the answer.
+ * Value-of: the ask named a role and a bearer. Bindings give
+ * relation + walk direction. A hit names the other endpoint.
+ * No bindings, or no edges, is empty — the caller declines.
+ * A neighbouring IsA or a gloss of the phrase is not the answer.
  */
 export function solveValueOf(
   g: CskgGraph,
@@ -582,8 +580,7 @@ export function solveValueOf(
   role: string,
   bearer: string,
 ): ValueOfSolve {
-  const rel = relationForRoleNoun(role);
-  if (!rel) return { status: "unmapped" };
+  const bindings = bindingsForRole(role);
   const ids: number[] = [];
   const seen = new Set<number>();
   const add = (id: number): void => {
@@ -599,22 +596,29 @@ export function solveValueOf(
   const stripped = bearer.trim().toLowerCase().replace(/^(?:the)\s+/, "");
   const direct = g.id(stripped);
   if (direct !== undefined) add(direct);
-  for (const id of ids) {
-    const edges = g.outEdges(id, rel);
-    if (!edges.length) continue;
-    const top = edges.slice().sort((a, b) =>
-      b.support - a.support ||
-      g.terms[a.to].length - g.terms[b.to].length,
-    )[0];
-    addConclusions(ws, [{ edge: top, about: "from" }]);
-    remember(session, top.from);
-    remember(session, top.to);
-    noteStep(ws, "solve", "conclude", `value-of ${rel}`, [edgeText(g, top)]);
-    session.lastIntent = "fact";
-    return {
-      status: "hit",
-      text: renderValueOf(role, g.terms[top.from], g.terms[top.to]),
-    };
+  for (const bind of bindings) {
+    for (const id of ids) {
+      const edges = bind.dir === "out"
+        ? g.outEdges(id, bind.rel)
+        : g.inEdgesFor(id, bind.rel);
+      if (!edges.length) continue;
+      const valueId = (e: CskgEdge): number => (bind.dir === "out" ? e.to : e.from);
+      const top = edges.slice().sort((a, b) =>
+        b.support - a.support ||
+        g.terms[valueId(a)].length - g.terms[valueId(b)].length,
+      )[0];
+      const bearerId = bind.dir === "out" ? top.from : top.to;
+      const otherId = valueId(top);
+      addConclusions(ws, [{ edge: top, about: bind.dir === "out" ? "from" : "to" }]);
+      remember(session, bearerId);
+      remember(session, otherId);
+      noteStep(ws, "solve", "conclude", `value-of ${bind.rel} ${bind.dir}`, [edgeText(g, top)]);
+      session.lastIntent = "fact";
+      return {
+        status: "hit",
+        text: renderValueOf(role, g.terms[bearerId], g.terms[otherId]),
+      };
+    }
   }
   return { status: "empty", role, bearer };
 }
