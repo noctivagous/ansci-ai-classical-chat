@@ -7,6 +7,11 @@
 #
 # Known-failing: none — 4/4 verified by diagnose on 2026-11-10.
 #
+# Item 6 S8 (2026-11-10, verdict PASS): the timeless intended plan
+# asks its timing ("When's that happening?") — an adaptive offer,
+# gated on mode/time/disposition/role, never a scheduled slot.
+# Only the coat turn moved besides the landed repair turn.
+#
 # Item 4 leaf 1, S12 (2026-11-10, verdict PASS): a correction that
 # supersedes a previous topic owns the repair in words ("I had that
 # as X — you meant Y") instead of silent absorption. Topic-less and

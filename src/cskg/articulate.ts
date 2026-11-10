@@ -902,6 +902,36 @@ export function renderEventAcknowledgement(
     `${frameName ? ` — roles from the ${frameName} frame` : ""}.`;
 }
 
+/* S8 offers (Item 6, first adaptive offer): a question the
+ * architecture concludes — never an appendage scheduled by
+ * policy. The offer fires only for a genuine gap the person can
+ * fill: a fresh intended doing with no time. The plan is the
+ * situation model's own record; the gap is read off it; nothing
+ * is asked when the turn already carries the answer (§11: the
+ * role follow-up stands re-grounded under this rule or silent).
+ */
+export function renderOfferTiming(): string {
+  return "When's that happening?";
+}
+
+/**
+ * The adaptive offer gate: a timing offer only when the doing is
+ * intended, timeless, fresh to this turn, the frame's appetite is
+ * not listening-only, and the role's strategy is to offer.
+ * Companion shares instead; a listening frame stays silent.
+ */
+export function offerForPlannedDoing(
+  mode: string,
+  timeText: string | null,
+  elicitation: string,
+  statementStrategy: string,
+): string | null {
+  if (mode !== "intended" || timeText !== null) return null;
+  if (elicitation === "listening") return null;
+  if (statementStrategy !== "acknowledge-and-offer") return null;
+  return renderOfferTiming();
+}
+
 /** A memory write's acknowledgement, in the role's voice, naming what was kept. */
 export function renderRememberAck(ack: string, display: string): string {
   return `${ack} ${cap(display)}.`;

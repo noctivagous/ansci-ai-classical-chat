@@ -13,6 +13,7 @@ import * as path from "path";
 import { test } from "node:test";
 import {
   composeConclusions,
+  offerForPlannedDoing,
   renderAll,
   renderComposed,
   renderConclusion,
@@ -229,6 +230,28 @@ test("repair frame: the role pack selects it, same repair either way", () => {
     /^I had that as banana — you meant peel\./,
     "an unknown strategy falls back to the plain owning frame",
   );
+});
+
+test("adaptive offer: a timeless intended doing asks its timing", () => {
+  assert.equal(
+    offerForPlannedDoing("intended", null, "balanced", "acknowledge-and-offer"),
+    "When's that happening?",
+  );
+  assert.equal(offerForPlannedDoing("ongoing", null, "balanced", "acknowledge-and-offer"), null,
+    "a past doing has no open timing gap");
+  assert.equal(offerForPlannedDoing("intended", "Saturday", "balanced", "acknowledge-and-offer"), null,
+    "never when the turn already carries the answer");
+  assert.equal(offerForPlannedDoing("intended", null, "listening", "acknowledge-and-offer"), null,
+    "a listening frame stays silent");
+  assert.equal(offerForPlannedDoing("intended", null, "balanced", "react-and-share"), null,
+    "a sharing role shares instead of offering");
+});
+
+test("adaptive offer: a planned coat-buying asks when, end to end", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = runTurn(g, s, "I'm thinking of buying a winter coat.");
+  assert.match(r.text, /thinking of buying a winter coat\. When's that happening\?/);
 });
 
 test("repair frame: the no-fact correction names the superseded topic too", () => {

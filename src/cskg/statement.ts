@@ -23,6 +23,7 @@
 import type { Situation } from "./awareness";
 import {
   edgeText,
+  offerForPlannedDoing,
   renderConclusion,
   renderContinuityClause,
   renderEventLead,
@@ -299,6 +300,19 @@ export function composeStatementReply(
         addConclusions(ws, [fact]);
         noteStep(ws, "solve", "conclude", "statement fact about the event itself", [edgeText(g, fact.edge)]);
         text += ` ${renderConclusion(g, fact)}`;
+      }
+      // S8, first adaptive offer (Item 6): the plan is fresh this
+      // turn, its timing genuinely open, the frame willing to
+      // ask, the role an offering one — the question concludes
+      // from the model's own record, not from a slot.
+      const disp = ws.disposition ?? BALANCED_DISPOSITION;
+      const offer = offerForPlannedDoing(
+        doing.mode, doing.timeText, disp.elicitation, role.statementStrategy,
+      );
+      if (offer) {
+        noteStep(ws, "statement", "conclude",
+          `adaptive offer: intended doing "${doing.action}" has no time; disposition ${disp.elicitation}; role ${role.id}`);
+        text += ` ${offer}`;
       }
     } else if (thirdEvent && thirdActor) {
       // Loop 2 (L2-D): the reply leads with the reported
