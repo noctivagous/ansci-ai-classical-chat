@@ -333,10 +333,16 @@ export function applySenseMappings(graph: Graph): { mapped: number } {
   return { mapped };
 }
 
-/** The seed concept a synset is mapped to, if any (reverse of MAPPED_TO). */
+/** The seed concept a synset is mapped to, if any (reverse of MAPPED_TO).
+ *  FrameNet lexical units also carry MAPPED_TO edges into synsets (the
+ *  §5.2 bridge, slice 2d) — those are sense *neighbours*, not the seed
+ *  concept this function promises, so they are skipped here. */
 export function mappedConceptForSynset(graph: Graph, synsetNodeId: string): GraphNode | undefined {
-  const edge = graph.inEdges(synsetNodeId, "MAPPED_TO")[0];
-  return edge ? graph.getNode(edge.from) : undefined;
+  for (const edge of graph.inEdges(synsetNodeId, "MAPPED_TO")) {
+    const from = graph.getNode(edge.from);
+    if (from && from.type !== "LexicalUnit") return from;
+  }
+  return undefined;
 }
 
 export interface ClimbResult {

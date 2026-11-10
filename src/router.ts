@@ -450,6 +450,10 @@ type Frame =
   | { kind: "degree_compare"; aText: string; polarity: "yin" | "yang"; bText: string; aspectWord?: string }
   | { kind: "degree_mixed"; aText: string; polarity: "yin" | "yang"; aAspect: string; bText: string; bAspect: string }
   | { kind: "balance"; elementText: string; seasonText?: string }
+  // Slice 2d (§5): FrameNet questions.
+  | { kind: "frame_participants"; targetText: string }
+  | { kind: "frame_evokers"; targetText: string }
+  | { kind: "frame_of"; targetText: string }
   | { kind: "correspondence"; sourceText?: string; targetText?: string; category?: string }
   | { kind: "antonym"; targetText: string }
   | { kind: "part_of"; targetText: string; variant: "whole" | "parts"; otherText?: string }
@@ -519,6 +523,34 @@ function detectFrame(text: string): Frame {
   }
   if ((m = t.match(/^what (element|polarity|trigram) does (.+?) belong to$/))) {
     return { kind: "classification", classifier: m[1] as "element", targetText: m[2] };
+  }
+  // Slice 2d (§5): FrameNet questions — the participants/roles of an
+  // event, what evokes a frame, which frame a word evokes. Matched
+  // before the definition starter below ("what does X evoke" is not a
+  // definition question) and before the who-unsupported catch.
+  if ((m = t.match(/^(?:who|what) are the participants (?:when|in|of|for) (.+)$/))) {
+    return { kind: "frame_participants", targetText: m[1] };
+  }
+  if ((m = t.match(/^what (?:are the )?(?:participants|roles|frame elements) (?:are )?(?:there )?(?:when|in|of|for) (.+)$/))) {
+    return { kind: "frame_participants", targetText: m[1] };
+  }
+  if ((m = t.match(/^what roles are there (?:when|in|of) (.+)$/))) {
+    return { kind: "frame_participants", targetText: m[1] };
+  }
+  if ((m = t.match(/^(?:who|what) (?:is|are) involved (?:when|in) (.+)$/))) {
+    return { kind: "frame_participants", targetText: m[1] };
+  }
+  if ((m = t.match(/^what frame does (.+?) evoke$/))) {
+    return { kind: "frame_of", targetText: m[1] };
+  }
+  if ((m = t.match(/^what does (.+?) evoke$/))) {
+    return { kind: "frame_of", targetText: m[1] };
+  }
+  if ((m = t.match(/^what evokes (.+)$/))) {
+    return { kind: "frame_evokers", targetText: m[1] };
+  }
+  if ((m = t.match(/^(?:which|what) words? evokes? (.+)$/))) {
+    return { kind: "frame_evokers", targetText: m[1] };
   }
   // Slice 2c engine frames (§6.5/§6.7/§6.8). The mixed-aspect form is
   // matched first: it is a category error the router must not route.
@@ -639,6 +671,7 @@ const INTENT_THRESHOLDS: Record<string, number> = {
   restraint: 0.7,
   degree_compare: 0.7,
   balance: 0.7,
+  frame_participants: 0.7,
 };
 
 function makeIntent(fields: Partial<QueryIntent> & { intentType: QueryIntent["intentType"] }): QueryIntent {
@@ -1712,6 +1745,193 @@ function pairClarify(
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* FrameNet resolution (slice 2d, §5)                                  */
+/* ------------------------------------------------------------------ */
+
+interface FrameIndex {
+  frames: GraphNode[];
+  byName: Map<string, GraphNode>; // normalised frame name -> frame
+  lusByLemma: Map<string, GraphNode[]>; // lemma -> lexical unit nodes
+}
+
+const frameIndexCache = new WeakMap<Graph, FrameIndex>();
+
+function frameIndex(graph: Graph): FrameIndex {
+  let idx = frameIndexCache.get(graph);
+  if (idx) return idx;
+  idx = { frames: [], byName: new Map(), lusByLemma: new Map() };
+  for (const node of graph.allNodes()) {
+    if (node.type === "Frame") {
+      idx.frames.push(node);
+      idx.byName.set(normFrameKey(node.name), node);
+    } else if (node.type === "LexicalUnit") {
+      const lemma = String(node.properties["lemma"] ?? "").toLowerCase();
+      if (!lemma) continue;
+      const list = idx.lusByLemma.get(lemma);
+      if (list) list.push(node);
+      else idx.lusByLemma.set(lemma, [node]);
+    }
+  }
+  frameIndexCache.set(graph, idx);
+  return idx;
+}
+
+function normFrameKey(s: string): string {
+  return s.toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+interface FrameCandidate {
+  frame: GraphNode;
+  /** The lemma that resolved the frame, when word-based. */
+  lemma?: string;
+  via: "lu" | "synset" | "name";
+}
+
+const FRAME_TOKEN_STOP = new Set([
+  "someone", "somebody", "something", "anyone", "anything", "a", "an",
+  "the", "frame", "event", "events", "situation", "kind", "of", "in",
+  "when", "it", "its", "is", "are",
+]);
+
+/**
+ * Resolve the free text of a frame question ("someone buys something",
+ * "buying", "Commerce_buy") to candidate frames. Lexical-unit and
+ * synset-bridge hits outrank bare frame-name hits: a word that evokes
+ * exactly one frame is a stronger signal than a shared name part
+ * ("commerce" names a whole family).
+ */
+function resolveFrameCandidates(ctx: LookupContext, text: string): FrameCandidate[] {
+  const { graph, extract } = ctx;
+  const idx = frameIndex(graph);
+  if (idx.frames.length === 0) return [];
+  const tokens = norm(text)
+    .split(/[^a-z0-9_]+/)
+    .filter((t) => t && !FRAME_TOKEN_STOP.has(t));
+  const luCands: FrameCandidate[] = [];
+  const synsetCands: FrameCandidate[] = [];
+  const nameCands: FrameCandidate[] = [];
+  const seenLu = new Set<string>();
+  const seenSynset = new Set<string>();
+  const seenName = new Set<string>();
+  for (const token of tokens) {
+    const byName = idx.byName.get(normFrameKey(token));
+    if (byName && !seenName.has(byName.id)) {
+      seenName.add(byName.id);
+      nameCands.push({ frame: byName, via: "name" });
+    }
+    const surf = synsetsForSurface(extract, token);
+    const lemmas = new Set<string>(surf.candidates.map((c) => c.lemma.toLowerCase()));
+    if (surf.synsets.length > 0) lemmas.add(token.toLowerCase());
+    for (const lemma of lemmas) {
+      for (const lu of idx.lusByLemma.get(lemma) ?? []) {
+        for (const e of graph.outEdges(lu.id, "EVOKES")) {
+          const frame = graph.getNode(e.to);
+          if (frame && !seenLu.has(frame.id)) {
+            seenLu.add(frame.id);
+            luCands.push({ frame, lemma, via: "lu" });
+          }
+        }
+      }
+    }
+    // The synset bridge is the weakest signal (an LU links to every
+    // synset of its lemma, so a synset inherits frames from same-lemma
+    // units of other senses — "snow" the drug slang would otherwise
+    // vote against Precipitation). It is used only when no LU of the
+    // word itself evokes anything.
+    for (const s of surf.synsets) {
+      for (const e of graph.outEdges(s.id, "EVOKES")) {
+        const frame = graph.getNode(e.to);
+        if (frame && !seenSynset.has(frame.id)) {
+          seenSynset.add(frame.id);
+          synsetCands.push({ frame, lemma: token, via: "synset" });
+        }
+      }
+    }
+    for (const frame of idx.frames) {
+      if (frame.name.toLowerCase().split("_").includes(token) && !seenName.has(frame.id)) {
+        seenName.add(frame.id);
+        nameCands.push({ frame, via: "name" });
+      }
+    }
+  }
+  if (luCands.length > 0) return luCands;
+  if (synsetCands.length > 0) return synsetCands;
+  return nameCands;
+}
+
+function frameRoute(
+  variant: "participants" | "evokers" | "frame_of",
+  cand: FrameCandidate,
+  surface: string,
+  originalText: string,
+): RouteToIntent {
+  const mode: SurfaceMode =
+    /\bframe/i.test(originalText) ||
+    originalText.toLowerCase().includes(cand.frame.name.toLowerCase())
+      ? "framework"
+      : "plain";
+  return {
+    kind: "route",
+    intent: makeIntent({
+      intentType: "frame_participants",
+      matchedNodes: [cand.frame.id],
+      variant,
+      category: cand.lemma,
+    }),
+    terms: [{ ...nodeTerm(cand.frame, surface, "subject"), resolvedBy: "frame" }],
+    surfaceMode: mode,
+    decisionReason: `D-frame/${variant}`,
+  };
+}
+
+function frameClarify(
+  variant: "participants" | "evokers" | "frame_of",
+  targetText: string,
+  cands: FrameCandidate[],
+  originalQuestion: string,
+): RouteDecision {
+  return {
+    kind: "clarify",
+    question: "That fits more than one frame — which event did you mean?",
+    branches: cands.slice(0, 4).map((c, i) => ({
+      id: `b${i + 1}`,
+      label: c.frame.name.replace(/_/g, " "),
+      detail:
+        typeof c.frame.properties["gloss"] === "string"
+          ? String(c.frame.properties["gloss"]).slice(0, 90)
+          : undefined,
+      route: frameRoute(variant, c, targetText, originalQuestion),
+    })),
+    originalQuestion,
+    surfaceMode: "framework",
+    decisionReason: "D9/frame-ambiguity",
+  };
+}
+
+function declineFrameNotInstalled(): RouteDecision {
+  return {
+    kind: "decline",
+    reason: "framenet not installed",
+    userMessage:
+      "FrameNet is not installed — run the installer (python3 scripts/import-framenet.py) and the frame layer will be there; then I can answer questions about the participants in events like buying.",
+    alternatives: [],
+    surfaceMode: "plain",
+    decisionReason: "D-frame/not-installed",
+  };
+}
+
+function declineNoFrame(targetText: string): RouteDecision {
+  return {
+    kind: "decline",
+    reason: `no frame for "${targetText}"`,
+    userMessage: `I don't have a frame for "${targetText}" in the FrameNet layer — no event schema there matches it.`,
+    alternatives: [],
+    surfaceMode: "plain",
+    decisionReason: "D-frame/no-frame",
+  };
+}
+
 function routeFrame(
   ctx: LookupContext,
   frame: Frame,
@@ -1911,6 +2131,25 @@ function routeFrame(
         surfaceMode: "framework",
         decisionReason: "D7/engine-balance",
       };
+    }
+
+    case "frame_participants":
+    case "frame_evokers":
+    case "frame_of": {
+      const variant =
+        frame.kind === "frame_participants"
+          ? ("participants" as const)
+          : frame.kind === "frame_evokers"
+            ? ("evokers" as const)
+            : ("frame_of" as const);
+      // The layer is optional (§5): no Frame nodes in the graph means
+      // the bundle was never installed — decline honestly, don't fake
+      // an unanchored term.
+      if (frameIndex(graph).frames.length === 0) return declineFrameNotInstalled();
+      const cands = resolveFrameCandidates(ctx, frame.targetText);
+      if (cands.length === 0) return declineNoFrame(frame.targetText);
+      if (cands.length > 1) return frameClarify(variant, frame.targetText, cands, text);
+      return frameRoute(variant, cands[0], frame.targetText, text);
     }
 
     case "correspondence": {

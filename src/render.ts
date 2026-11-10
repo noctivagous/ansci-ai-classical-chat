@@ -163,6 +163,7 @@ const LOAD_BEARING: Record<string, Set<string>> = {
   ]),
   comparison: new Set(["CONTRASTS_WITH", "RELATED_VIA", "SHARED_PRIOR", "OPPOSED_PRIOR", "COMMON_HYPERNYM", "NO_RELATION"]),
   situation: new Set(["SEASON_HERE", "TIME_OF_DAY", "SITUATION_SELF", "SHADOW_SEASON", "LOCATION_STATED", "TONIGHT"]),
+  frame_participants: new Set(["FRAME", "HAS_FRAME_ELEMENT", "EVOKES"]),
 };
 
 export function planRender(
@@ -1078,6 +1079,61 @@ function realiseBalance(rc: RealiseCtx, mode: SurfaceMode): string[] {
   return out;
 }
 
+/* Slice 2d realiser (§5): frame structure questions. Frame names and
+ * element names are data, not framework vocabulary — they are named in
+ * every mode; what changes is only the framing sentence. */
+function realiseFrame(rc: RealiseCtx, mode: SurfaceMode): string[] {
+  const graph = rc.graph;
+  const decision = rc.decision;
+  if (decision.kind !== "route") return [];
+  const variant = decision.intent.variant ?? "participants";
+  const frameC = planned(rc.plan, "FRAME")[0]?.conclusion;
+  const frameName = frameC ? nodeName(graph, frameC.subjectId) : "";
+  const feCs = planned(rc.plan, "HAS_FRAME_ELEMENT");
+  const feNames = feCs.map((p) => nodeName(graph, p.conclusion.objectId));
+  const coreNames = feCs
+    .filter((p) => p.conclusion.facts?.core === 1)
+    .map((p) => nodeName(graph, p.conclusion.objectId));
+  const evokes = planned(rc.plan, "EVOKES");
+  const out: string[] = [];
+
+  if (variant === "evokers") {
+    const lemmas = [
+      ...new Set(evokes.map((p) => String(p.conclusion.facts?.lemma ?? ""))),
+    ].filter(Boolean);
+    if (lemmas.length === 0) return out;
+    const shown = lemmas.slice(0, 14);
+    out.push(
+      `${frameName} is evoked by ${joinList(shown)}${lemmas.length > shown.length ? ", and more besides" : ""}.`,
+    );
+    return out;
+  }
+
+  if (variant === "frame_of") {
+    const ev = evokes[0]?.conclusion;
+    const lemma = ev ? String(ev.facts?.lemma ?? "") : "";
+    if (lemma) out.push(`${cap(lemma)} evokes the ${frameName} frame.`);
+    if (feNames.length > 0) out.push(`Its participants are ${joinList(feNames)}.`);
+    return out;
+  }
+
+  // participants
+  if (feNames.length === 0) return out;
+  out.push(
+    mode === "framework"
+      ? `${frameName} has these participants: ${joinList(feNames)}.`
+      : `The participants are ${joinList(feNames)}.`,
+  );
+  if (coreNames.length > 0 && coreNames.length < feNames.length) {
+    out.push(
+      mode === "framework"
+        ? `The core roles are ${joinList(coreNames)}.`
+        : `The central roles are ${joinList(coreNames)}.`,
+    );
+  }
+  return out;
+}
+
 function realiseAnswer(rc: RealiseCtx, mode: SurfaceMode): string {
   const decision = rc.decision;
   if (decision.kind !== "route") return "";
@@ -1127,6 +1183,9 @@ function realiseAnswer(rc: RealiseCtx, mode: SurfaceMode): string {
       break;
     case "balance":
       sentences.push(...realiseBalance(rc, mode));
+      break;
+    case "frame_participants":
+      sentences.push(...realiseFrame(rc, mode));
       break;
     default:
       sentences.push(...realiseDefinition(rc));
@@ -1183,7 +1242,9 @@ const TEMPLATE_WORDS = new Set(
     "helps if what about noted take mean there moment just now running server program machine nobody " +
     "told given taken taken opposite run runs opposite ends longest shortest " +
     "explain explains itself dark stretch middling covers note unmapped resting quiet " +
-    "associated association mapped element elements sense know enough cases worked rest haven haven't"
+    "associated association mapped element elements sense know enough cases worked rest haven haven't " +
+    // Slice 2d (§5): the frame templates' own vocabulary.
+    "participants roles role evoked evokes evoking frame frames involved central core besides"
   ).split(" "),
 );
 

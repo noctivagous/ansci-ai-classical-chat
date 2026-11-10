@@ -21,6 +21,7 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Graph } from "./graph";
 import { buildChatGraph, getDefaultExtract } from "./wordnet";
+import { frameNetInstalled, loadFrameNetBundle, mergeFrameNet } from "./framenet";
 import {
   createSession,
   graphStampFor,
@@ -132,6 +133,13 @@ function main(): void {
   };
   const graph = buildChatGraph();
   const extract = getDefaultExtract();
+  // FrameNet is an optional layer (§5): merge it only when the bundle
+  // has been installed (scripts/import-framenet.py). Absent, the graph
+  // is exactly the seed + WordNet graph and frame questions decline
+  // with the installer's name.
+  if (frameNetInstalled()) {
+    mergeFrameNet(graph, loadFrameNetBundle(), extract);
+  }
   const session = createSession(graphStampFor(extract));
   const host = hostConfigFromEnv();
   const routerOpts: RouterOptions = {

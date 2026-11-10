@@ -29,7 +29,10 @@ export type ThoughtStepKind =
   // was already extended in 2b.
   | "propagate"
   | "compose"
-  | "engine";
+  | "engine"
+  // Slice 2d (§5): reading a frame's structure (its elements, its
+  // evoking units) is one deliberation act over the FrameNet layer.
+  | "frame";
 
 export interface InterimConclusion {
   id: string; // "c1", "c2", … — later steps cite these
@@ -116,6 +119,13 @@ export class TraceBuilder {
     inputs: string[];
     paths?: string[];
     conclusion?: Omit<InterimConclusion, "id" | "derivedFrom"> & { derivedFrom?: string[] };
+    /**
+     * Several conclusions from ONE deliberation act (slice 2d: reading
+     * a frame's element set is a single graph operation that yields one
+     * conclusion per element). The step bound (§8.3) counts acts, not
+     * conclusions; `step.conclusion` records the first of them.
+     */
+    conclusions?: (Omit<InterimConclusion, "id" | "derivedFrom"> & { derivedFrom?: string[] })[];
     check?: ThoughtStep["check"];
     outcome?: ThoughtStep["outcome"];
     note?: string;
@@ -129,13 +139,15 @@ export class TraceBuilder {
     }
     const id = `s${++this.stepSeq}`;
     let conclusion: InterimConclusion | undefined;
-    if (init.conclusion) {
-      conclusion = {
-        ...init.conclusion,
+    const raws = [...(init.conclusion ? [init.conclusion] : []), ...(init.conclusions ?? [])];
+    for (const raw of raws) {
+      const full: InterimConclusion = {
+        ...raw,
         id: `c${++this.conclusionSeq}`,
-        derivedFrom: init.conclusion.derivedFrom ?? [id],
+        derivedFrom: raw.derivedFrom ?? [id],
       };
-      this.conclusions.push(conclusion);
+      this.conclusions.push(full);
+      if (!conclusion) conclusion = full;
     }
     const step: ThoughtStep = {
       id,
