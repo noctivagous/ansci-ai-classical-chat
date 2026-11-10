@@ -31,8 +31,12 @@
  *      relevant to the current season/daypart win the answer slot;
  *   3. nothing else. It does not filter, gate or invent facts.
  *
- * Writes (engine map): `situation`, `person`.
+ * Writes (engine map): `situation`, `person`, `role`, and —
+ * since the disposition was named (design §11) — `disposition`:
+ * awareness loads the frame whole; the disposition's own
+ * content and rules live in disposition.ts.
  */
+import { loadDisposition } from "./disposition";
 import { personNameFromEnv } from "./person";
 import { loadRolePack } from "./roles";
 import type { TurnWorkspace } from "./workspace";
@@ -123,8 +127,8 @@ export function computeSituation(
 }
 
 /**
- * A's turn entry: load the workspace's `situation`, `person`
- * and `role` — the whole frame (§5). The person is `known`
+ * A's turn entry: load the workspace's `situation`, `person`,
+ * `role` and `disposition` — the whole frame (§5, §11). The person is `known`
  * when CSKG_CHAT_PERSON names one (their file loads in
  * person.ts; awareness records only who is talking), and the
  * role pack is loaded from roles/ (CSKG_CHAT_ROLE, default
@@ -139,6 +143,7 @@ export function loadAwarenessInto(
   const name = personNameFromEnv(env);
   ws.person = name ? { kind: "known", name } : { kind: "general" };
   ws.role = loadRolePack(env);
+  ws.disposition = loadDisposition(env);
 }
 
 /**

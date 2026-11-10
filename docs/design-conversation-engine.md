@@ -1296,6 +1296,31 @@ resolver's clarification and the person layer's name admission
 are the model instances; the role follow-up stands re-grounded
 under this rule or silent.
 
+**Disposition: the frame's riding assumptions.** The same
+opening line may legitimately be answered many ways, depending
+on what the entity knows of the person and the subjects,
+whether it is the first thing said, and what memory exists.
+What decides is the setup — the riding assumptions the frame
+carries: "I won't ask much upfront, I'll just listen" vs "I'll
+ask a certain amount". These assumptions are named and
+gathered in one place — the DISPOSITION (disposition.ts,
+loaded with the frame by awareness, carried in the operative
+context, registered on the engine map): an elicitation
+appetite (listening / balanced / gathering) and pattern-speech
+readiness. The disposition is setup the turn consults, like
+the role, not a pipeline stage: it sets the adaptive tree's
+appetites, never its schedule. CORRECTION (owner, 2026-11-10):
+the example question ("How old is Marcus? And you?") was an
+example of a question ARISING NATURALLY, not a behaviour to
+mechanise — the valued-facts inventory first built here
+(age/relation, with its generated question) was a
+conversational template and has been REMOVED (round 3, leaf
+T1). The disposition is inclination only; what is worth asking
+must emerge from the processing over the situation, the
+person and the conversation. Defaults reproduce the standing
+behaviour exactly; the seed of the later Wuxing temperament
+lives here, as explicit, inspectable stance.
+
 **Answers are sequences, combined.** No response is the result
 of a single query: one query gathers too little information to
 decide on. Answering follows an adaptive tree — the next query

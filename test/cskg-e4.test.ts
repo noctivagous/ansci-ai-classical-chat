@@ -38,6 +38,10 @@ import {
   type CaptureResult,
 } from "../src/cskg/person";
 import { resolveRivalReadings, type RivalReading } from "../src/cskg/resolver";
+import {
+  BALANCED_DISPOSITION,
+  loadDisposition,
+} from "../src/cskg/disposition";
 import { loadRolePack, parseRolePack } from "../src/cskg/roles";
 import { contextFit } from "../src/cskg/solve";
 import { admissionFor, admissionPhrase } from "../src/cskg/standing";
@@ -259,15 +263,20 @@ test("E4 person: the companion acknowledges memory in its own voice", async () =
 
 /* ---------------- Part 3 — statement classification -------------- */
 
-test("E4 statements: the soup statement schmoozes — the recorded event leads (Loop 2 L2-A), plus the slot's follow-up", async () => {
+test("E4 statements: the soup statement schmoozes — the recorded event leads (Loop 2 L2-A); the unlicensed follow-up is not spoken (Loop 2 L2-Q)", async () => {
   const g = await graph();
   const r = runTurn(g, createSession(), "I'm making a big pot of soup on Saturday.", {});
   assert.equal(r.grounded, true);
   assert.match(r.text, /You are making a big pot of soup/);
   assert.doesNotMatch(r.text, /Soup is a dish\./,
     "the bare classification of the object noun no longer leads the reply");
-  assert.match(r.text, /And what made you want to do that\?/,
-    "the canonical follow-up, formed from the doing slot");
+  // Round 3 (T2): the canned follow-up forms are REMOVED, not
+  // merely gated — there is no motivation question, meeting
+  // question, or topic invitation to fire, licensed or not.
+  // (L2-Q had re-grounded their firing; the owner's template
+  // removal takes the forms themselves out.)
+  assert.doesNotMatch(r.text, /And what made you want to do that\?|Have you met them yet\?|Tell me more about/,
+    "no canned follow-up form exists to be spoken");
   assert.ok(
     r.trace.steps.some((s) => /statement classification: schmooze/.test(s.detail)),
     "the classification and its channels are traced",
@@ -291,7 +300,12 @@ test("E4 classifier: the graph channels flip a bare narrated event — and are t
   assert.ok(on.channels.some((c) => /event-keying/.test(c) && /loses their house keys/.test(c)));
   assert.ok(on.channels.some((c) => /annotation/.test(c) && /xIntent ×1/.test(c)),
     "the xIntent profile is reported as its own channel");
-  assert.equal(on.motivationLicensed, true);
+  // Round 3 (T2): the classification carries no follow-up
+  // licence — the xIntent channel informs the class score only;
+  // the licence field that gated the canned motivation question
+  // is removed with the question.
+  assert.equal("motivationLicensed" in on, false);
+  assert.equal("followupSlot" in on, false);
 });
 
 test("E4 classifier: a stated state is its own class; a referential statement stays informing", async () => {
@@ -447,4 +461,48 @@ test("E4 clarification: an unrelated turn clears the pending ask and proceeds fr
   const r = runTurn(g, session, "I'm making a big pot of soup on Saturday.", {});
   assert.equal(session.pendingClarification, null, "the ask is spent");
   assert.match(r.text, /You are making a big pot of soup/, "the fresh turn is analysed on its own terms");
+});
+
+test("disposition (§11): defaults reproduce the standing setup; presets and overrides load as data", () => {
+  const d = loadDisposition({});
+  assert.deepEqual(d, BALANCED_DISPOSITION, "no setup named = the balanced default");
+  assert.equal(d.elicitation, "balanced");
+  assert.equal(d.patternSpeech, "ready");
+  const listening = loadDisposition({ CSKG_CHAT_DISPOSITION: "listening" });
+  assert.equal(listening.elicitation, "listening");
+  const gathering = loadDisposition({ CSKG_CHAT_DISPOSITION: "gathering" });
+  assert.equal(gathering.elicitation, "gathering");
+  const over = loadDisposition({ CSKG_CHAT_DISPOSITION: JSON.stringify({ elicitation: "gathering" }) });
+  assert.equal(over.elicitation, "gathering", "a JSON override sets one dial at a time");
+  assert.throws(() => loadDisposition({ CSKG_CHAT_DISPOSITION: "nosy" }), /disposition "nosy" not found/);
+  assert.throws(
+    () => loadDisposition({ CSKG_CHAT_DISPOSITION: JSON.stringify({ elicitation: "pushy" }) }),
+    /elicitation/,
+  );
+});
+
+test("disposition (§11; round 3 T1): the valued-facts template is removed — no inventory, no generated question", async () => {
+  // The disposition carries inclination only: no fact inventory
+  // exists to load, from a preset or from a JSON override.
+  const gathering = loadDisposition({ CSKG_CHAT_DISPOSITION: "gathering" });
+  assert.equal("valuedFacts" in gathering, false, "the gathering preset carries no fact inventory");
+  const over = loadDisposition({ CSKG_CHAT_DISPOSITION: JSON.stringify({ elicitation: "gathering", valuedFacts: ["age"] }) });
+  assert.equal("valuedFacts" in over, false, "a JSON override cannot smuggle the inventory back in");
+  // And behaviourally, on this file's fixture: a statement turn
+  // under the gathering appetite produces the same reply as
+  // under the default — no question is generated from an
+  // inventory, because there is no inventory. (The full-graph
+  // person-introduction case — the "How old is your sister?"
+  // firing and its absence — is verdicted on the transcript
+  // battery, this project's acceptance vehicle.)
+  const g = await graph();
+  const plain = runTurn(g, createSession(),
+    "I'm making a big pot of soup on Saturday.", {});
+  const gatheringRun = runTurn(g, createSession(),
+    "I'm making a big pot of soup on Saturday.",
+    { CSKG_CHAT_DISPOSITION: "gathering" });
+  assert.equal(gatheringRun.text, plain.text,
+    "the gathering appetite alone changes nothing — it inclines, it does not generate");
+  assert.doesNotMatch(gatheringRun.text, /How old|How do you know/,
+    "no template question is generated from a fact inventory");
 });

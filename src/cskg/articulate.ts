@@ -681,23 +681,6 @@ export function renderStatementNoted(termText: string): string {
  */
 
 /**
- * A schmooze follow-up, formed from the statement's own slot:
- * a narrated doing/plan earns the motivation question (the
- * design's canonical form — "And what made you want to do
- * that?" is the shape a voluntary doing licenses); a person
- * introduced as new earns the meeting question; anything else
- * earns an invitation to say more about the topic itself.
- */
-export function renderSchmoozeFollowup(
-  slot: "doing" | "new-person" | "topic",
-  topicText: string,
-): string {
-  if (slot === "doing") return "And what made you want to do that?";
-  if (slot === "new-person") return "Have you met them yet?";
-  return `Tell me more about the ${topicText}.`;
-}
-
-/**
  * The continuity clause for a CONNECTED statement (§5's worked
  * example): the statement's topic is the object of a recorded
  * preference held by one of the person's people — the reply

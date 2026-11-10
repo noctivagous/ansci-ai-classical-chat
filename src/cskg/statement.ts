@@ -29,12 +29,15 @@ import {
   renderEventLeadFor,
   renderFeelingLead,
   renderRememberAck,
-  renderSchmoozeFollowup,
   renderStateLead,
   renderStateNoted,
   renderStatementNoted,
 } from "./articulate";
 import { STOPWORDS, matchEvent, type Breakdown, type ResolvedTerm } from "./discourse";
+import {
+  BALANCED_DISPOSITION,
+  type Disposition,
+} from "./disposition";
 import { classifyStatement } from "./intent";
 import type { CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
@@ -136,7 +139,19 @@ export function composeStatementReply(
     // a stated feeling: the reply is drawn from the canonical
     // state record — ATOMIC consulted FROM the record (§5)
     if (cls.kind === "state" && capture.feeling) {
-      const reaction = solveStateReaction(g, ws, capture.feeling.canonical);
+      // the disposition's pattern-speech assumption (§11):
+      // "silent" holds the general pattern back entirely — the
+      // state is still taken up and acknowledged as stated.
+      // The default ("ready") is the standing behaviour: the
+      // sayability gate inside solveStateReaction decides.
+      const disp0: Disposition = ws.disposition ?? BALANCED_DISPOSITION;
+      const reaction = disp0.patternSpeech === "ready"
+        ? solveStateReaction(g, ws, capture.feeling.canonical)
+        : null;
+      if (disp0.patternSpeech !== "ready") {
+        noteStep(ws, "disposition", "intent",
+          "the feeling's general pattern is not spoken: the disposition's pattern speech is silent — the state stands as captured");
+      }
       // Loop 2 (L2-M3): when the state's general pattern can
       // be said, the reply first takes up the PERSON's state
       // in second person — the pattern answers the person,
@@ -323,35 +338,19 @@ export function composeStatementReply(
       );
       if (pref) text += ` ${renderContinuityClause(pref.fact.display, pref.fact.subject)}`;
     }
-    // the role's follow-up policy decides whether the class
-    // earns a follow-up, and the statement's own slot forms it
-    const stance =
-      cls.kind === "schmooze" ? role.followupPolicy.schmooze
-      : cls.kind === "connected" ? role.followupPolicy.connected
-      : role.followupPolicy.informing;
-    if (stance === "follow-up") {
-      // Loop 2 (L2-M): the motivation follow-up ("what made
-      // you want to do that?") is never asked when a motive is
-      // already on record — a motive link into this doing, or
-      // a feeling the person stated earlier that is still
-      // live. Asking anyway reads as not having listened.
-      const speakerEnt = session.situation.entities.find((e) => e.speaker);
-      const motiveOnRecord = cls.followupSlot === "doing" && (
-        (sitResult.doingEvent !== null &&
-          session.situation.relations.some(
-            (r) => r.family === "causal" && r.to === sitResult.doingEvent!.id)) ||
-        (speakerEnt !== undefined &&
-          session.situation.states.some(
-            (s) => s.entityId === speakerEnt.id && s.kind === "feeling" &&
-              !s.supersededBy && s.turn < session.turnCount))
-      );
-      if (motiveOnRecord) {
-        noteStep(ws, "intent", "intent",
-          "follow-up suppressed: the motivation question is not asked — a motive is already on record in the situation model");
-      } else {
-        text += ` ${renderSchmoozeFollowup(cls.followupSlot, g.terms[primary.id])}`;
-      }
-    }
+    // Template removal (round 3, T1+T2): the follow-up
+    // apparatus that once stood here is REMOVED entire — the
+    // valued-gap question (the disposition's fact inventory
+    // generating "How old is your sister? And you?") and the
+    // schmooze slot forms ("And what made you want to do
+    // that?", "Have you met them yet?", "Tell me more about
+    // the X."), together with the role stance, the L2-Q licence
+    // gates and the L2-M motive check that existed only to
+    // govern them. Fixed forms with slot-filling decide what
+    // to say from a script; under §11 a question is a
+    // conclusion of the processing or it is not spoken. A
+    // statement reply now simply responds: what the composition
+    // above produced is the whole reply.
     // E5's appended "Noted as an event" clause is gone (Loop 2,
     // L2-A): the recorded event now LEADS the reply above
     // instead of trailing it as machinery narration.

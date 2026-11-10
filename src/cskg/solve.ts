@@ -691,17 +691,55 @@ export function answerWhyQuestion(
     };
   }
 
+  // Loop 2 (L2-Y): the sense check. A subject discourse derived
+  // as the HEAD-WORD EXPANSION of a richer subject ("fall" from
+  // "leaves fall") is a fragment: its Causes edges testify for
+  // the bare word's dominant sense — a person tumbling — not
+  // for the phrase's sense, leaves descending. A fragment's
+  // testimony is admitted only when the edge's other endpoint
+  // is itself among the turn's resolved subjects — frame-
+  // connected, the same discipline as step 1 — so the edge
+  // speaks about THIS question's world, not the word's other
+  // lives. Otherwise the fragment is passed over, with the
+  // reason traced; whole subjects testify exactly as before.
+  const fragmentOf = new Map<number, string>();
+  for (const t of topics) {
+    const reason = (t as { reasons?: string[] }).reasons
+      ?.find((x) => x.startsWith("head-word expansion of"));
+    const richer = reason?.match(/head-word expansion of "([^"]+)"/)?.[1];
+    if (richer) fragmentOf.set(t.id, richer);
+  }
+  const frameIds = new Set<number>([...ids, ...topics.map((t) => t.id)]);
+
   // No stated cause: the subject's own causal edges, out then in —
   // the spike's order, over the turn's top subjects only.
   const subjects = topics.slice(0, 6);
   for (const dir of ["out", "in"] as const) {
     for (const cand of subjects) {
-      const edges = (dir === "out"
+      const gathered = (dir === "out"
         ? g.outEdges(cand.id, "/r/Causes")
         : g.inEdgesFor(cand.id, "/r/Causes")
       )
-        .slice().sort((a, b) => b.support - a.support).slice(0, 2);
-      if (!edges.length) continue;
+        .slice().sort((a, b) => b.support - a.support);
+      if (!gathered.length) continue;
+      let edges = gathered;
+      const richer = fragmentOf.get(cand.id);
+      if (richer !== undefined) {
+        edges = gathered.filter((e) =>
+          frameIds.has(dir === "out" ? e.to : e.from));
+        if (!edges.length) {
+          noteStep(ws, "solve", "query",
+            `Causes ${dir === "out" ? "out of" : "into"} "${cand.text}" not admitted (L2-Y sense check): ` +
+            `"${cand.text}" is the head word of this question's subject "${richer}", and its ` +
+            `${gathered.length} Causes edge(s) belong to the bare word's other senses — ` +
+            `none connects to a subject this question named`);
+          continue;
+        }
+        noteStep(ws, "solve", "query",
+          `Causes ${dir === "out" ? "out of" : "into"} "${cand.text}" admitted under the L2-Y sense check: ` +
+          `${edges.length} of ${gathered.length} edge(s) connect to a subject this question named`);
+      }
+      edges = edges.slice(0, 2);
       const cs = edges.map((edge) => ({ edge, about: dir === "out" ? ("from" as const) : ("to" as const) }));
       addConclusions(ws, cs);
       noteStep(ws, "solve", "query",

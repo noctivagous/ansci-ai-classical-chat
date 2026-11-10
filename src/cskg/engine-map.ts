@@ -21,6 +21,7 @@
 
 export type EngineNodeId =
   | "awareness"
+  | "disposition"
   | "discourse"
   | "intent"
   | "memory"
@@ -38,6 +39,7 @@ export type WorkspaceField =
   | "situation"
   | "person"
   | "role"
+  | "disposition"
   | "context"
   | "breakdown"
   | "intent"
@@ -74,11 +76,18 @@ export const ENGINE_NODES: EngineNode[] = [
     reads: [],
   },
   {
+    id: "disposition",
+    label: "Disposition — the frame's riding assumptions (elicitation appetite, pattern-speech readiness); inclination only, no fact inventory (the valued-facts template was removed, round 3 T1); setup the turn consults, loaded with the frame by awareness — not a pipeline stage (§11)",
+    file: "src/cskg/disposition.ts",
+    writes: ["disposition"],
+    reads: [],
+  },
+  {
     id: "context",
     label: "Context — the frame made operative (situation + person + role + memory)",
     file: "src/cskg/context.ts",
     writes: ["context"],
-    reads: ["situation", "person", "role", "activeContext"],
+    reads: ["situation", "person", "role", "disposition", "activeContext"],
   },
   {
     id: "everydaysense",
@@ -134,7 +143,7 @@ export const ENGINE_NODES: EngineNode[] = [
     label: "Statement-turn composition — the reply policy for statements: the conversation's own records lead (situation, person, state), graph testimony only as the graph-distance rule allows (extracted from the turn coordinator, Loop 2)",
     file: "src/cskg/statement.ts",
     writes: ["reply"],
-    reads: ["breakdown", "intent", "situation", "person", "conclusions", "situationModel"],
+    reads: ["breakdown", "intent", "situation", "person", "conclusions", "situationModel", "disposition"],
   },
   {
     id: "articulate",
@@ -155,6 +164,8 @@ export const ENGINE_NODES: EngineNode[] = [
 export const ENGINE_EDGES: EngineEdge[] = [
   { from: "interface", to: "discourse", carries: ["input"] },
   { from: "awareness", to: "context", carries: ["situation", "person", "role"] },
+  { from: "disposition", to: "context", carries: ["disposition"] },
+  { from: "disposition", to: "statement", carries: ["disposition"] },
   { from: "memory", to: "context", carries: ["activeContext"] },
   { from: "context", to: "discourse", carries: ["context"] },
   { from: "context", to: "intent", carries: ["context"] },

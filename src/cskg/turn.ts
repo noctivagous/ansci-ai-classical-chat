@@ -70,7 +70,6 @@ import {
   renderRecallGeneral,
   renderRememberAck,
   renderRememberSessionOnly,
-  renderSchmoozeFollowup,
   renderSituationAnswer,
   renderFeelingLead,
   renderStateNoted,

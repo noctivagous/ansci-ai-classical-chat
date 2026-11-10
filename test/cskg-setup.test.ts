@@ -162,7 +162,6 @@ const ROLE: RolePack = {
   label: "Assistant",
   statementStrategy: "acknowledge-and-offer",
   preferredRelations: [],
-  followupPolicy: { schmooze: "follow-up", connected: "follow-up", informing: "none" },
   declineStyle: "named-missing",
   clarificationDisposition: "ready",
   memoryAck: "I'll remember that.",

@@ -6,7 +6,9 @@
  * is only ever assigned inside its owner's functions):
  *
  *   situation, person,
- *   role                — awareness
+ *   role, disposition   — awareness (the disposition's content
+ *                         is disposition.ts's own; awareness
+ *                         loads it with the frame)
  *   context             — the Context module (context.ts)
  *   breakdown           — discourse
  *   intent              — intent
@@ -33,6 +35,7 @@
 import type { PersonContext, Situation } from "./awareness";
 import type { Conclusion } from "./articulate";
 import type { OperativeContext } from "./context";
+import type { Disposition } from "./disposition";
 import type { Breakdown } from "./discourse";
 import type { EngineNodeId } from "./engine-map";
 import type { Intent } from "./intent";
@@ -74,6 +77,8 @@ export interface TurnWorkspace {
   person: PersonContext | null;
   /** the role pack awareness loaded (roles.ts) */
   role: RolePack | null;
+  /** the frame's riding assumptions awareness loaded (disposition.ts) */
+  disposition: Disposition | null;
   /** the operative context the Context module composed */
   context: OperativeContext | null;
   breakdown: Breakdown | null;
@@ -95,6 +100,7 @@ export function createWorkspace(turn: number, input: string): TurnWorkspace {
     situation: null,
     person: null,
     role: null,
+    disposition: null,
     context: null,
     breakdown: null,
     intent: null,

@@ -1012,6 +1012,23 @@ function buildEvent(
       objectPhrase = objectPhrase.split(/\s+/).slice(1).join(" ");
     }
   }
+  // the stated time is a circumstance of the event, recorded
+  // separately as timeText (a time participant, below) — it is
+  // not part of the action span. A time phrase the boundary
+  // scan could not stop (bare "this weekend", with no
+  // governing preposition for the scan to break on) otherwise
+  // rides inside the object phrase, and every renderer that
+  // appends the recorded time then says it twice ("lending
+  // her ladder this weekend, this weekend" — Loop 2, L2-P).
+  if (timeText && objectPhrase) {
+    const t = timeText.toLowerCase();
+    if (objectPhrase.toLowerCase().endsWith(t)) {
+      objectPhrase = objectPhrase
+        .slice(0, objectPhrase.length - timeText.length)
+        .replace(/\s+(on|at|in|for|by)$/i, "")
+        .trim();
+    }
+  }
   // a container phrase: "a big pot of soup" — the container and
   // its content are both participants in the event
   const ofMatch = objectPhrase ? objectPhrase.match(/^(.+?)\s+of\s+(.+)$/i) : null;

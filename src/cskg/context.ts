@@ -31,6 +31,7 @@ import {
   situationallyRelevant,
   type Situation,
 } from "./awareness";
+import { BALANCED_DISPOSITION, describeDisposition, type Disposition } from "./disposition";
 import type { CskgGraph } from "./loader";
 import type { SessionState } from "./memory";
 import { activeFacts, type PersonFileData } from "./person";
@@ -68,6 +69,8 @@ export interface OperativeContext {
   pendingClarification: boolean;
   /** the role whose dispositions this context carries */
   roleId: string;
+  /** the frame's riding assumptions (disposition.ts, §11) */
+  disposition: Disposition;
 }
 
 /**
@@ -134,6 +137,7 @@ export function composeContextInto(
   const latestState = session.personStates.length
     ? session.personStates[session.personStates.length - 1]
     : null;
+  const disposition = ws.disposition ?? { ...BALANCED_DISPOSITION };
 
   ws.context = {
     topicWeights,
@@ -144,6 +148,7 @@ export function composeContextInto(
     stateInPlay: latestState ? `${latestState.kind}: ${latestState.text}` : null,
     pendingClarification: session.pendingClarification !== null,
     roleId: role.id,
+    disposition,
   };
 
   noteStep(ws, "context", "compose",
@@ -153,6 +158,7 @@ export function composeContextInto(
     `person facts in play: ${personFactsInPlay.length}` +
     (latestState ? `; person state in play: ${latestState.kind} "${latestState.text}"` : "") +
     `; role: ${role.id} (${role.statementStrategy}, clarification ${role.clarificationDisposition})` +
+    `; disposition: ${describeDisposition(disposition)}` +
     (session.pendingClarification
       ? `; a clarification is pending ("${session.pendingClarification.termText}")`
       : ""));

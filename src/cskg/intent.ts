@@ -236,10 +236,6 @@ export type StatementClass = "schmooze" | "connected" | "informing" | "state";
 export interface StatementClassification {
   kind: StatementClass;
   scores: { schmooze: number; connected: number; informing: number };
-  /** the follow-up slot the statement's contents offer */
-  followupSlot: "doing" | "new-person" | "topic";
-  /** the keyed ATOMIC template's xIntent profile licenses a motivation follow-up */
-  motivationLicensed: boolean;
   /** per-channel contributions, as traced */
   channels: string[];
 }
@@ -283,7 +279,6 @@ export function classifyStatement(
   }
 
   // --- graph evidence channels ---
-  let motivationLicensed = false;
   if (graphEvidence) {
     const words = ws.breakdown?.words ?? [];
     // channel 1+2: event keying and the keyed template's profile
@@ -300,9 +295,8 @@ export function classifyStatement(
       const richness = g.outEdges(templ.match.id).filter((e) => e.rel.startsWith("at:")).length;
       if (xIntent > 0) {
         scores.schmooze += 1.5;
-        motivationLicensed = true;
         channels.push(
-          `graph/annotation: the keyed template carries xIntent ×${xIntent} (xReact ×${xReact}, xWant ×${xWant}, ${richness} at: edges in all) — a voluntary, shareable doing +1.5 schmooze; motivation follow-up licensed`);
+          `graph/annotation: the keyed template carries xIntent ×${xIntent} (xReact ×${xReact}, xWant ×${xWant}, ${richness} at: edges in all) — a voluntary, shareable doing +1.5 schmooze`);
       } else {
         channels.push(
           `graph/annotation: the keyed template has no xIntent (xReact ×${xReact}, xWant ×${xWant}, ${richness} at: edges in all) — no score`);
@@ -361,8 +355,6 @@ export function classifyStatement(
   return {
     kind,
     scores,
-    followupSlot: capture.newPerson ? "new-person" : capture.doing ? "doing" : "topic",
-    motivationLicensed,
     channels,
   };
 }

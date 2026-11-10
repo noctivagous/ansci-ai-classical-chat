@@ -43,20 +43,12 @@ export type ClarificationDisposition = "ready" | "moderate" | "sparing";
  */
 export type DeclineStyle = "named-missing" | "plain";
 
-/** Whether a class of statement earns a follow-up question. */
-export type FollowupStance = "follow-up" | "none";
-
 export interface RolePack {
   id: string;
   label: string;
   statementStrategy: StatementStrategy;
   /** relations solve prefers when this role selects a statement fact */
   preferredRelations: string[];
-  followupPolicy: {
-    schmooze: FollowupStance;
-    connected: FollowupStance;
-    informing: FollowupStance;
-  };
   declineStyle: DeclineStyle;
   clarificationDisposition: ClarificationDisposition;
   /** the role's voice for a memory-write acknowledgement */
@@ -78,7 +70,6 @@ const STATEMENT_STRATEGIES: StatementStrategy[] = [
 ];
 const DISPOSITIONS: ClarificationDisposition[] = ["ready", "moderate", "sparing"];
 const DECLINE_STYLES: DeclineStyle[] = ["named-missing", "plain"];
-const FOLLOWUPS: FollowupStance[] = ["follow-up", "none"];
 
 function checked<T extends string>(value: unknown, allowed: readonly T[], field: string, id: string): T {
   if (typeof value !== "string" || !(allowed as readonly string[]).includes(value)) {
@@ -93,7 +84,6 @@ function checked<T extends string>(value: unknown, allowed: readonly T[], field:
 export function parseRolePack(json: string, source: string): RolePack {
   const raw = JSON.parse(json) as Record<string, unknown>;
   const id = typeof raw.id === "string" && raw.id ? raw.id : path.basename(source, ".json");
-  const follow = (raw.followupPolicy ?? {}) as Record<string, unknown>;
   const pack: RolePack = {
     id,
     label: typeof raw.label === "string" && raw.label ? raw.label : id,
@@ -101,11 +91,10 @@ export function parseRolePack(json: string, source: string): RolePack {
     preferredRelations: Array.isArray(raw.preferredRelations)
       ? raw.preferredRelations.filter((r): r is string => typeof r === "string")
       : [],
-    followupPolicy: {
-      schmooze: checked(follow.schmooze ?? "none", FOLLOWUPS, "followupPolicy.schmooze", id),
-      connected: checked(follow.connected ?? "none", FOLLOWUPS, "followupPolicy.connected", id),
-      informing: checked(follow.informing ?? "none", FOLLOWUPS, "followupPolicy.informing", id),
-    },
+    // Template removal (round 3, T3): followupPolicy — the
+    // per-class schedule that admitted the canned follow-up
+    // forms — is removed with the forms (leaf T2). A pack that
+    // still carries the field has it ignored, not honoured.
     declineStyle: checked(raw.declineStyle, DECLINE_STYLES, "declineStyle", id),
     clarificationDisposition: checked(
       raw.clarificationDisposition, DISPOSITIONS, "clarificationDisposition", id,
