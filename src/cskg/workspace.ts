@@ -11,6 +11,9 @@
  *   breakdown           — discourse
  *   intent              — intent
  *   activeContext       — memory (its standing contribution)
+ *   situationModel      — Situation analysis (situation.ts, E5):
+ *                         a snapshot of the session's live
+ *                         situation model as this turn leaves it
  *   conclusions         — solve (via solve.addConclusions)
  *   reply               — articulate (via articulate.speak)
  *   input               — the interface, at construction
@@ -36,11 +39,12 @@ import type { Intent } from "./intent";
 import type { QueryRecord } from "./loader";
 import type { ActiveContext } from "./memory";
 import type { RolePack } from "./roles";
+import type { SituationSnapshot } from "./situation";
 
 export type TraceStepKind =
   | "situate" | "resolve" | "intent" | "query" | "conclude"
   | "decline" | "replay" | "correct" | "remember" | "triage"
-  | "compose" | "examine";
+  | "compose" | "examine" | "situate-model";
 
 export interface TraceStep {
   /** the engine-map node id of the piece that acted */
@@ -71,6 +75,8 @@ export interface TurnWorkspace {
   breakdown: Breakdown | null;
   intent: Intent | null;
   activeContext: ActiveContext | null;
+  /** E5: the situation model as this turn leaves it (situation.ts) */
+  situationModel: SituationSnapshot | null;
   conclusions: Conclusion[];
   reply: string | null;
   trace: ThoughtTrace;
@@ -89,6 +95,7 @@ export function createWorkspace(turn: number, input: string): TurnWorkspace {
     breakdown: null,
     intent: null,
     activeContext: null,
+    situationModel: null,
     conclusions,
     reply: null,
     trace: { turn, input, intent: "", steps: [], conclusions, answer: "" },

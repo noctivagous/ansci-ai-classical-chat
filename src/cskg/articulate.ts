@@ -443,6 +443,22 @@ export function renderStateNoted(feelingText: string, pattern: string | null): s
     : `${cap(feelingText)} — noted.`;
 }
 
+/**
+ * The acknowledgement clause appended when a statement carried
+ * a first-person DOING the situation model recorded as an event
+ * (E5): the happening is acknowledged AS a happening —
+ * participants and time ride in the action phrase — beside
+ * whatever the statement strategy said about its topic.
+ */
+export function renderEventAcknowledgement(
+  action: string,
+  timeText: string | null,
+  frameName: string | null,
+): string {
+  return `Noted as an event: ${action}${timeText ? ` (${timeText})` : ""}` +
+    `${frameName ? ` — roles from the ${frameName} frame` : ""}.`;
+}
+
 /** A memory write's acknowledgement, in the role's voice, naming what was kept. */
 export function renderRememberAck(ack: string, display: string): string {
   return `${ack} ${cap(display)}.`;

@@ -1,0 +1,7 @@
+# E5 S4 — causal: rain moves the picnic (asserted by the person,
+# unchecked by the graph), then a graph-checked cause.
+It's raining.
+We moved the picnic indoors because of the rain.
+Why did we move the picnic?
+The rain flooded the garden.
+Why is the garden flooded?

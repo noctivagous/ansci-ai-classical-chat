@@ -658,6 +658,57 @@ a slice is judged on exactly that declaration.
   by the engine — and inferred relations are marked as inferences
   wherever they are used. Slices: E5a events + participants +
   coreference; E5b the relation families.
+  *Landed* (2026-11-10): Situation analysis (`src/cskg/situation.ts`)
+  owns the model — held in the session (`SessionState.situation`)
+  and written to the workspace as the `situationModel` snapshot,
+  registered in the engine map like every other piece. E5a:
+  entities (one per referent, surfaces accumulate), events from
+  statement turns (the person's captured doings first, then a
+  clause scan over the design's action vocabulary; participants
+  only where the surface supports them — actor, object,
+  recipient, instrument, place, time; a container phrase yields
+  container + content participants), states, and pronoun /
+  definite-reference resolution against the model (G4's full
+  form). The contents kind set gained **event** (a mention whose
+  referent carries ATOMIC `at:` edges, or files under an event
+  anchor — dual with thing). E5b: the four relation families as
+  sections over the one model — causality (stated links checked
+  against CSKG's Causes testimony: checked → *known*, stated →
+  *asserted*, juxtaposition → *inferred*, the stamp spoken in
+  why-answers), social (possessive and stated relations;
+  write-through to the person file only via person.ts's own
+  acknowledged fact discipline — a named relation statement is
+  filed as a note fact there, never silently by the model),
+  temporal (explicit markers → asserted; telling order →
+  inferred and marked as such when used), state tracking (a
+  changed state is a small event linked to the state it
+  supersedes). Consumption: referring and follow-up questions
+  (what/when/who/what's-in/order/how-am-I) answer from the
+  model before any fresh topic lookup; a why about a modelled
+  event answers from its causal relations first; a first-person
+  doing statement gains an event acknowledgement clause beside
+  its topic acknowledgement (a pre-declared transcript effect).
+  Frame schemas name the roles where a frame matches the verb:
+  `src/cskg/frames.ts` is a read-only side store over the
+  FrameNet bundle (Definitions discipline — lazy, absent is not
+  an error), and the FULL bundle (1,019 frames, manifest counts
+  verified) is E5's best substrate: `scripts/install.mjs`
+  installs it, the importers print status words
+  (full / fixture-only / absent; a partial import installs
+  nothing and exits non-zero), and the TUI's setup reports the
+  status without blocking on it. Judged on the five named
+  sequences in the E5 note (soup, two-person pronouns,
+  temporal, causal checked-vs-unchecked, state change) plus
+  the Chicago/Sydney evaluations. Honest limits ride with the
+  landing, recorded in the note: extraction is a surface
+  discipline over a fixed action-verb vocabulary (paraphrase
+  beyond it does not key events — G6's remaining half); the
+  statement acknowledgement for non-doing statements is still
+  topic-led (the model records their events silently); model
+  answers phrase events in the person's own words, so their
+  grammar is the saying debt's, not yet solved; durations and
+  during-relations are named in the design but only
+  before/after and planned-vs-past landed.
 
 E1+E2 may be read together (E2 is where E1 pays off); E3 and E4 are
 each judged on their own transcripts. The contents-breakdown
@@ -705,6 +756,14 @@ slice), **closing** (a running slice owns it), **closed**.
   and relation-family modules (CausalityRelation, social,
   temporal, state, coreference), every relation attributed
   asserted/known/inferred (§8).
+  *Closed* (2026-11-10, E5): the situation model landed —
+  statements build events with surface-supported participants
+  into the session-held model, follow-up and referring
+  questions answer from it, and the named sequences (soup,
+  pronouns, temporal, causal, state change) show happenings
+  followed across turns for the first time. The residue is
+  extraction reach (the fixed action-verb vocabulary — G6's
+  remaining half) and the saying of events, not the structure.
 - **G3 — Statement response shape.** What a statement reply should
   do. *Decided*: answered by role (§5) — implementation in E4.
   *Closed* (2026-11-09, E4): statement replies are formulated
@@ -718,6 +777,19 @@ slice), **closing** (a running slice owns it), **closed**.
 - **G4 — Pronouns.** *She/he/it* pointing at active referents.
   *Open*; a light version (most recent compatible referent) is
   cheap at any time, the full version rides with E5.
+  *Closed* (2026-11-10, E5): the full version landed with the
+  situation model — pronouns and definite references resolve
+  against the model's entities and events (kind- and
+  relation-compatible, recency inside the compatible set;
+  "it" prefers the latest event's object, "then" the latest
+  event), every resolution is traced, and the identity
+  relations carry the *inferred* stamp. The named two-person
+  sequence is the evidence: "he" lands on the brother across
+  turns, and both follow-ups answer from his event. Limit:
+  resolution is recency+compatibility only — no salience
+  weighting beyond the topic machinery the model already
+  inherits, and a pronoun with two live compatible referents
+  takes the most recent without asking.
 - **G5 — Situation selection pressure has no observed effect.**
   The mechanism (prefer season/daypart-relevant facts) is in, but
   Chicago-vs-Sydney runs showed no flip — the effect sits below
@@ -751,6 +823,21 @@ slice), **closing** (a running slice owns it), **closed**.
   keying over statement phrasing matched nothing live — the
   E4 note's probe result; that is the general-reach half of
   this gap, still open.)
+  *Narrowed again* (2026-11-10, E5): the situation model's
+  event extraction is a second, independent reach — a clause
+  scan over an action-verb vocabulary (regular + irregular
+  forms), subject-verb disambiguation (an article-governed
+  noun that is also a verb form does subject duty), and a
+  per-clause ATOMIC `matchEvent` keying recorded on the event.
+  Live evidence: every statement in the five named E5
+  sequences extracts its happening(s), including third-person
+  and past-tense statements the classifier never keyed. What
+  remains open is reach beyond the vocabulary: a happening
+  phrased with a verb outside the set (or a nominalisation)
+  still keys nothing, and the vocabulary is a list, not a
+  derivation — extending it from the graph's own verb
+  inventory (the graph-first move) is the recorded next step
+  for this gap, not yet taken.
 - **G7 — No definitions.** CSKG carries no glosses, so "what is X"
   is a neighbourhood sketch, never a definition. *Decided*
   (2026-11-09, verified against the data): WordNet IS one of
@@ -814,7 +901,9 @@ unbuilt), *missing* (not yet designed):
   (E3). *Designed:* the contents submodule's people/places/things/
   times analysis, EverydaySense, the AmbiguityResolver,
   definitions. *Missing:* paraphrase reach beyond self-statements
-  (E5's event matching is the current answer).
+  (E5's event matching — landed 2026-11-10 as situation.ts's
+  clause scan plus per-clause ATOMIC keying — is the current
+  answer; reach beyond its verb vocabulary is G6's open half).
 - **Deciding.** *Have:* basic intent (statement/question/why/
   correction). *Designed:* the Context module assembling operative
   parameters, the clarification decision, standing-tuple

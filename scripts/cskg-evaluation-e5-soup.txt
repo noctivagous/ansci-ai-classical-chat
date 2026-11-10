@@ -1,0 +1,6 @@
+# E5 S1 — the soup sequence: an event stated, then referred back to.
+# Judgements pre-declared in src/cskg/EVALUATION-REPORT.md (E5 note).
+I'm making a big pot of soup Saturday.
+What are you making?
+When is it?
+What's in it?

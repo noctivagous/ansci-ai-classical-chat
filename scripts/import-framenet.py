@@ -30,7 +30,12 @@ excluded, per §5.1: it illustrates usage rather than defining structure):
 
 What it writes (the bundle — a LOCAL artifact, gitignored like the raw
 download; the repo ships this installer and a small test fixture, not
-the bundle):
+the bundle). The bundle is written to a staging directory and swapped
+into place whole; success prints the manifest counts and the status
+word (full — or fixture-only for a --only import). An unrestricted
+import whose counts do not match the full inventory (1019 frames /
+9634 frameElements / 11942 lexicalUnits / 1676 frameRelations) is
+partial: it installs nothing and exits non-zero.
   data/framenet/manifest.json   {v, source, edition, license, counts, parts}
   data/framenet/part-*.json     chunked record arrays, each part at most
                                 PART_BUDGET_CAP bytes (the repo's
@@ -73,6 +78,7 @@ Usage:
 import json
 import os
 import re
+import shutil
 import sys
 import urllib.request
 import zipfile
@@ -93,6 +99,22 @@ DEFAULT_OUT = os.path.join(REPO_ROOT, "data", "framenet")
 # No part file may exceed the 3.5 MB cap (shared with import-wordnet.py).
 PART_BUDGET_CAP = 3_500_000
 PART_BUDGET_SAFE = 3_200_000
+
+# The FULL inventory of the FrameNet 1.5 release this importer
+# installs. A default (unrestricted) import whose counts do not
+# match this exactly is a PARTIAL import: it exits non-zero and
+# installs nothing, so a truncated or damaged source can never
+# leave a bundle that could be mistaken for full. Status words
+# (shared with install.mjs, setup.ts and frames.ts):
+#   full         — the complete inventory, counts verified
+#   fixture-only — a deliberately restricted (--only) bundle
+#   absent       — no bundle at all
+FULL_COUNTS = {
+    "frames": 1019,
+    "frameElements": 9634,
+    "lexicalUnits": 11942,
+    "frameRelations": 1676,
+}
 
 
 def lname(tag):
@@ -287,19 +309,43 @@ def main(argv):
         "frameRelations": len(relations),
     }
 
+    # Status (see FULL_COUNTS above): a restricted import is the
+    # fixture path and says so; an unrestricted import is full
+    # only when the counts match the release exactly — anything
+    # else is partial, and a partial import installs NOTHING
+    # and exits non-zero.
+    if only is not None:
+        status = "fixture-only"
+    elif counts == FULL_COUNTS:
+        status = "full"
+    else:
+        print(
+            "error: partial import — counts {got} do not match the full "
+            "inventory {want}; refusing to install a bundle that could "
+            "be mistaken for full. Nothing was written to {out}.".format(
+                got=counts, want=FULL_COUNTS, out=out_dir,
+            ),
+            file=sys.stderr,
+        )
+        return 1
+
     groups = [("frames", frames), ("relations", relations)]
     parts = build_parts(groups, PART_BUDGET_CAP)
     if parts and max(len(b) for _k, _c, b in parts) >= 0.95 * PART_BUDGET_CAP:
         parts = build_parts(groups, PART_BUDGET_SAFE)
 
-    os.makedirs(out_dir, exist_ok=True)
-    for name in os.listdir(out_dir):
-        if name == "manifest.json" or (name.startswith("part-") and name.endswith(".json")):
-            os.remove(os.path.join(out_dir, name))
+    # Write the bundle into a staging directory beside the
+    # target, manifest last, then swap it into place: a crash or
+    # failure mid-write can never leave a half-written bundle
+    # where a reader could mistake it for a complete one.
+    staging = out_dir + f".tmp-{os.getpid()}"
+    if os.path.exists(staging):
+        shutil.rmtree(staging)
+    os.makedirs(staging)
     part_entries = []
     for idx, (kind, count, blob) in enumerate(parts, start=1):
         fname = f"part-{idx:03d}.json"
-        with open(os.path.join(out_dir, fname), "wb") as fh:
+        with open(os.path.join(staging, fname), "wb") as fh:
             fh.write(blob)
         part_entries.append({"file": fname, "kind": kind, "count": count, "bytes": len(blob)})
 
@@ -311,9 +357,18 @@ def main(argv):
         "counts": counts,
         "parts": part_entries,
     }
-    with open(os.path.join(out_dir, "manifest.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(staging, "manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
+
+    os.makedirs(out_dir, exist_ok=True)
+    for name in os.listdir(out_dir):
+        if name == "manifest.json" or (name.startswith("part-") and name.endswith(".json")):
+            os.remove(os.path.join(out_dir, name))
+    for name in os.listdir(staging):
+        os.replace(os.path.join(staging, name), os.path.join(out_dir, name))
+    os.rmdir(staging)
+
     total = sum(p["bytes"] for p in part_entries)
     print(
         "framenet bundle: {out} = {total} bytes in {n} parts + manifest; "
@@ -324,6 +379,7 @@ def main(argv):
             lus=counts["lexicalUnits"], rels=counts["frameRelations"],
         )
     )
+    print(f"framenet status: {status}")
     return 0
 
 

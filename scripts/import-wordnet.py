@@ -490,6 +490,17 @@ def main() -> None:
     print(f"pointers to missing synsets skipped: {skipped}")
     print(f"exception-file pairs parsed: {len(exc_pairs)}")
     write_extract(extract, stats, exc_pairs)
+    # Status, in the same shape as the FrameNet importer's: the
+    # extract is deterministic (chunk boundaries are a pure
+    # function of the data), so re-running this importer is
+    # idempotent — it reproduces the same bytes — and after any
+    # successful run the extract is simply present. install.mjs
+    # verifies the shipped copy by this manifest and reports the
+    # same word.
+    print(
+        "wordnet extract status: present "
+        f"({stats['synsets']} synsets, {sum(stats['relations'].values())} relations)"
+    )
 
 
 if __name__ == "__main__":

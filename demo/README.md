@@ -27,8 +27,14 @@ node scripts/install.mjs
 
 The install script checks your Node version, downloads the CSKG data
 (about 112 MB, from Zenodo) into `data/raw/cskg/`, verifies it,
-installs dependencies and builds. It is safe to run again: on a ready
-repo it verifies what is there and changes nothing.
+installs dependencies and builds. It then verifies the WordNet
+extract (which ships in the repo), installs the full FrameNet bundle
+(the participant-role source for the chat's situation model — status
+reported as full / fixture-only / absent; the chat runs in every
+state, with generic role names where no bundle is present), and
+pre-builds the serialised index so the first chat is fast. It is
+safe to run again: on a ready repo it verifies what is there and
+changes nothing.
 
 ## Three ways to chat
 
@@ -54,7 +60,8 @@ node dist/src/cskg/chat.js
 
 **Terminal UI** — the front door: on launch it runs a short setup
 (data check with an in-place install offer, serialised-index build
-on first run, place/person/role prompts), then chats under a header
+on first run, the FrameNet bundle's status reported — never a
+blocker — and place/person/role prompts), then chats under a header
 carrying the situated frame, with an optional per-turn trace view
 and slash commands (`/help` lists them; see `demo/tui/README.md`).
 With piped stdin it hands off to the command-line chat instead:

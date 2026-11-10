@@ -11,7 +11,20 @@
  *      corrupt (112 MB; the pre-merge cskg_star.tsv.gz is NOT needed
  *      by the chat and is never downloaded);
  *   3. installs dev dependencies if node_modules/ is missing;
- *   4. builds the TypeScript to dist/ (npm run build).
+ *   4. builds the TypeScript to dist/ (npm run build);
+ *   5. verifies the WordNet extract (data/wordnet/extract — it
+ *      ships in the repo; this only checks and reports);
+ *   6. makes sure the FULL FrameNet bundle is installed
+ *      (data/framenet — the participant-role schemas E5's
+ *      situation model consults). Runs scripts/import-framenet.py
+ *      when python3 is available; if it is not, or the import
+ *      fails, the install still succeeds — the chat runs without
+ *      FrameNet and E5's role naming degrades to generic roles —
+ *      and the status is reported honestly as absent /
+ *      fixture-only / full, with the one command that completes
+ *      it: python3 scripts/import-framenet.py;
+ *   7. pre-builds the serialised CSKG index through the loader's
+ *      own cache machinery, so the first chat takes the fast path.
  *
  * Idempotent: run it again on a ready repo and it verifies what is
  * already there and changes nothing. Downloads go to a temp file and
@@ -19,7 +32,7 @@
  * leaves a half-written file behind.
  */
 import { spawnSync } from "node:child_process";
-import { createReadStream, createWriteStream, existsSync, mkdirSync, renameSync, statSync, unlinkSync } from "node:fs";
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync } from "node:fs";
 import { get } from "node:https";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -172,6 +185,48 @@ function run(cmd, args, label) {
   if (result.status !== 0) fail(`${label} failed (exit ${result.status}).`);
 }
 
+const WORDNET_MANIFEST = join(ROOT, "data", "wordnet", "extract", "manifest.json");
+const FRAMENET_DIR = join(ROOT, "data", "framenet");
+// The full FrameNet inventory (scripts/import-framenet.py's
+// FULL_COUNTS; frames.ts keeps the same numbers — a bundle is
+// "full" only when its manifest counts match exactly).
+const FULL_FRAMENET_COUNTS = {
+  frames: 1019, frameElements: 9634, lexicalUnits: 11942, frameRelations: 1676,
+};
+
+/** The WordNet extract's status: it ships in the repo, so this
+ *  only verifies and reports. Returns its manifest counts too. */
+function wordnetStatus() {
+  try {
+    const m = JSON.parse(readFileSync(WORDNET_MANIFEST, "utf8"));
+    const c = m.counts ?? {};
+    if (typeof c.synsets === "number" && c.synsets > 0) {
+      return { status: "present", counts: c };
+    }
+  } catch { /* absent or unreadable — reported below */ }
+  return { status: "absent", counts: null };
+}
+
+/** The FrameNet bundle's status word, matching frames.ts
+ *  frameNetStatus and the TUI's setup facts exactly:
+ *  absent | fixture-only | full. */
+function framenetStatus() {
+  try {
+    const m = JSON.parse(readFileSync(join(FRAMENET_DIR, "manifest.json"), "utf8"));
+    const c = m.counts ?? {};
+    if (
+      c.frames === FULL_FRAMENET_COUNTS.frames &&
+      c.frameElements === FULL_FRAMENET_COUNTS.frameElements &&
+      c.lexicalUnits === FULL_FRAMENET_COUNTS.lexicalUnits &&
+      c.frameRelations === FULL_FRAMENET_COUNTS.frameRelations
+    ) {
+      return "full";
+    }
+    if (typeof c.frames === "number" && c.frames > 0) return "fixture-only";
+  } catch { /* absent or unreadable */ }
+  return "absent";
+}
+
 async function main() {
   console.log("AnSci — CSKG chat install\n");
 
@@ -206,6 +261,98 @@ async function main() {
 
   // 4. Build
   run("npm", ["run", "build"], "Building (npm run build)");
+
+  // 5. WordNet extract — ships in the repo; verify and report.
+  console.log("\n== WordNet extract (data/wordnet/extract)");
+  const wn = wordnetStatus();
+  if (wn.status === "present") {
+    console.log(
+      `  present — ${wn.counts.synsets} synsets, ${wn.counts.relations} relations` +
+      (typeof wn.counts.forms === "number" ? `, ${wn.counts.forms} forms` : "") +
+      ". It ships in the repo; nothing to do.",
+    );
+  } else {
+    console.log(
+      "  absent — the definitions store will have no WordNet glosses. " +
+      "The extract ships in the repo, so this means the checkout is incomplete; " +
+      "it can also be rebuilt with:\n    python3 scripts/import-wordnet.py",
+    );
+  }
+
+  // 6. FrameNet bundle — E5's participant-role source. Full is
+  // required for E5's best operation; the chat itself runs
+  // without it (role naming degrades to generic roles), so a
+  // failure here is reported honestly and never fails the
+  // install.
+  console.log("\n== FrameNet bundle (data/framenet)");
+  let fnStatus = framenetStatus();
+  if (fnStatus === "full") {
+    console.log(
+      `  full — ${FULL_FRAMENET_COUNTS.frames} frames, ` +
+      `${FULL_FRAMENET_COUNTS.frameElements} frame elements, ` +
+      `${FULL_FRAMENET_COUNTS.lexicalUnits} lexical units, ` +
+      `${FULL_FRAMENET_COUNTS.frameRelations} frame relations. Nothing to do.`,
+    );
+  } else {
+    const py = spawnSync("python3", ["--version"], { encoding: "utf8" });
+    if (!py.error && py.status === 0) {
+      console.log(`  status: ${fnStatus} — running the FrameNet importer…`);
+      const res = spawnSync("python3", [join(ROOT, "scripts", "import-framenet.py")], {
+        cwd: ROOT,
+        stdio: "inherit",
+        shell: process.platform === "win32",
+      });
+      fnStatus = framenetStatus();
+      if (res.status === 0 && fnStatus === "full") {
+        console.log("  FrameNet bundle: full — verified against the manifest counts.");
+      } else {
+        console.log(
+          `  FrameNet bundle: ${fnStatus} — the import did not complete, and the CSKG chat ` +
+          "does not need it to run; E5's event roles will use generic names until it is installed. " +
+          "Complete it with:\n    python3 scripts/import-framenet.py",
+        );
+      }
+    } else {
+      console.log(
+        `  FrameNet bundle: ${fnStatus} — python3 is not available on this machine, ` +
+        "so the importer could not run. The CSKG chat does not need it to run; " +
+        "E5's event roles will use generic names until it is installed. " +
+        "Complete it with:\n    python3 scripts/import-framenet.py",
+      );
+    }
+  }
+
+  // 7. Serialised CSKG index — pre-build it through the
+  // loader's own cache machinery (no fingerprinting is
+  // re-implemented here), so the first chat is the fast path.
+  // A failure only means the first chat builds it instead.
+  console.log("\n== Serialised CSKG index");
+  const prebuild = spawnSync(
+    process.execPath,
+    [
+      "-e",
+      `const { loadCskg, cacheStateFor } = require(process.argv[1]);
+       (async () => {
+         const dataFile = process.argv[2];
+         const before = cacheStateFor(dataFile);
+         if (before === "current") {
+           console.log("  already current — the first chat takes the fast path.");
+           return;
+         }
+         await loadCskg(dataFile);
+         console.log("  built and serialised beside the data file (" + before +
+           " → " + cacheStateFor(dataFile) + ") — the first chat takes the fast path.");
+       })().catch((e) => {
+         console.log("  could not pre-build (" + e.message + ") — the first chat will build it instead.");
+       });`,
+      join(ROOT, "dist", "src", "cskg", "loader.js"),
+      DATA_FILE,
+    ],
+    { cwd: ROOT, stdio: "inherit" },
+  );
+  if (prebuild.error || prebuild.status !== 0) {
+    console.log("  could not pre-build — the first chat will build it instead.");
+  }
 
   console.log(`
 Done. Three ways to chat (run from the repo root):

@@ -27,6 +27,7 @@ import {
   renderReplayNoPrevious,
 } from "./articulate";
 import type { CskgGraph } from "./loader";
+import { createSituationModel, type SituationModel } from "./situation";
 import type { ThoughtTrace, TurnWorkspace } from "./workspace";
 
 /**
@@ -100,6 +101,14 @@ export interface SessionState {
   lastTurnWasAsk: boolean;
   /** senses settled by correction or clarification: term → synset id */
   settledSenses: Record<string, string>;
+  /**
+   * E5: the session's live SITUATION MODEL (situation.ts) — the
+   * conversation's own micro-world of entities, events, states
+   * and attributed relations. It lives in the session like the
+   * topic stack and the trace ring do, and Situation analysis is
+   * its only writer; memory merely holds it.
+   */
+  situation: SituationModel;
 }
 
 export function createSession(): SessionState {
@@ -114,6 +123,7 @@ export function createSession(): SessionState {
     clarificationsAsked: 0,
     lastTurnWasAsk: false,
     settledSenses: {},
+    situation: createSituationModel(),
   };
 }
 

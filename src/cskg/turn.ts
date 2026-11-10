@@ -60,6 +60,7 @@ import {
   renderDeclineUnplaced,
   renderDeclineUnplacedPlain,
   renderDefinition,
+  renderEventAcknowledgement,
   renderNamedReading,
   renderNoFact,
   renderNoFactPlain,
@@ -155,6 +156,11 @@ import {
   topConclusions,
   turnContextIds,
 } from "./solve";
+import {
+  analyseSituationInto,
+  answerSituationQuestion,
+  answerSituationWhy,
+} from "./situation";
 import { admissionFor, standingTrace } from "./standing";
 import {
   createWorkspace,
@@ -441,6 +447,20 @@ export function runTurn(
       `person knowledge consulted first: the turn's contents touch ${connections.map((c) => `"${c.fact.display}" (via ${c.via})`).join(", ")}`);
   }
 
+  // (3c) E5 — Situation analysis: the turn's happenings,
+  // people and states enter the session's SITUATION MODEL
+  // (entities, events, states, attributed relations — the
+  // conversation's own micro-world, held in the session), and
+  // the turn's pronouns resolve against it. Runs for
+  // statements and questions alike; only statements assert
+  // new events. situation.ts is the model's only writer; the
+  // result feeds the statement acknowledgement and the
+  // referring-question answers below.
+  const sitResult = analyseSituationInto(ws, g, session, {
+    isStatement: !isQuestionForm(lower),
+    capture,
+  });
+
   // helpers ------------------------------------------------------------
   // Decline STYLE is the role's (packs may word a decline
   // plainly or by naming the missing relation); the honesty —
@@ -543,6 +563,22 @@ export function runTurn(
     );
   }
 
+  // E5 — a follow-up or referring question the situation model
+  // holds the answer to ("What are you making?", "When is
+  // it?", "What's in it?", "Who is he bringing?", "Which
+  // happened first?") is answered FROM THE MODEL — the record
+  // of this conversation — not by a fresh topic lookup. A
+  // question that is not the model's to answer returns null
+  // here and falls through to the ordinary machinery unchanged.
+  if (isQuestion) {
+    const sitAns = answerSituationQuestion(ws, session);
+    if (sitAns) {
+      noteTriage(ws, "retrieve", "answered from the session's situation model (E5)");
+      session.lastIntent = "fact";
+      return finish(sitAns.text, "fact", sitAns.grounded);
+    }
+  }
+
   if (isQuestion && resolved.length) {
     // E2: subject selection consumes discourse's scored topic
     // ranking; E1's ordering survives as the fallback.
@@ -563,6 +599,16 @@ export function runTurn(
     // rule (§6): an empty causal set declines, naming the missing
     // causation, instead of borrowing a neighbouring word's edges.
     if (hasWhyPattern(lower)) {
+      // E5: a why about one of the model's own events is
+      // answered from the model's causal relations first —
+      // the record of what was said, with its attribution
+      // spoken, outranks a fresh graph search here
+      const sitWhy = answerSituationWhy(ws, session);
+      if (sitWhy) {
+        noteTriage(ws, "retrieve", "the situation model's causal relation for this event (E5)");
+        session.lastIntent = "why";
+        return finish(sitWhy.text, "why", sitWhy.grounded);
+      }
       const res = answerWhyQuestion(g, ws, resolved);
       if (res.kind === "answer") {
         noteTriage(ws,
@@ -886,6 +932,14 @@ export function runTurn(
       : role.followupPolicy.informing;
     if (stance === "follow-up") {
       text += ` ${renderSchmoozeFollowup(cls.followupSlot, g.terms[primary.id])}`;
+    }
+    // E5: a first-person doing the situation model recorded
+    // as an event is acknowledged AS an event — the happening
+    // named, with its time — beside the topic acknowledgement
+    // above (a pre-declared E5 transcript effect)
+    if (sitResult.doingEvent) {
+      const ev = sitResult.doingEvent;
+      text += ` ${renderEventAcknowledgement(ev.action, ev.timeText, ev.frameName)}`;
     }
     text += ackSuffix;
     session.lastIntent = "fact";

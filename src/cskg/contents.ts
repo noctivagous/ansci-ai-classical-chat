@@ -3,7 +3,7 @@
  * (design §2, factored out as the opening step of E3 per §8).
  *
  * It breaks the turn's communication into its PEOPLE, PLACES,
- * THINGS and TIMES — the categorised contents the other pieces
+ * THINGS and TIMES — and, at E5, EVENTS — the categorised contents the other pieces
  * consume (awareness and memory read the people, solve reads the
  * things and places, the within-node fact choice reads them all).
  * It sits inside B: discourse finds the mentions and chooses their
@@ -34,8 +34,16 @@
 import type { Mention } from "./discourse";
 import type { CskgGraph } from "./loader";
 
-/** The open kind set (§2 amendment 1): extend, never restructure. */
-export type ContentKind = "person" | "place" | "thing" | "time";
+/**
+ * The open kind set (§2 amendment 1): extend, never restructure.
+ * E5 adds "event" (2026-11-09, §8): a mention whose referent IS a
+ * happening — an ATOMIC event node, or a state nominal the graph
+ * files as one — is an event as well as (often) a thing. Event
+ * membership is dual by design, like "winter" as time+thing: the
+ * situation module (situation.ts) consumes the event entries as
+ * the per-turn shadow of the events it builds into its model.
+ */
+export type ContentKind = "person" | "place" | "thing" | "time" | "event";
 
 export interface KindScore {
   kind: ContentKind;
@@ -78,6 +86,8 @@ export interface ContentsBreakdown {
   places: ContentEntry[];
   things: ContentEntry[];
   times: ContentEntry[];
+  /** E5: entries whose referent is a happening (dual with thing) */
+  events: ContentEntry[];
 }
 
 /* ---------------- kind anchors (graph-derived signals) ---------- */
@@ -109,11 +119,17 @@ const TIME_ANCHORS = new Set([
   "age",
 ]);
 
+const EVENT_ANCHORS = new Set([
+  "event", "action", "activity", "process", "occurrence",
+  "ceremony", "celebration", "game", "war", "accident",
+]);
+
 const ANCHORS: Record<ContentKind, Set<string>> = {
   person: PERSON_ANCHORS,
   place: PLACE_ANCHORS,
   thing: THING_ANCHORS,
   time: TIME_ANCHORS,
+  event: EVENT_ANCHORS,
 };
 
 /** IsA ancestry of a node: its IsA targets, and theirs. */
@@ -264,6 +280,14 @@ export function analyseContents(
     const ts = timeSurface(m.text);
     if (ts.score > 0) bump("time", ts.score, ts.signals.join("; "));
 
+    // event signals (E5): the referent carries ATOMIC (at:)
+    // out-edges — it is keyed as a happening, not a thing — or
+    // the graph files it under an event anchor (handled by the
+    // anchor pass above). Dual membership: the thing score
+    // stands; this adds the event reading beside it.
+    const isAtomicEvent = g.outEdges(cand.id).some((e) => e.rel.startsWith("at:"));
+    if (isAtomicEvent) bump("event", 5, "graph: an ATOMIC event node (at: edges)");
+
     const kinds = [...scores.values()].sort((a, b) => b.score - a.score);
     let chosen = kinds.filter((k) => k.score >= 2).map((k) => k.kind);
     if (!chosen.length && kinds.length) chosen = [kinds[0].kind];
@@ -292,6 +316,7 @@ export function analyseContents(
     places: of("place"),
     things: of("thing"),
     times: of("time"),
+    events: of("event"),
   };
 }
 

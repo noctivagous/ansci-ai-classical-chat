@@ -70,10 +70,11 @@ test("decideSetup: missing or empty data means install, before any load", () => 
   const base: SetupFacts = {
     data: { exists: false, sizeBytes: 0 },
     cache: "absent",
+    framenet: "absent",
   };
   assert.equal(decideSetup(base).action, "install-data");
   assert.equal(
-    decideSetup({ data: { exists: true, sizeBytes: 0 }, cache: "current" }).action,
+    decideSetup({ data: { exists: true, sizeBytes: 0 }, cache: "current", framenet: "full" }).action,
     "install-data",
     "an empty file is invalid even if a cache claims to mirror it",
   );
@@ -81,9 +82,9 @@ test("decideSetup: missing or empty data means install, before any load", () => 
 
 test("decideSetup: a current cache is the only fast path", () => {
   const data = { exists: true, sizeBytes: 100 };
-  assert.equal(decideSetup({ data, cache: "current" }).action, "load-from-cache");
+  assert.equal(decideSetup({ data, cache: "current", framenet: "full" }).action, "load-from-cache");
   for (const cache of ["absent", "stale", "invalid"] as const) {
-    const d = decideSetup({ data, cache });
+    const d = decideSetup({ data, cache, framenet: "absent" });
     assert.equal(d.action, "load-and-serialise", `cache ${cache} parses in full`);
     assert.ok(d.detail.length > 0, "the decision carries its reason");
   }

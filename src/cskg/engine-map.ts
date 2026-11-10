@@ -27,6 +27,7 @@ export type EngineNodeId =
   | "context"
   | "everydaysense"
   | "resolver"
+  | "situationModel"
   | "solve"
   | "articulate"
   | "interface";
@@ -40,6 +41,7 @@ export type WorkspaceField =
   | "breakdown"
   | "intent"
   | "activeContext"
+  | "situationModel"
   | "conclusions"
   | "reply"
   | "trace";
@@ -113,6 +115,13 @@ export const ENGINE_NODES: EngineNode[] = [
     reads: ["breakdown", "intent", "trace"],
   },
   {
+    id: "situationModel",
+    label: "Situation analysis — the conversation's own micro-world (E5: entities, events, states, attributed relations)",
+    file: "src/cskg/situation.ts",
+    writes: ["situationModel"],
+    reads: ["breakdown", "context", "activeContext"],
+  },
+  {
     id: "solve",
     label: "E — Query / problem solving",
     file: "src/cskg/solve.ts",
@@ -152,6 +161,12 @@ export const ENGINE_EDGES: EngineEdge[] = [
   { from: "discourse", to: "intent", carries: ["breakdown"] },
   { from: "discourse", to: "memory", carries: ["breakdown"] },
   { from: "discourse", to: "solve", carries: ["breakdown"] },
+  { from: "discourse", to: "situationModel", carries: ["breakdown"] },
+  { from: "context", to: "situationModel", carries: ["context"] },
+  { from: "memory", to: "situationModel", carries: ["activeContext"] },
+  { from: "situationModel", to: "solve", carries: ["situationModel"] },
+  { from: "situationModel", to: "articulate", carries: ["situationModel"] },
+  { from: "situationModel", to: "memory", carries: ["situationModel"] },
   { from: "memory", to: "discourse", carries: ["activeContext"] },
   { from: "memory", to: "solve", carries: ["activeContext"] },
   { from: "intent", to: "memory", carries: ["intent"] },

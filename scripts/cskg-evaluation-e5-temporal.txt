@@ -1,0 +1,5 @@
+# E5 S3 — temporal: two events, then a third; order asked.
+First we set up the tent, then we cooked dinner.
+Then we lit the campfire.
+Which happened first?
+Did the tent come before the campfire?

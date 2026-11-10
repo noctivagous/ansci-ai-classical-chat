@@ -294,6 +294,16 @@ export function factsFromStatement(input: string, source: "stated" | "asked"): P
       out.push(fact("self", "has", object, `you have ${object}`, source));
     }
   }
+  // E5: a named social relation stated outright ("Sarah is my
+  // sister") is the situation model's social relation's
+  // long-term form — filed here, under the same acknowledged
+  // write discipline as every other fact, never silently.
+  if ((m = t.match(/\b([a-z]+) is my (sister|brother|mother|father|friend|partner|wife|husband|daughter|son)\b/i))) {
+    out.push(
+      fact(m[1].toLowerCase(), "note", m[2].toLowerCase(),
+        `${m[1]} is your ${m[2].toLowerCase()}`, source),
+    );
+  }
   return out;
 }
 

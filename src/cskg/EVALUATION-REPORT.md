@@ -1434,3 +1434,233 @@ absent → current → stale → invalid → absent — the onPath
 report, cache-disabled loads, slash-command parsing, header
 wording, trace-view rendering at both levels). Project suite
 170/170; `tsc` clean. Nothing pushed.
+
+## E5 situation-model note (2026-11-10)
+
+E5 (§8) — the situation model. Before this slice the engine's
+per-turn world was the breakdown: mentions, referents, topics.
+A statement was answered with a topic fact because a happening
+had nowhere to live, and a pronoun pointed at a topic stack.
+E5 builds the somewhere: **Situation analysis**
+(`src/cskg/situation.ts`), a new engine piece beside solve,
+owning a session-held live model (`SessionState.situation`)
+and the workspace field `situationModel` (registered in
+engine-map.ts like every other field). The model is the
+conversation's own micro-world — entities, events, states,
+and the relations among them — separate from CSKG, which
+holds world knowledge.
+
+**E5a.** Entities: one per referent, surface forms accumulate;
+events extracted from statement turns — the person's captured
+doings first (person.ts), then a clause scan over an
+action-verb vocabulary with subject/object disambiguation —
+with participants only where the surface supports them
+(actor, object, recipient, instrument, place, time; a
+container phrase yields container + content participants);
+states of entities and of the person. The contents kind set
+gained **event** (a mention whose referent carries ATOMIC
+`at:` edges, or files under an event anchor — dual with
+thing, like winter as time+thing). Coreference (G4's full
+form): pronouns and definite references resolve against the
+model — kind- and relation-compatible, recency inside the
+compatible set; "it" prefers the latest event's object,
+"then" the latest event. Where a FrameNet frame matches an
+event's verb, its elements NAME the roles (`src/cskg/frames.ts`,
+a read-only side store in the Definitions style: lazy, absent
+is not an error, generic roles stand otherwise).
+
+**E5b.** The relation families, as sections over the one
+model, every relation stamped **asserted | known | inferred**
+plus the standing tuple: CausalityRelation (stated links
+checked against CSKG's Causes testimony — checked upgrades
+the stamp to *known*; the stamp is spoken in why-answers),
+social relations (possessives, "X is my sister", knows /
+works-with / belongs-to; the person file stays the long-term
+home — write-through only via person.ts's own acknowledged
+facts, which gained the stated-relation pattern, never
+silently from the model), temporal relations (explicit
+markers asserted; telling order inferred, marked when used),
+state tracking (a changed state is a small event linked to
+the state it supersedes).
+
+**Consumption.** Referring/follow-up questions answer from
+the model before any fresh topic lookup; a why about a
+modelled event answers from its causal relations first; a
+first-person doing statement gains an event acknowledgement
+clause ("Noted as an event: …") beside its topic
+acknowledgement.
+
+**Install (E5's substrate).** `scripts/install.mjs` now also
+verifies the WordNet extract (ships in-repo; reports present
+with counts), installs the **full** FrameNet bundle via
+`scripts/import-framenet.py` when python3 is available
+(status reported as absent / fixture-only / full; a failure
+never fails the install — the chat degrades honestly), and
+pre-builds the serialised index through the loader's own
+cache machinery. The importer prints its manifest counts and
+the status word, writes via a staging directory swapped into
+place whole, and a partial import installs nothing and exits
+non-zero. The WordNet importer is verified idempotent
+(byte-identical re-run) and prints the same style of status
+line. Setup facts (`setup.ts`) carry the FrameNet status as a
+reported, never blocking fact; the TUI shows it in its setup
+report. Full is optional for the chat and required for E5's
+best operation — the READMEs say exactly that.
+
+### Pre-declared judgements
+
+Fixed by the design (§8's E5 bullet) and this slice's brief
+BEFORE the sequences were run. Five named sequences, each its
+own session (scripts/cskg-evaluation-e5-{soup,people,
+temporal,causal,state}.txt), Chicago, assistant role, general
+mode:
+
+- **J1 (soup).** "I'm making a big pot of soup Saturday."
+  records an event (actor you, container a big pot, content
+  soup, time Saturday, roles named by Cooking_creation);
+  "What are you making?", "When is it?", "What's in it?" all
+  answer FROM THE EVENT, not from a fresh topic lookup.
+- **J2 (people).** "My brother is bringing his new
+  girlfriend." records the event under the brother entity;
+  "What is he bringing?" and "Who is he bringing?" resolve
+  "he" to the brother and answer from his event. "Sarah is
+  my sister." records isRelativeOf (asserted); "Who is
+  Sarah?" answers with the stated relation, not the graph's
+  stranger of the same name.
+- **J3 (temporal).** "First we set up the tent, then we
+  cooked dinner." records two events and an asserted before
+  relation (explicit "then"); a third event chains; "Which
+  happened first?" and "Did the tent come before the
+  campfire?" answer from the chain.
+- **J4 (causal).** "It's raining." + "We moved the picnic
+  indoors because of the rain." records a causal link,
+  asserted, that the graph does NOT check; "Why did we move
+  the picnic?" answers with the person's own reason and says
+  the graph doesn't record it. "The rain flooded the
+  garden." records a causal link the graph DOES check
+  (rain —Causes→ flooding); "Why is the garden flooded?"
+  answers *known*, quoting the testimony.
+- **J5 (state).** "I feel tired today." then "I feel much
+  better now." — the better state supersedes the tired one,
+  recorded as a state-change event; "How am I feeling?"
+  answers with the live state and names the superseded one.
+
+Declared evaluation effects (the ONLY intended changes to the
+standing evaluations): statement turns carrying a first-person
+doing gain the event acknowledgement clause — Chicago turns 1
+(soup), 3 (bike), 9 (coat) and Sydney turn 2 (coat). Nothing
+else in either evaluation may move.
+
+### Verdicts
+
+**J1 — pass, verbatim.** "Soup is a type of dish. And what
+made you want to do that? Noted as an event: making a big pot
+of soup (Saturday) — roles from the Cooking_creation frame."
+/ "You are making a big pot of soup, Saturday." / "Making a
+big pot of soup — Saturday." / "Soup — that's what's in the
+big pot, from what you said."
+
+**J2 — pass.** "Your brother is bringing his new girlfriend."
+/ "His new girlfriend." / "Sarah is your sister — that's who
+you told me about." One limit on record: the statement reply
+to "Sarah is my sister." itself is still the topic fact
+("Sister is a type of nun." — the graph's first IsA filing
+for sister, a pre-existing filing debt, not the model's);
+the relation is captured and answerable, which is what J2
+judged.
+
+**J3 — pass.** "First: set up the tent. Then: cooked dinner,
+then lit the campfire." / "Yes — set up the tent came before
+lit the campfire." (The event phrases are the person's own
+words, so their grammar is the saying debt's — recorded as a
+limit, not a failure of the model.) Statement turns gained
+event acknowledgements for the set-up and the lighting, as
+declared for first-person happenings.
+
+**J4 — pass, both halves.** Unchecked: "Because of raining —
+that's the reason you gave for moved the picnic. The graph
+itself doesn't record that causation; I'm going on what you
+said." Checked: "Because of rain — the graph backs that
+link: rain —Causes→ flooding." Attribution is spoken in
+both, and the trace stamps differ ([asserted, unchecked]
+vs [known, checked: rain —Causes→ flooding]).
+
+**J5 — pass.** "You're feeling better — you were tired
+before, by what you've said." The two statement replies are
+the ATOMIC state-reaction machinery's, unchanged from E4
+(their template garble — "dots the is and cross the ts" —
+is the standing S9 saying debt, not E5's to fix here).
+
+**Evaluations.** Chicago: 28 turns; the diff against the
+pre-E5 baseline captured before any E5 code is exactly the
+three declared acknowledgement lines (turns 1, 3, 9) plus the
+real-clock line — every other reply, including the two
+standing honest declines (the onion why, the bare "Why?")
+and the replay answer, is byte-identical to baseline, so the
+E4 totals stand unchanged. Sydney: 3/3 grounded; the only
+diff is the declared coat acknowledgement. One regression
+was caught by this diff during the build and fixed before
+landing: a first-cut when-pattern also matched "What happens
+when it rains?" and answered it from the model ("Buying a
+winter coat — winter coat." — compounded by a season word
+read as an event time); when-questions now must LEAD with
+"when", and an event's time expression must read as a time
+(a day, a daypart, a date — not "winter coat"). The sessions,
+roles and events scripts were re-run and eyeballed: event
+acknowledgements appear exactly on the doing turns, declines
+and ATOMIC answers unchanged.
+
+**Install verification (this machine).** `node
+scripts/install.mjs` end-to-end: data present, WordNet
+"present — 117008 synsets, 153758 relations, 129800 forms",
+FrameNet "full — 1019 frames, 9634 frame elements, 11942
+lexical units, 1676 frame relations", index "already
+current". With the bundle moved aside, the same run reported
+"status: absent — running the FrameNet importer…", printed
+"framenet status: full", and regenerated a bundle
+byte-identical to the one moved aside. A `--only` import
+prints "framenet status: fixture-only". `python3
+scripts/import-wordnet.py` re-run reproduced the extract
+tree byte-identically (md5 of md5s unchanged) and printed
+"wordnet extract status: present (117008 synsets, 153758
+relations)". The TUI, driven under a PTY, shows in setup:
+"Setup — FrameNet / FrameNet bundle: full (1,019 frames) —
+event roles are named from the frames' own schemas."
+
+### Honest limits
+
+- Extraction is a surface discipline over a fixed
+  action-verb vocabulary (regular forms via the discourse
+  form machinery plus an irregular-past table). A happening
+  phrased outside it keys no event; G6's remaining half.
+- Statement replies for non-doing statements (third-person,
+  weather) remain topic-led; the model records those events
+  silently (the trace shows them) — acknowledgement shape
+  for them is saying work, deliberately not folded in here.
+- Temporal landed as before/after + planned-vs-past tense;
+  during relations and durations ("the third day of rain"
+  as a duration) are recorded as entities/time expressions
+  but not yet reasoned over.
+- Coreference is recency within a compatible set; two live
+  compatible referents are not disambiguated by asking.
+- The causal testimony check is direct Causes/HasPrerequisite
+  edges between the linked nodes' referents — no chaining.
+
+### Undesigned behaviour
+
+One candidate, benign: frame choice follows the verb, as
+designed — "making" keys Cooking_creation in the soup turns,
+while "raining" keys Mass_motion in the causal script's
+weather turn (rain as a moving Theme). Nothing else
+unexpected was observed.
+
+Tests: 14 new tests in test/cskg-e5.test.ts (extraction and
+participant discipline, contents' event kind, coreference
+and identity, consumption on all three soup follow-ups,
+temporal asserted, causal known and causal
+asserted-unchecked with the testimony checker unit-tested
+directly, social, state supersession, the frames store on
+the fixture bundle plus absent-bundle degradation, and the
+setup fact). The existing setup-test literals gained the
+`framenet` field their type now requires. Project suite
+184/184 (170 before E5); `tsc` clean. Nothing pushed.

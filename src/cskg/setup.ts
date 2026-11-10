@@ -36,6 +36,7 @@
  *                        loader writes a fresh index.
  */
 import * as fs from "fs";
+import { frameNetStatus, type FrameNetStatus } from "./frames";
 import { cacheStateFor, type CacheState } from "./loader";
 
 /** The data file's cheap facts: presence and size, nothing more. */
@@ -57,13 +58,26 @@ export function dataFileFacts(dataPath: string): DataFileFacts {
 export interface SetupFacts {
   data: DataFileFacts;
   cache: CacheState;
+  /**
+   * E5: the FrameNet bundle's status — a REPORTED fact, never a
+   * blocker. The chat runs without it; E5's frame consultation
+   * (situation.ts via frames.ts) degrades to generic roles when
+   * the bundle is absent, and says so in the trace. The status
+   * word is frames.ts's own: absent | fixture-only | full.
+   */
+  framenet: FrameNetStatus;
 }
 
 /** Collect the facts for one data file (and its cache beside it). */
-export function collectSetupFacts(dataPath: string, cachePath?: string): SetupFacts {
+export function collectSetupFacts(
+  dataPath: string,
+  cachePath?: string,
+  framenetDir?: string,
+): SetupFacts {
   return {
     data: dataFileFacts(dataPath),
     cache: cacheStateFor(dataPath, { cachePath }),
+    framenet: frameNetStatus(framenetDir),
   };
 }
 

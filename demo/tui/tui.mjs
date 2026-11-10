@@ -21,6 +21,11 @@
  *      with a running clock — and the loader writes a fresh
  *      index, so the cost is paid once, here, never as a
  *      silent hang inside the conversation.
+ *   2b. framenet — the FrameNet bundle's status is REPORTED
+ *      (absent | fixture-only | full), never a blocker: the
+ *      chat proceeds in every state, and E5's event-role naming
+ *      degrades to generic roles where no bundle (or only a
+ *      small one) is present.
  *   3. configure — place, person, role: environment values
  *      when given, else quick prompts with defaults
  *      (Chicago / general mode / assistant), each skippable
@@ -241,6 +246,30 @@ async function runInteractive() {
       `  Index built and serialised in ${secs}s — ${sizeLine}. ` +
         "Later launches load through it in a couple of seconds.",
     );
+  }
+
+  /* ---------------- setup 2b: FrameNet (a reported fact) ---------------- */
+  // The FrameNet bundle is E5's participant-role source. Its
+  // status is REPORTED here, never a blocker: the chat proceeds
+  // in every state, and where the bundle is absent or small the
+  // situation model's frame consultation degrades to generic
+  // roles, saying so in the trace.
+  console.log("Setup — FrameNet");
+  if (facts.framenet === "full") {
+    console.log(
+      "  FrameNet bundle: full (1,019 frames) — event roles are named from the frames' own schemas.",
+    );
+  } else if (facts.framenet === "fixture-only") {
+    console.log(
+      "  FrameNet bundle: fixture-only — a small bundle is present, so event roles are frame-named " +
+      "only where one of its frames matches, and generic elsewhere.",
+    );
+    console.log("  Complete it with: python3 scripts/import-framenet.py");
+  } else {
+    console.log(
+      "  FrameNet bundle: absent — the chat proceeds; event roles use generic names (actor, object, …).",
+    );
+    console.log("  Install it with: python3 scripts/import-framenet.py");
   }
 
   /* ---------------- setup 3: configure ---------------- */

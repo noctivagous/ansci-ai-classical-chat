@@ -23,12 +23,35 @@ the translator — never the reasoner.**
 A self-contained spike in `src/cskg/` puts a working chat on CSKG, the unified
 commonsense graph (ConceptNet, WordNet, FrameNet, ATOMIC, Roget's Thesaurus,
 a Wikidata subset, Visual Genome). One install command fetches the data
-(~112 MB) and builds everything; you can then chat with it in a small web UI
-or in the terminal — the terminal UI (`node demo/tui/tui.mjs`) runs its
-own setup on launch (data, serialised index, frame) before the first turn:
+(~112 MB) and sets up everything the chat runs on; you can then chat with it
+in a small web UI or in the terminal — the terminal UI
+(`node demo/tui/tui.mjs`) runs its own setup on launch (data, serialised
+index, FrameNet status, frame) before the first turn:
 
 ```sh
 node scripts/install.mjs
+```
+
+The install, in order: checks Node ≥ 20; fetches and verifies the CSKG data;
+installs dev dependencies if missing; builds to `dist/`; verifies the
+**WordNet extract** (`data/wordnet/extract/` — it ships in the repo, so this
+only checks and reports); installs the **full FrameNet bundle**
+(`data/framenet/` — 1,019 frames, verified against its manifest counts) by
+running `scripts/import-framenet.py` when python3 is available; and
+pre-builds the serialised CSKG index so the first chat takes the fast path.
+
+FrameNet is the participant-role source for the chat's situation model
+(E5): when an event's verb matches a frame, the frame's elements name the
+event's roles (Cook, Produced_food, Container…). Its status is reported
+everywhere in the same three words — **full**, **fixture-only**, **absent**.
+Full is what E5 best operates on, and the install aims for it; but FrameNet
+is optional *for the chat*: if python3 is missing or the import fails, the
+install still succeeds, the status is reported honestly, E5's role naming
+degrades to generic roles (actor, object, …), and the one command that
+completes it is:
+
+```sh
+python3 scripts/import-framenet.py
 ```
 
 See [demo/README.md](demo/README.md) for the quickstart, the three ways to
@@ -145,11 +168,22 @@ through their evoking words (§6.2's EVOKES rule). FrameNet Release 1.5
 is CC BY 3.0 — see `NOTICE`. A small checked-in fixture
 (`test/fixtures/framenet/`) backs the offline test suite.
 
+"Optional" needs one reconciliation at E5: the layer is optional for
+the chat (it runs without it), but the CSKG chat's situation model
+consults the same bundle as a read-only side store to name event
+participants' roles, and **full is required for E5's best operation** —
+so `scripts/install.mjs` installs the full bundle itself (status
+words: full / fixture-only / absent; see "Try the CSKG chat" above).
+The importer prints its manifest counts and the status word on
+success, and a partial import exits non-zero and installs nothing, so
+a bundle that could be mistaken for full is never left behind.
+
 ## Try it
 
 ```bash
 npm install
-python3 scripts/import-framenet.py   # optional: the FrameNet layer
+python3 scripts/import-framenet.py   # the FrameNet layer (optional here; the CSKG
+                                     # install above installs the full bundle itself)
 npm test
 
 npm run ask -- "why is winter cold?"
