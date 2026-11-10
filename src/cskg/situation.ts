@@ -987,6 +987,49 @@ function timeInPhrase(ws: TurnWorkspace, phrase: string): string | null {
   return null;
 }
 
+/**
+ * Spoken intention or obligation around a verb. "thinking of" /
+ * "plan to" are L2-K intended doings. "should" / "should probably"
+ * are obligation hedges on an otherwise ongoing happening — they
+ * are not actors (the junk-actor scan walks past them) and they
+ * are not plans (no timing offer).
+ */
+function intentionAround(
+  words: string[],
+  verbIndex: number,
+): { planned: boolean; marker: string | null } {
+  const before = words.slice(Math.max(0, verbIndex - 6), verbIndex);
+  const joined = before.join(" ");
+  if (/\bplan to\b/.test(joined) || (before.includes("plan") && before.includes("to"))) {
+    return { planned: true, marker: "plan to" };
+  }
+  if (/\bthinking of\b/.test(joined) || (before.includes("thinking") && before.includes("of"))) {
+    return { planned: true, marker: "thinking of" };
+  }
+  if (before.includes("should")) {
+    return {
+      planned: false,
+      marker: (before.includes("probably") || before.includes("maybe"))
+        ? "should probably"
+        : "should",
+    };
+  }
+  return { planned: false, marker: null };
+}
+
+function intentionInText(text: string): { planned: boolean; marker: string | null } {
+  const t = text.toLowerCase();
+  if (/\bi plan to\b/.test(t) || /\bplan to\b/.test(t)) {
+    return { planned: true, marker: "plan to" };
+  }
+  if (/\bthinking of\b/.test(t)) return { planned: true, marker: "thinking of" };
+  if (/\bshould probably\b/.test(t) || /\bshould maybe\b/.test(t)) {
+    return { planned: false, marker: "should probably" };
+  }
+  if (/\bshould\b/.test(t)) return { planned: false, marker: "should" };
+  return { planned: false, marker: null };
+}
+
 function tenseOf(
   ws: TurnWorkspace,
   verbSurface: string,
@@ -1226,7 +1269,7 @@ function buildEvent(
     timeText,
     tense: tenseOf(ws, spec.verbSurface, timeText, spec.planned ?? false),
     mode: spec.planned ? "intended" : "ongoing",
-    intentMarker: spec.planned ? (spec.intentMarker ?? null) : null,
+    intentMarker: spec.intentMarker ?? null,
     turn,
     frameName: frame ? frame.name : null,
     atomicText: atomic ? atomic.text : null,
@@ -1495,16 +1538,13 @@ export function analyseSituationInto(
       const doingWords = cap.doing.split(/\s+/).filter(Boolean);
       const verbSurface = doingWords[0]?.toLowerCase() ?? "";
       if (verbSurface && (verbBasePerTurn(g, verbSurface) || /ing$/.test(verbSurface))) {
+        const intent = intentionInText(lower);
         const built = buildEvent(ws, g, model, {
           verbSurface,
           phrase: cap.doing,
           actor: speaker,
-          planned: /\bi plan to\b/.test(lower) || lower.includes("thinking of"),
-          intentMarker: /\bi plan to\b/.test(lower)
-            ? "plan to"
-            : lower.includes("thinking of")
-              ? "thinking of"
-              : null,
+          planned: intent.planned,
+          intentMarker: intent.marker,
           clause: cap.doing,
         }, speaker);
         if (built) {
@@ -1578,8 +1618,11 @@ export function analyseSituationInto(
       const phrase = cw.slice(i).join(" ");
       // skip when the capture's doing already built this event
       if (result.events.some((e) => e.verbLemma === base && e.turn === turn)) continue;
+      const intent = intentionAround(cw, i);
       const built = buildEvent(ws, g, model, {
         verbSurface: cw[i], phrase, actor, clause,
+        planned: intent.planned,
+        intentMarker: intent.marker,
       }, speaker);
       if (!built) continue;
       // a connective or contraction in the actor slot is a

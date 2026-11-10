@@ -214,6 +214,15 @@ test("statement turn answers grounded, never a bare decline", async () => {
   );
 });
 
+test("obligation modal is restated, not used as the actor", async () => {
+  const g = await graph();
+  const r = runTurn(g, createSession(), "I should probably make coffee");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /You should probably make coffee/i);
+  assert.doesNotMatch(r.text, /^Should make/i);
+  assert.doesNotMatch(r.text, /When's that happening/);
+});
+
 test("tool question finds the corkscrew via reverse UsedFor", async () => {
   const g = await graph();
   const s = createSession();
@@ -408,6 +417,8 @@ test("phatic: open and close end to end, content untouched", async () => {
   assert.equal(runTurn(g, createSession(), "how are you?").text, "Doing all right — thanks for asking.");
   const mixed = runTurn(g, createSession(), "thanks anyway. I think I'll go make that coffee now");
   assert.match(mixed.text, /welcome/i);
+  assert.match(mixed.text, /You go make that coffee now/i);
+  assert.doesNotMatch(mixed.text, /I think go/i);
   const r = runTurn(g, s, "Hi, what is a banana?");
   assert.match(r.text, /banana/i, "the definition route still serves content after a greeting");
   assert.doesNotMatch(r.text, /^Hi there/, "no greeting swallowed the question");

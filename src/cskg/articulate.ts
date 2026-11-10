@@ -668,6 +668,8 @@ export function renderEventLead(
     ? intentMarker === "plan to"
       ? `You plan to ${addressed}`
       : `You're thinking of ${addressed}`
+    : intentMarker
+      ? `You ${intentMarker} ${addressed}`
     : /ing$/i.test(verbSurface.trim())
       ? `You are ${addressed}`
       : `You ${addressed}`;

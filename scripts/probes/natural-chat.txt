@@ -4,19 +4,14 @@
 # the behaviour the first loop asks for. Diagnose does not include
 # this file in the default set; leaves are judged by declaration.
 #
-# Known-failing (pre-loop, 2026-11-10 sitting):
-# - tagged greeting → "Hey is often word."
-# - correction tail → topic "for soup"
-# - onions-in-soup → "Chicken soup is a soup."
-# - onions-for → "Onion is a type of bulb." (purpose empty-set
-#   substitutes a generic IsA)
-# - people-keep-coffee → facts about people (G9 scaffolding)
-# - remember my name → "Name is an affinity."
-# - how are you → decline as an unknown graph term
-# - mixed thanks → telegraphic restatement of the second clause
+# Loop 7 sitting: 12/12 annotated. Coffee correction still
+# names the seed (left as-is). Onions-in-soup is a decline;
+# expect=decline rejects the old IsA substitution ("Chicken
+# soup is a soup."). Probe tokens cannot contain spaces.
 #
 # Advice (loop 5): addition declines empty chicken-soup
 # composition; wear-a-coat cites UsedFor, not IsA hair.
+# Loop 7: obligation lead restates "You should probably…".
 
 hey, how's it going?
 #! expect=grounded contains=hey notcontains=word
@@ -26,13 +21,13 @@ yeah, chicken soup. I have chicken, carrots, and celery. what else should I put 
 no, I mean the food — the meat, for soup
 #! expect=grounded contains=food,chicken notcontains=for,here
 do onions go in chicken soup?
-#! expect=decline notcontains=is
+#! expect=decline
 I know. I was asking about onions
 what are onions for?
 #! expect=decline contains=used notcontains=bulb
 why did you say that?
 it's still dark out and I'm tired. I should probably make coffee
-#! expect=grounded contains=You,coffee notcontains=Should
+#! expect=grounded contains=You,should,coffee
 where do people usually keep coffee?
 #! expect=grounded contains=coffee notcontains=town
 no, I meant the coffee
