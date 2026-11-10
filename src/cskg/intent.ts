@@ -110,6 +110,27 @@ function extractExclusions(lower: string): string[] {
  * to a definition answer). The route — reverse-UsedFor set
  * operations with honest decline — is identical for all three.
  */
+export type PhaticKind = "greeting" | "thanks" | "farewell";
+
+/**
+ * Phatic-only turns (gap 1): greetings, thanks and farewells
+ * with no other content. Full-input match only, so "hi, I
+ * renovated the kitchen" keeps its normal route — only the
+ * bare social move is taken up here. The reply is social, in no
+ * need of graph testimony (E4 schmooze doctrine: zero graph
+ * facts is a complete success, never a decline).
+ */
+export function detectPhatic(lower: string): { kind: PhaticKind; word: string } | null {
+  const text = lower.toLowerCase().trim().replace(/[!.,]+$/, "").trim();
+  let m = text.match(/^(hi|hello|hey|howdy)( there)?$/);
+  if (m) return { kind: "greeting", word: `${m[1]}${m[2] ?? ""}` };
+  m = text.match(/^(thanks|thank you|thx|ty)$/);
+  if (m) return { kind: "thanks", word: m[1] };
+  m = text.match(/^(bye|goodbye|good ?night|see you(?: later)?)$/);
+  if (m) return { kind: "farewell", word: m[1].replace(/ +/g, " ") };
+  return null;
+}
+
 export function detectToolQuery(lower: string): ToolQuery | null {
   const exclusions = extractExclusions(lower);
   const openMatch = lower.match(/what can i open (?:a |an |the )?(.+?) with/);

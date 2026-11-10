@@ -932,6 +932,18 @@ export function offerForPlannedDoing(
   return renderOfferTiming();
 }
 
+/**
+ * The phatic reply (gap 1): greetings and farewells are echoed
+ * in the person's own word (S14 mirroring, not a template —
+ * the word is theirs), thanks gets the social acknowledgement.
+ * No graph claim is made, so no attestation is needed; the turn
+ * succeeds socially, which E4 names a complete success.
+ */
+export function renderPhatic(kind: "greeting" | "thanks" | "farewell", word: string): string {
+  if (kind === "thanks") return "You're welcome!";
+  return `${word.charAt(0).toUpperCase()}${word.slice(1)}!`;
+}
+
 /** A memory write's acknowledgement, in the role's voice, naming what was kept. */
 export function renderRememberAck(ack: string, display: string): string {
   return `${ack} ${cap(display)}.`;

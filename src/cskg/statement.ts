@@ -28,6 +28,7 @@ import {
   renderContinuityClause,
   renderEventLead,
   renderEventLeadFor,
+  renderPhatic,
   renderFeelingLead,
   renderRememberAck,
   renderStateLead,
@@ -39,7 +40,7 @@ import {
   BALANCED_DISPOSITION,
   type Disposition,
 } from "./disposition";
-import { classifyStatement } from "./intent";
+import { classifyStatement, detectPhatic } from "./intent";
 import type { CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
 import type { CaptureResult, PersonConnection } from "./person";
@@ -101,6 +102,19 @@ export function composeStatementReply(
     g, ws, session, env, role, capture, connections, sitResult,
     bd, resolved, salient, words, sit,
   } = deps;
+  // Gap 1: a phatic-only turn is taken up before anything else —
+  // greeting, thanks or farewell with no other content. The
+  // reply is social (their word echoed back, or the thanks
+  // acknowledgement); nothing is remembered as a topic and no
+  // graph claim is made. Content-bearing turns ("hi, I
+  // renovated…") never match and keep their normal route.
+  const phatic = detectPhatic(ws.input.toLowerCase());
+  if (phatic) {
+    noteStep(ws, "statement", "compose",
+      `phatic-only turn (${phatic.kind}): social reply, no topic remembered, no graph testimony`);
+    session.lastIntent = "statement";
+    return { text: renderPhatic(phatic.kind, phatic.word), grounded: true };
+  }
   // (7) statements — E4's set order (§2, piece C): person
   // knowledge was consulted first (capture + connections,
   // above); the classifier has judged the statement's

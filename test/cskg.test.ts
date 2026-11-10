@@ -19,6 +19,7 @@ import {
   renderConclusion,
   renderCorrectionFact,
   renderCorrectionNoFact,
+  renderPhatic,
   sentenceForEdge,
 } from "../src/cskg/articulate";
 import { seasonFor } from "../src/cskg/awareness";
@@ -29,7 +30,7 @@ import {
   loadDefinitionsStore,
 } from "../src/cskg/definitions";
 import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
-import { detectToolQuery } from "../src/cskg/intent";
+import { detectPhatic, detectToolQuery } from "../src/cskg/intent";
 import { contextFit } from "../src/cskg/solve";
 import { cachePathFor, loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
@@ -269,6 +270,28 @@ test("adaptive offer: a planned coat-buying asks when, end to end", async () => 
   const s = createSession();
   const r = runTurn(g, s, "I'm thinking of buying a winter coat.");
   assert.match(r.text, /thinking of buying a winter coat\. When's that happening\?/);
+});
+
+test("phatic: greeting, thanks and farewell take the social route", () => {
+  assert.deepEqual(detectPhatic("hi there!"), { kind: "greeting", word: "hi there" });
+  assert.deepEqual(detectPhatic("Thanks!"), { kind: "thanks", word: "thanks" });
+  assert.deepEqual(detectPhatic("bye"), { kind: "farewell", word: "bye" });
+  assert.equal(detectPhatic("hi, i renovated the kitchen"), null,
+    "content-bearing turns keep their normal route");
+  assert.equal(detectPhatic("what is a banana?"), null);
+  assert.equal(renderPhatic("greeting", "hi there"), "Hi there!");
+  assert.equal(renderPhatic("thanks", "thanks"), "You're welcome!");
+  assert.equal(renderPhatic("farewell", "bye"), "Bye!");
+});
+
+test("phatic: open and close end to end, content untouched", async () => {
+  const g = await graph();
+  const s = createSession();
+  assert.equal(runTurn(g, s, "Hi there!").text, "Hi there!");
+  assert.equal(runTurn(g, s, "Thanks!").text, "You're welcome!");
+  const r = runTurn(g, s, "Hi, what is a banana?");
+  assert.match(r.text, /banana/i, "the definition route still serves content after a greeting");
+  assert.doesNotMatch(r.text, /^Hi there/, "no greeting swallowed the question");
 });
 
 test("repair frame: the no-fact correction names the superseded topic too", () => {

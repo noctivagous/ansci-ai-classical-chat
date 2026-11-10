@@ -1,0 +1,20 @@
+# Probe: phatic open/close/thanks (gap 1).
+#
+# Greetings and thanks need no graph; the fitting reply is
+# social, in the role's voice, with zero graph facts a complete
+# success (E4 schmooze doctrine). Diagnose runs a fixed probe
+# set, so this file is judged by the declaration gate.
+#
+# Baseline 2026-11-10 (pre-fix): the generic noted-acknowledgement
+# eats them ("Hi there — noted..."), plus a false promise to
+# keep content-free turns in mind.
+#
+# Verified 2026-11-10 (gap 1, verdict PASS): phatic-only turns take
+# the social route — their word echoed back, thanks acknowledged.
+# Content-bearing turns never match. Only the three social turns
+# moved; the doing control is byte-identical.
+
+Hi there!
+Thanks!
+Bye!
+I renovated the kitchen.
