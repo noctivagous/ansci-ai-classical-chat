@@ -53,6 +53,12 @@
  * Writes (engine map): `breakdown`. Reads: `activeContext`
  * (memory's active topics — the disambiguation context).
  */
+import {
+  chunkContainsSpan,
+  isParserFunctionSpan,
+  parserFunctionReason,
+  type AnnotatorDoc,
+} from "./annotator";
 import { analyseContents, contentsTraceLine, type ContentsBreakdown } from "./contents";
 import type { CskgGraph } from "./loader";
 import { resolveRivalReadings } from "./resolver";
@@ -166,6 +172,12 @@ export interface Breakdown {
   mentions: Mention[];
   /** chosen referents ranked as topics, best first (with head-word expansions) */
   topics: ScoredTerm[];
+  /**
+   * The parser sidecar's structure for this turn, when provided
+   * (annotator.ts). Read-only input: it steers which spans are
+   * referent-shaped, never what a span refers to.
+   */
+  annotation: AnnotatorDoc | null;
   /**
    * The contents breakdown (contents.ts, §2's submodule inside B):
    * the turn's people, places, things and times, categorised from
@@ -716,6 +728,7 @@ function buildBreakdown(
   extraTopicIds: number[] = [],
   historyIds: ReadonlySet<number> = new Set(),
   disposition: ClarificationDisposition = "moderate",
+  annotation: AnnotatorDoc | null = null,
 ): Breakdown {
   const lower = text.toLowerCase();
   const spans = tokeniseSpans(text);
@@ -763,7 +776,22 @@ function buildBreakdown(
   // (G5's relocation), beside memory's active topics.
   const topicSets = buildTopicSets(g, [...activeTopics, ...extraTopicIds]);
   for (const m of mentions) {
+    // Parser function spans (INTJ/AUX: hey, should) are scaffolding,
+    // never referents — skip choosing instead of stoplisting words.
+    if (annotation && isParserFunctionSpan(annotation, m.charStart, m.charEnd)) {
+      m.chosen = -1;
+      m.resolverNote = parserFunctionReason(annotation, m.charStart, m.charEnd);
+      continue;
+    }
     for (const c of m.candidates) scoreCandidate(g, c, m, topicSets);
+    // A mention sitting inside one noun chunk ("winter coat") is
+    // phrase-shaped: a small nudge, applied to every rival alike.
+    if (annotation && chunkContainsSpan(annotation, m.charStart, m.charEnd)) {
+      for (const c of m.candidates) {
+        c.score += 2;
+        c.reasons.push("parser: noun chunk (+2)");
+      }
+    }
     let best = -1;
     m.candidates.forEach((c, ci) => {
       if (best < 0 || c.score > m.candidates[best].score) best = ci;
@@ -877,6 +905,7 @@ function buildBreakdown(
     mentions,
     topics,
     contents: null,
+    annotation,
   };
 }
 
@@ -887,8 +916,16 @@ function isContentSurface(text: string): boolean {
   );
 }
 
-/** B's turn entry: analyse the turn text into the workspace. */
-export function analyseInto(ws: TurnWorkspace, g: CskgGraph): void {
+/**
+ * B's turn entry: analyse the turn text into the workspace. The
+ * annotation is the parser sidecar's read-only structure (or null
+ * for parser-free behaviour); turn.ts loads it from ANSCI_ANNOTATION.
+ */
+export function analyseInto(
+  ws: TurnWorkspace,
+  g: CskgGraph,
+  annotation: AnnotatorDoc | null = null,
+): void {
   const text = ws.input.trim();
   // E4: discourse reads the OPERATIVE CONTEXT (context.ts) —
   // the situation's facet ids join memory's topics as scoring
@@ -909,8 +946,17 @@ export function analyseInto(ws: TurnWorkspace, g: CskgGraph): void {
   const bd = buildBreakdown(
     g, text, ws.activeContext?.topics ?? [],
     extraTopicIds, historyIds, ws.role?.clarificationDisposition ?? "moderate",
+    annotation,
   );
   ws.breakdown = bd;
+  if (annotation) {
+    noteStep(
+      ws, "discourse", "resolve",
+      `parser: annotation (${annotation.tokens.length} tokens, ` +
+      `${annotation.entities.length} entities, ${annotation.chunks.length} chunks) — ` +
+      `read-only structure, longest-match still the referent finder`,
+    );
+  }
   for (const m of bd.mentions) {
     const candDesc = m.candidates
       .map((c) => `"${c.text}" (${c.via}, score ${c.score})`)
@@ -940,7 +986,7 @@ export function analyseInto(ws: TurnWorkspace, g: CskgGraph): void {
   // The contents breakdown (contents.ts): categorise the chosen
   // referents into people / places / things / times, and record
   // the kind choices in the trace like every other choice B makes.
-  bd.contents = analyseContents(g, bd.mentions, bd.words, ws.situation?.place?.name ?? null);
+  bd.contents = analyseContents(g, bd.mentions, bd.words, ws.situation?.place?.name ?? null, annotation);
   for (const e of bd.contents.entries) {
     noteStep(ws, "discourse", "resolve", contentsTraceLine(e));
   }
@@ -1313,10 +1359,23 @@ export const QUESTION_SCAFFOLDING = new Set([
   "persons", "one", "thing", "things", "stuff",
 ]);
 
+/** Greeting/thanks words are social moves, never the topic. */
+export const PHATIC_SCAFFOLDING = new Set([
+  "hi", "hello", "hey", "howdy", "thanks", "thank", "thx", "ty",
+  "bye", "goodbye",
+]);
+
+export function isPhaticSubject(text: string): boolean {
+  const t = text.toLowerCase();
+  const head = t.split(/\s+/)[0] ?? "";
+  return PHATIC_SCAFFOLDING.has(head) || PHATIC_SCAFFOLDING.has(t);
+}
+
 export function preferQuestionSubject<T extends { text: string }>(candidates: T[]): T[] {
   const content = candidates.filter((c) => {
     const head = c.text.toLowerCase().split(/\s+/)[0] ?? "";
-    return !QUESTION_SCAFFOLDING.has(head) && !QUESTION_SCAFFOLDING.has(c.text.toLowerCase());
+    return !QUESTION_SCAFFOLDING.has(head) && !QUESTION_SCAFFOLDING.has(c.text.toLowerCase()) &&
+      !isPhaticSubject(c.text);
   });
   return content.length ? content : candidates;
 }

@@ -981,6 +981,25 @@ slice), **closing** (a running slice owns it), **closed**.
   dump; `/r/dbpedia/*` and DistinctFrom stay dropped (genre,
   genus, occupation, distinctness — not composition). Extra WD
   properties are not in the file to keep.
+- **Parser structure for B (optional sidecar).** Exposed by the
+  mixed-greeting / event-scan bugs (2026-11-10): *hey* became a
+  noun topic, *should* needed special-casing, *got in* never
+  became an event — jobs a dependency parser does natively
+  (INTJ/UH tags, nsubj/dobj, noun chunks, NER). The graph job
+  (binding spans to nodes) stays the graph's, so this is a
+  read-only input to B, not a speaker. *Closed* (2026-11-10):
+  `scripts/annotate-spacy.py` (one-shot and --stdin daemon,
+  schema owned by `src/cskg/annotator.ts`) plus B wiring —
+  discourse demotes INTJ/AUX spans and nudges noun chunks,
+  contents hears PERSON/GPE/DATE NER kind signals, the
+  situation verb scan takes a VERB-lemma fallback. Off by
+  default (no spaCy/model in the repo); a turn opts in via
+  ANSCI_ANNOTATION (inline JSON or @file, exact-text match
+  required). Verified by `test/cskg-annotator.test.ts` (7/7);
+  the full suite is green parser-free (252/252). Honest limits:
+  no persistent daemon in-process (per-turn injection only),
+  no nsubj/dobj actor wiring yet (lemma fallback only), no
+  OpenIE or GCN layers.
 
 ## 10. Toward a real conversation: capability map and morphs
 

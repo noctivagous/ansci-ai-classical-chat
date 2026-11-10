@@ -31,6 +31,7 @@
  * only READS the finished breakdown and appends its record to it;
  * no score, choice or answer elsewhere consumes it yet.
  */
+import { entityLabelsForSpan, type AnnotatorDoc } from "./annotator";
 import type { Mention } from "./discourse";
 import type { CskgGraph } from "./loader";
 
@@ -223,6 +224,7 @@ export function analyseContents(
   mentions: Mention[],
   words: string[],
   placeName: string | null,
+  annotation: AnnotatorDoc | null = null,
 ): ContentsBreakdown {
   const entries: ContentEntry[] = [];
 
@@ -279,6 +281,17 @@ export function analyseContents(
     // time surface signals
     const ts = timeSurface(m.text);
     if (ts.score > 0) bump("time", ts.score, ts.signals.join("; "));
+
+    // parser NER signals: a PERSON tag is a kind signal, not a
+    // referent — binding still needs the graph node (or a
+    // situation-model entity); silence there is still a decline.
+    if (annotation) {
+      for (const label of entityLabelsForSpan(annotation, m.charStart, m.charEnd)) {
+        if (label === "PERSON") bump("person", 3, "parser: NER PERSON");
+        else if (label === "GPE" || label === "LOC") bump("place", 3, `parser: NER ${label}`);
+        else if (label === "DATE" || label === "TIME") bump("time", 3, `parser: NER ${label}`);
+      }
+    }
 
     // event signals (E5): the referent carries ATOMIC (at:)
     // out-edges — it is keyed as a happening, not a thing — or

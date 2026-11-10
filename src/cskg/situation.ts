@@ -47,6 +47,7 @@
  * Reads: `breakdown`, `context`, `activeContext`.
  */
 import { displayTime, forAddressee } from "./articulate";
+import { verbLemmaForSpan } from "./annotator";
 import { formSet, matchEvent, STOPWORDS } from "./discourse";
 import { frameRoleName, framesForVerb, getFramesStore, type FrameInfo } from "./frames";
 import type { CskgGraph } from "./loader";
@@ -1555,9 +1556,48 @@ export function analyseSituationInto(
     }
     // verb scan over the statement's clauses, for the events
     // the capture's doing-patterns do not cover (third person,
-    // past tense, weather actors)
-    for (const clause of clausesOf(ws.input)) {
-      const cw = clause.toLowerCase().split(/[^a-z'-]+/).filter(Boolean);
+    // past tense, weather actors). The parser's VERB lemma is a
+    // fallback for verbs the hand list and FormOf both miss —
+    // our own proof first, the parser's only where it is silent.
+    const annotation = ws.breakdown?.annotation ?? null;
+    const lowerWhole = ws.breakdown?.lower ?? ws.input.toLowerCase();
+    const clauses = clausesOf(ws.input);
+    const clauseStarts: number[] = (() => {
+      const out: number[] = [];
+      let cursor = 0;
+      for (const c of clauses) {
+        const start = lowerWhole.indexOf(c.toLowerCase(), cursor);
+        out.push(start);
+        if (start >= 0) cursor = start + c.length;
+      }
+      return out;
+    })();
+    for (let ci = 0; ci < clauses.length; ci++) {
+      const clause = clauses[ci];
+      const clauseLower = clause.toLowerCase();
+      const cw = clauseLower.split(/[^a-z'-]+/).filter(Boolean);
+      // char spans of the clause's words, for parser alignment
+      const cwSpans: Array<[number, number]> = (() => {
+        if (!annotation || clauseStarts[ci] < 0) return [];
+        const out: Array<[number, number]> = [];
+        let cursor = 0;
+        for (const w of cw) {
+          const s = clauseLower.indexOf(w, cursor);
+          if (s < 0) { out.push([-1, -1]); continue; }
+          out.push([s, s + w.length]);
+          cursor = s + w.length;
+        }
+        return out;
+      })();
+      const baseAt = (idx: number): string | null => {
+        const own = verbBasePerTurn(g, cw[idx]);
+        if (own) return own;
+        if (annotation && cwSpans.length) {
+          const [s, e] = cwSpans[idx];
+          if (s >= 0) return verbLemmaForSpan(annotation, clauseStarts[ci] + s, clauseStarts[ci] + e);
+        }
+        return null;
+      };
       // verb candidates: action-verb forms not riding an
       // infinitive or a preposition ("day of rain"). A candidate
       // directly after an article is a noun doing subject duty
@@ -1565,7 +1605,7 @@ export function analyseSituationInto(
       // any later true verb in the same clause.
       const candidates: number[] = [];
       for (let i = 0; i < cw.length; i++) {
-        if (!verbBasePerTurn(g, cw[i])) continue;
+        if (!baseAt(i)) continue;
         if (cw[i - 1] === "to" || cw[i - 1] === "of") continue;
         candidates.push(i);
       }
@@ -1573,7 +1613,7 @@ export function analyseSituationInto(
         candidates[0];
       if (pick === undefined) continue;
       const i = pick;
-      const base = verbBasePerTurn(g, cw[i])!;
+      const base = baseAt(i)!;
       // actor: the nearest preceding entity mention or pronoun.
       // Modals and cognition verbs are scaffolding around the
       // stated happening, never its actor ("I should make

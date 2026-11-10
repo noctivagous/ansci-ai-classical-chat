@@ -110,6 +110,7 @@ import {
   senseClusterLabel,
   settleSense,
 } from "./definitions";
+import { loadTurnAnnotation } from "./annotator";
 import {
   analyseInto,
   contentCandidates,
@@ -640,7 +641,7 @@ export function runTurn(
 
   // (3) discourse analyses the turn — B notes its own trace steps
   // (one per mention, plus the topic ranking) inside analyseInto.
-  analyseInto(ws, g);
+  analyseInto(ws, g, loadTurnAnnotation(env, ws.input));
   const bd = ws.breakdown!;
   const resolved = bd.terms;
   const words = bd.words;
