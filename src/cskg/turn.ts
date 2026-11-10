@@ -655,6 +655,13 @@ export function runTurn(
         return finish(res.text, "why", true);
       }
       noteTriage(ws, "retrieve", "the causal set for the asked relation is empty — decline, no substitution");
+      // Gap 4c: the asked-about effect becomes the standing topic,
+      // so a bare "Why?" afterwards continues the same happening
+      // instead of falling back to whatever topic lingered.
+      if (res.effectId != null) {
+        remember(session, res.effectId);
+        noteStep(ws, "memory", "remember", `why effect "${res.effectText}" is now the standing topic`);
+      }
       return finish(
         plainDeclines
           ? renderWhyNoCausePlain(res.effectText, res.causeText)

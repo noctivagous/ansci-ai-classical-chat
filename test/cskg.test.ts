@@ -273,6 +273,18 @@ test("adaptive offer: a planned coat-buying asks when, end to end", async () => 
   assert.match(r.text, /thinking of buying a winter coat\. When's that happening\?/);
 });
 
+test("why continuity: a bare Why? keeps asking about the same happening", async () => {
+  const g = await graph();
+  const s = createSession();
+  const first = runTurn(g, s, "Why is soup green?");
+  assert.equal(first.trace.intent, "why");
+  assert.match(first.text, /doesn't record a cause for "soup"/i);
+  const bare = runTurn(g, s, "Why?");
+  assert.equal(bare.trace.intent, "why");
+  assert.equal(bare.text, first.text,
+    "the decline established soup as the standing topic — the bare follow-up continues it");
+});
+
 test("why poles: the happening outranks the top-scored noun", () => {
   const subjects = [{ text: "wall" }, { text: "paint" }, { text: "peeling" }];
   const isVerb = (w: string): boolean => w === "peeling";

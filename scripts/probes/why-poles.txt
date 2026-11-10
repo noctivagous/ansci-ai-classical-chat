@@ -15,6 +15,13 @@
 # turn moved; the onion control is byte-identical. (First shape
 # blocked per the two-verdict rule: bare-lemma proof admitted
 # junk rows, then hand-list bases; evidence kept in the tree.)
+#
+# Verified 2026-11-10 (gap 4c, verdict PASS): why-declines
+# remember the effect as the standing topic, so a bare "Why?"
+# continues the same happening ("peeling off" twice running).
+# Onion control text-identical; the inserted turn was covered by
+# declaring all three turns.
 
 Why is paint peeling off the walls?
+Why?
 Why do my eyes water when I chop onions?

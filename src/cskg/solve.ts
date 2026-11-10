@@ -603,7 +603,7 @@ export function answerWhy(
 
 export type WhyResult =
   | { kind: "answer"; text: string; chained: boolean }
-  | { kind: "decline"; effectText: string; causeText: string | null };
+  | { kind: "decline"; effectText: string; causeText: string | null; effectId: number | null };
 
 /**
  * A why-question, under the EMPTY-SET DECLINE RULE (§6).
@@ -720,6 +720,7 @@ export function answerWhyQuestion(
       kind: "decline",
       effectText: effectSubjects[0]?.text ?? topics[0]?.text ?? resolved[0]?.text ?? "that",
       causeText: causeSubjects[0]?.text ?? null,
+      effectId: effectSubjects[0]?.id ?? topics[0]?.id ?? resolved[0]?.id ?? null,
     };
   }
 
@@ -821,6 +822,7 @@ export function answerWhyQuestion(
     kind: "decline",
     effectText: effectSubject?.text ?? resolved[0]?.text ?? "that",
     causeText: null,
+    effectId: effectSubject?.id ?? resolved[0]?.id ?? null,
   };
 }
 
