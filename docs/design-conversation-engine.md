@@ -917,6 +917,11 @@ unbuilt), *missing* (not yet designed):
   own words back. *Missing.*
 - **S15 Delivery shape** — segmentation and streaming of the
   reply at the interface. *Parked* (piece G territory).
+  *Partially landed* (TUI step, 2026-11-09): terminal delivery
+  exists — the TUI presents whole replies under a situated
+  header with an optional per-turn trace view, after a
+  pre-chat setup (data, serialise, configure); segmentation
+  and streaming remain parked.
 - **S16 Definition form** — genus-and-difference answers from
   the gloss layer. *Landed* (Definitions slice, 2026-11-09):
   the form is "Term: gloss." — the attested gloss quoted, the
@@ -1082,3 +1087,38 @@ deciding which:
   attribution discipline applies to the reply too — the honest
   forms are the conditional ("If he's coming, he'll like
   that…") or the schmooze question first.
+
+### Problem-solving patterns (parked)
+
+Parked 2026-11-09 (the user's call: too much for E4, but allowed
+to influence it). Source material verbatim in
+`docs/user-plans/problem-solving-acronyms.txt` — educators'
+acronyms for working a problem in named steps (S.O.L.V.E.:
+Study the problem, Organize the facts, Line up a plan, Verify
+with action, Examine results; I.D.E.A.L.: Identify, Define,
+Explore options, Action, Look back; and a dozen siblings).
+
+The shape, when unparked: a pattern for procedure-shaped turns
+built on the consultation/authority line. The *meta*-procedure
+— the step skeleton — is engine structure, ours. The *domain*
+procedure it walks (prerequisites, subevent sequences, needs,
+uses) is the graph's testimony, consulted never obeyed. A
+pattern is selected by problem type under Context (the
+discourse typing says a procedure is wanted; the domain typing
+says where the testimony lives) and executed as a named
+consultation sequence, so the trace reads in the skeleton's
+order: study → organise → plan → act → examine.
+
+I.D.E.A.L. is the closest frame: its Explore-options step is
+solve's rival-candidate arbitration under another name, and
+Look back is this project's examine step — the trace, the
+transcript, the evaluation. One rule every variant worth
+adopting shares, and this design keeps: the verify/examine
+step is non-negotiable and last.
+
+Influence already exerted: E4's definition path orders its
+trace study → organise → plan → consult → examine, with
+examine explicit and last (recorded in the E4 evaluation
+note). When this is unparked, its slice declares — per problem
+type — the consultation sequence and the transcript effect it
+will be judged on, like every other slice.

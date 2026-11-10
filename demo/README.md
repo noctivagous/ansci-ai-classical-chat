@@ -32,9 +32,10 @@ repo it verifies what is there and changes nothing.
 
 ## Three ways to chat
 
-All commands run from the repo root. The graph loads into memory at
-startup, which takes about half a minute; after that, answers are
-fast.
+All commands run from the repo root. The first launch builds a
+serialised index of the graph (about half a minute, once, beside the
+data file); later launches load through it in a couple of seconds,
+and answers are fast either way.
 
 **Web UI** — a small chat page, served locally:
 
@@ -51,8 +52,12 @@ node dist/src/cskg/chat.js
 # /quit exits
 ```
 
-**TUI (placeholder)** — a banner and a hand-off to the command-line
-chat; the full terminal UI is not built yet (see `demo/tui/README.md`):
+**Terminal UI** — the front door: on launch it runs a short setup
+(data check with an in-place install offer, serialised-index build
+on first run, place/person/role prompts), then chats under a header
+carrying the situated frame, with an optional per-turn trace view
+and slash commands (`/help` lists them; see `demo/tui/README.md`).
+With piped stdin it hands off to the command-line chat instead:
 
 ```sh
 node demo/tui/tui.mjs

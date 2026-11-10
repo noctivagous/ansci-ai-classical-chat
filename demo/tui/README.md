@@ -1,32 +1,71 @@
-# TUI (placeholder)
+# Terminal UI
 
 ```sh
 node demo/tui/tui.mjs
 ```
 
-This is a placeholder, not a terminal UI. It prints a banner, says so,
-and hands you to the working command-line chat
-(`node dist/src/cskg/chat.js`) — same graph, same answers, plain
-prompt — so you end up chatting either way.
+The chat's terminal front door: a real interface over the same
+CSKG chat engine the web UI and the command line present
+(`src/cskg/turn.ts` and the pieces it coordinates) — same
+graph, same answers, presentation only.
 
-## What a full TUI will be
+## Setup before chat
 
-A keyboard-driven terminal front end over the same CSKG chat engine
-(`src/cskg/turn.ts` and the pieces it coordinates), in the spirit of
-the chat it will sit beside:
+An interactive launch sets itself up before the first turn,
+reporting each step as it happens; any failure stops before
+chat, with the reason:
 
-- a conversation pane with the same grounded answers the web UI gives;
-- a side pane showing the thought trace behind the last answer — the
-  edges the answer rests on — which the engine already records for
-  every turn (the CLI shows it today with `--debug`);
-- a header carrying the situated state: place, season, daypart, time;
-- no new reasoning of its own — presentation only, like the web UI.
+1. **Data** — the CSKG file (`CSKG_PATH`, or
+   `data/raw/cskg/cskg.tsv.gz`) is checked. If it is missing
+   or empty, the install is offered on the spot — the same
+   verified Zenodo download `scripts/install.mjs` performs.
+   Decline or fail, and there is no chat: the TUI never opens
+   a conversation on a missing graph.
+2. **Serialise** — the loader's serialised index is probed.
+   A current one loads in about two seconds, and the TUI says
+   so. Otherwise the graph is parsed in full as a visible
+   setup step (about half a minute, with a running clock) and
+   the loader writes a fresh index beside the data file — a
+   one-off cost, paid here, never as a silent hang inside the
+   conversation.
+3. **Configure** — place, person, role. Environment values
+   (`CSKG_CHAT_LOCATION`, `CSKG_CHAT_PERSON`, `CSKG_CHAT_ROLE`,
+   …) win when set; otherwise quick prompts with defaults
+   (Chicago / general mode / assistant), each skippable by
+   pressing Enter.
 
-## Why a placeholder
+## The session
 
-The web UI and the CLI already prove the chat itself; a TUI is a third
-presentation of the same machinery. It is stubbed rather than built so
-the demo has the shape the project intends — web, terminal UI, command
-line — without a half-finished framework pretending to be one of the
-three ways to chat. When it is built, it will replace `tui.mjs` here
-without touching the engine.
+The header carries the situated frame in plain words —
+place, season, daypart and time; the role pack in force; and
+who is being talked with, or general mode when nobody is.
+Under it, the conversation, plus any of:
+
+| Command | What it does |
+|---|---|
+| `/help` | list the commands |
+| `/trace off\|steps\|queries\|full` | show each reply's reasoning at that depth — the trace levels the trace file itself uses |
+| `/why` | replay why the last reply was what it was |
+| `/role <name>` | switch role pack; applies from your next message, the conversation continues |
+| `/person <name>` | talk as someone else: a fresh conversation, their remembered facts loaded |
+| `/person none` | back to general mode — nobody is remembered |
+| `/quit` | end the session |
+
+Type-ahead is kept: lines typed while setup is still loading
+are answered by the prompts in order.
+
+## Not interactive? Not the TUI
+
+With piped stdin, or when `--script` is passed, `tui.mjs`
+hands off to the command-line chat (`dist/src/cskg/chat.js`)
+untouched — flags and all. Scripted runs and the evaluation
+harness use that path; the TUI is the interactive path only.
+
+## Cross-platform
+
+Windows and UNIX alike: paths are built with `path.join`,
+child processes are spawned as `node <file>` with argument
+arrays (never through a shell), colour is ANSI and only when
+the terminal supports it (a TTY, and `NO_COLOR` unset), and
+input is Node's readline, which tolerates CRLF line endings.
+No external commands are used.

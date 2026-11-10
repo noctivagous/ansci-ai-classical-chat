@@ -696,11 +696,95 @@ export interface LoadCskgOptions {
   cache?: boolean;
   /** cache file location (default: derived from the data path) */
   cachePath?: string;
+  /**
+   * Called once with the path the load actually took: "cache"
+   * when the serialised index served it, "parse" when the source
+   * was parsed in full (the cache disabled, absent, rejected —
+   * every fallback). Setup surfaces (the TUI's pre-chat setup)
+   * report from this, so a cache the cheap probe believed
+   * current but deserialise rejected is still reported honestly
+   * as a parse. A throwing callback never breaks a load.
+   */
+  onPath?: (via: "cache" | "parse") => void;
 }
 
 /** The default cache location: beside the source it mirrors. */
 export function cachePathFor(dataPath: string): string {
   return `${dataPath}.index.bin`;
+}
+
+/**
+ * The state of a data file's serialised index, as cheaply as it
+ * can honestly be known WITHOUT loading: the cache header (a
+ * small JSON prefix) is read and its stored source fingerprint
+ * compared against the source's current fingerprint, using the
+ * same comparison deserialiseGraph makes. "current" certifies
+ * the fingerprint matches — a cache whose sections are corrupt
+ * below the header still probes "current" and is then rejected
+ * by the load itself (which falls back to the parse; the
+ * onPath callback above is how a caller learns that happened).
+ *
+ *   current — header fingerprint == source fingerprint
+ *   absent  — no cache file beside the source
+ *   stale   — a cache exists but names a different source
+ *             fingerprint (or relation vocabulary): the data
+ *             changed, or another build wrote it
+ *   invalid — a cache exists but its header cannot be read as
+ *             one of ours (magic, version, JSON), or the source
+ *             itself cannot be fingerprinted
+ */
+export type CacheState = "current" | "absent" | "stale" | "invalid";
+
+export function cacheStateFor(
+  dataPath: string,
+  opts: { cachePath?: string } = {},
+): CacheState {
+  const cachePath = opts.cachePath ?? cachePathFor(dataPath);
+  let fd: number;
+  try {
+    fd = fs.openSync(cachePath, "r");
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code === "ENOENT" ? "absent" : "invalid";
+  }
+  try {
+    const prefix = Buffer.alloc(12);
+    if (fs.readSync(fd, prefix, 0, 12, 0) < 12) return "invalid";
+    if (prefix.toString("ascii", 0, 4) !== CACHE_MAGIC) return "invalid";
+    if (prefix.readUInt32LE(4) !== CACHE_FORMAT_VERSION) return "invalid";
+    const headerLen = prefix.readUInt32LE(8);
+    if (headerLen === 0 || headerLen > 16 * 1024 * 1024) return "invalid";
+    const headerBuf = Buffer.alloc(headerLen);
+    if (fs.readSync(fd, headerBuf, 0, headerLen, 12) < headerLen) return "invalid";
+    let header: CacheHeader;
+    try {
+      header = JSON.parse(headerBuf.toString("utf8")) as CacheHeader;
+    } catch {
+      return "invalid";
+    }
+    if (header.version !== CACHE_FORMAT_VERSION) return "invalid";
+    let fp: SourceFingerprint;
+    try {
+      fp = fingerprintSource(dataPath);
+    } catch {
+      return "invalid"; // no fingerprint, no certification
+    }
+    const stored = header.source;
+    if (
+      !stored ||
+      stored.size !== fp.size ||
+      stored.mtimeMs !== fp.mtimeMs ||
+      stored.headSha256 !== fp.headSha256 ||
+      stored.tailSha256 !== fp.tailSha256
+    ) {
+      return "stale";
+    }
+    if (JSON.stringify(header.relNames) !== JSON.stringify(REL_NAMES)) return "stale";
+    return "current";
+  } catch {
+    return "invalid";
+  } finally {
+    fs.closeSync(fd);
+  }
 }
 
 function fingerprintSource(dataPath: string): SourceFingerprint {
@@ -1016,6 +1100,13 @@ function writeCache(cachePath: string, g: CskgGraph, fp: SourceFingerprint): voi
  * the cache. A failed cache write never fails the load.
  */
 export async function loadCskg(path: string, opts: LoadCskgOptions = {}): Promise<CskgGraph> {
+  const notifyPath = (via: "cache" | "parse"): void => {
+    try {
+      opts.onPath?.(via);
+    } catch {
+      // a reporting callback never breaks a load
+    }
+  };
   const cachePath = opts.cache === false ? null : (opts.cachePath ?? cachePathFor(path));
   let fp: SourceFingerprint | null = null;
   if (cachePath) {
@@ -1026,10 +1117,14 @@ export async function loadCskg(path: string, opts: LoadCskgOptions = {}): Promis
     }
     if (fp) {
       const cached = tryReadCache(cachePath, fp);
-      if (cached) return cached;
+      if (cached) {
+        notifyPath("cache");
+        return cached;
+      }
     }
   }
   const g = await parseCskg(path);
+  notifyPath("parse");
   if (cachePath && fp) {
     try {
       writeCache(cachePath, g, fp);

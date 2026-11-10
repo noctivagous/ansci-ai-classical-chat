@@ -24,7 +24,8 @@ A self-contained spike in `src/cskg/` puts a working chat on CSKG, the unified
 commonsense graph (ConceptNet, WordNet, FrameNet, ATOMIC, Roget's Thesaurus,
 a Wikidata subset, Visual Genome). One install command fetches the data
 (~112 MB) and builds everything; you can then chat with it in a small web UI
-or in the terminal:
+or in the terminal — the terminal UI (`node demo/tui/tui.mjs`) runs its
+own setup on launch (data, serialised index, frame) before the first turn:
 
 ```sh
 node scripts/install.mjs

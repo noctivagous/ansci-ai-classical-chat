@@ -21,7 +21,7 @@
 import { spawnSync } from "node:child_process";
 import { createReadStream, createWriteStream, existsSync, mkdirSync, renameSync, statSync, unlinkSync } from "node:fs";
 import { get } from "node:https";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createGunzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
@@ -111,6 +111,56 @@ function download(url, dest, redirectsLeft = 5) {
   });
 }
 
+/**
+ * Make sure the CSKG data file at `dataFile` exists and
+ * verifies, downloading a fresh copy from Zenodo when it does
+ * not (or when the existing copy is missing bytes or corrupt).
+ * Returns "present" when the file was already good, "downloaded"
+ * when a fresh copy was fetched. Throws an Error — its message
+ * ready to show the user — on any failure; the download goes to
+ * a temp file beside the target and is moved into place only
+ * after verification, so no partial file is ever left behind.
+ *
+ * Exported for the TUI's pre-chat setup, which offers this same
+ * install before the first turn when the data is missing. The
+ * install command below runs it as step 2 of the full install.
+ * Progress lines go through `log` (console.log by default);
+ * download percentage is written by download() itself.
+ */
+export async function ensureCskgDataFile(dataFile = DATA_FILE, log = console.log) {
+  if (await verifyDataFile(dataFile)) {
+    log("  already present and valid — nothing to download.");
+    return "present";
+  }
+  if (existsSync(dataFile)) {
+    log("  existing file is missing bytes or corrupt — fetching a fresh copy.");
+  } else {
+    log("  not present — downloading from Zenodo (record 4331372, ~112 MB).");
+  }
+  const dir = dirname(dataFile);
+  const tmp = join(dir, `cskg.tsv.gz.tmp-${process.pid}`);
+  try {
+    mkdirSync(dir, { recursive: true });
+    await download(DOWNLOAD_URL, tmp);
+  } catch (err) {
+    try { unlinkSync(tmp); } catch { /* nothing to clean */ }
+    throw new Error(
+      `download failed (${err.message}). Check your network connection and run this again; ` +
+        "no partial file was left behind.",
+    );
+  }
+  if (!(await verifyDataFile(tmp))) {
+    try { unlinkSync(tmp); } catch { /* nothing to clean */ }
+    throw new Error(
+      "the downloaded file failed verification (wrong size or corrupt gzip). " +
+        "Nothing was installed; please run this again.",
+    );
+  }
+  renameSync(tmp, dataFile);
+  log("  downloaded and verified.");
+  return "downloaded";
+}
+
 function run(cmd, args, label) {
   console.log(`\n== ${label}`);
   const result = spawnSync(cmd, args, {
@@ -135,39 +185,16 @@ async function main() {
     );
   }
 
-  // 2. CSKG data
+  // 2. CSKG data (the ensure step is shared with the TUI's
+  // pre-chat setup, which offers the same install in place)
   console.log("\n== CSKG data (data/raw/cskg/cskg.tsv.gz)");
   console.log(
     "   (Only the merged cskg.tsv.gz is needed; the pre-merge cskg_star.tsv.gz is not downloaded.)",
   );
-  if (await verifyDataFile(DATA_FILE)) {
-    console.log("  already present and valid — nothing to download.");
-  } else {
-    if (existsSync(DATA_FILE)) {
-      console.log("  existing file is missing bytes or corrupt — fetching a fresh copy.");
-    } else {
-      console.log("  not present — downloading from Zenodo (record 4331372, ~112 MB).");
-    }
-    const tmp = join(DATA_DIR, `cskg.tsv.gz.tmp-${process.pid}`);
-    try {
-      mkdirSync(DATA_DIR, { recursive: true });
-      await download(DOWNLOAD_URL, tmp);
-    } catch (err) {
-      try { unlinkSync(tmp); } catch { /* nothing to clean */ }
-      fail(
-        `download failed (${err.message}). Check your network connection and run this again; ` +
-          "no partial file was left behind.",
-      );
-    }
-    if (!(await verifyDataFile(tmp))) {
-      try { unlinkSync(tmp); } catch { /* nothing to clean */ }
-      fail(
-        "the downloaded file failed verification (wrong size or corrupt gzip). " +
-          "Nothing was installed; please run this again.",
-      );
-    }
-    renameSync(tmp, DATA_FILE);
-    console.log("  downloaded and verified.");
+  try {
+    await ensureCskgDataFile(DATA_FILE);
+  } catch (err) {
+    fail(err.message);
   }
 
   // 3. Dependencies
@@ -186,7 +213,7 @@ Done. Three ways to chat (run from the repo root):
   Web UI (recommended)   node demo/web/server.mjs
                          then open http://localhost:4173 in a browser
   Command line           node dist/src/cskg/chat.js
-  TUI (placeholder)      node demo/tui/tui.mjs
+  Terminal UI            node demo/tui/tui.mjs
 
 Optional: tell the chat where it is, so its season and time answers
 are situated. Set before starting any of the above:
@@ -198,4 +225,11 @@ with PORT, default 4173.) See demo/README.md for details.
 `);
 }
 
-main().catch((err) => fail(err.message ?? String(err)));
+// Run the install only when invoked directly — the TUI imports
+// ensureCskgDataFile from this module and must not trigger a
+// full install by importing it.
+const invokedDirectly =
+  process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedDirectly) {
+  main().catch((err) => fail(err.message ?? String(err)));
+}

@@ -1337,3 +1337,100 @@ on cold, the EverydaySense-decided definition, resolver
 grounds/escalation/budget, tuple admissions, pending
 clarification by ordinal and by fresh-turn clearing). Project
 suite 162/162; `tsc` clean. Nothing pushed.
+
+## TUI step note (2026-11-09)
+
+The terminal front door, built over the unchanged engine: the
+placeholder `demo/tui/` is now a real TUI, and launching it
+interactively runs an explicit pre-chat setup — data,
+serialise, configure — before the first turn. The motivation
+is the user's route to hands-on chat: clone, install,
+serialise, chat, on their own machine; the first-run costs
+(the 112 MB download, the ~31 s parse) become visible one-off
+setup steps with measured times, never silent hangs inside a
+conversation.
+
+What was built:
+
+- `demo/tui/tui.mjs` (rewritten): readline + ANSI only, zero
+  new dependencies. Interactive launches run setup, then a
+  chat whose header carries the situated frame in plain words
+  (place · season · daypart · time; role pack; person or
+  general mode), computed from the session's own awareness.
+  Slash commands: /help, /trace off|steps|queries|full,
+  /why (the engine's own replay, asked as a turn), /role
+  <name> (applies from the next turn, conversation continues),
+  /person <name|none> (a fresh session — a new person context —
+  with the header reprinted), /quit. Input is consumed through
+  a line queue, so type-ahead during the load is preserved.
+  Non-interactive launches are not the TUI's business: piped
+  stdin or --script hands off to the CLI untouched.
+- Setup (new `src/cskg/setup.ts`): the decision is three facts
+  — the data file's presence/size (cheap; the loader remains
+  the real validator) and the loader's own cache probe. Data
+  missing or empty → the install is offered in place
+  (declined or failed = no chat, with the reason). Cache
+  current → load through it. Cache absent/stale/unreadable →
+  the full parse runs as the setup step, heartbeat clock on
+  screen, and the loader writes the fresh index. Configure
+  prompts follow for place/person/role when env does not
+  supply them (Chicago / general / assistant defaults).
+- Loader surface (additive, `src/cskg/loader.ts`):
+  `cacheStateFor(dataPath)` — "current" | "absent" | "stale"
+  | "invalid", decided by the same header/fingerprint
+  comparison the load itself trusts — and an `onPath`
+  callback on loadCskg reporting the path a load actually
+  took ("cache" | "parse"; callback errors are swallowed so a
+  reporter can never break a load). The TUI duplicates no
+  fingerprint logic.
+- `scripts/install.mjs`: the verify-or-download step is now
+  an exported `ensureCskgDataFile()` (same lines, same
+  failure texts); the install command calls it, and the TUI
+  imports it for the in-place offer. The module no longer
+  self-runs on import.
+- The trace view reuses the trace machinery whole: a turn's
+  record is built by buildTraceRecord at the chosen level and
+  rendered by a pure helper (`src/cskg/tui.ts`, with the
+  slash-command parser and the header wording). No second
+  trace format exists.
+- Cross-platform by construction (Windows + UNIX): paths via
+  path.join only, children spawned as `node <file>` with arg
+  arrays, colour ANSI and capability-gated (TTY + no
+  NO_COLOR), readline input (CRLF-tolerant), os.tmpdir() in
+  tests. Audited by grep over the new/changed files; Windows
+  behaviour is verified by construction, not execution — no
+  Windows machine was available.
+
+Measured (this machine, scratch copy of the repo, pty-driven):
+
+- Cache deleted: setup reported "No serialised index yet —
+  building the index now", then "Index built and serialised
+  in 33.3s — 4,795,098 edges / 1,203,994 terms", configured,
+  and answered turns. The serialised index (178,879,415
+  bytes) landed beside the data file.
+- Second launch: "The serialised index is current — loading
+  through it." / "Loaded through the serialised index in
+  2.0s"; chatting seconds after launch.
+- Data missing + install declined at the offer: "No data, no
+  chat — setup stopped", exit 0, no chat entered. (The
+  accept-and-download path itself was not live-run here; it
+  is install.mjs's own exercised code.)
+- Scripted Chicago evaluation after the change is
+  byte-identical to the pre-change run (the real-clock line
+  excepted). A TUI answer and the CLI's answer to the same
+  question under the same env were diffed identical.
+- The demo web server, running throughout against dist/, was
+  not restarted and still reports ready.
+
+Undesigned behaviour: none observed. One honest failure from
+verification, in the TUI's favour: a scratch copy missing the
+WordNet extract crashed the first turn with the engine's own
+ENOENT for data/wordnet — surfaced verbatim, not masked; the
+CLI behaves the same way in the same tree.
+
+Tests: 8 new fixture tests (data facts, every decideSetup
+branch, the cache probe across a fixture's whole lifecycle —
+absent → current → stale → invalid → absent — the onPath
+report, cache-disabled loads, slash-command parsing, header
+wording, trace-view rendering at both levels). Project suite
+170/170; `tsc` clean. Nothing pushed.
