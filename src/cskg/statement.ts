@@ -34,17 +34,20 @@ import {
   type Disposition,
 } from "./disposition";
 import { classifyStatement, detectLeadingPhatic, detectPhatic } from "./intent";
+import { definitionCandidates, settleSense } from "./definitions";
 import type { CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
 import type { CaptureResult, PersonConnection } from "./person";
 import type { RolePack } from "./roles";
-import { entityById, type SituationTurnResult } from "./situation";
+import { entityById, isJunkActorLabel, type SituationTurnResult } from "./situation";
 import {
   FACT_REL_PRIORITY,
   addConclusions,
   bestStatementFact,
+  contextFit,
   noteTriage,
   relevanceFor,
+  rivalSenseExclusion,
   solveStateReaction,
   turnContextIds,
 } from "./solve";
@@ -344,6 +347,50 @@ export function composeStatementReply(
         `statement fact suppressed (L2-R, graph-distance rule): a bare classification ("${edgeText(g, fact.edge)}") is testimony, not an utterance — no graph-to-response path on a statement turn; acknowledgement only`);
       fact = null;
     }
+    // The resolver over the referent, on statements too: when
+    // the acknowledgement fact's subject carries rival senses,
+    // the conversation settles the reading — recorded as ground
+    // 1, exactly as corrections do — and a fact testifying for
+    // a RIVAL sense is suppressed, with the ground traced. The
+    // jacket/coat class on statement turns: the garment reading
+    // the conversation supports beats the cover reading.
+    if (fact) {
+      const subjectId = fact.about === "from" ? fact.edge.from : fact.edge.to;
+      const subjectText = g.terms[subjectId] ?? "";
+      if (definitionCandidates(g, subjectText).length > 1) {
+        const reading = settleSense(
+          g, subjectText, [...turnContextIds(g, ws), subjectId], contextFit,
+          {
+            historyKey: session.settledSenses[subjectText] ?? null,
+            stakes: "statement",
+            disposition: role.clarificationDisposition,
+            asksUsed: session.clarificationsAsked,
+            askedLastTurn: session.lastTurnWasAsk,
+            turnText: ws.input,
+          },
+        );
+        if (reading) {
+          // statements never ask back: answer with the verdict's
+          // key (falling back to the score leader), silently —
+          // the reply is not about the sense choice, so unlike a
+          // definition answer it names nothing.
+          const synsetId = reading.verdict?.key ?? reading.choice.chosen.synsetId;
+          session.settledSenses[subjectText] = synsetId;
+          const ground = reading.verdict
+            ? `resolver over ${reading.choice.rivals.length} senses: ${reading.verdict.reason} → ${reading.verdict.action}`
+            : `single sense (${reading.choice.chosen.synsetId}) — nothing to arbitrate`;
+          const exclusion = rivalSenseExclusion(g, subjectId, subjectText, synsetId, fact);
+          if (exclusion) {
+            noteStep(ws, "solve", "conclude",
+              `statement fact suppressed (sense arbitration, ${ground}): "${edgeText(g, fact.edge)}" testifies for ${exclusion} — acknowledgement only`);
+            fact = null;
+          } else {
+            noteStep(ws, "solve", "query",
+              `statement sense settled ("${subjectText}" → ${synsetId}, ${ground}) — the acknowledgement fact stands in the settled sense's world`);
+          }
+        }
+      }
+    }
     // Loop 2 (L2-A): when the statement recorded the speaker's
     // own event in the situation model, the reply LEADS with
     // that event — the reply is about what the person just
@@ -398,6 +445,12 @@ export function composeStatementReply(
                 .some((en) => en.referentId !== null && en.referentId === actor.referentId)
             : false;
           if (!categorised) return false;
+          // junk actors the scan matched as vocabulary, not
+          // referents ("i think", "should"): the scan's own
+          // discipline refuses them as actors, and the lead
+          // refuses them as subjects — a lead must name
+          // someone, not scaffolding.
+          if (isJunkActorLabel(actor.label)) return false;
           if (actor.kind === "person") {
             return actor.surfaces.some((s) => /^[A-Z]/.test(s)) ||
               actor.label.toLowerCase().startsWith("your ");

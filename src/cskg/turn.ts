@@ -104,11 +104,11 @@ import {
 } from "./articulate";
 import { composeContextInto } from "./context";
 import {
-  chooseDefinition,
   definitionForSynset,
   definitionTraceNote,
-  everydaySynsetId,
+  glossHead,
   senseClusterLabel,
+  settleSense,
 } from "./definitions";
 import {
   analyseInto,
@@ -161,7 +161,6 @@ import {
   type CaptureResult,
 } from "./person";
 import { clusterEvidenceIds, filingClusters } from "./everydaysense";
-import { resolveRivalReadings } from "./resolver";
 import {
   addConclusions,
   answerRelated,
@@ -348,7 +347,7 @@ export function runTurn(
   earlyRoutes.push({
     form: "correction",
     detect: "C detectCorrection",
-    solve: "E pickFact + chooseDefinition; F renderCorrection*",
+    solve: "E pickFact + settleSense (resolver); F renderCorrection*",
     decline: "renderCorrectionUnplaced / renderCorrectionNoFact",
     run: () => {
       const corr = detectCorrection(lower);
@@ -368,26 +367,75 @@ export function runTurn(
         // the corrected term has a WordNet gloss, the reply gives
         // that sense's definition in place of a neighbourhood fact
         // ("No, I meant the common cold" → the illness gloss, the
-        // "Got it —" acknowledgement unchanged). No gloss → the
-        // fact path below, exactly as before.
-        const choice = chooseDefinition(
-          g, g.terms[term.id], [...turnContextIds(g, ws), term.id], contextFit,
+        // "Got it —" acknowledgement unchanged). The sense runs
+        // through the AmbiguityResolver over the referent — the
+        // jacket/coat/chicken class — so the conversation (winter
+        // coat, wear, go out) beats the cover/hair/cock readings.
+        // No gloss → the fact path below, exactly as before.
+        // The correction's own phrase disambiguates it ("winter
+        // coat" beside "jacket"): the turn's contents are not
+        // analysed yet at this early row, so the phrase's resolved
+        // terms join the judged context explicitly.
+        const phraseTerms = resolveTerms(g, corr.phrase);
+        const reading = settleSense(
+          g, g.terms[term.id],
+          [...turnContextIds(g, ws), ...phraseTerms.map((t) => t.id)],
+          contextFit,
+          {
+            historyKey: session.settledSenses[g.terms[term.id]] ?? null,
+            stakes: "statement",
+            disposition: role.clarificationDisposition,
+            asksUsed: session.clarificationsAsked,
+            askedLastTurn: session.lastTurnWasAsk,
+            turnText: input,
+          },
         );
-        if (choice) {
+        if (reading) {
+          // Corrections never ask back: a statement is not a
+          // question, so the verdict's key is answered even on a
+          // weak standing (falling back to the score leader when
+          // the verdict names no key), and the ground is traced.
+          const synsetId = reading.verdict?.key ?? reading.choice.chosen.synsetId;
           // E4: the settled sense goes on record — the resolver's
           // ground 1 (what the person said) for later turns.
-          session.settledSenses[g.terms[term.id]] = choice.chosen.synsetId;
-          noteStep(ws, "solve", "query", definitionTraceNote(choice));
-          return finish(
-            renderCorrectionFact(
-              g.terms[term.id],
-              renderDefinition(g.terms[term.id], choice.chosen.gloss),
-              prevTopicText,
-              role.statementStrategy,
-            ),
-            "correction",
-            true,
-          );
+          session.settledSenses[g.terms[term.id]] = synsetId;
+          noteStep(ws, "solve", "query", definitionTraceNote(reading.choice));
+          if (reading.verdict) {
+            noteStep(ws, "resolver", "resolve",
+              `resolver over ${reading.choice.rivals.length} senses of "${g.terms[term.id]}": ${reading.verdict.reason} → ${reading.verdict.action}` +
+              (reading.everyday ? `; everydaysense default: ${glossHead(g, g.terms[term.id], reading.everyday)}` : "; no everydaysense default"));
+            if (reading.verdict.action === "name") {
+              const label = reading.verdict.ranked.find((r) => r.key === reading.verdict!.key)?.label ?? "";
+              const gloss = definitionForSynset(g, g.terms[term.id], synsetId);
+              if (gloss) {
+                return finish(
+                  `${renderNamedReading(g.terms[term.id], label)} ` +
+                  renderCorrectionFact(
+                    g.terms[term.id],
+                    renderDefinition(g.terms[term.id], gloss.gloss),
+                    prevTopicText,
+                    role.statementStrategy,
+                  ),
+                  "correction",
+                  true,
+                );
+              }
+            }
+          }
+          const gloss = definitionForSynset(g, g.terms[term.id], synsetId);
+          if (gloss) {
+            return finish(
+              renderCorrectionFact(
+                g.terms[term.id],
+                renderDefinition(g.terms[term.id], gloss.gloss),
+                prevTopicText,
+                role.statementStrategy,
+              ),
+              "correction",
+              true,
+            );
+          }
+          // settled sense without gloss text — the fact path below
         }
         const fact = pickFact(g, term.id, sit, FACT_REL_PRIORITY, turnContextIds(g, ws), relevanceFor(ws));
         if (fact) {
@@ -1099,9 +1147,19 @@ export function runTurn(
           return declineUnplaced("whatis");
         }
         const termText = g.terms[cand.id];
-        const choice = chooseDefinition(
+        const settled = session.settledSenses[termText] ?? null;
+        const reading = settleSense(
           g, termText, [...turnContextIds(g, ws), cand.id], contextFit,
+          {
+            historyKey: settled,
+            stakes: "question",
+            disposition: role.clarificationDisposition,
+            asksUsed: session.clarificationsAsked,
+            askedLastTurn: session.lastTurnWasAsk,
+            turnText: input,
+          },
         );
+        const choice = reading?.choice ?? null;
         if (choice) {
           noteStep(ws, "solve", "query", definitionTraceNote(choice));
           if (choice.rivals.length < 2) {
@@ -1110,42 +1168,12 @@ export function runTurn(
               noteTriage(ws, "retrieve", "definition: the term's one glossed sense leads, neighbourhood follows");
               return finish(ans, "whatis", true);
             }
-          } else {
-            const glossHead = (synsetId: string): string => {
-              const c = definitionForSynset(g, termText, synsetId);
-              if (!c) return synsetId;
-              // the gloss's head phrase: its first substantial
-              // segment (a gloss may open with a parenthetical or
-              // a comma — an empty branch label would leave the
-              // person nothing to answer with)
-              const head = c.gloss
-                .replace(/[()]/g, " ")
-                .split(/[,;]/)
-                .map((s) => s.trim())
-                .find((s) => s.split(/\s+/).filter(Boolean).length >= 3);
-              return (head ?? c.gloss).split(/\s+/).slice(0, 7).join(" ");
-            };
-            const settled = session.settledSenses[termText] ?? null;
-            const everyday = everydaySynsetId(g, termText, contextFit);
-            const verdict = resolveRivalReadings({
-              rivals: choice.rivals.map((r) => ({
-                key: r.synsetId,
-                label: glossHead(r.synsetId),
-                score: r.score,
-                cluster: senseClusterLabel(g, termText, r.synsetId),
-                gravity: false,
-              })),
-              historyKey: settled,
-              everydayKey: everyday,
-              stakes: "question",
-              disposition: role.clarificationDisposition,
-              asksUsed: session.clarificationsAsked,
-              askedLastTurn: session.lastTurnWasAsk,
-              knownness: settled ? { [settled]: 0.8 } : {},
-            });
+          } else if (reading?.verdict) {
+            const verdict = reading.verdict;
+            const everyday = reading.everyday;
             noteStep(ws, "resolver", "resolve",
               `resolver over ${choice.rivals.length} senses of "${termText}": ${verdict.reason} → ${verdict.action}` +
-              (everyday ? `; everydaysense default: ${glossHead(everyday)}` : "; no everydaysense default"));
+              (everyday ? `; everydaysense default: ${glossHead(g, termText, everyday)}` : "; no everydaysense default"));
             const admission = admissionFor(verdict.standing);
             noteStep(ws, "resolver", "examine",
               `examination: standing ${standingTrace(verdict.standing)}; admission read off the axes: ${admission ?? "none — the reply asserts plainly"}`);

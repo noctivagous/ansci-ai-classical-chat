@@ -32,6 +32,7 @@ what are onions for?
 #! expect=decline contains=used notcontains=bulb
 why did you say that?
 it's still dark out and I'm tired. I should probably make coffee
+#! expect=grounded contains=You,coffee notcontains=Should
 where do people usually keep coffee?
 #! expect=grounded contains=coffee notcontains=town
 no, I meant the coffee
@@ -39,10 +40,11 @@ what season is it right now?
 so should I wear a coat if I go out?
 #! expect=grounded contains=used notcontains=hair
 no I meant a winter coat, the jacket
+#! expect=grounded contains=jacket,short notcontains=cover
 my name is James. I live in Chicago
 do you remember my name?
 #! expect=grounded contains=James notcontains=affinity
 how are you?
 #! expect=grounded notcontains=term
 thanks anyway. I think I'll go make that coffee now
-#! expect=grounded contains=welcome
+#! expect=grounded contains=welcome notcontains=think

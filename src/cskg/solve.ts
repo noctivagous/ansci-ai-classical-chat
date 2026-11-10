@@ -1645,6 +1645,69 @@ export function findTools(
  */
 
 /**
+ * Sense arbitration shared by the definition route (P3-D) and
+ * the statement path: a conclusion whose endpoint belongs to a
+ * RIVAL sense's world is excluded. Two signals, in order:
+ * the synsets' own evidence (a rival synset's lemmas or gloss
+ * attest the endpoint and the settled synset does not — this
+ * outranks cluster co-membership, e.g. kettle's pot vs drum),
+ * then the filing clusters. Endpoints in the settled sense's
+ * world, or in no rival world at all, stand. Returns the
+ * exclusion reason, or null when the conclusion stands.
+ */
+export function rivalSenseExclusion(
+  g: CskgGraph,
+  subjectId: number,
+  termText: string,
+  settledSynsetId: string,
+  fact: Conclusion,
+): string | null {
+  const label = senseClusterLabel(g, termText, settledSynsetId);
+  if (!label) return null;
+  const clusters = filingClusters(g, subjectId);
+  const chosen = clusters.find((c) => c.anchorText === label);
+  if (!chosen) return null;
+  const chosenIds = clusterEvidenceIds(chosen);
+  for (const id of [...chosenIds]) {
+    for (const e of g.outEdges(id, "/r/IsA")) chosenIds.add(e.to);
+  }
+  const rivalIds = new Set<number>();
+  for (const c of clusters) {
+    if (c === chosen) continue;
+    for (const id of clusterEvidenceIds(c)) {
+      if (!chosenIds.has(id)) rivalIds.add(id);
+    }
+  }
+  const allCands = definitionCandidates(g, termText);
+  const chosenCand = allCands.find((c) => c.synsetId === settledSynsetId);
+  const chosenEvidence = new Set<number>(
+    chosenCand ? senseEvidence(g, chosenCand, termText).map((e) => e.id) : [],
+  );
+  const rivalEvidence = new Set<number>();
+  for (const c of allCands) {
+    if (c.synsetId === settledSynsetId) continue;
+    for (const e of senseEvidence(g, c, termText)) {
+      if (!chosenEvidence.has(e.id)) rivalEvidence.add(e.id);
+    }
+  }
+  const attested = (set: Set<number>, id: number): boolean => {
+    if (set.has(id)) return true;
+    const parents = g.outEdges(id, "/r/IsA").map((e) => e.to);
+    if (parents.some((p) => set.has(p))) return true;
+    return parents.some((p) =>
+      g.outEdges(p, "/r/IsA").some((e) => set.has(e.to)));
+  };
+  const otherEnd = fact.about === "from" ? fact.edge.to : fact.edge.from;
+  if (attested(rivalEvidence, otherEnd) && !attested(chosenEvidence, otherEnd)) {
+    return "a rival sense's own evidence";
+  }
+  if (rivalIds.has(otherEnd) && !attested(chosenEvidence, otherEnd)) {
+    return "rival filing cluster";
+  }
+  return null;
+}
+
+/**
  * Phase 3 (P3-D) — the definition route's combination step.
  * The whatis queries gather the term's neighbourhood under
  * several relations, but the term node files EVERY sense's
@@ -1663,71 +1726,25 @@ function arbitrateDefinitionCombination(
   synsetId: string,
   cs: Conclusion[],
 ): Conclusion[] {
-  const label = senseClusterLabel(g, g.terms[cand.id], synsetId);
+  const termText = g.terms[cand.id];
+  const label = senseClusterLabel(g, termText, synsetId);
   if (!label) {
     noteStep(ws, "solve", "arbitrate",
-      `definition combination for "${g.terms[cand.id]}": no filing cluster holds the chosen sense — the gathered neighbourhood stands unarbitrated`);
+      `definition combination for "${termText}": no filing cluster holds the chosen sense — the gathered neighbourhood stands unarbitrated`);
     return cs;
   }
+  // the per-conclusion arbitration lives in rivalSenseExclusion
+  // (shared with the statement path); the combination only
+  // names what fell out. A missing chosen cluster keeps the
+  // neighbourhood silently, as before.
   const clusters = filingClusters(g, cand.id);
-  const chosen = clusters.find((c) => c.anchorText === label);
-  if (!chosen) return cs;
-  const chosenIds = clusterEvidenceIds(chosen);
-  for (const id of [...chosenIds]) {
-    for (const e of g.outEdges(id, "/r/IsA")) chosenIds.add(e.to);
-  }
-  const rivalIds = new Set<number>();
-  for (const c of clusters) {
-    if (c === chosen) continue;
-    for (const id of clusterEvidenceIds(c)) {
-      if (!chosenIds.has(id)) rivalIds.add(id);
-    }
-  }
-  // Second signal (P3-D, second pass): the synsets' own
-  // evidence — a conclusion endpoint a RIVAL synset's lemmas
-  // or gloss attests, and the chosen synset does not, is
-  // rival-sense evidence even where the filing clusters merge
-  // the two worlds into one cluster (kettle: pot and drum
-  // share a cluster; their glosses share no words). Evidence
-  // is sense-specific by construction, so it outranks cluster
-  // co-membership. Attribution follows the design's filing
-  // channel: an endpoint is attested for a sense when the
-  // endpoint itself — or one of its own IsA parents — is in
-  // the sense's evidence (so "containerful", filed under
-  // "quantity", belongs to the quantity synset whose gloss
-  // attests "quantity").
-  const termText = g.terms[cand.id];
-  const allCands = definitionCandidates(g, termText);
-  const chosenCand = allCands.find((c) => c.synsetId === synsetId);
-  const chosenEvidence = new Set<number>(
-    chosenCand ? senseEvidence(g, chosenCand, termText).map((e) => e.id) : [],
-  );
-  const rivalEvidence = new Set<number>();
-  for (const c of allCands) {
-    if (c.synsetId === synsetId) continue;
-    for (const e of senseEvidence(g, c, termText)) {
-      if (!chosenEvidence.has(e.id)) rivalEvidence.add(e.id);
-    }
-  }
-  // attested within two IsA hops — the same depth the
-  // resolver's branch footprints walk (turn.ts): "containerful"
-  // files under "indefinite quantity", whose own parent is the
-  // "quantity" the quantity synset's gloss attests.
-  const attested = (set: Set<number>, id: number): boolean => {
-    if (set.has(id)) return true;
-    const parents = g.outEdges(id, "/r/IsA").map((e) => e.to);
-    if (parents.some((p) => set.has(p))) return true;
-    return parents.some((p) =>
-      g.outEdges(p, "/r/IsA").some((e) => set.has(e.to)));
-  };
+  if (!clusters.some((c) => c.anchorText === label)) return cs;
   const kept: Conclusion[] = [];
   const dropped: { c: Conclusion; why: string }[] = [];
   for (const c of cs) {
-    const to = c.edge.to;
-    if (attested(rivalEvidence, to) && !attested(chosenEvidence, to)) {
-      dropped.push({ c, why: "a rival sense's own evidence" });
-    } else if (rivalIds.has(to) && !attested(chosenEvidence, to)) {
-      dropped.push({ c, why: "rival filing cluster" });
+    const exclusion = rivalSenseExclusion(g, cand.id, termText, synsetId, { edge: c.edge, about: "from" });
+    if (exclusion) {
+      dropped.push({ c, why: exclusion });
     } else kept.push(c);
   }
   if (dropped.length) {

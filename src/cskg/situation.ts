@@ -228,6 +228,46 @@ const CONNECTIVE_WORDS = new Set([
   "didn't", "aren't", "wasn't", "weren't", "couldn't", "shouldn't",
 ]);
 
+/** Modal auxiliaries: scaffolding around a happening, never its actor. */
+const MODAL_AUX = new Set([
+  "will", "would", "shall", "should", "can", "could", "may", "might", "must",
+]);
+
+/** Cognition verbs introducing the speaker's take, never an actor. */
+const COGNITION_VERBS = new Set([
+  "think", "believe", "feel", "suppose", "guess",
+]);
+
+/** Words in the actor slot that name no referent of their own. */
+const ACTOR_FILLER = new Set([
+  "i", "me", "my", "mine", "we", "us", "our", "ours",
+  "you", "your", "yours", "he", "him", "his", "she", "her",
+  "hers", "it", "its", "they", "them", "their", "theirs",
+  "then", "that", "this", "there",
+  "the", "a", "an", "ll", "m", "re", "ve", "d", "s", "t",
+]);
+
+/**
+ * A scan-matched "actor" that is vocabulary, not a referent —
+ * every word modal, cognition, filler or pronoun ("should",
+ * "i think"). Such labels must never lead a reply: the scan
+ * keeps looking outward for the stated actor, and the L2-D
+ * gate refuses them as leads.
+ */
+export function isJunkActorLabel(label: string): boolean {
+  const words = label
+    .toLowerCase()
+    .split(/[^a-z']+/)
+    .filter(Boolean)
+    .map((w) => w.replace(/^'+|'+$/g, ""));
+  if (!words.length) return true;
+  return words.every((w) =>
+    MODAL_AUX.has(w) || COGNITION_VERBS.has(w) || ACTOR_FILLER.has(w));
+}
+
+/** Single words the actor scan walks past without stopping. */
+const NON_ACTOR_WORDS = new Set([...MODAL_AUX, ...COGNITION_VERBS]);
+
 /** Irregular pasts the regular form machinery cannot derive. */
 const IRREGULAR_PASTS: Record<string, string> = {
   brought: "bring", gave: "give", took: "take", made: "make",
@@ -1494,10 +1534,15 @@ export function analyseSituationInto(
       if (pick === undefined) continue;
       const i = pick;
       const base = verbBasePerTurn(g, cw[i])!;
-      // actor: the nearest preceding entity mention or pronoun
+      // actor: the nearest preceding entity mention or pronoun.
+      // Modals and cognition verbs are scaffolding around the
+      // stated happening, never its actor ("I should make
+      // coffee", "I think I'll go…"): the scan walks past them
+      // to the speaker instead of naming them.
       let actor: SituationEntity | null = null;
       for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
         if (cw[j] === "i" || cw[j] === "we" || cw[j] === "i'm" || cw[j] === "we're") { actor = speaker; break; }
+        if (NON_ACTOR_WORDS.has(cw[j])) continue;
         if (PRONOUNS.has(cw[j])) {
           const r = resolvePronoun(model, cw[j], turn);
           actor = r.entityId ? entityById(model, r.entityId) : null;
@@ -1505,7 +1550,13 @@ export function analyseSituationInto(
           continue;
         }
         const cand = entityInPhrase(model, cw.slice(Math.max(0, j - 2), j + 1).join(" "));
-        if (cand) { actor = cand; break; }
+        if (cand) {
+          // a function-word/modal/cognition label is the scan
+          // matching vocabulary, not a referent ("i think",
+          // "should"): keep scanning outward for the actor.
+          if (isJunkActorLabel(cand.label)) continue;
+          actor = cand; break;
+        }
       }
       if (!actor && /^\s*(it|it's|there)\b/i.test(clause) &&
           (base === "rain" || base === "snow")) {

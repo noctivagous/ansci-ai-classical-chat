@@ -285,7 +285,11 @@ test("S12: a correction with no previous topic keeps the plain acknowledgement",
   const s = createSession();
   const r = runTurn(g, s, "No, I meant the peel");
   assert.equal(r.trace.intent, "correction");
-  assert.match(r.text, /^Got it — peel\./);
+  // the correction runs the resolver over the referent: a weak
+  // standing names the reading taken (as definition answers do),
+  // then the plain acknowledgement follows — the silent
+  // score-leader path that produced jacket-as-cover is gone.
+  assert.match(r.text, /^Taking peel as .* — Got it — peel\./);
 });
 
 test("repair frame: the role pack selects it, same repair either way", () => {

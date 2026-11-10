@@ -82,6 +82,11 @@ import { DEFAULT_EXTRACT_PATH, synsetId } from "../wordnet";
 import { STOPWORDS, tokenise } from "./discourse";
 import { clusterEvidenceIds, defaultReading, filingClusters } from "./everydaysense";
 import type { CskgGraph } from "./loader";
+import {
+  resolveRivalReadings,
+  type ResolverVerdict,
+} from "./resolver";
+import type { ClarificationDisposition } from "./roles";
 
 export type GlossPos = "n" | "v" | "a";
 
@@ -576,6 +581,130 @@ export function senseClusterLabel(
     if (evidenceInCluster(g, evidence, ids, texts)) return cluster.anchorText;
   }
   return null;
+}
+
+/**
+ * A rival's gloss head: its first substantial segment (a gloss
+ * may open with a parenthetical or a comma — an empty branch
+ * label would leave the person nothing to answer with), capped
+ * at seven words. Shared by the definition route's branches and
+ * the resolver's rival labels.
+ */
+export function glossHead(
+  g: CskgGraph,
+  term: string,
+  synsetId: string,
+  store: DefinitionsStore = getDefinitionsStore(),
+): string {
+  const c = definitionForSynset(g, term, synsetId, store);
+  if (!c) return synsetId;
+  const head = c.gloss
+    .replace(/[()]/g, " ")
+    .split(/[,;]/)
+    .map((s) => s.trim())
+    .find((s) => s.split(/\s+/).filter(Boolean).length >= 3);
+  return (head ?? c.gloss).split(/\s+/).slice(0, 7).join(" ");
+}
+
+/**
+ * A term's settled reading: the sense choice plus the
+ * AmbiguityResolver's verdict over its rivals — the definition
+ * route's study → organise → plan shape, shared by corrections
+ * and statements. Null when the graph holds no gloss for the
+ * term. The verdict is null when fewer than two rivals compete
+ * (nothing to arbitrate); callers then use the choice as before.
+ */
+export interface SettledReading {
+  choice: SenseChoice;
+  verdict: ResolverVerdict | null;
+  /** EverydaySense's default key, for the verdict trace */
+  everyday: string | null;
+}
+
+/**
+ * One shared evidence word in the turn's own words counts as
+ * much as a clear score lead (the ready gap): the person is
+ * talking about that sense's world. The jacket called a
+ * "winter coat" is the garment sense whose gloss says "coat",
+ * not the cover sense nothing in the turn names.
+ */
+const LEXICAL_GROUND_BONUS = 3;
+
+export function settleSense(
+  g: CskgGraph,
+  term: string,
+  contextIds: number[],
+  fit: ContextFitFn,
+  opts: {
+    /** ground 1: the key history/person settles on, if any */
+    historyKey: string | null;
+    /** a direct question's wrong answer costs more than a statement's */
+    stakes: "question" | "statement";
+    /** the role's clarification disposition */
+    disposition: ClarificationDisposition;
+    /** clarifications already asked this conversation */
+    asksUsed: number;
+    /** the previous turn ended in an ask — never two in a row */
+    askedLastTurn: boolean;
+    /** the turn's own words; consulted only on statement stakes */
+    turnText: string;
+  },
+  store: DefinitionsStore = getDefinitionsStore(),
+): SettledReading | null {
+  // The subject's own node (and lexical family) never judges
+  // its senses: the merged node files every sense's edges, so
+  // each sense's evidence corroborates itself through it and
+  // every fit caps into a tie the filing then wins. The
+  // conversation — the correction phrase, memory topics —
+  // judges alone.
+  const subjectId = g.id(term) ?? (g.lemmaOf(term) ? g.id(g.lemmaOf(term)!) : undefined);
+  const judgedIds = contextIds.filter((cid) => {
+    if (subjectId !== undefined && cid === subjectId) return false;
+    const t = g.terms[cid];
+    if (t === undefined) return true;
+    return !(t === term || t.endsWith(` ${term}`) || term.endsWith(` ${t}`));
+  });
+  const choice = chooseDefinition(g, term, judgedIds, fit, store);
+  if (!choice) return null;
+  if (choice.rivals.length < 2) return { choice, verdict: null, everyday: null };
+  // Lexical grounding (statements only): a rival whose own
+  // evidence words the person actually used is the world being
+  // talked about. Questions keep the filing-led scoring
+  // untouched.
+  let rivalScores = new Map(choice.rivals.map((r) => [r.synsetId, r.score]));
+  if (opts.stakes === "statement") {
+    const turnWords = new Set(
+      tokenise(opts.turnText.toLowerCase()).filter((w) => w.length > 2 && !STOPWORDS.has(w)),
+    );
+    const cands = definitionCandidates(g, term, store);
+    rivalScores = new Map(choice.rivals.map((r) => {
+      const cand = cands.find((c) => c.synsetId === r.synsetId);
+      const evWords = new Set(
+        (cand ? senseEvidence(g, cand, term) : []).flatMap((e) => e.word.split(/[^a-z']+/)),
+      );
+      let hits = 0;
+      for (const w of evWords) if (turnWords.has(w)) hits++;
+      return [r.synsetId, r.score + hits * LEXICAL_GROUND_BONUS] as const;
+    }));
+  }
+  const everyday = everydaySynsetId(g, term, fit, store);
+  const verdict = resolveRivalReadings({
+    rivals: choice.rivals.map((r) => ({
+      key: r.synsetId,
+      label: glossHead(g, term, r.synsetId, store),
+      score: rivalScores.get(r.synsetId) ?? r.score,
+      cluster: senseClusterLabel(g, term, r.synsetId, store),
+      gravity: false,
+    })),
+    historyKey: opts.historyKey,
+    everydayKey: everyday,
+    stakes: opts.stakes,
+    disposition: opts.disposition,
+    asksUsed: opts.asksUsed,
+    askedLastTurn: opts.askedLastTurn,
+    knownness: opts.historyKey ? { [opts.historyKey]: 0.8 } : {},
+  });
+  return { choice, verdict, everyday };
 }
 
 /** One synset's gloss for a term, by synset id — a settled reading's text. */
