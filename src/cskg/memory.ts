@@ -10,8 +10,9 @@
  * topic the conversation is about.
  *
  * Long-term memory — the person file and its write discipline
- * (§5) — is E4. E1 has no long-term store: general mode writes
- * nothing long-term, and there is nothing to load.
+ * (§5) — landed with E4 in person.ts; this module holds the
+ * session-side tiers that pair with it (the person's current
+ * state, pending clarifications, the interruption budget).
  *
  * Each turn, D contributes the workspace's `activeContext` (a
  * snapshot of the session's topics and standing intent, supplied
@@ -28,16 +29,92 @@ import {
 import type { CskgGraph } from "./loader";
 import type { ThoughtTrace, TurnWorkspace } from "./workspace";
 
+/**
+ * One entry of the person's CURRENT STATE (design §5, the
+ * transient tier): a feeling, a current doing, a present
+ * circumstance. Session-scoped — superseded by a newer entry of
+ * the same kind, and it lapses with the session. A habitual
+ * marker ("all the time") rides on the entry as a standing
+ * pattern; patterns that reach the person FILE live in
+ * person.ts.
+ */
+export interface PersonStateEntry {
+  kind: "feeling" | "doing" | "circumstance";
+  /** the state as stated, lightly trimmed ("tired") */
+  text: string;
+  /** the canonical record ATOMIC is consulted from */
+  canonical: string;
+  /** the turn that stated it */
+  turn: number;
+  /** a habitual marker ("all the time"), or null */
+  pattern: string | null;
+}
+
+/** One pre-mapped branch of a pending clarification (§5). */
+export interface ClarificationBranch {
+  /** the resolver's rival key */
+  key: string;
+  /** the reading's label, as the person would name it ("the common cold") */
+  label: string;
+  /** words a reply may use to pick this branch (lemmas, gloss words) */
+  matchWords?: string[];
+  /** graph ids a reply may name to pick this branch (the reading's filing cluster + its IsA ancestors) */
+  matchIds?: number[];
+  /** for a definition pending: the branch's WordNet synset */
+  synsetId?: string;
+  /** for a referent pending: the branch's graph term */
+  termId?: number;
+}
+
+/**
+ * A clarification the chat has ASKED and not yet had answered.
+ * The next turn resolves it BEFORE new analysis (§5): the
+ * branches are pre-mapped, so "the second one" or the label
+ * itself selects the reading the original question is then
+ * answered under.
+ */
+export interface PendingClarification {
+  /** the term the readings are rivals for */
+  termText: string;
+  kind: "definition" | "fact";
+  branches: ClarificationBranch[];
+  /** the turn the question was asked on */
+  askedTurn: number;
+}
+
 export interface SessionState {
   /** resolved term ids, most recent last */
   topics: number[];
   lastIntent: string;
   traces: ThoughtTrace[];
   turnCount: number;
+  /** the person's current state (transient tier, §5) */
+  personStates: PersonStateEntry[];
+  /** explicit "remember that…" notes held for this session only */
+  sessionNotes: string[];
+  /** a clarification ask awaiting the person's answer (§5) */
+  pendingClarification: PendingClarification | null;
+  /** clarifications asked so far (the interruption budget, §5) */
+  clarificationsAsked: number;
+  /** the previous turn ended in a clarification ask */
+  lastTurnWasAsk: boolean;
+  /** senses settled by correction or clarification: term → synset id */
+  settledSenses: Record<string, string>;
 }
 
 export function createSession(): SessionState {
-  return { topics: [], lastIntent: "fact", traces: [], turnCount: 0 };
+  return {
+    topics: [],
+    lastIntent: "fact",
+    traces: [],
+    turnCount: 0,
+    personStates: [],
+    sessionNotes: [],
+    pendingClarification: null,
+    clarificationsAsked: 0,
+    lastTurnWasAsk: false,
+    settledSenses: {},
+  };
 }
 
 /** D's standing contribution to a turn's workspace (§4). */

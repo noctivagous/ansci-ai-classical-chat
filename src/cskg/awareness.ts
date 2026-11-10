@@ -33,6 +33,8 @@
  *
  * Writes (engine map): `situation`, `person`.
  */
+import { personNameFromEnv } from "./person";
+import { loadRolePack } from "./roles";
 import type { TurnWorkspace } from "./workspace";
 
 export type Hemisphere = "north" | "south";
@@ -56,8 +58,9 @@ export interface Situation {
 }
 
 /**
- * Who is talking (§5). E1: always `general`. E4 adds the configured
- * person, whose stated facts and preferences load alongside `name`.
+ * Who is talking (§5). `general` when no person is configured;
+ * `known` with the configured name — the person's stated facts
+ * and preferences load from their file in person.ts.
  */
 export type PersonContext =
   | { kind: "general" }
@@ -120,8 +123,12 @@ export function computeSituation(
 }
 
 /**
- * A's turn entry: load the workspace's `situation` and `person`.
- * The person is general in E1 — no person file is read (E4).
+ * A's turn entry: load the workspace's `situation`, `person`
+ * and `role` — the whole frame (§5). The person is `known`
+ * when CSKG_CHAT_PERSON names one (their file loads in
+ * person.ts; awareness records only who is talking), and the
+ * role pack is loaded from roles/ (CSKG_CHAT_ROLE, default
+ * assistant). Unknown → general mode, as ever.
  */
 export function loadAwarenessInto(
   ws: TurnWorkspace,
@@ -129,7 +136,9 @@ export function loadAwarenessInto(
   env: NodeJS.ProcessEnv = process.env,
 ): void {
   ws.situation = computeSituation(now, env);
-  ws.person = { kind: "general" };
+  const name = personNameFromEnv(env);
+  ws.person = name ? { kind: "known", name } : { kind: "general" };
+  ws.role = loadRolePack(env);
 }
 
 /**

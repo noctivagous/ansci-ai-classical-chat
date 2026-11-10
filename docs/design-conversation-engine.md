@@ -601,7 +601,7 @@ a slice is judged on exactly that declaration.
   verbatim — collapsing happens at record-build time, so
   collection stays complete and level-unaware.
 - **E4 — The conversation frame: role and person** *(enables, then
-  moves).* Opens with the **Context module** (§2) — the frame made
+  moves — LANDED 2026-11-09, evaluation report note).* Opens with the **Context module** (§2) — the frame made
   operative during analysis; its evidence is the
   situation-conditioned evaluation turns showing a traceable
   difference, or G5's claim is retired. Then role packs (`roles/`,
@@ -613,6 +613,18 @@ a slice is judged on exactly that declaration.
   replies true to each role and equally grounded; and a scripted
   two-session sequence where facts stated in session one are
   context in session two, while general mode remembers nothing.
+  As landed: Context's difference is traceable in discourse
+  scoring (the coat case, G5 below); both role judgements pass
+  8/8 grounded; the two-session sequence fires the §5 canonical
+  pair from the file; the resolver + EverydaySense + tuple
+  landed with it (G1/G3 closed below). Two honest limits ride
+  with the landing: the classifier's graph-evidence channels
+  are traced but weightless on today's natural statements
+  (they discriminate on fixture-keyed statements; statement
+  phrasing does not yet key ATOMIC templates), and the coat
+  definition still leads with the fur sense in a clothing
+  conversation (filing 25.1 vs garment 20.7 — the context
+  channel cannot cross that filing gap; recorded in the note).
 
 - **E5 — Event structure and the situation model** *(later piece,
   decided 2026-11-09; scope grown the same day).* E2's breakdown
@@ -676,6 +688,17 @@ slice), **closing** (a running slice owns it), **closed**.
   any clash with CSKG. Until then the default is
   record-and-answer. Encountered at: bananas (scoring resolved
   it), brother (E3's within-node choice).
+  *Closed* (2026-11-09, E4): the resolver and EverydaySense
+  landed as designed (resolver.ts, everydaysense.ts) — grounds
+  in order (history, EverydaySense, score), escalation over
+  gap/distance/gravity/cost/budget/disposition, asks with
+  pre-mapped branches and pending state resolved before new
+  analysis. Live evidence: definition questions ask (bat,
+  crane, bass), name (bank), and answer by EverydaySense
+  (cold); discourse runs the ground-1 review on near-ties.
+  EverydaySense's defaults are filing-cluster mass over the
+  graph's own IsA filings; its curated set is still empty —
+  derivation has sufficed so far.
 - **G2 — Event structure.** Sentences as happenings with
   participants, not topics. *Decided*: slice E5 — grown
   (2026-11-09) into a **situation model** with Situation analysis
@@ -684,6 +707,14 @@ slice), **closing** (a running slice owns it), **closed**.
   asserted/known/inferred (§8).
 - **G3 — Statement response shape.** What a statement reply should
   do. *Decided*: answered by role (§5) — implementation in E4.
+  *Closed* (2026-11-09, E4): statement replies are formulated
+  per the classification (schmooze / connected / informing /
+  state), the role pack's strategy and follow-up policy, and
+  the operative context; schmooze follow-ups are formed from
+  the statement's own slot (a narrated doing, a person
+  introduced as new), and a connected statement says its
+  connection (the continuity clause). Judged under two roles
+  in the E4 note (J2).
 - **G4 — Pronouns.** *She/he/it* pointing at active referents.
   *Open*; a light version (most recent compatible referent) is
   cheap at any time, the full version rides with E5.
@@ -695,6 +726,18 @@ slice), **closing** (a running slice owns it), **closed**.
   response *during analysis*; it opens E4, and its named evidence
   is the situation-conditioned turns — an observable, traceable
   difference, or the claim is honestly retired.
+  *Closed by evidence* (2026-11-09, E4): the Context module
+  landed and the named evidence exists — on identical input
+  (the Sydney script's coat turn under both locations), the
+  "winter coat" candidate scores 30 in Chicago against 25 in
+  Sydney, the difference being the context-overlap channel
+  (×6 vs ×1) fed by Context's facet sets, with the compose
+  steps naming the facets in both traces. The honest limit
+  rides with the closure: the pressure moved scores inside
+  analysis; it did not flip a selection in these turns, and at
+  full corroboration strength it proved harmful (facet-word
+  affinities flipped the brother turn before being withdrawn
+  to the relevance/overlap channels — measured in the E4 note).
 - **G6 — Paraphrase reach.** Statements like "I feel tired all the
   time" never reach ATOMIC's event/reaction nodes; literal-term
   matching is the ceiling. *Narrowed* (2026-11-09): for
@@ -702,7 +745,12 @@ slice), **closing** (a running slice owns it), **closed**.
   the statement land as a canonical state record regardless of
   wording, and ATOMIC is consulted from that record. General
   paraphrase reach for other content remains *open*; related to
-  G2/E5.
+  G2/E5. The narrowing *landed* with E4 (2026-11-09): the tired
+  turns reach the "feels tired" event from the state record in
+  both evaluations and sessions. (The classifier's own event
+  keying over statement phrasing matched nothing live — the
+  E4 note's probe result; that is the general-reach half of
+  this gap, still open.)
 - **G7 — No definitions.** CSKG carries no glosses, so "what is X"
   is a neighbourhood sketch, never a definition. *Decided*
   (2026-11-09, verified against the data): WordNet IS one of
@@ -725,9 +773,24 @@ slice), **closing** (a running slice owns it), **closed**.
   give the settled sense's definition; no gloss falls back to
   the previous answer exactly.
 - **G8 — Cold start.** ~27 s graph load, no serialised index.
-  *Open* (engineering); matters for the demo and any hosting.
-  (Depth pass measured the sentence/context side stores at
-  +~3 s and +120 MB — the price is known, the fix is one item.)
+  *Closed* (2026-11-09, evaluation report note): the built
+  graph is serialised to a binary cache derived from the
+  source path (`<data>.index.bin`, in data/raw/cskg/ for the
+  shipped dataset) — CSR arrays and side stores as raw bytes
+  plus offset-tabled string blobs, under a header carrying a
+  source fingerprint (size + mtime + sha256 of the first/last
+  256 KiB), the relation and dataset vocabularies, and a
+  sha256 over all section bytes. loadCskg deserialises on a
+  fingerprint match and falls back to the full parse (which
+  rewrites the cache) on any doubt — absence, mismatch,
+  corruption — so a bad cache can never crash or silently
+  mis-serve the chat. Measured on the day: parse 31.3–33.0 s
+  → cache load 1.8–2.3 s (≈15×), cache file 170.6 MiB, cache
+  write ≈2.5 s one-off after a parse; Chicago/Sydney
+  transcripts from a cache-loaded process byte-identical to
+  the parsed process (clock line excepted). Provenance masks
+  are re-mapped through the header's dataset table on load,
+  since mask bits are numbered by parse encounter order.
 - **G9 — Question scaffolding treated as a topic.** Exposed by
   the depth pass probe (2026-11-09): "What do people want when
   they can't sleep?" — with no event match, the generic path
@@ -755,7 +818,9 @@ unbuilt), *missing* (not yet designed):
 - **Deciding.** *Have:* basic intent (statement/question/why/
   correction). *Designed:* the Context module assembling operative
   parameters, the clarification decision, standing-tuple
-  consumers. *Missing:* an initiative policy — when the chat may
+  consumers. *Landed with E4 (2026-11-09):* the Context module,
+  the clarification decision (resolver), the tuple's first
+  consumers, and statement classification. *Missing:* an initiative policy — when the chat may
   ask, offer, or reopen a topic on its own motion (the role's
   follow-up policy is only a seed).
 - **Saying.** *Have:* grounded one-fact replies, honest declines.
@@ -811,12 +876,30 @@ unbuilt), *missing* (not yet designed):
   *Missing.* Its engine-side counterpart is phatic *intent*
   recognition — the schmoozing class in piece C (§2): a phatic
   statement's correct reply is social continuation, not a fact.
+  *Engine side landed* (2026-11-09, E4): the schmoozing class
+  is live in piece C (classification with person knowledge
+  first and graph evidence weighed), and its replies are
+  social continuations formed from the statement's contents.
+  The surface phatic turns themselves (greetings, closings,
+  thanks as turns) remain missing.
 - **S6 Epistemic forms** — hedges and the three admissions read
-  off the tuple. *Designed.*
+  off the tuple. *Designed.* *Landed for the resolver path*
+  (2026-11-09, E4): the tuple is carried by the E4 machinery,
+  and the definition path's examination step reads the
+  admission off the verdict's axes (the ask form opens with
+  "I am not clear…"); solve's and discourse's progressive
+  adoption remains as slices touch them.
 - **S7 Role statement strategies** — acknowledge-and-offer vs
-  react-and-share. *Designed* (role packs).
+  react-and-share. *Designed* (role packs). *Landed*
+  (2026-11-09, E4): packs under `roles/` (assistant,
+  companion), judged two ways in the E4 note (J2).
 - **S8 Question forms** — clarification asks (branches
   pre-mapped), follow-ups, offers. *Partly designed.*
+  *Clarification asks landed* (2026-11-09, E4): the resolver's
+  ask renders with pre-mapped branches (words + graph
+  footprint), sets pending state, and resolves by ordinal,
+  branch words, or category naming; follow-ups exist as the
+  schmooze forms (S5/S7). Offers remain undesigned.
 - **S9 Surface realisation** — fact-to-sentence grammar:
   agreement, articles, clause combining, given-before-new.
   *Crude and fragile* (duplication and clause-shaped-target
@@ -841,7 +924,9 @@ unbuilt), *missing* (not yet designed):
 
 - **Conversing over time.** *Have:* topic memory, trace replay.
   *Designed:* person state (two tiers) and long-term memory,
-  pending clarifications, situation model (E5). *Missing:*
+  pending clarifications, situation model (E5). *Landed with
+  E4 (2026-11-09):* person state (two tiers), the person file,
+  pending clarifications. *Missing:*
   topic shift and return as first-class moves ("back to the
   soup"), and the milestone's real acceptance instrument —
   **unscripted conversation**: free chats with a person, judged

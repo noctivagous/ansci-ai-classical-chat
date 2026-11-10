@@ -389,3 +389,115 @@ export function renderToolFallbackNote(count: number): string {
 export function renderStatementNoted(termText: string): string {
   return `${cap(termText)} — noted. This graph doesn't tell me much about it yet, but I'll keep it in mind for what follows.`;
 }
+
+/* ---------------- E4: role, person and resolver forms ------------
+ *
+ * The saying side of the conversation frame (S5/S7, §5). Every
+ * form below is a fixed conversational template selected by the
+ * coordinator from the turn's ANALYSIS (the statement's class,
+ * its contents slots, the role pack, the standing tuple) — the
+ * same discipline as the spike's templates: F words what the
+ * pieces decided, and a form's parameters come from the
+ * statement's own contents, never from a stored reply.
+ */
+
+/**
+ * A schmooze follow-up, formed from the statement's own slot:
+ * a narrated doing/plan earns the motivation question (the
+ * design's canonical form — "And what made you want to do
+ * that?" is the shape a voluntary doing licenses); a person
+ * introduced as new earns the meeting question; anything else
+ * earns an invitation to say more about the topic itself.
+ */
+export function renderSchmoozeFollowup(
+  slot: "doing" | "new-person" | "topic",
+  topicText: string,
+): string {
+  if (slot === "doing") return "And what made you want to do that?";
+  if (slot === "new-person") return "Have you met them yet?";
+  return `Tell me more about the ${topicText}.`;
+}
+
+/**
+ * The continuity clause for a CONNECTED statement (§5's worked
+ * example): the statement's topic is the object of a recorded
+ * preference held by one of the person's people — the reply
+ * says the connection, with the inference's shape visible
+ * ("he'll like that" is a hope about an occasion, stated as
+ * one). Pronouns by the relation word, else "they".
+ */
+const SUBJECT_PRONOUN: Record<string, string> = {
+  brother: "he", father: "he", boyfriend: "he", husband: "he", son: "he",
+  sister: "she", mother: "she", girlfriend: "she", wife: "she", daughter: "she",
+};
+
+export function renderContinuityClause(display: string, subject: string): string {
+  const pron = SUBJECT_PRONOUN[subject] ?? "they";
+  return `And ${display} — ${pron}'ll like that.`;
+}
+
+/** A captured feeling with no graph reaction: the state, acknowledged as stated. */
+export function renderStateNoted(feelingText: string, pattern: string | null): string {
+  return pattern
+    ? `${cap(feelingText)}, ${pattern} — noted. That sounds like a lot to carry.`
+    : `${cap(feelingText)} — noted.`;
+}
+
+/** A memory write's acknowledgement, in the role's voice, naming what was kept. */
+export function renderRememberAck(ack: string, display: string): string {
+  return `${ack} ${cap(display)}.`;
+}
+
+/** General mode's honest version: session-only, nothing filed. */
+export function renderRememberSessionOnly(): string {
+  return "I'll keep that in mind for this conversation — in general mode I don't keep a file for you, so it won't survive the session.";
+}
+
+/** "What do you remember about me?" — the file, read back plainly. */
+export function renderRecall(factDisplays: string[], patternLines: string[]): string {
+  const parts = [...factDisplays, ...patternLines];
+  if (!parts.length) return "There's nothing in your file yet — you haven't told me anything to keep.";
+  return `Here's what I have: ${parts.join("; ")}.`;
+}
+
+export function renderRecallGeneral(): string {
+  return "I don't keep a file for you in general mode, so there's nothing stored about you from before this conversation.";
+}
+
+/**
+ * The resolver's ASK (S8): opens with the clarity admission —
+ * "I am not clear" is the tuple's clarity axis bottoming out —
+ * and names the pre-mapped branches the person's answer will
+ * select between.
+ */
+export function renderClarificationAsk(termText: string, labels: string[]): string {
+  return `I am not clear which ${termText} you mean — ${labels.join(", or ")}?`;
+}
+
+/** The resolver's NAME form: the reading taken, stated before the answer. */
+export function renderNamedReading(termText: string, label: string): string {
+  return `Taking ${termText} as ${label} —`;
+}
+
+/* The companion's PLAIN decline style: the same empty sets and
+ * the same honesty, worded briefly. Grounding outranks role —
+ * only the wording differs (§5). */
+
+export function renderNoFactPlain(termText: string): string {
+  return `I don't know that one — this graph doesn't say anything usable about "${termText}".`;
+}
+
+export function renderWhyNoCausePlain(effectText: string, causeText: string | null): string {
+  return causeText
+    ? `I don't know — this graph has no Causes edge from "${causeText}" toward "${effectText}".`
+    : `I don't know — this graph doesn't record a cause for "${effectText}".`;
+}
+
+export function renderDeclineUnplacedPlain(unplaced: string[]): string {
+  const named = unplaced.length ? `"${unplaced.slice(0, 3).join('", "')}"` : "that";
+  return `I don't know ${named} — it isn't in what I know yet.`;
+}
+
+export function renderToolDeclinePlain(usedForPhrase: string): string {
+  return `I don't know a tool for that — nothing here is recorded as used for ${usedForPhrase}.`;
+}

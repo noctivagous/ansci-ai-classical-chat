@@ -21,7 +21,7 @@ import {
 } from "../src/cskg/definitions";
 import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
 import { contextFit } from "../src/cskg/solve";
-import { loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
+import { cachePathFor, loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
 import {
   appendTraceRecord,
@@ -836,4 +836,101 @@ test("definitions: non-definition questions keep their routing (purpose, made-of
   assert.equal(m.grounded, true);
   assert.match(m.text, /made of glass/);
   assert.doesNotMatch(m.text, /^Wine bottle:/, "no definition lead on a made-of turn");
+});
+
+// ---------------------------------------------------------------------------
+// G8 — the serialised index cache. A fixture exercising every store
+// the cache carries: a sentence-bearing edge, a dedup across
+// datasets, a union source in one row ("CN|WN"), two HasContext
+// tags on one term, a FormOf pair, an ATOMIC event.
+
+const CACHE_ROWS = [
+  rowS("/c/en/banana", "/r/HasA", "/c/en/peel", "CN", "[[A banana]] has [[a peel]]"),
+  row("/c/en/banana", "/r/HasA", "/c/en/peel", "WN"), // dedup: support 2, sentence adopted
+  row("/c/en/banana", "/r/IsA", "/c/en/fruit", "CN|WN"), // union source, one row
+  row("/c/en/brother", "/r/IsA", "/c/en/sibling", "CN"),
+  row("/c/en/brother", "/r/HasContext", "/c/en/religion", "CN"),
+  row("/c/en/brother", "/r/HasContext", "/c/en/family", "WN"),
+  row("at:personx_loses_their_house_keys", "at:xReact", "/c/en/frustrated", "AT"),
+  row("/c/en/apologizes", "/r/FormOf", "/c/en/apologize", "CN"),
+  row("/c/en/apologize", "/r/IsA", "/c/en/act", "CN"),
+];
+
+function cacheFixture(extraRows: string[] = []): { file: string; cache: string } {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cskg-cache-"));
+  const file = path.join(dir, "fixture.tsv");
+  fs.writeFileSync(file, [HEADER, ...CACHE_ROWS, ...extraRows].join("\n") + "\n");
+  return { file, cache: cachePathFor(file) };
+}
+
+/** Every accessor output of two graphs, compared exhaustively. */
+function assertGraphsEqual(a: CskgGraph, b: CskgGraph): void {
+  assert.deepEqual(b.terms, a.terms);
+  assert.equal(b.maxTermWords, a.maxTermWords);
+  assert.equal(b.edgeCount, a.edgeCount);
+  for (let id = 0; id < a.terms.length; id++) {
+    assert.deepEqual(b.outEdges(id), a.outEdges(id), `outEdges(${a.terms[id]})`);
+    assert.deepEqual(b.inEdgesFor(id), a.inEdgesFor(id), `inEdgesFor(${a.terms[id]})`);
+    assert.equal(b.degree(id), a.degree(id));
+    assert.deepEqual(b.contextsOf(id), a.contextsOf(id));
+  }
+  assert.deepEqual(b.edgesOf("/r/IsA"), a.edgesOf("/r/IsA"));
+  assert.deepEqual(b.eventTermIds(), a.eventTermIds());
+  assert.equal(b.lemmaOf("apologizes"), a.lemmaOf("apologizes"));
+  assert.equal(b.lemmaOf("banana"), a.lemmaOf("banana"));
+  // parse stats survive the round trip verbatim (loadMs is the
+  // one field that honestly differs — it is this load's duration)
+  assert.deepEqual({ ...b.stats!, loadMs: 0 }, { ...a.stats!, loadMs: 0 });
+}
+
+test("cache: a parsed graph round-trips through the serialised index", async () => {
+  const { file, cache } = cacheFixture();
+  const g1 = await loadCskg(file);
+  assert.ok(fs.existsSync(cache), "the parse wrote a cache beside the source");
+  const mtime = fs.statSync(cache).mtimeMs;
+  const g2 = await loadCskg(file);
+  assert.equal(fs.statSync(cache).mtimeMs, mtime, "the second load was a pure read — no rewrite");
+  assertGraphsEqual(g1, g2);
+});
+
+test("cache: a changed source fingerprint rebuilds and rewrites", async () => {
+  const { file, cache } = cacheFixture();
+  const g1 = await loadCskg(file);
+  assert.equal(g1.id("zebra"), undefined);
+  const mtime = fs.statSync(cache).mtimeMs;
+  fs.appendFileSync(file, row("/c/en/zebra", "/r/IsA", "/c/en/animal", "CN") + "\n");
+  const later = new Date(Date.now() + 5000);
+  fs.utimesSync(file, later, later);
+  const g2 = await loadCskg(file);
+  assert.ok(g2.id("zebra") !== undefined, "the rebuilt graph knows the new term");
+  assert.ok(fs.statSync(cache).mtimeMs > mtime, "the cache was rewritten for the new source");
+  const g3 = await loadCskg(file);
+  assertGraphsEqual(g2, g3);
+});
+
+test("cache: a corrupt cache falls back to the parse and is rewritten", async () => {
+  const { file, cache } = cacheFixture();
+  const g1 = await loadCskg(file);
+  // flavour 1: not a cache at all (magic mismatch)
+  fs.writeFileSync(cache, "this is not a serialised index");
+  const g2 = await loadCskg(file);
+  assertGraphsEqual(g1, g2);
+  assert.equal(fs.readFileSync(cache).subarray(0, 4).toString("ascii"), "CKGI",
+    "the fallback parse rewrote a valid cache");
+  // flavour 2: valid framing, one flipped byte in the sections
+  // (the checksum must catch what the structure cannot)
+  const bytes = fs.readFileSync(cache);
+  bytes[bytes.length - 5] = bytes[bytes.length - 5] ^ 0xff;
+  fs.writeFileSync(cache, bytes);
+  const g3 = await loadCskg(file);
+  assertGraphsEqual(g1, g3);
+  assert.equal(fs.readFileSync(cache).subarray(0, 4).toString("ascii"), "CKGI",
+    "the checksum fallback also rewrote a valid cache");
+});
+
+test("cache: cache:false parses without writing anything", async () => {
+  const { file, cache } = cacheFixture();
+  const g = await loadCskg(file, { cache: false });
+  assert.ok(g.id("banana") !== undefined);
+  assert.ok(!fs.existsSync(cache), "no cache file was written");
 });

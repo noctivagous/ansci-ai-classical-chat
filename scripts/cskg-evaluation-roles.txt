@@ -1,0 +1,13 @@
+# E4 two-role judgement set — the same statements under two role packs.
+# Run: CSKG_CHAT_LOCATION=Chicago CSKG_CHAT_ROLE=assistant node dist/src/cskg/chat.js --script scripts/cskg-evaluation-roles.txt
+#      CSKG_CHAT_LOCATION=Chicago CSKG_CHAT_ROLE=companion node dist/src/cskg/chat.js --script scripts/cskg-evaluation-roles.txt
+# Judged on: replies true to each role's declared strategy AND
+# equally grounded — no role licenses an unattested claim.
+I'm making a big pot of soup on Saturday.
+My brother is bringing his new girlfriend.
+I'm thinking of selling my bike online.
+My bananas have gone all brown.
+It's the third day of rain here.
+I'm thinking of buying a winter coat.
+I feel tired all the time.
+Why do my eyes water when I chop onions?

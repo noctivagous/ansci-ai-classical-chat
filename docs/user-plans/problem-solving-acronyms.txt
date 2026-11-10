@@ -1,0 +1,48 @@
+Problem-solving acronyms — reference material supplied by the user
+2026-11-09, during the E4 design conversation. Preserved verbatim as
+supplied (two messages). Context: a possible future problem-solving
+pattern for the engine (parked — too much for E4's scope, but allowed
+to influence it). The user's own notes are included at the end of the
+second list.
+
+--- First list (educators' acronyms for word problems involving
+sequences) ---
+
+C.U.B.E.S: Circle numbers, Underline question, Box key words,
+Eliminate unnecessary info, Solve.
+R.I.D.E.S: Read the problem, Identify what you need to find,
+Determine the operation, Execute the plan, Check your work.
+S.O.L.V.E: Study the problem, Organize the facts, Line up a plan,
+Verify with action, Examine results.
+T.I.P.S: Transform the problem, Identify the operation, Plan the
+solution, Solve and check.
+W.I.N.G.S: Write what you know, Identify the operation, Number
+sentence, Graph or diagram, Solve and check.
+
+--- Second list (math and general problem-solving education) ---
+
+R.I.P.E.S.  Read the problem, Identify important info, Plan how to
+solve, Execute the plan, Solve and check
+G.U.E.S.S.  Given, Unknown, Equations, Substitute, Solve
+S.T.A.R.    Search the problem, Translate into an equation, Answer,
+Review
+P.I.E.S.    Picture (draw a sketch), Information (circle key words),
+Equation, Solve
+R.U.N.S.    Read, Underline the question, Name the problem type,
+Solve
+K.N.O.W.S.  Know (what's given), Need to find, Organise, Work,
+Solve/check
+U.P.S. Check  Understand, Plan, Solve, Check
+R.U.C.S.A.C.  Read, Understand, Choose the operation, Solve, Answer,
+Check
+R.E.A.D.E.R.  Read, Examine the questions, Abandon irrelevant info,
+Determine the operation, Enter numbers, Record answer
+I.D.E.A.L.  Identify, Define, Explore options, Action, Look back
+R.I.D.E.    Remember the problem, Identify the operation, Do the
+math, Evaluate the answer
+
+User's notes on the second list: G.U.E.S.S. and S.T.A.R. lean more
+toward algebraic/equation-based problems, while R.I.P.E.S., R.U.N.S.,
+and K.N.O.W.S. are general-purpose word-problem frameworks.
+I.D.E.A.L. is broader and used in both education and industry for
+open-ended problem solving.

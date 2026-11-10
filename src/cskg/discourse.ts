@@ -55,6 +55,8 @@
  */
 import { analyseContents, contentsTraceLine, type ContentsBreakdown } from "./contents";
 import type { CskgGraph } from "./loader";
+import { resolveRivalReadings } from "./resolver";
+import type { ClarificationDisposition } from "./roles";
 import { noteStep, type TurnWorkspace } from "./workspace";
 
 export const STOPWORDS = new Set([
@@ -140,6 +142,8 @@ export interface Mention {
   chosen: number;
   /** a rival candidate with a disjoint neighbourhood exists */
   ambiguous: boolean;
+  /** the AmbiguityResolver's ground-1 note, when it reviewed this mention (E4) */
+  resolverNote?: string;
   /** whole-span text this mention was split out of, if coordinated-split */
   splitFrom?: string;
   /** indices of mentions coordinated with this one */
@@ -705,7 +709,14 @@ function assignPhrasesAndRoles(
 
 /* ---------------- the breakdown builder ------------------------- */
 
-function buildBreakdown(g: CskgGraph, text: string, activeTopics: number[]): Breakdown {
+function buildBreakdown(
+  g: CskgGraph,
+  text: string,
+  activeTopics: number[],
+  extraTopicIds: number[] = [],
+  historyIds: ReadonlySet<number> = new Set(),
+  disposition: ClarificationDisposition = "moderate",
+): Breakdown {
   const lower = text.toLowerCase();
   const spans = tokeniseSpans(text);
   const words = spans.map((t) => t.word);
@@ -746,8 +757,11 @@ function buildBreakdown(g: CskgGraph, text: string, activeTopics: number[]): Bre
     m.positionBonus = firstContent.get(m.sentence) === i ? W.subject : W.other;
   });
 
-  // score candidates, choose, record ambiguity
-  const topicSets = buildTopicSets(g, activeTopics);
+  // score candidates, choose, record ambiguity. E4: the topic
+  // sets include the operative context's situation facets —
+  // Context pressure enters candidate scoring DURING analysis
+  // (G5's relocation), beside memory's active topics.
+  const topicSets = buildTopicSets(g, [...activeTopics, ...extraTopicIds]);
   for (const m of mentions) {
     for (const c of m.candidates) scoreCandidate(g, c, m, topicSets);
     let best = -1;
@@ -760,6 +774,47 @@ function buildBreakdown(g: CskgGraph, text: string, activeTopics: number[]): Bre
       m.ambiguous = m.candidates.some(
         (c, ci) => ci !== best && disjoint(g, chosenId, c.id),
       );
+    }
+  }
+
+  // E4: the AmbiguityResolver's ground-1 review. Where rival
+  // candidates score within a near-tie and one of them is a
+  // referent the conversation (or the person model) has already
+  // established, what the person said settles the choice —
+  // silently, and recorded on the mention for the trace.
+  if (historyIds.size) {
+    for (const m of mentions) {
+      if (m.candidates.length < 2 || m.chosen < 0) continue;
+      const sorted = m.candidates
+        .map((c, i) => ({ c, i }))
+        .sort((a, b) => b.c.score - a.c.score);
+      const gap = sorted[0].c.score - sorted[1].c.score;
+      if (gap >= 4) continue;
+      const historyCand = m.candidates.find((c) => historyIds.has(c.id));
+      if (!historyCand) continue;
+      const verdict = resolveRivalReadings({
+        rivals: m.candidates.map((c) => ({
+          key: String(c.id),
+          label: c.text,
+          score: c.score,
+          cluster: null,
+          gravity: historyIds.has(c.id),
+        })),
+        historyKey: String(historyCand.id),
+        stakes: "statement",
+        disposition,
+        asksUsed: 0,
+        askedLastTurn: false,
+      });
+      if (verdict.key !== null && verdict.key !== String(m.candidates[m.chosen].id)) {
+        const idx = m.candidates.findIndex((c) => String(c.id) === verdict.key);
+        if (idx >= 0) {
+          m.chosen = idx;
+          m.resolverNote = `resolver (ground 1, history): ${verdict.reason}`;
+        }
+      } else if (verdict.ground === "history") {
+        m.resolverNote = `resolver (ground 1, history): ${verdict.reason}`;
+      }
     }
   }
 
@@ -835,7 +890,26 @@ function isContentSurface(text: string): boolean {
 /** B's turn entry: analyse the turn text into the workspace. */
 export function analyseInto(ws: TurnWorkspace, g: CskgGraph): void {
   const text = ws.input.trim();
-  const bd = buildBreakdown(g, text, ws.activeContext?.topics ?? []);
+  // E4: discourse reads the OPERATIVE CONTEXT (context.ts) —
+  // the situation's facet ids join memory's topics as scoring
+  // context, and the history set (active topics + the person's
+  // fact referents) is what the resolver's ground 1 reviews
+  // against. Facet ids are capped: the season/daypart words
+  // lead the facet list, and a dozen sets is pressure enough.
+  const ctx = ws.context;
+  const extraTopicIds = ctx ? ctx.situationIds.slice(0, 10) : [];
+  const historyIds = new Set<number>([
+    ...(ws.activeContext?.topics ?? []),
+    ...(ctx?.personFactIds ?? []),
+  ]);
+  if (ctx) {
+    noteStep(ws, "context", "compose",
+      `discourse consults the operative context during analysis: situation facet sets [${ctx.situationFacets.slice(0, 10).map((f) => f.text).join(", ")}]; history set ${historyIds.size} referents`);
+  }
+  const bd = buildBreakdown(
+    g, text, ws.activeContext?.topics ?? [],
+    extraTopicIds, historyIds, ws.role?.clarificationDisposition ?? "moderate",
+  );
   ws.breakdown = bd;
   for (const m of bd.mentions) {
     const candDesc = m.candidates
@@ -850,7 +924,8 @@ export function analyseInto(ws: TurnWorkspace, g: CskgGraph): void {
         (chosen
           ? ` → chose "${chosen.text}" (${chosen.reasons.join("; ")})`
           : " → no candidate") +
-        (m.ambiguous ? " · rival senses disjoint — ambiguity recorded" : ""),
+        (m.ambiguous ? " · rival senses disjoint — ambiguity recorded" : "") +
+        (m.resolverNote ? ` · ${m.resolverNote}` : ""),
     );
   }
   if (bd.topics.length) {

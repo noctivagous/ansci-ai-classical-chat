@@ -59,6 +59,13 @@
  *      "what is X" question asks about a thing first), then
  *      extraction order — so the choice is deterministic even
  *      when both evidence channels are silent.
+ *   E4 adds a channel between 1 and 3, consulted only when
+ *   channel 2 is silent for every candidate: EVERYDAYSENSE's
+ *   default reading (everydaysense.ts) — the filing-cluster
+ *   centre of mass, weighted below context, above the prior.
+ *   The named case is bare "cold": context says nothing, and
+ *   the illness cluster outweighs temperature in cold's own
+ *   filings, so the everyday default leads.
  *
  * Evidence words from the term's own lexical family are
  * excluded throughout ("coldness" for "cold", "pass" for
@@ -73,6 +80,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { DEFAULT_EXTRACT_PATH, synsetId } from "../wordnet";
 import { STOPWORDS, tokenise } from "./discourse";
+import { clusterEvidenceIds, defaultReading, filingClusters } from "./everydaysense";
 import type { CskgGraph } from "./loader";
 
 export type GlossPos = "n" | "v" | "a";
@@ -292,6 +300,15 @@ export interface SenseChoice {
   evidence: string[];
   /** the chosen sense's evidence words that carry its filing share */
   taxonomy: string[];
+  /**
+   * EverydaySense's contribution, when it was consulted (E4):
+   * the default cluster's anchor, set when context was silent
+   * for every candidate and the everyday default separated
+   * them. Null when the channel never fired.
+   */
+  everyday: string | null;
+  /** the EverydaySense channel picked this sense (it led only with it) */
+  esDecided: boolean;
 }
 
 /**
@@ -307,14 +324,26 @@ function senseEvidence(
   term: string,
 ): { word: string; id: number }[] {
   const words = new Set<string>();
-  for (const lem of cand.lemmas) if (lem !== term) words.add(lem);
+  // The synset's OTHER LEMMAS are the sense's own names —
+  // discriminating evidence by construction (only the illness
+  // synset carries the lemma "common cold"). Family exclusion
+  // still applies to term-grown forms: a one-word lemma the
+  // term grows from or into ("pass" / "coldness"), a spaceless
+  // respelling ("head ache"), a term-led phrase.
+  for (const lem of cand.lemmas) {
+    if (lem === term) continue;
+    if (!lem.includes(" ") && (lem.startsWith(term) || term.startsWith(lem))) continue;
+    if (lem.replace(/ /g, "") === term.replace(/ /g, "")) continue;
+    if (lem.startsWith(`${term} `)) continue;
+    words.add(lem);
+  }
   for (const w of tokenise(cand.gloss.toLowerCase())) {
     if (w.length < 3 || STOPWORDS.has(w) || GLOSS_STOP.has(w)) continue;
+    if (ownFamily(w, term)) continue;
     words.add(w);
   }
   const out: { word: string; id: number }[] = [];
   for (const w of words) {
-    if (ownFamily(w, term)) continue;
     let id = g.id(w);
     if (id === undefined) {
       const lemma = g.lemmaOf(w);
@@ -366,6 +395,49 @@ function filingShare(
  * `contextIds` is the turn's judged context (solve's
  * turnContextIds) plus the subject itself.
  */
+/**
+ * The EverydaySense channel's weight (E4): when the context
+ * channel is silent for EVERY candidate (all fits 0 — the
+ * conversation says nothing about which reading is meant), the
+ * sense choice consults EverydaySense's default reading: the
+ * candidate whose evidence lives in the default filing cluster
+ * gains this much per unit of the cluster's share. 6 sits below
+ * the context cap (8) — a live conversation outranks a standing
+ * default — and above the POS prior (4).
+ */
+const EVERYDAY_WEIGHT = 6;
+
+/**
+ * Does a candidate's evidence live in a filing cluster? By id
+ * (an evidence word IS a cluster target or anchor), by text
+ * (an evidence word is a word of a cluster target's label —
+ * "respiratory" inside "respiratory disease"), or by ancestry
+ * (an evidence node files under the cluster's world within
+ * two IsA hops — the illness sense's own lemma "common cold"
+ * files under illness, under disease).
+ */
+function evidenceInCluster(
+  g: CskgGraph,
+  evidence: { word: string; id: number }[],
+  clusterIds: Set<number>,
+  clusterTexts: string[],
+): boolean {
+  const clusterWords = new Set<string>();
+  for (const t of clusterTexts) for (const w of t.split(" ")) clusterWords.add(w);
+  return evidence.some((e) => {
+    if (clusterIds.has(e.id) || clusterTexts.includes(e.word) || clusterWords.has(e.word)) {
+      return true;
+    }
+    for (const e1 of g.outEdges(e.id, "/r/IsA")) {
+      if (clusterIds.has(e1.to)) return true;
+      for (const e2 of g.outEdges(e1.to, "/r/IsA")) {
+        if (clusterIds.has(e2.to)) return true;
+      }
+    }
+    return false;
+  });
+}
+
 export function chooseDefinition(
   g: CskgGraph,
   term: string,
@@ -380,13 +452,14 @@ export function chooseDefinition(
     const lemma = g.lemmaOf(term);
     if (lemma) subjectId = g.id(lemma);
   }
-  let best: {
+  interface Scored {
     cand: GlossCandidate;
-    score: number;
     evidence: { word: string; id: number }[];
     taxonomy: string[];
-  } | null = null;
-  const rivals: SenseRival[] = [];
+    base: number;
+    bestFit: number;
+  }
+  const scored: Scored[] = [];
   for (const cand of cands) {
     const evidence = senseEvidence(g, cand, term);
     const filing =
@@ -398,24 +471,121 @@ export function chooseDefinition(
       const f = fit(g, e.id, contextIds);
       if (f > bestFit) bestFit = f;
     }
-    const score =
-      FILING_WEIGHT * filing.share +
-      Math.min(FIT_CAP, bestFit) +
-      POS_PRIOR[cand.pos];
-    const rounded = Math.round(score * 10) / 10;
-    rivals.push({ synsetId: cand.synsetId, pos: cand.pos, score: rounded });
-    if (!best || rounded > best.score) {
-      best = { cand, score: rounded, evidence, taxonomy: filing.hits };
+    scored.push({
+      cand,
+      evidence,
+      taxonomy: filing.hits,
+      base: FILING_WEIGHT * filing.share + POS_PRIOR[cand.pos],
+      bestFit,
+    });
+  }
+  // E4: EverydaySense is consulted for its default when context
+  // is silent — every candidate's context fit is 0. The bonus
+  // rides the default cluster's filing share, so a weak default
+  // (barely dominant) whispers and a strong one speaks.
+  let everyday: string | null = null;
+  const bonuses = scored.map(() => 0);
+  if (scored.every((s) => s.bestFit === 0)) {
+    const reading = defaultReading(g, term);
+    if (reading?.default) {
+      const ids = clusterEvidenceIds(reading.default);
+      const texts = [
+        reading.default.anchorText,
+        ...reading.default.targets.map((t) => t.text),
+      ];
+      scored.forEach((s, i) => {
+        if (evidenceInCluster(g, s.evidence, ids, texts)) {
+          bonuses[i] = EVERYDAY_WEIGHT * reading.default!.share;
+        }
+      });
+      if (bonuses.some((b) => b > 0)) everyday = reading.default.anchorText;
     }
   }
+  let bestIdx = 0;
+  let bestScore = -Infinity;
+  let bestWithoutEsIdx = 0;
+  let bestWithoutEsScore = -Infinity;
+  const rivals: SenseRival[] = [];
+  scored.forEach((s, i) => {
+    const withEs = Math.round((s.base + Math.min(FIT_CAP, s.bestFit) + bonuses[i]) * 10) / 10;
+    const withoutEs = Math.round((s.base + Math.min(FIT_CAP, s.bestFit)) * 10) / 10;
+    rivals.push({ synsetId: s.cand.synsetId, pos: s.cand.pos, score: withEs });
+    if (withEs > bestScore) {
+      bestScore = withEs;
+      bestIdx = i;
+    }
+    if (withoutEs > bestWithoutEsScore) {
+      bestWithoutEsScore = withoutEs;
+      bestWithoutEsIdx = i;
+    }
+  });
+  const winner = scored[bestIdx];
   return {
     term,
-    chosen: best!.cand,
-    score: best!.score,
+    chosen: winner.cand,
+    score: bestScore,
     rivals,
-    evidence: best!.evidence.map((e) => e.word),
-    taxonomy: best!.taxonomy,
+    evidence: winner.evidence.map((e) => e.word),
+    taxonomy: winner.taxonomy,
+    everyday,
+    esDecided:
+      everyday !== null && scored[bestWithoutEsIdx].cand.synsetId !== winner.cand.synsetId,
   };
+}
+
+/**
+ * The candidate EverydaySense's default selects for a term, or
+ * null — the resolver's ground-2 key for definition questions.
+ * Computed through chooseDefinition itself, so the resolver and
+ * the sense choice can never disagree about the default.
+ */
+export function everydaySynsetId(
+  g: CskgGraph,
+  term: string,
+  fit: ContextFitFn,
+  store: DefinitionsStore = getDefinitionsStore(),
+): string | null {
+  const choice = chooseDefinition(g, term, [], fit, store);
+  return choice && (choice.esDecided || choice.everyday) ? choice.chosen.synsetId : null;
+}
+
+/**
+ * The filing-cluster anchor a synset's evidence lives in, or
+ * null — the resolver's semantic-distance input for definition
+ * rivals: two senses in different clusters are different
+ * worlds; two in one cluster are near in meaning.
+ */
+export function senseClusterLabel(
+  g: CskgGraph,
+  term: string,
+  synsetId: string,
+  store: DefinitionsStore = getDefinitionsStore(),
+): string | null {
+  const cand = definitionForSynset(g, term, synsetId, store);
+  if (!cand) return null;
+  let subjectId = g.id(term);
+  if (subjectId === undefined) {
+    const lemma = g.lemmaOf(term);
+    if (lemma) subjectId = g.id(lemma);
+  }
+  if (subjectId === undefined) return null;
+  const evidence = senseEvidence(g, cand, term);
+  for (const cluster of filingClusters(g, subjectId)) {
+    const ids = clusterEvidenceIds(cluster);
+    const texts = [cluster.anchorText, ...cluster.targets.map((t) => t.text)];
+    if (evidenceInCluster(g, evidence, ids, texts)) return cluster.anchorText;
+  }
+  return null;
+}
+
+/** One synset's gloss for a term, by synset id — a settled reading's text. */
+export function definitionForSynset(
+  g: CskgGraph,
+  term: string,
+  synsetId: string,
+  store: DefinitionsStore = getDefinitionsStore(),
+): GlossCandidate | null {
+  return definitionCandidates(g, term, store).find((c) => c.synsetId === synsetId) ?? null;
 }
 
 /**
@@ -432,7 +602,11 @@ export function definitionTraceNote(choice: SenseChoice): string {
     .join(" ");
   return (
     `definition: "${choice.term}" → ${c.synsetId} [${c.pos}] via lemma "${c.lemma}" — ` +
-    `"${c.gloss}" — score ${choice.score} (filing: ${choice.taxonomy.join(", ") || "none"}); ` +
-    `rivals: ${rivals}`
+    `"${c.gloss}" — score ${choice.score} (filing: ${choice.taxonomy.join(", ") || "none"})` +
+    (choice.everyday
+      ? `; everydaysense: context silent, default cluster "${choice.everyday}" consulted` +
+        (choice.esDecided ? " — the channel decided the sense" : "")
+      : "") +
+    `; rivals: ${rivals}`
   );
 }

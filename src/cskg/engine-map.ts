@@ -24,6 +24,9 @@ export type EngineNodeId =
   | "discourse"
   | "intent"
   | "memory"
+  | "context"
+  | "everydaysense"
+  | "resolver"
   | "solve"
   | "articulate"
   | "interface";
@@ -32,6 +35,8 @@ export type WorkspaceField =
   | "input"
   | "situation"
   | "person"
+  | "role"
+  | "context"
   | "breakdown"
   | "intent"
   | "activeContext"
@@ -60,10 +65,31 @@ export interface EngineEdge {
 export const ENGINE_NODES: EngineNode[] = [
   {
     id: "awareness",
-    label: "A — Awareness (world state, orientation, the person)",
+    label: "A — Awareness (world state, orientation, the person, the role)",
     file: "src/cskg/awareness.ts",
-    writes: ["situation", "person"],
+    writes: ["situation", "person", "role"],
     reads: [],
+  },
+  {
+    id: "context",
+    label: "Context — the frame made operative (situation + person + role + memory)",
+    file: "src/cskg/context.ts",
+    writes: ["context"],
+    reads: ["situation", "person", "role", "activeContext"],
+  },
+  {
+    id: "everydaysense",
+    label: "EverydaySense — standing judgements of ordinariness (graph-derived)",
+    file: "src/cskg/everydaysense.ts",
+    writes: [],
+    reads: ["breakdown"],
+  },
+  {
+    id: "resolver",
+    label: "AmbiguityResolver — rival readings: resolve, name, or ask",
+    file: "src/cskg/resolver.ts",
+    writes: [],
+    reads: ["breakdown", "context", "person"],
   },
   {
     id: "discourse",
@@ -111,6 +137,15 @@ export const ENGINE_NODES: EngineNode[] = [
 
 export const ENGINE_EDGES: EngineEdge[] = [
   { from: "interface", to: "discourse", carries: ["input"] },
+  { from: "awareness", to: "context", carries: ["situation", "person", "role"] },
+  { from: "memory", to: "context", carries: ["activeContext"] },
+  { from: "context", to: "discourse", carries: ["context"] },
+  { from: "context", to: "intent", carries: ["context"] },
+  { from: "context", to: "solve", carries: ["context"] },
+  { from: "context", to: "articulate", carries: ["context"] },
+  { from: "everydaysense", to: "resolver", carries: [] },
+  { from: "resolver", to: "discourse", carries: [] },
+  { from: "resolver", to: "solve", carries: [] },
   { from: "awareness", to: "intent", carries: ["situation", "person"] },
   { from: "awareness", to: "solve", carries: ["situation"] },
   { from: "awareness", to: "articulate", carries: ["situation", "person"] },

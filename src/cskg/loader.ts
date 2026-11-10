@@ -77,6 +77,16 @@
  * sink is passive and write-only; with no sink installed the
  * recording costs one null test per call and changes nothing.
  *
+ * SERIALISED INDEX (2026-11-09, gap G8 — cold start): the full
+ * parse below costs ~30 s on every process start, so after a
+ * parse the built graph is written to a binary cache beside the
+ * source file (see the cache section at the bottom of this file).
+ * loadCskg consults the cache first and falls back to the parse
+ * on any doubt — missing file, fingerprint mismatch, wrong
+ * format version, checksum failure, structural inconsistency.
+ * Engineering only: a cache-loaded graph is the same object
+ * shape, built from the same bytes the parse produced.
+ *
  * STORAGE: edges live in parallel typed arrays (from/to as Int32,
  * relation as Uint8 index, provenance as a dataset bitmask), deduped
  * by a numeric sort, with CSR adjacency in both directions. A first
@@ -85,6 +95,7 @@
  * vocabulary in well under it. CskgEdge objects are materialised on
  * demand by the query methods and never stored.
  */
+import * as crypto from "crypto";
 import * as fs from "fs";
 import * as readline from "readline";
 import * as zlib from "zlib";
@@ -433,7 +444,7 @@ export class CskgGraph {
   }
 }
 
-export async function loadCskg(path: string): Promise<CskgGraph> {
+async function parseCskg(path: string): Promise<CskgGraph> {
   const started = Date.now();
   const g = new CskgGraph();
   const stats: LoadStats = {
@@ -619,5 +630,412 @@ export async function loadCskg(path: string): Promise<CskgGraph> {
   stats.edges = nEdges;
   stats.loadMs = Date.now() - started;
   g.stats = stats;
+  return g;
+}
+
+// ---------------------------------------------------------------------------
+// Serialised index cache (G8). See the header note. One binary file:
+//
+//   [0..3]   magic "CKGI"
+//   [4..7]   format version, u32 LE
+//   [8..11]  header byte length, u32 LE
+//   [12..]   header JSON: source fingerprint, relation and dataset
+//            vocabularies, the parse stats, a sha256 over all
+//            section bytes
+//   [...]    section directory: one (offset, length) u64 LE pair
+//            per section, in CACHE_SECTIONS order
+//   [...]    sections, each 8-byte aligned: the typed edge/CSR
+//            arrays as raw bytes, and each string store as one
+//            UTF-8 blob plus a u32 table of code-unit offsets.
+//
+// The cache path is DERIVED from the source path (`<data>.index.bin`)
+// so every corpus — the default file, a CSKG_PATH override, the
+// pre-merge star file, a test fixture — gets its own cache and no
+// two corpora can ever be served each other's index. For the
+// shipped dataset the file lands in data/raw/cskg/, which is
+// gitignored like the TSV itself.
+
+const CACHE_FORMAT_VERSION = 1;
+const CACHE_MAGIC = "CKGI";
+/** bytes of source hashed at each end for the fingerprint */
+const CACHE_HASH_BYTES = 256 * 1024;
+
+/** Section names in fixed on-disk order (a format-version matter). */
+const CACHE_SECTIONS = [
+  "termsOff", "termsBlob",
+  "eFrom", "eTo", "eRel", "eMask",
+  "outOff", "outIdx", "inOff", "inIdx",
+  "sentIdx", "sentOff", "sentBlob",
+  "ctxIds", "ctxCounts", "ctxTagOff", "ctxTagBlob",
+  "formKeyOff", "formKeyBlob", "formValOff", "formValBlob",
+] as const;
+type CacheSection = (typeof CACHE_SECTIONS)[number];
+
+interface SourceFingerprint {
+  size: number;
+  mtimeMs: number;
+  headSha256: string;
+  tailSha256: string;
+}
+
+interface CacheHeader {
+  version: number;
+  source: SourceFingerprint;
+  /** relation names by index — must equal this build's REL_NAMES */
+  relNames: string[];
+  /** dataset codes by mask bit, as the writing process numbered them */
+  srcNames: string[];
+  maxTermWords: number;
+  stats: LoadStats;
+  /** sha256 over the section bytes, concatenated in directory order */
+  sectionsSha256: string;
+}
+
+export interface LoadCskgOptions {
+  /** consult and rewrite the serialised index cache (default true) */
+  cache?: boolean;
+  /** cache file location (default: derived from the data path) */
+  cachePath?: string;
+}
+
+/** The default cache location: beside the source it mirrors. */
+export function cachePathFor(dataPath: string): string {
+  return `${dataPath}.index.bin`;
+}
+
+function fingerprintSource(dataPath: string): SourceFingerprint {
+  const st = fs.statSync(dataPath);
+  const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
+  const fd = fs.openSync(dataPath, "r");
+  try {
+    const headLen = Math.min(CACHE_HASH_BYTES, st.size);
+    const head = Buffer.alloc(headLen);
+    fs.readSync(fd, head, 0, headLen, 0);
+    const tailLen = Math.min(CACHE_HASH_BYTES, st.size);
+    const tail = Buffer.alloc(tailLen);
+    fs.readSync(fd, tail, 0, tailLen, st.size - tailLen);
+    return { size: st.size, mtimeMs: st.mtimeMs, headSha256: sha(head), tailSha256: sha(tail) };
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+/** Concatenate strings into one UTF-8 blob + code-unit offsets. */
+function encodeStringTable(strings: string[]): { off: Uint32Array; blob: Buffer } {
+  const off = new Uint32Array(strings.length + 1);
+  const parts = new Array<Buffer>(strings.length);
+  let chars = 0;
+  for (let i = 0; i < strings.length; i++) {
+    off[i] = chars;
+    chars += strings[i].length;
+    parts[i] = Buffer.from(strings[i], "utf8");
+  }
+  off[strings.length] = chars;
+  return { off, blob: Buffer.concat(parts) };
+}
+
+/**
+ * Inverse of encodeStringTable: one bulk decode, then a substring
+ * per entry (V8 sliced strings share the decoded parent, so the
+ * table costs little beyond the blob itself). Throws when the
+ * offsets do not exactly span the decoded blob — a corrupt table
+ * is a corrupt cache, and the caller falls back to the parse.
+ */
+function decodeStringTable(blob: Buffer, off: Uint32Array): string[] {
+  const whole = blob.toString("utf8");
+  if (off.length === 0 || off[off.length - 1] !== whole.length) {
+    throw new Error("string table offsets do not span the blob");
+  }
+  const out = new Array<string>(off.length - 1);
+  for (let i = 0; i < out.length; i++) {
+    if (off[i] > off[i + 1]) throw new Error("string table offsets not monotonic");
+    out[i] = whole.substring(off[i], off[i + 1]);
+  }
+  return out;
+}
+
+function align8(n: number): number {
+  return (n + 7) & ~7;
+}
+
+/** A typed-array view over section bytes, copying only if unaligned. */
+function i32FromBytes(b: Buffer): Int32Array<ArrayBuffer> {
+  if (b.byteLength % 4 !== 0) throw new Error("section length not a multiple of 4");
+  if (b.byteOffset % 4 === 0) return new Int32Array(b.buffer as ArrayBuffer, b.byteOffset, b.byteLength / 4);
+  const out = new Int32Array(b.byteLength / 4);
+  new Uint8Array(out.buffer).set(b);
+  return out;
+}
+function u32FromBytes(b: Buffer): Uint32Array<ArrayBuffer> {
+  if (b.byteLength % 4 !== 0) throw new Error("section length not a multiple of 4");
+  if (b.byteOffset % 4 === 0) return new Uint32Array(b.buffer as ArrayBuffer, b.byteOffset, b.byteLength / 4);
+  const out = new Uint32Array(b.byteLength / 4);
+  new Uint8Array(out.buffer).set(b);
+  return out;
+}
+
+function serialiseGraph(g: CskgGraph, fp: SourceFingerprint): Buffer {
+  const termsT = encodeStringTable(g.terms);
+  const sentIdx: number[] = [];
+  const sentStrings: string[] = [];
+  for (const [idx, s] of [...g.edgeSentences.entries()].sort((a, b) => a[0] - b[0])) {
+    sentIdx.push(idx);
+    sentStrings.push(s);
+  }
+  const sentT = encodeStringTable(sentStrings);
+  const ctxIds: number[] = [];
+  const ctxCounts: number[] = [];
+  const ctxTagsAll: string[] = [];
+  for (const [id, tags] of [...g.contextTags.entries()].sort((a, b) => a[0] - b[0])) {
+    ctxIds.push(id);
+    ctxCounts.push(tags.length);
+    ctxTagsAll.push(...tags);
+  }
+  const ctxTagT = encodeStringTable(ctxTagsAll);
+  const formKeys = [...g.formLemmas.keys()];
+  const formVals = [...g.formLemmas.values()];
+  const formKeyT = encodeStringTable(formKeys);
+  const formValT = encodeStringTable(formVals);
+
+  const arrBuf = (a: Int32Array | Uint8Array | Uint32Array): Buffer =>
+    Buffer.from(a.buffer, a.byteOffset, a.byteLength);
+  const u32Buf = (xs: number[] | Uint32Array): Buffer =>
+    Buffer.from(Uint32Array.from(xs as number[]).buffer);
+
+  const sections: Record<CacheSection, Buffer> = {
+    termsOff: u32Buf(termsT.off),
+    termsBlob: termsT.blob,
+    eFrom: arrBuf(g.eFrom),
+    eTo: arrBuf(g.eTo),
+    eRel: arrBuf(g.eRel),
+    eMask: arrBuf(g.eMask),
+    outOff: arrBuf(g.outOff),
+    outIdx: arrBuf(g.outIdx),
+    inOff: arrBuf(g.inOff),
+    inIdx: arrBuf(g.inIdx),
+    sentIdx: u32Buf(sentIdx),
+    sentOff: u32Buf(sentT.off),
+    sentBlob: sentT.blob,
+    ctxIds: u32Buf(ctxIds),
+    ctxCounts: u32Buf(ctxCounts),
+    ctxTagOff: u32Buf(ctxTagT.off),
+    ctxTagBlob: ctxTagT.blob,
+    formKeyOff: u32Buf(formKeyT.off),
+    formKeyBlob: formKeyT.blob,
+    formValOff: u32Buf(formValT.off),
+    formValBlob: formValT.blob,
+  };
+
+  const sha = crypto.createHash("sha256");
+  for (const name of CACHE_SECTIONS) sha.update(sections[name]);
+  const header: CacheHeader = {
+    version: CACHE_FORMAT_VERSION,
+    source: fp,
+    relNames: [...REL_NAMES],
+    srcNames: [...SRC_NAMES],
+    maxTermWords: g.maxTermWords,
+    stats: g.stats!,
+    sectionsSha256: sha.digest("hex"),
+  };
+  const headerBuf = Buffer.from(JSON.stringify(header), "utf8");
+
+  const dirStart = 12 + headerBuf.length;
+  let cursor = align8(dirStart + CACHE_SECTIONS.length * 16);
+  const dir = CACHE_SECTIONS.map((name) => {
+    cursor = align8(cursor);
+    const entry = { off: cursor, len: sections[name].length };
+    cursor += sections[name].length;
+    return entry;
+  });
+  const out = Buffer.alloc(cursor);
+  out.write(CACHE_MAGIC, 0, "ascii");
+  out.writeUInt32LE(CACHE_FORMAT_VERSION, 4);
+  out.writeUInt32LE(headerBuf.length, 8);
+  headerBuf.copy(out, 12);
+  dir.forEach((d, i) => {
+    out.writeBigUInt64LE(BigInt(d.off), dirStart + i * 16);
+    out.writeBigUInt64LE(BigInt(d.len), dirStart + i * 16 + 8);
+  });
+  CACHE_SECTIONS.forEach((name, i) => sections[name].copy(out, dir[i].off));
+  return out;
+}
+
+/**
+ * Rebuild a graph from cache bytes, or return null on ANY doubt —
+ * the caller falls back to the full parse. Beyond the fingerprint
+ * and checksum, structural cross-checks (CSR lengths against the
+ * term/edge counts) guard against a well-formed file that is not
+ * this graph. Provenance masks are re-mapped through the header's
+ * dataset table: mask bits are numbered by first encounter during
+ * a parse, which is process state, so the writing process's
+ * numbering need not equal this process's.
+ */
+function deserialiseGraph(buf: Buffer, expected: SourceFingerprint): CskgGraph | null {
+  try {
+    if (buf.length < 12 || buf.toString("ascii", 0, 4) !== CACHE_MAGIC) return null;
+    if (buf.readUInt32LE(4) !== CACHE_FORMAT_VERSION) return null;
+    const headerLen = buf.readUInt32LE(8);
+    const dirStart = 12 + headerLen;
+    if (headerLen === 0 || dirStart + CACHE_SECTIONS.length * 16 > buf.length) return null;
+    const header = JSON.parse(buf.toString("utf8", 12, 12 + headerLen)) as CacheHeader;
+    if (header.version !== CACHE_FORMAT_VERSION) return null;
+    const fp = header.source;
+    if (
+      !fp ||
+      fp.size !== expected.size ||
+      fp.mtimeMs !== expected.mtimeMs ||
+      fp.headSha256 !== expected.headSha256 ||
+      fp.tailSha256 !== expected.tailSha256
+    ) {
+      return null;
+    }
+    if (JSON.stringify(header.relNames) !== JSON.stringify(REL_NAMES)) return null;
+    if (!Array.isArray(header.srcNames) || header.srcNames.length > 31) return null;
+
+    const secs = new Map<CacheSection, Buffer>();
+    for (let i = 0; i < CACHE_SECTIONS.length; i++) {
+      const off = Number(buf.readBigUInt64LE(dirStart + i * 16));
+      const len = Number(buf.readBigUInt64LE(dirStart + i * 16 + 8));
+      if (!Number.isSafeInteger(off) || !Number.isSafeInteger(len) || off < 0 || len < 0 || off + len > buf.length) {
+        return null;
+      }
+      secs.set(CACHE_SECTIONS[i], buf.subarray(off, off + len));
+    }
+    const sec = (n: CacheSection): Buffer => secs.get(n)!;
+
+    const sha = crypto.createHash("sha256");
+    for (const name of CACHE_SECTIONS) sha.update(sec(name));
+    if (sha.digest("hex") !== header.sectionsSha256) return null;
+
+    const termsOff = u32FromBytes(sec("termsOff"));
+    const terms = decodeStringTable(sec("termsBlob"), termsOff);
+    const nTerms = terms.length;
+    const eFrom = i32FromBytes(sec("eFrom"));
+    const nEdges = eFrom.length;
+    const outOff = i32FromBytes(sec("outOff"));
+    const inOff = i32FromBytes(sec("inOff"));
+    if (outOff.length !== nTerms + 1 || inOff.length !== nTerms + 1) return null;
+    if (outOff[nTerms] !== nEdges || inOff[nTerms] !== nEdges) return null;
+    const eTo = i32FromBytes(sec("eTo"));
+    const outIdx = i32FromBytes(sec("outIdx"));
+    const inIdx = i32FromBytes(sec("inIdx"));
+    if (eTo.length !== nEdges || outIdx.length !== nEdges || inIdx.length !== nEdges) return null;
+    if (sec("eRel").length !== nEdges) return null;
+    const rawMask = u32FromBytes(sec("eMask"));
+    if (rawMask.length !== nEdges) return null;
+
+    const g = new CskgGraph();
+    g.terms = terms;
+    for (let i = 0; i < nTerms; i++) g.termId.set(terms[i], i);
+    g.maxTermWords = header.maxTermWords;
+    g.eFrom = eFrom;
+    g.eTo = eTo;
+    g.eRel = new Uint8Array(buf.buffer as ArrayBuffer, sec("eRel").byteOffset, nEdges);
+    // provenance masks, re-mapped from the writer's bit numbering
+    // to this process's (srcBit registers new codes exactly as a
+    // parse would, so a parsed and a cached graph in one process
+    // materialise identical source lists)
+    const remapBit = header.srcNames.map((name) => 1 << srcBit(name));
+    const eMask = new Uint32Array(nEdges);
+    for (let i = 0; i < nEdges; i++) {
+      let m = rawMask[i];
+      let out = 0;
+      while (m) {
+        const low = m & -m;
+        out |= remapBit[31 - Math.clz32(low)];
+        m ^= low;
+      }
+      eMask[i] = out;
+    }
+    g.eMask = eMask;
+    g.outOff = outOff;
+    g.outIdx = outIdx;
+    g.inOff = inOff;
+    g.inIdx = inIdx;
+
+    const sentIdx = u32FromBytes(sec("sentIdx"));
+    const sentStrings = decodeStringTable(sec("sentBlob"), u32FromBytes(sec("sentOff")));
+    if (sentIdx.length !== sentStrings.length) return null;
+    for (let k = 0; k < sentIdx.length; k++) {
+      if (sentIdx[k] >= nEdges) return null;
+      g.edgeSentences.set(sentIdx[k], sentStrings[k]);
+    }
+    const ctxIds = u32FromBytes(sec("ctxIds"));
+    const ctxCounts = u32FromBytes(sec("ctxCounts"));
+    const ctxTags = decodeStringTable(sec("ctxTagBlob"), u32FromBytes(sec("ctxTagOff")));
+    if (ctxIds.length !== ctxCounts.length) return null;
+    let p = 0;
+    for (let k = 0; k < ctxIds.length; k++) {
+      if (ctxIds[k] >= nTerms || p + ctxCounts[k] > ctxTags.length) return null;
+      g.contextTags.set(ctxIds[k], ctxTags.slice(p, p + ctxCounts[k]));
+      p += ctxCounts[k];
+    }
+    if (p !== ctxTags.length) return null;
+    const formKeys = decodeStringTable(sec("formKeyBlob"), u32FromBytes(sec("formKeyOff")));
+    const formVals = decodeStringTable(sec("formValBlob"), u32FromBytes(sec("formValOff")));
+    if (formKeys.length !== formVals.length) return null;
+    for (let k = 0; k < formKeys.length; k++) g.formLemmas.set(formKeys[k], formVals[k]);
+
+    g.stats = { ...header.stats };
+    return g;
+  } catch {
+    return null;
+  }
+}
+
+/** Read a cache file; null on absence or any deserialise doubt. */
+function tryReadCache(cachePath: string, fp: SourceFingerprint): CskgGraph | null {
+  const started = Date.now();
+  let buf: Buffer;
+  try {
+    buf = fs.readFileSync(cachePath);
+  } catch {
+    return null;
+  }
+  const g = deserialiseGraph(buf, fp);
+  if (!g) return null;
+  // the stored stats are the parse's; loadMs becomes this load's
+  // honest time-to-ready, the number G8 exists to shrink
+  if (g.stats) g.stats.loadMs = Date.now() - started;
+  return g;
+}
+
+function writeCache(cachePath: string, g: CskgGraph, fp: SourceFingerprint): void {
+  const buf = serialiseGraph(g, fp);
+  // temp file + rename: a concurrent reader never sees a torn cache
+  const tmp = `${cachePath}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, buf);
+  fs.renameSync(tmp, cachePath);
+}
+
+/**
+ * Load the CSKG graph from `path`. With the cache enabled (the
+ * default), a fingerprint-matching serialised index beside the
+ * source is deserialised instead of parsing; any doubt on the
+ * cache path falls back to the full parse, which then rewrites
+ * the cache. A failed cache write never fails the load.
+ */
+export async function loadCskg(path: string, opts: LoadCskgOptions = {}): Promise<CskgGraph> {
+  const cachePath = opts.cache === false ? null : (opts.cachePath ?? cachePathFor(path));
+  let fp: SourceFingerprint | null = null;
+  if (cachePath) {
+    try {
+      fp = fingerprintSource(path);
+    } catch {
+      fp = null;
+    }
+    if (fp) {
+      const cached = tryReadCache(cachePath, fp);
+      if (cached) return cached;
+    }
+  }
+  const g = await parseCskg(path);
+  if (cachePath && fp) {
+    try {
+      writeCache(cachePath, g, fp);
+    } catch {
+      // best effort — the cache is an optimisation, never a dependency
+    }
+  }
   return g;
 }

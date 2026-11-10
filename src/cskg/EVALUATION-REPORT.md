@@ -972,3 +972,368 @@ gloss-led what-is with facts following; the correction
 definition; no-gloss fallback byte-identical; purpose and
 made-of routing untouched). Project suite 135/135;
 `tsc` clean. Nothing pushed.
+
+## G8 serialised index note (2026-11-09)
+
+G8 is closed: the built graph is serialised to a binary cache
+and deserialised on later starts. Engineering only — this step
+changes when the system is ready, never what it says, and the
+gates below are all identity checks.
+
+**What was built.** `loadCskg` (loader.ts) now consults a
+cache before parsing. After a full parse, the graph — CSR
+arrays, term table, and the three side stores, exactly what
+the accessors serve — is written to one binary file: magic +
+format version + a JSON header (source fingerprint, relation
+and dataset vocabularies, the parse stats, a sha256 over all
+section bytes) + a fixed section directory + 8-aligned
+sections. Typed arrays are stored as raw bytes and re-viewed
+over the read buffer (copied only if unaligned); each string
+store is one UTF-8 blob plus a u32 code-unit offset table,
+decoded in one bulk pass. The cache path is DERIVED from the
+source path (`<data>.index.bin`): every corpus — default file,
+CSKG_PATH override, the pre-merge star file, a test fixture —
+gets its own cache, and for the shipped dataset the file lands
+in data/raw/cskg/, gitignored like the TSV. The fingerprint is
+the source's size + mtime + sha256 of its first and last
+256 KiB as stored. Any doubt on the read path — missing file,
+fingerprint mismatch, version mismatch, checksum failure,
+structural inconsistency (CSR lengths cross-checked against
+the term/edge counts) — falls back to the full parse, which
+rewrites the cache; the write is temp-file + rename and a
+failed write never fails the load. One subtlety the format
+must respect: provenance mask bits are numbered by first
+encounter during a parse, which is process state, so the
+header stores the writer's dataset table and masks are
+re-mapped through it on load — a parsed and a cached graph in
+one process materialise identical source lists. The
+definitions side store is untouched (still lazy, still its
+own thing), and the query log / trace machinery runs on the
+cache-loaded graph unchanged — verified below, not assumed.
+
+**Measurements** (this machine, 2026-11-09; loader wall/loadMs
+samples, chat-process load lines where noted):
+
+| | time | memory |
+|---|---|---|
+| full parse (4 samples) | 31.3–33.0 s | RSS 693–709 MB, heap 464 MB |
+| cache write (one-off, after a parse) | ≈ 2.5 s | the parse+write run peaked at RSS 828 MB |
+| cache load (4 samples) | 1.8–2.3 s | RSS 631–632 MB, heap 269 MB |
+
+Cache file: 178,879,415 bytes (170.6 MiB) for 1,203,994 terms /
+4,795,098 edges / 584,511 sentences / 159,333 context terms /
+358,117 form pairs. Cold start improves ≈ 15×.
+
+**Identity gates.** Suite 139/139 (four new fixture tests:
+exhaustive accessor round-trip — every term's out/in edges,
+degree, contexts, plus edgesOf, eventTermIds, lemmaOf and the
+parse stats, deep-equal between a parsed and a deserialised
+graph; fingerprint change rebuilds and rewrites; both
+corruption flavours — garbage file and a single flipped
+section byte caught by the checksum — fall back and rewrite;
+`cache: false` writes nothing). Chicago from a cache-loaded
+process is byte-identical to the parsed-process transcript
+except the clock line itself (the two runs straddled a
+minute: "3:19 AM" vs "3:20 AM"); Sydney is byte-identical
+outright. Traced Chicago runs on the fast path write valid
+trace files at steps/queries/full (28 records each; 0 /
+154,758 / 220,269 query entries), and the traced transcript
+matches the untraced one. No accessor behaved differently
+deserialised — the exhaustive round-trip and the transcript
+identity are the evidence.
+
+### Undesigned behaviour
+
+None observed. Every gate in this step is an identity check
+and all of them held; the only changed number anywhere is
+the load line's seconds.
+
+Tests: four fixture tests added (round-trip, fingerprint
+rebuild, corruption fallback, cache-off). Project suite
+139/139; `tsc` clean. Nothing pushed.
+
+## E4 conversation-frame note (2026-11-09)
+
+E4 lands the conversation frame: the Context module, role
+packs, the person file with the statement set order, and the
+AmbiguityResolver + EverydaySense + the standing tuple. Judged
+four ways (J1–J4 below), each declared in advance. Suite
+162/162 (139 + 23 new fixture tests in test/cskg-e4.test.ts);
+`tsc` clean. Nothing pushed.
+
+**Part 1 — the Context module (context.ts).** Each turn, after
+awareness and memory's supply, Context composes the OPERATIVE
+CONTEXT — recency-weighted topics, the situation's facets as
+words and graph ids, the person's facts in play, the person's
+current state, the role's dispositions — and records the
+composition as a trace step. The analysis pieces read it
+DURING analysis: discourse adds the facet ids to its candidate
+scoring sets (the capped overlap channel), solve's fact choice
+takes its situation relevance from Context's facets
+(relevanceFor/contextRelevance) and its corroboration set now
+includes the person's recorded fact referents. Two calibrations
+were forced by measurement on the live graph, and both are
+recorded in the code: (a) the situation facet IDS were first
+admitted to solve's corroboration set at full strength and
+flipped the brother turn to the wrong sense — the autumn
+facet "leaf" corroborates brother→member (affinity 6, a
+plant-anatomy neighbourhood) past girlfriend→male — so facet
+ids were withdrawn from corroboration; situation pressure
+reaches solve through the relevance channel (+5) and discourse
+through overlap, at strengths the evidence supports. (b) The
+facet overlap in discourse lifted the fragment "big" over the
+topic bar, and its 31-point affinity with "place" flipped the
+soup turn; a guard now keeps modifier-only, kind-less
+fragments out of the corroboration set (a head topic like
+"girlfriend" is never a fragment, however thin its kinds).
+
+**J1 — Context evidence (G5's named test).** The Sydney script
+run under both locations: pre-E4 the coat replies were
+byte-identical and only the season answer differed. Post-E4
+the transcripts still differ only in the season answer, but
+the steps traces show a Context-attributable difference inside
+analysis, on identical input: the "winter coat" candidate
+scores **30 in Chicago** (role head +12; position +2; exact +4;
+attestation +4; **context overlap ×6 +6**; width +2) against
+**25 in Sydney** (…; **context overlap ×1 +1**; …) — the autumn
+facet set contains "coat", the spring set does not, and the
+compose steps in both traces name the facet sets consulted.
+Selection did not flip in these turns (attestation dominates
+the final pick, as designed); the claim G5 asked for — pressure
+acting during analysis with a traceable difference — is the
+thing evidenced, so G5 closes on that evidence, with the
+honest limit stated: on these turns the pressure moved scores,
+not outcomes.
+
+**Part 2 — role packs (roles/, roles.ts).** Roles are data:
+`assistant` (acknowledge-and-offer, named-missing declines,
+clarification ready, no preferred relations — the pre-E4
+behaviour as a pack) and `companion` (react-and-share, plain
+declines, clarification sparing, preferred relations
+at:xReact/at:xWant/at:xEffect/HasProperty, connected
+follow-ups on). `CSKG_CHAT_ROLE` selects; an unknown pack is a
+configuration error, never a silent fallback. The pack shapes
+statement fact selection (preferred relations lead), follow-up
+policy, decline WORDING, memory-ack voice and resolver
+disposition. Grounding outranks role throughout: decline style
+differs, the empty set does not.
+
+**J2 — two roles.** scripts/cskg-evaluation-roles.txt (8
+statements/questions), general mode, Chicago, run under both
+packs. Both roles: **8/8 grounded or honestly declined** — no
+role licensed an unattested claim. Role-true differences:
+brother — assistant "A brother is a male." / companion "My
+brother is male." (same content, the companion's preferred
+HasProperty edge); bike — assistant "A bike is a bicycle." /
+companion "A bike can be stationary." (attested property,
+support 1, hedged "can be"); bananas — assistant "Banana is a
+type of herb." / companion "A banana is yellow."; onion why —
+assistant names the missing causation ("it has no Causes edge
+from "chop onions" toward "water", and I won't borrow one
+from a neighbouring word") / companion declines plainly ("I
+don't know — this graph has no Causes edge…"). Identical
+where the machinery is role-invariant: soup, coat, tired.
+One sense-quality caveat, attested and recorded under
+Undesigned behaviour below: the assistant's rain fact in this
+session shape is the exotic "Rain is a type of sequence."
+
+**Part 3 — the person file + statement order (person.ts).**
+One editable JSON file per person under data/people/
+(gitignored; `CSKG_CHAT_PERSON` selects, `CSKG_CHAT_PEOPLE_DIR`
+overrides). Facts persist until contradicted (a contradicting
+statement supersedes, marked, never silently deleted);
+feelings and doings are session-scoped state, and a habitual
+marker ("all the time") is written to the file as a standing
+pattern whose session count grows on re-statement. Every write
+is acknowledged in the reply in the role's voice. Capture is
+independent of graph coverage. ATOMIC is consulted FROM the
+canonical state record: "I feel tired all the time" keys the
+"feels tired" event and answers with its attested edges
+("People often feel exhausted when feels tired. After feels
+tired, they want to to go home. … I'll remember that.").
+Statement order is capture → person-connections → classify →
+formulate. Classification weighs utterance/conversation
+evidence with three GRAPH channels (the user's graph-first
+steering, landed with this part): ATOMIC event keying of the
+statement, the keyed template's annotation profile
+(xIntent/xReact/xWant), and the topic's neighbourhood
+character (occasion vs referential edges) — each channel's
+contribution traced per statement. Schmooze replies are
+formed from the statement's slot: a narrated doing earns
+"And what made you want to do that?", a person introduced as
+new earns "Have you met them yet?" — templates selected by
+slot, never stored replies.
+
+**Classifier probes (declared set, graph channels on vs off,**
+**live graph, general mode).** Soup → schmooze both modes
+(doing captured). Bike → schmooze both. Brother/girlfriend →
+schmooze both (new person). Bananas → informing both. Rain
+statement → informing both. "I'm exhausted" → state both.
+Dentist-appointment control → informing both. **The graph
+channels changed no classification on the live probes, and
+this is reported plainly rather than tuned away:** event
+keying matched no natural statement above threshold (the
+matcher and its coverage rule were built on question
+phrasing; statement clauses keyed nothing over pools of
+445–2,195 candidates), and the neighbourhood channel read
+"mixed" on all seven (occasion edges are near-ubiquitous, so
+occasion-alone never dominates: rain 11/24, dentist 9/19,
+banana 3/16). The channels remain live and traced — the
+fixture suite proves they discriminate where a statement DOES
+key ("Losing my keys." flips informing → schmooze on the
+keyed template's xIntent profile) — but on today's natural
+statements they are weightless, and the report's claim is
+exactly that. Retuning the matcher for statement phrasing is
+E5-adjacent work, not something to force inside E4.
+
+**J3 — two sessions.** scripts/cskg-evaluation-sessions.txt
+(session 1, person "sam", scratch people dir) then
+cskg-evaluation-sessions-2.txt in a new process. Session 1
+writes, each acknowledged: name, lives-in Chicago, brother
+likes soup (facts), tired-all-the-time (pattern). Its final
+turn is the design's canonical pair, fired by the file:
+"I'm making a big pot of soup on Saturday." → "Soup is a type
+of dish. **And your brother likes soup — he'll like that.**"
+Session 2 (new process, same file): "What do you remember
+about me?" → "Here's what I have: your name is Sam; you live
+in Chicago; your brother likes soup; you feel tired all the
+time (a standing pattern)." — and "I'm making soup again
+tonight." earns the continuity clause again from the file.
+The same session 2 in **general mode**: "I don't keep a file
+for you in general mode, so there's nothing stored about you
+from before this conversation." — and the soup statement gets
+the schmooze follow-up instead of the continuity clause.
+General mode wrote nothing (the scratch dir held no file
+until the named run created one).
+
+**Part 4 — EverydaySense, the resolver, the tuple.**
+EverydaySense (everydaysense.ts) holds no world facts: its
+default reading of a term is the dominant IsA filing cluster
+(components over shared parents; mass = summed support) plus
+an empty curated set (entries only by measurement). Solve's
+neighbourhood-affinity measure moved here as typicality,
+numerically unchanged. The resolver (resolver.ts) resolves on
+(1) what the person said, then (2) EverydaySense, and only
+then escalates — answer / name / ask over gap, semantic
+distance (different filing clusters), topic gravity, cost
+asymmetry, the interruption budget (never two asks in a row;
+three per conversation), role disposition and person history.
+The definition path runs it in the open: study (sense choice)
+→ organise (EverydaySense default) → plan (the verdict) →
+consult (solve under the settled reading) → examine (a final
+trace step reading the verdict's standing tuple for its
+admission — the axis that bottomed out names the sentence:
+"I don't know" / "I am unsure" / "I am not clear"). The tuple
+(standing.ts) is carried by resolver verdicts, EverydaySense
+defaults and person facts.
+
+**The named case.** Bare "What is a cold?" (Chicago turn 21)
+now leads with the illness gloss: "Cold: **a mild viral
+infection involving the nose and respiratory passages (but
+not the lungs)**. Cold is a type of temperature. …" — where
+pre-E4 it led with "the absence of heat." The sense choice
+consults EverydaySense when context is silent (weight 6,
+below context's 8, above the POS prior); on cold, the illness
+cluster outweighs temperature in the graph's own filings.
+One machinery note: a synset's other lemmas are now admitted
+as sense evidence ("common cold" is the illness sense's own
+name); term-grown forms and gloss words stay family-excluded.
+**The coat case, recorded honestly:** "What is a coat?" after
+"I'm thinking of buying a winter coat." STILL leads with the
+animal-fur gloss ("growth of hair or wool or fur covering the
+body of an animal", filing score 25.1 vs the garment sense's
+20.7) — coat's filing genuinely centres on hair/covering, and
+one clothing turn's context fit (cap 8) cannot cross a
+24-weight filing gap of that size. The neighbourhood facts
+that follow do carry the garment ("Coat is a clothing… A coat
+is a garment."), so the turn informs, but the lead sense in a
+clothing conversation is the fur one: the context channel did
+not win this case, and the number that beat it is on record.
+**Asks fire on the live graph:** "What is a bat?" → "I am not
+clear which bat you mean — baseball a turn trying to get a,
+or nocturnal mouselike mammal with forelimbs modified to?" —
+and "The animal one." resolves the pending ask before new
+analysis and answers under the mammal branch ("Bat:
+nocturnal mouselike mammal…"). Crane and bass ask likewise;
+bass's "The fish." resolves by the branch's graph footprint
+(cluster ids + IsA ancestors — a reply naming the category,
+not the gloss's words). "What is a bank?" takes the NAME
+form: "Taking bank as a container — Bank: a container
+(usually with a slot in the top) for keeping money at home…"
+Fixture tests pin the resolver's grounds, the budget, the
+no-double-ask rule, and pending resolution by ordinal.
+
+**J4 — regressions.** Chicago (28 turns) against the pre-E4
+baseline, complete diff (clock line excepted):
+- soup statement: "Soup is a type of dish." → + "And what
+  made you want to do that?" — DECLARED (schmooze success;
+  grounded fact unchanged).
+- brother statement: "A brother is a male." → + "Have you
+  met them yet?" — DECLARED (new-person schmooze; fact held —
+  an early build briefly flipped it to "member" via facet
+  corroboration; withdrawn on the leaf/member measurement,
+  Part 1 above).
+- bike statement: + the motivation follow-up — DECLARED.
+- coat statement: + the motivation follow-up — DECLARED.
+- "What is a cold?": temperature gloss → illness gloss lead —
+  DECLARED (Part 4's named case; the remaining facts follow
+  unchanged).
+- Everything else byte-identical: bananas, banana bread, the
+  rain statement (precipitation), ginger, headache (the
+  pain gloss leads, unchanged by the lemma-evidence change),
+  the onion decline (verbatim), corkscrew with its disclosed
+  fallback, money, wheel, bicycle, the correction, the flu
+  follow-up (an early build's context-driven flip to "The flu
+  is a virus" reverted with the facet-id withdrawal), bare
+  why, replay, situation answers. Counts hold: 0 ungrounded,
+  0 wrong-sense, declines honest; grounded turns unchanged
+  in number (26/0/2/0 by the E3 counting, with four statement
+  replies now carrying a grounded fact PLUS a social
+  follow-up, and cold's lead sense changed by design).
+Sydney (3 turns): only the coat statement gains the follow-up
+(DECLARED); the season answer and "What is a coat used for?"
+(warmth facts, pigeons ranked out) are byte-identical.
+Traces write at all three levels with the new pieces' steps
+visible (context compose, resolver, examine, memory).
+
+### Undesigned behaviour
+
+- Statement acknowledgement facts can be attested-but-alien
+  where the statement's point was the record itself: "My name
+  is Sam." → "Sam is tired Sam." (a dataset sentence about a
+  different Sam) and session 2's soup statement picked
+  "Tonight is a benevolent." — the primary was captured by
+  "tonight" (a time word as topic), while the continuity
+  clause still fired correctly from contents. The tuple's
+  knownnessFelt axis names this class; demoting alien facts
+  on statement turns whose capture already carried the turn
+  is candidate work, not attempted here.
+- "Appointment is a party." for the probe control — attested
+  (a legal-party filing), alien in context; same class.
+- Event-label articulation stays rough (pre-existing, G9's
+  class): "they want to to go home", "they yawns" — the
+  ATOMIC templates' own grammar, surfaced more often now
+  that state turns consult ATOMIC from the record.
+- The roles-run rain pick ("sequence", above) shows the
+  within-node choice remains context-fragile across session
+  shapes: in the Chicago evaluation session the same
+  statement answers "precipitation". Attested both ways; the
+  typicality floor for statement facts is the open frontier
+  this exposes.
+
+One influence, recorded because it genuinely shaped a choice:
+the definition path's trace order (study → organise → plan →
+consult → examine, with the tuple examination as an explicit
+final step) follows the problem-solving shape the user
+parked as future work; it cost nothing and keeps the
+resolver's reasoning legible in that order.
+
+Tests: 23 new fixture tests (context composition and the
+autumn/spring scoring difference, pack loading/validation and
+decline styles, person capture/tiers/supersession/pattern
+promotion/general-mode amnesia/recall, the classifier's
+graph-channel flip and state/informing classes, EverydaySense
+on cold, the EverydaySense-decided definition, resolver
+grounds/escalation/budget, tuple admissions, pending
+clarification by ordinal and by fresh-turn clearing). Project
+suite 162/162; `tsc` clean. Nothing pushed.

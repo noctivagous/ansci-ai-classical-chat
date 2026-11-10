@@ -1,0 +1,11 @@
+# E4 two-session judgement — SESSION 1. Run with a named person:
+#   CSKG_CHAT_PERSON=sam CSKG_CHAT_PEOPLE_DIR=<scratch> node dist/src/cskg/chat.js --script scripts/cskg-evaluation-sessions.txt
+# then session 2 (scripts/cskg-evaluation-sessions-2.txt) in a NEW
+# process with the same environment: session 1's stated facts must
+# be working context there. The same session 2 in general mode
+# (no CSKG_CHAT_PERSON) must remember nothing.
+My name is Sam.
+I live in Chicago.
+My brother likes soup.
+I feel tired all the time.
+I'm making a big pot of soup on Saturday.

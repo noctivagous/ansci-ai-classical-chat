@@ -68,6 +68,8 @@ import {
   type ResolvedTerm,
   type ScoredTerm,
 } from "./discourse";
+import { contextRelevance } from "./context";
+import { definitionForSynset } from "./definitions";
 import {
   isDefinitionQuestion,
   type EventQuestionKind,
@@ -91,58 +93,19 @@ export function noteTriage(ws: TurnWorkspace, kind: TriageKind, detail: string):
   noteStep(ws, "solve", "triage", `${kind} — ${detail}`);
 }
 
-/* ---------------- neighbourhood affinity (E3) ---------------------
+/* ---------------- neighbourhood affinity (E3 → EverydaySense) ---
  *
- * Affinity between two nodes = the specificity-weighted overlap of
- * their neighbourhoods: a shared neighbour counts 3 when it is a
- * specific node (degree ≤ 120), 1 when it is mid-frequency
- * (≤ 600), and 0 when it is a hub (a hub neighbour is shared with
- * everything and says nothing — §7 finding (a)'s lesson, applied
- * inside solve). The two nodes themselves never count.
+ * Affinity between two nodes = the specificity-weighted overlap
+ * of their neighbourhoods (a shared neighbour counts 3 when
+ * specific, 1 when mid-frequency, 0 when a hub — §7 finding
+ * (a)'s lesson). The measure was born here in E3; the E3 note
+ * flagged it as a local precursor of EverydaySense typicality,
+ * and E4 moved it to everydaysense.ts, its designed home. The
+ * numbers are unchanged; solve imports and re-exports it.
  */
 
-const hoodCache = new WeakMap<CskgGraph, Map<number, Set<number>>>();
-
-function neighbourhoodOf(g: CskgGraph, id: number, cap = 800): Set<number> {
-  let per = hoodCache.get(g);
-  if (!per) {
-    per = new Map();
-    hoodCache.set(g, per);
-  }
-  let hood = per.get(id);
-  if (hood) return hood;
-  hood = new Set<number>();
-  for (const e of g.outEdges(id)) {
-    hood.add(e.to);
-    if (hood.size >= cap) break;
-  }
-  if (hood.size < cap) {
-    for (const e of g.inEdgesFor(id)) {
-      hood.add(e.from);
-      if (hood.size >= cap) break;
-    }
-  }
-  per.set(id, hood);
-  return hood;
-}
-
-function idfWeight(degree: number): number {
-  return degree <= 120 ? 3 : degree <= 600 ? 1 : 0;
-}
-
-/** Specificity-weighted neighbourhood overlap of two nodes. */
-export function affinityBetween(g: CskgGraph, a: number, b: number): number {
-  if (a === b) return 0;
-  const ha = neighbourhoodOf(g, a);
-  const hb = neighbourhoodOf(g, b);
-  const [small, big] = ha.size <= hb.size ? [ha, hb] : [hb, ha];
-  let fit = 0;
-  for (const x of small) {
-    if (x === a || x === b) continue;
-    if (big.has(x)) fit += idfWeight(g.degree(x));
-  }
-  return fit;
-}
+import { affinityBetween } from "./everydaysense";
+export { affinityBetween, typicalityOf } from "./everydaysense";
 
 /**
  * Fit of a candidate node against a context set: the BEST SINGLE
@@ -219,6 +182,18 @@ export function turnContextIds(g: CskgGraph, ws: TurnWorkspace): number[] {
     if (Math.max(...e.kinds.map((k) => k.score)) < 2) continue;
     ids.add(e.referentId);
   }
+  // the contents entries by text, and whether every mention of
+  // a text is a phrase MODIFIER — for the fragment guard below
+  const contentsKindPeak = new Map<string, number>();
+  for (const e of ws.breakdown?.contents?.entries ?? []) {
+    contentsKindPeak.set(e.text, Math.max(...e.kinds.map((k) => k.score)));
+  }
+  const modifierOnly = new Map<string, boolean>();
+  for (const m of ws.breakdown?.mentions ?? []) {
+    if (m.chosen < 0) continue;
+    const text = m.candidates[m.chosen].text;
+    modifierOnly.set(text, (modifierOnly.get(text) ?? true) && m.role === "modifier");
+  }
   for (const t of ws.breakdown?.topics ?? []) {
     if (PRONOUN_LABELS.has(t.text) || pureTimeLabel(t.text)) continue;
     // only topics that scored as topical: a negative-score topic
@@ -227,6 +202,16 @@ export function turnContextIds(g: CskgGraph, ws: TurnWorkspace): number[] {
     // out-corroborated "dish" for the hub target "place"). The
     // coordinator applies the same ≥ 0 rule when feeding memory.
     if (t.score < 0) continue;
+    // E4: a MODIFIER fragment with no kind evidence of its own
+    // corroborates nothing, even when facet overlap lifted its
+    // topic score over the ≥ 0 bar ("big" again, this time
+    // riding the situation sets: its 31-point affinity with
+    // "place" flipped the soup turn until this guard landed).
+    // A head/coordinated topic is never a fragment, however
+    // thin its kind evidence ("girlfriend" in the brother turn
+    // is the corroboration that matters there).
+    const peak = contentsKindPeak.get(t.text);
+    if (peak !== undefined && peak < 2 && modifierOnly.get(t.text)) continue;
     ids.add(t.id);
   }
   for (const t of ws.activeContext?.topics ?? []) {
@@ -235,7 +220,40 @@ export function turnContextIds(g: CskgGraph, ws: TurnWorkspace): number[] {
     if (PRONOUN_LABELS.has(label) || pureTimeLabel(label)) continue;
     ids.add(t);
   }
+  // E4: the person's recorded fact subjects/objects join the
+  // set — person pressure enters the fact choice's
+  // corroboration DURING analysis (context.ts composed them).
+  // The situation's facet IDS deliberately do NOT join: they
+  // are vocabulary words, not conversation topics, and at full
+  // corroboration strength they import hub noise — measured
+  // on the live graph, the autumn facet "leaf" corroborated
+  // brother→"member" (affinity 6, a plant-anatomy
+  // neighbourhood) past the genuine girlfriend→"male"
+  // corroboration and flipped the turn to the wrong sense.
+  // Situation pressure reaches solve through the relevance
+  // channel instead (relevanceFor: Context's facets, +5 in
+  // pickFactScored) and reaches discourse through its capped
+  // overlap sets — pressure during analysis, at strengths the
+  // evidence supports.
+  if (ws.context) {
+    for (const id of ws.context.personFactIds) ids.add(id);
+  }
   return [...ids];
+}
+
+/**
+ * The relevance function a fact choice should use for this
+ * workspace: the operative context's own relevance (Context's
+ * declared facets) when Context has composed, else the raw
+ * situation check the spike used.
+ */
+export function relevanceFor(
+  ws: TurnWorkspace,
+): ((termText: string) => boolean) | undefined {
+  const ctx = ws.context;
+  const sit = ws.situation;
+  if (!ctx || !sit) return undefined;
+  return (termText: string) => contextRelevance(ctx, sit, termText);
 }
 
 /* ---------------- fact selection with situation pressure -------- */
@@ -270,6 +288,7 @@ export function pickFactScored(
   sit: Situation,
   rels: string[] = FACT_REL_PRIORITY,
   contextIds: number[] = [],
+  relevance?: (termText: string) => boolean,
 ): { c: Conclusion; score: number } | null {
   // The source itself is not its own context, and neither is its
   // own lexical family: a head-word expansion of the source's own
@@ -289,7 +308,10 @@ export function pickFactScored(
       let score = (rels.length - rels.indexOf(rel)) * 10 + e.support * 3;
       const fit = context.length ? Math.min(8, contextFit(g, e.to, context)) : 0;
       score += fit;
-      if (situationallyRelevant(g.terms[e.to], sit)) score += 5;
+      // Situation relevance, read through the operative context
+      // when the caller supplies it (E4): Context's facets, not
+      // the raw situation, decide what is situationally live.
+      if (relevance ? relevance(g.terms[e.to]) : situationallyRelevant(g.terms[e.to], sit)) score += 5;
       // prefer readable targets: very long targets are usually noise
       if (g.terms[e.to].split(" ").length > 6) score -= 4;
       const labelLen = g.terms[e.to].length;
@@ -318,8 +340,9 @@ export function pickFact(
   sit: Situation,
   rels: string[] = FACT_REL_PRIORITY,
   contextIds: number[] = [],
+  relevance?: (termText: string) => boolean,
 ): Conclusion | null {
-  return pickFactScored(g, id, sit, rels, contextIds)?.c ?? null;
+  return pickFactScored(g, id, sit, rels, contextIds, relevance)?.c ?? null;
 }
 
 /**
@@ -466,7 +489,7 @@ export function solveGenericFact(
   const sit = ws.situation!;
   const context = turnContextIds(g, ws);
   for (const cand of candidates.slice(0, 4)) {
-    const fact = pickFact(g, cand.id, sit, FACT_REL_PRIORITY, context);
+    const fact = pickFact(g, cand.id, sit, FACT_REL_PRIORITY, context, relevanceFor(ws));
     if (fact) {
       addConclusions(ws, [fact]);
       session.lastIntent = "fact";
@@ -501,6 +524,7 @@ export function bestStatementFact(
   factRels: string[],
   topics: ScoredTerm[] = [],
   contextIds: number[] = [],
+  relevance?: (termText: string) => boolean,
 ): Conclusion | null {
   let fact: Conclusion | null = null;
   let bestScore = -Infinity;
@@ -519,7 +543,7 @@ export function bestStatementFact(
   for (const cand of pool) {
     if (seenIds.has(cand.term.id)) continue;
     seenIds.add(cand.term.id);
-    const scored = pickFactScored(g, cand.term.id, sit, factRels, contextIds);
+    const scored = pickFactScored(g, cand.term.id, sit, factRels, contextIds, relevance);
     if (scored && scored.score + cand.topicScore > bestScore) {
       bestScore = scored.score + cand.topicScore;
       fact = scored.c;
@@ -546,7 +570,7 @@ export function answerWhy(
     noteStep(ws, "solve", "query", `Causes into "${g.terms[topic]}"`, cs.map((c) => edgeText(g, c.edge)));
     return renderBecauseLines(g, cs);
   }
-  const fact = pickFact(g, topic, ws.situation!, ["/r/Causes", "/r/HasPrerequisite", "at:xNeed"], turnContextIds(g, ws));
+  const fact = pickFact(g, topic, ws.situation!, ["/r/Causes", "/r/HasPrerequisite", "at:xNeed"], turnContextIds(g, ws), relevanceFor(ws));
   if (fact) {
     addConclusions(ws, [fact]);
     return renderConclusion(g, fact);
@@ -1038,4 +1062,97 @@ export function findTools(
     directBeforeExclusion: directAll.length,
     directAfterExclusion: direct.length,
   };
+}
+
+/* ---------------- E4: definitions under a settled reading --------
+ *
+ * The resolver (turn.ts) may settle a definition question's
+ * reading before solve runs — by history, by EverydaySense, or
+ * by naming the reading taken. This is solveSurfaceIntent's
+ * definition path with the sense FORCED to the settled synset:
+ * the gloss of exactly that synset leads, and the what-is
+ * neighbourhood conclusions follow it, as they always have.
+ */
+
+export function solveDefinitionAnswer(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+  cand: ResolvedTerm,
+  synsetId: string,
+): string | null {
+  const gloss = definitionForSynset(g, g.terms[cand.id], synsetId);
+  if (!gloss) return null;
+  const cs = SURFACE_BUILDERS.whatis(g, cand.id, ws.situation!);
+  if (cs.length) addConclusions(ws, cs);
+  session.lastIntent = "whatis";
+  remember(session, cand.id);
+  for (const c of cs) {
+    noteStep(ws, "solve", "conclude", "whatis", [edgeText(g, c.edge)]);
+  }
+  const definition = renderDefinition(g.terms[cand.id], gloss.gloss);
+  return cs.length ? `${definition} ${renderAll(g, cs)}` : definition;
+}
+
+/* ---------------- E4: ATOMIC consulted from a state record -------
+ *
+ * A captured person state (person.ts) is a canonical record —
+ * "tired", stated by the speaker. ATOMIC's person-centred
+ * knowledge is consulted FROM that record (§5): the graph's
+ * event templates whose content words the state names are the
+ * key (the template matcher where the state phrases like an
+ * event clause; a direct label scan where it does not — a bare
+ * state word like "tired" keys the templates that contain it).
+ * Conclusions are the matched event's own reaction / want /
+ * effect edges, ranked by the usual floor. Nothing is drawn
+ * from the raw utterance: the record is the key.
+ */
+
+export function solveStateReaction(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  stateText: string,
+): string | null {
+  const words = tokenise(stateText.toLowerCase()).filter((w) => !STOPWORDS.has(w));
+  if (!words.length) return null;
+  // candidate events: templates whose label covers every state
+  // word (form-tolerant), best coverage of the label first,
+  // then attestation. A bounded scan over the event id list —
+  // the same list the template matcher indexes.
+  interface Cand { id: number; cover: number; support: number }
+  const cands: Cand[] = [];
+  for (const id of g.eventTermIds()) {
+    const labelWords = g.terms[id].split(" ").filter((w) => w && w !== "personx" && w !== "persony");
+    if (!labelWords.length) continue;
+    const labelForms = new Set<string>();
+    for (const w of labelWords) {
+      labelForms.add(w);
+      if (w.endsWith("s")) labelForms.add(w.slice(0, -1));
+      if (w.endsWith("ing") && w.length > 5) labelForms.add(w.slice(0, -3));
+    }
+    const hit = words.every(
+      (w) => labelForms.has(w) || labelForms.has(w + "s") ||
+        [...labelForms].some((lf) => lf.startsWith(w) || w.startsWith(lf)),
+    );
+    if (!hit) continue;
+    let support = 0;
+    for (const e of g.outEdges(id)) if (e.rel.startsWith("at:")) support += e.support;
+    cands.push({ id, cover: words.length / labelWords.length, support });
+  }
+  cands.sort((a, b) => b.cover - a.cover || b.support - a.support || a.id - b.id);
+  for (const cand of cands.slice(0, 3)) {
+    const cs: Conclusion[] = [];
+    for (const [rel, n] of [["at:xReact", 1], ["at:xWant", 1], ["at:xEffect", 1], ["at:oReact", 1]] as [string, number][]) {
+      cs.push(...topConclusions(g, cand.id, rel, "out", n, ws.situation!));
+    }
+    if (!cs.length) continue;
+    addConclusions(ws, cs);
+    noteStep(ws, "solve", "query",
+      `state record "${stateText}" keys ATOMIC event "${g.terms[cand.id]}" — reaction knowledge consulted from the record`,
+      cs.map((c) => edgeText(g, c.edge)));
+    return renderAll(g, cs);
+  }
+  noteStep(ws, "solve", "query",
+    `state record "${stateText}": no ATOMIC event keys it — the state stands as captured, without a graph reaction`);
+  return null;
 }

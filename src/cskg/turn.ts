@@ -35,29 +35,60 @@
  * finish(). The list rides out on TurnResult for the CLI's trace
  * file (tracefile.ts); no piece reads it, so a traced turn is a
  * byte-identical turn.
+ *
+ * E4 (the conversation frame): awareness loads role + person;
+ * the Context module composes the operative context before
+ * analysis; a pending clarification resolves before new
+ * analysis; explicit remembers and person recall are memory's
+ * early moves; statement turns run the set order (capture →
+ * connections → classify with graph evidence → formulate per
+ * role); definition-shaped questions run through the
+ * AmbiguityResolver (study → organise → plan → consult →
+ * examine, in that trace order); decline wording is the role's
+ * style, decline honesty is not.
  */
 import { loadAwarenessInto } from "./awareness";
 import {
   edgeText,
   renderAll,
+  renderClarificationAsk,
   renderConclusion,
+  renderContinuityClause,
   renderCorrectionFact,
   renderCorrectionNoFact,
   renderCorrectionUnplaced,
   renderDeclineUnplaced,
+  renderDeclineUnplacedPlain,
   renderDefinition,
+  renderNamedReading,
   renderNoFact,
+  renderNoFactPlain,
+  renderRecall,
+  renderRecallGeneral,
+  renderRememberAck,
+  renderRememberSessionOnly,
+  renderSchmoozeFollowup,
   renderSituationAnswer,
+  renderStateNoted,
   renderStatementNoted,
   renderToolAnswer,
   renderToolDecline,
+  renderToolDeclinePlain,
   renderToolFallbackNote,
   renderUnrelated,
   renderWhyNoCause,
+  renderWhyNoCausePlain,
   renderWhyNoTopic,
   speak,
 } from "./articulate";
-import { chooseDefinition, definitionTraceNote } from "./definitions";
+import { composeContextInto } from "./context";
+import {
+  chooseDefinition,
+  definitionForSynset,
+  definitionTraceNote,
+  everydaySynsetId,
+  senseClusterLabel,
+} from "./definitions";
 import {
   analyseInto,
   contentCandidates,
@@ -68,6 +99,7 @@ import {
 } from "./discourse";
 import {
   assignIntent,
+  classifyStatement,
   classifySurface,
   detectCorrection,
   detectFollowup,
@@ -78,6 +110,7 @@ import {
   hasRelatedPattern,
   hasWhyPattern,
   isBareWhy,
+  isDefinitionQuestion,
   isQuestionForm,
   type IntentKind,
 } from "./intent";
@@ -88,8 +121,19 @@ import {
   remember,
   replayAnswer,
   supplyContextInto,
+  type PendingClarification,
   type SessionState,
 } from "./memory";
+import {
+  activeFacts,
+  captureExplicit,
+  captureStatement,
+  loadPersonData,
+  personConnections,
+  type CaptureResult,
+} from "./person";
+import { clusterEvidenceIds, filingClusters } from "./everydaysense";
+import { resolveRivalReadings } from "./resolver";
 import {
   addConclusions,
   answerRelated,
@@ -101,13 +145,17 @@ import {
   findTools,
   noteTriage,
   pickFact,
+  relevanceFor,
+  solveDefinitionAnswer,
   solveEventConsequence,
   solveEventReaction,
   solveGenericFact,
+  solveStateReaction,
   solveSurfaceIntent,
   topConclusions,
   turnContextIds,
 } from "./solve";
+import { admissionFor, standingTrace } from "./standing";
 import {
   createWorkspace,
   noteStep,
@@ -148,18 +196,33 @@ export function runTurn(
   // earlier turn might have left installed.
   g.querySink = collectQueries ? (rec) => { ws.queries.push(rec); } : null;
 
-  // 1 — awareness loads: the situated self, and who is talking.
+  // 1 — awareness loads the FRAME: the situated self, who is
+  // talking, and who the chat is (the role pack).
   loadAwarenessInto(ws, now, env);
   const sit = ws.situation!;
+  const role = ws.role!;
   noteStep(ws, "awareness", "situate",
     `${sit.daypart}; season: ${sit.season ?? "unknown"}; place: ` +
-    (sit.place ? `${sit.place.name} (${sit.place.hemisphere ?? "hemisphere unknown"})` : "unset"));
+    (sit.place ? `${sit.place.name} (${sit.place.hemisphere ?? "hemisphere unknown"})` : "unset") +
+    `; role: ${role.id} (${role.statementStrategy}); person: ` +
+    (ws.person?.kind === "known" ? ws.person.name : "general"));
 
   // 2 — memory's standing context for this turn.
   supplyContextInto(ws, session);
 
+  // The person file loads here (named person only; general
+  // mode loads and writes nothing). The Context module's
+  // composition itself runs after the replay early move below:
+  // a replay by design re-queries NOTHING, and composition's
+  // facet resolutions are graph queries — they belong to turns
+  // that analyse, not to turns that recite.
+  const personData = loadPersonData(env);
+
   const finish = (text: string, intent: IntentKind, grounded: boolean): TurnResult => {
     g.querySink = null; // the turn's last act of recording is over
+    // the interruption budget's memory: only a clarification
+    // ask leaves this set (the resolver's never-two-in-a-row).
+    session.lastTurnWasAsk = intent === "clarification";
     assignIntent(ws, intent);
     speak(ws, text);
     // Depth pass: the trace records which rendering path each
@@ -192,6 +255,12 @@ export function runTurn(
     return finish(r.text, "replay", r.grounded);
   }
 
+  // 2b — E4: the Context module composes the frame + memory
+  // into the OPERATIVE CONTEXT the rest of the turn is analysed
+  // under (context.ts; G5's relocation — B, C and E read
+  // ws.context from here on).
+  composeContextInto(ws, session, g, personData);
+
   // (1) correction: "no, I meant the illness"
   const corr = detectCorrection(lower);
   if (corr) {
@@ -212,6 +281,9 @@ export function runTurn(
         g, g.terms[term.id], [...turnContextIds(g, ws), term.id], contextFit,
       );
       if (choice) {
+        // E4: the settled sense goes on record — the resolver's
+        // ground 1 (what the person said) for later turns.
+        session.settledSenses[g.terms[term.id]] = choice.chosen.synsetId;
         noteStep(ws, "solve", "query", definitionTraceNote(choice));
         return finish(
           renderCorrectionFact(
@@ -222,7 +294,7 @@ export function runTurn(
           true,
         );
       }
-      const fact = pickFact(g, term.id, sit, FACT_REL_PRIORITY, ws.activeContext?.topics ?? []);
+      const fact = pickFact(g, term.id, sit, FACT_REL_PRIORITY, turnContextIds(g, ws), relevanceFor(ws));
       if (fact) {
         addConclusions(ws, [fact]);
         noteStep(ws, "solve", "conclude", "answered about the corrected term", [edgeText(g, fact.edge)]);
@@ -231,6 +303,110 @@ export function runTurn(
       return finish(renderCorrectionNoFact(g.terms[term.id]), "correction", false);
     }
     return finish(renderCorrectionUnplaced(corr.phrase), "correction", false);
+  }
+
+  // (1b) E4 — a pending clarification resolves BEFORE any new
+  // analysis (§5): the branches were pre-mapped when the ask
+  // was made, so an ordinal or a branch's own words select the
+  // reading and the ORIGINAL question is answered under it.
+  // An input that answers nothing clears the pending state and
+  // proceeds as a fresh turn — the ask is spent either way.
+  const pending: PendingClarification | null = session.pendingClarification;
+  if (pending) {
+    session.pendingClarification = null;
+    const ord = lower.match(/\b(first|second|third|fourth)\b/);
+    const ordIdx = ord ? ["first", "second", "third", "fourth"].indexOf(ord[1]) : -1;
+    let branchIdx = ordIdx >= 0 && ordIdx < pending.branches.length ? ordIdx : -1;
+    if (branchIdx < 0) {
+      const inputWords = new Set(lower.split(/[^a-z']+/).filter((w) => w.length > 2));
+      let bestHits = 0;
+      pending.branches.forEach((b, i) => {
+        const hits = (b.matchWords ?? []).filter((w) => inputWords.has(w)).length;
+        if (hits > bestHits) {
+          bestHits = hits;
+          branchIdx = i;
+        }
+      });
+      if (bestHits === 0) branchIdx = -1;
+    }
+    if (branchIdx < 0) {
+      // category naming: a reply word that resolves to a graph
+      // id inside one branch's footprint (its cluster + IsA
+      // ancestors) selects that branch — "the animal one"
+      let bestHits = 0;
+      pending.branches.forEach((b, i) => {
+        if (!b.matchIds?.length) return;
+        let hits = 0;
+        for (const w of lower.split(/[^a-z']+/).filter((x) => x.length > 2)) {
+          const id = g.id(w);
+          if (id !== undefined && b.matchIds.includes(id)) hits++;
+        }
+        if (hits > bestHits) {
+          bestHits = hits;
+          branchIdx = i;
+        }
+      });
+      if (bestHits === 0) branchIdx = -1;
+    }
+    if (branchIdx >= 0) {
+      const branch = pending.branches[branchIdx];
+      noteStep(ws, "resolver", "resolve",
+        `pending clarification resolved before new analysis: "${pending.termText}" → branch "${branch.label}"`);
+      if (pending.kind === "definition" && branch.synsetId) {
+        session.settledSenses[pending.termText] = branch.synsetId;
+        const termId = g.id(pending.termText);
+        if (termId !== undefined) {
+          const ans = solveDefinitionAnswer(
+            g, ws, session,
+            { id: termId, text: pending.termText, start: 0, words: pending.termText.split(" ").length },
+            branch.synsetId,
+          );
+          if (ans) return finish(ans, "clarification", true);
+        }
+        const gloss = definitionForSynset(g, pending.termText, branch.synsetId);
+        if (gloss) return finish(renderDefinition(pending.termText, gloss.gloss), "clarification", true);
+      }
+      return finish(`Understood — ${branch.label}.`, "clarification", false);
+    }
+    noteStep(ws, "resolver", "resolve",
+      `the pending clarification ("${pending.termText}") was not answered by this turn — cleared; new analysis proceeds`);
+  }
+
+  // (1c) E4 — an explicit "remember that…": the write
+  // discipline's second door (§5). Named person → the file,
+  // acknowledged; general mode → a session note and an honest
+  // word about its reach.
+  const remM = lower.match(/^(?:please\s+)?remember that\s+(.+?)[.!?]?$/);
+  if (remM) {
+    const stated = input.trim().replace(/^(?:please\s+)?remember that\s+/i, "").replace(/[.!?]+$/, "");
+    if (personData) {
+      const res = captureExplicit(stated, env);
+      noteStep(ws, "memory", "remember",
+        `explicit remember: "${stated}" → ${res.fact ? `written to the person file: ${res.fact.display}` : "nothing written"}`);
+      if (res.fact) return finish(renderRememberAck(role.memoryAck, res.fact.display), "memory", true);
+      return finish(role.memoryAck, "memory", false);
+    }
+    session.sessionNotes.push(stated);
+    noteStep(ws, "memory", "remember",
+      `explicit remember in general mode: "${stated}" held as a session note only — nothing persists`);
+    return finish(renderRememberSessionOnly(), "memory", false);
+  }
+
+  // (1d) E4 — person recall: "what do you remember about me?"
+  // reads the file back. General mode's answer is honest:
+  // nothing is stored.
+  if (/\bwhat do you (?:remember|know) about me\b|\bdo you remember me\b|\bwhat have i told you\b/.test(lower)) {
+    if (personData) {
+      const facts = activeFacts(personData).map((f) => f.display);
+      const patterns = personData.patterns.map(
+        (p) => `you feel ${p.text} ${p.marker} (a standing pattern)`,
+      );
+      noteStep(ws, "memory", "remember",
+        `person recall: ${facts.length} fact(s) and ${patterns.length} pattern(s) read from the file`);
+      return finish(renderRecall(facts, patterns), "memory", facts.length > 0);
+    }
+    noteStep(ws, "memory", "remember", "person recall in general mode: no file exists — nothing is stored");
+    return finish(renderRecallGeneral(), "memory", false);
   }
 
   // (2) questions about the situated self
@@ -246,18 +422,47 @@ export function runTurn(
   const resolved = bd.terms;
   const words = bd.words;
 
+  // (3b) E4 — person capture and person knowledge, consulted
+  // FIRST for statements (§2, piece C's set order): what the
+  // statement itself states about the speaker is captured
+  // (facts to the file, state to the session — each write
+  // traced, and acknowledged in the reply the statement branch
+  // composes), and the recorded facts this turn's contents
+  // touch are gathered as connections. Questions are not
+  // captured: capture is a statement-side discipline.
+  const capture: CaptureResult = !isQuestionForm(lower)
+    ? captureStatement(ws, session, env)
+    : { factsWritten: [], patternsWritten: [], feeling: null, doing: null, newPerson: null };
+  const connections = personData && !isQuestionForm(lower)
+    ? personConnections(ws, personData)
+    : [];
+  if (connections.length) {
+    noteStep(ws, "intent", "intent",
+      `person knowledge consulted first: the turn's contents touch ${connections.map((c) => `"${c.fact.display}" (via ${c.via})`).join(", ")}`);
+  }
+
   // helpers ------------------------------------------------------------
+  // Decline STYLE is the role's (packs may word a decline
+  // plainly or by naming the missing relation); the honesty —
+  // the empty set itself — is never the role's to change (§5).
+  const plainDeclines = role.declineStyle === "plain";
   const declineUnplaced = (intent: IntentKind): TurnResult => {
     const unplaced = words.filter(
       (w) => w.length > 2 && !STOPWORDS.has(w) &&
         !resolved.some((r) => r.text.split(" ").includes(w)),
     );
     noteStep(ws, "discourse", "decline", `unplaced: ${unplaced.join(", ") || "(none)"}`);
-    return finish(renderDeclineUnplaced(unplaced), intent, false);
+    return finish(
+      plainDeclines ? renderDeclineUnplacedPlain(unplaced) : renderDeclineUnplaced(unplaced),
+      intent, false,
+    );
   };
   const noFact = (termText: string, intent: IntentKind): TurnResult => {
     noteStep(ws, "solve", "decline", `no usable edges for "${termText}"`);
-    return finish(renderNoFact(termText), intent, false);
+    return finish(
+      plainDeclines ? renderNoFactPlain(termText) : renderNoFact(termText),
+      intent, false,
+    );
   };
 
   // (4) "what about X?" follow-up
@@ -269,7 +474,7 @@ export function runTurn(
       remember(session, term.id);
       noteStep(ws, "intent", "intent", `follow-up topic: ${term.text}; reusing intent ${session.lastIntent}`);
       noteTriage(ws, "retrieve", "fact about the follow-up topic, judged against the conversation's contents");
-      const fact = pickFact(g, term.id, sit, FACT_REL_PRIORITY, turnContextIds(g, ws));
+      const fact = pickFact(g, term.id, sit, FACT_REL_PRIORITY, turnContextIds(g, ws), relevanceFor(ws));
       if (fact) {
         addConclusions(ws, [fact]);
         return finish(renderConclusion(g, fact), "followup", true);
@@ -331,7 +536,9 @@ export function runTurn(
       return finish(text, "tool", true);
     }
     return finish(
-      renderToolDecline(tool.isOpen ? `opening ${tool.target}` : tool.target),
+      plainDeclines
+        ? renderToolDeclinePlain(tool.isOpen ? `opening ${tool.target}` : tool.target)
+        : renderToolDecline(tool.isOpen ? `opening ${tool.target}` : tool.target),
       "tool", false,
     );
   }
@@ -367,7 +574,12 @@ export function runTurn(
         return finish(res.text, "why", true);
       }
       noteTriage(ws, "retrieve", "the causal set for the asked relation is empty — decline, no substitution");
-      return finish(renderWhyNoCause(res.effectText, res.causeText), "why", false);
+      return finish(
+        plainDeclines
+          ? renderWhyNoCausePlain(res.effectText, res.causeText)
+          : renderWhyNoCause(res.effectText, res.causeText),
+        "why", false,
+      );
     }
 
     // feelings / what-happens / wants / needs / intentions. "What
@@ -421,6 +633,131 @@ export function runTurn(
       }
     }
 
+    // E4 — a definition-shaped what-is turn runs through the
+    // AmbiguityResolver before solve executes. The flow keeps
+    // the study → organise → plan → consult → examine shape:
+    // the sense choice STUDIES the candidates, EverydaySense
+    // ORGANISES them by its default, the resolver PLANS
+    // (answer / name / ask) over the whole situation, solve
+    // CONSULTS the graph under the settled reading, and the
+    // EXAMINATION step — last, and pointed at in the trace —
+    // reads the verdict's standing tuple for the admission
+    // the reply carries. No gloss → null, and the turn keeps
+    // exactly its previous route.
+    if (classifySurface(lower) === "whatis" && isDefinitionQuestion(lower)) {
+      const cand = candidates[0];
+      const termText = g.terms[cand.id];
+      const choice = chooseDefinition(
+        g, termText, [...turnContextIds(g, ws), cand.id], contextFit,
+      );
+      if (choice) {
+        noteStep(ws, "solve", "query", definitionTraceNote(choice));
+        if (choice.rivals.length < 2) {
+          const ans = solveDefinitionAnswer(g, ws, session, cand, choice.chosen.synsetId);
+          if (ans) {
+            noteTriage(ws, "retrieve", "definition: the term's one glossed sense leads, neighbourhood follows");
+            return finish(ans, "whatis", true);
+          }
+        } else {
+          const glossHead = (synsetId: string): string => {
+            const c = definitionForSynset(g, termText, synsetId);
+            if (!c) return synsetId;
+            // the gloss's head phrase: its first substantial
+            // segment (a gloss may open with a parenthetical or
+            // a comma — an empty branch label would leave the
+            // person nothing to answer with)
+            const head = c.gloss
+              .replace(/[()]/g, " ")
+              .split(/[,;]/)
+              .map((s) => s.trim())
+              .find((s) => s.split(/\s+/).filter(Boolean).length >= 3);
+            return (head ?? c.gloss).split(/\s+/).slice(0, 7).join(" ");
+          };
+          const settled = session.settledSenses[termText] ?? null;
+          const everyday = everydaySynsetId(g, termText, contextFit);
+          const verdict = resolveRivalReadings({
+            rivals: choice.rivals.map((r) => ({
+              key: r.synsetId,
+              label: glossHead(r.synsetId),
+              score: r.score,
+              cluster: senseClusterLabel(g, termText, r.synsetId),
+              gravity: false,
+            })),
+            historyKey: settled,
+            everydayKey: everyday,
+            stakes: "question",
+            disposition: role.clarificationDisposition,
+            asksUsed: session.clarificationsAsked,
+            askedLastTurn: session.lastTurnWasAsk,
+            knownness: settled ? { [settled]: 0.8 } : {},
+          });
+          noteStep(ws, "resolver", "resolve",
+            `resolver over ${choice.rivals.length} senses of "${termText}": ${verdict.reason} → ${verdict.action}` +
+            (everyday ? `; everydaysense default: ${glossHead(everyday)}` : "; no everydaysense default"));
+          const admission = admissionFor(verdict.standing);
+          noteStep(ws, "resolver", "examine",
+            `examination: standing ${standingTrace(verdict.standing)}; admission read off the axes: ${admission ?? "none — the reply asserts plainly"}`);
+          if (verdict.action === "ask") {
+            const branches = verdict.ranked.slice(0, 2).map((r) => {
+              const c = definitionForSynset(g, termText, r.key);
+              // the branch's graph footprint: its filing
+              // cluster's evidence ids plus their IsA ancestors
+              // — so a reply naming the reading's CATEGORY
+              // ("the animal one") selects it, not only a reply
+              // quoting the gloss's own words.
+              const clusterLabel = senseClusterLabel(g, termText, r.key);
+              const matchIds = new Set<number>();
+              if (clusterLabel) {
+                const cluster = filingClusters(g, cand.id)
+                  .find((cl) => cl.anchorText === clusterLabel);
+                if (cluster) {
+                  for (const id of clusterEvidenceIds(cluster)) matchIds.add(id);
+                  for (const id of [...matchIds]) {
+                    for (const e1 of g.outEdges(id, "/r/IsA")) {
+                      matchIds.add(e1.to);
+                      for (const e2 of g.outEdges(e1.to, "/r/IsA")) matchIds.add(e2.to);
+                    }
+                  }
+                }
+              }
+              return {
+                key: r.key,
+                label: r.label,
+                synsetId: r.key,
+                matchWords: c
+                  ? [...c.lemmas, ...c.gloss.toLowerCase().split(/[^a-z']+/)]
+                      .filter((w) => w.length > 2)
+                  : [],
+                matchIds: [...matchIds],
+              };
+            });
+            session.pendingClarification = {
+              termText,
+              kind: "definition",
+              branches,
+              askedTurn: session.turnCount,
+            };
+            session.clarificationsAsked++;
+            noteTriage(ws, "retrieve", "definition: readings too close to choose — the resolver asks, branches pre-mapped");
+            return finish(
+              renderClarificationAsk(termText, branches.map((b) => b.label)),
+              "clarification", false,
+            );
+          }
+          const ans = solveDefinitionAnswer(g, ws, session, cand, verdict.key!);
+          if (ans) {
+            noteTriage(ws, "retrieve",
+              `definition: settled by ${verdict.ground} — the settled sense's gloss leads, neighbourhood follows`);
+            if (verdict.action === "name") {
+              const label = verdict.ranked.find((r) => r.key === verdict.key)?.label ?? "";
+              return finish(`${renderNamedReading(termText, label)} ${ans}`, "whatis", true);
+            }
+            return finish(ans, "whatis", true);
+          }
+        }
+      }
+    }
+
     // the classified question intents: C classified, E executes
     const kind = classifySurface(lower);
     if (kind) {
@@ -453,30 +790,106 @@ export function runTurn(
     return declineUnplaced("question");
   }
 
-  // (7) statements: grounded acknowledgement, never a flat decline
-  if (resolved.length) {
-    const ev = matchEvent(g, words, resolved);
-    const primary = ev ?? bd.topics[0] ?? salient!;
-    remember(session, primary.id);
-    // E2: memory's active set is fed by the scored topics (the
-    // best few that scored as topical), not by every resolved
-    // fragment — "third" no longer becomes a conversation topic.
-    for (const t of bd.topics.slice(0, 4)) {
-      if (t.score >= 0) remember(session, t.id);
+  // (7) statements — E4's set order (§2, piece C): person
+  // knowledge was consulted first (capture + connections,
+  // above); the classifier has judged the statement's
+  // conversational intent with the graph's evidence weighed
+  // in; the reply is formulated only now — per the class, the
+  // role's strategy and follow-up policy, and the operative
+  // context. A schmooze reply succeeds socially with the
+  // grounded fact it can honestly add PLUS the follow-up its
+  // slot licenses; zero graph facts is a complete success for
+  // the class, never a decline.
+  if (resolved.length || capture.feeling || capture.doing || capture.newPerson || capture.factsWritten.length) {
+    const ev = resolved.length ? matchEvent(g, words, resolved) : null;
+    const primary = ev ?? bd.topics[0] ?? (resolved.length ? salient : null);
+    if (primary) {
+      remember(session, primary.id);
+      // E2: memory's active set is fed by the scored topics (the
+      // best few that scored as topical), not by every resolved
+      // fragment — "third" no longer becomes a conversation topic.
+      for (const t of bd.topics.slice(0, 4)) {
+        if (t.score >= 0) remember(session, t.id);
+      }
     }
-    noteStep(ws, "intent", "intent", ev ? `statement; ATOMIC event match: ${ev.text}` : "statement");
-    noteTriage(ws, "retrieve", "grounded acknowledgement fact; within-node choice judged against the turn's contents");
+    if (ev) noteStep(ws, "intent", "intent", `statement; ATOMIC event match: ${ev.text}`);
+    const cls = classifyStatement(
+      g, ws, capture, connections, env.CSKG_CLASSIFY_GRAPH !== "off",
+    );
+    noteTriage(ws, "retrieve",
+      `statement (${cls.kind}): person knowledge first, classification weighed, reply per role "${role.id}" + operative context`);
+    // every file write is acknowledged in the reply, in the
+    // role's voice — never silent (§5)
+    const ackSuffix = capture.factsWritten.length
+      ? ` ${renderRememberAck(role.memoryAck, capture.factsWritten[0].display)}`
+      : capture.patternsWritten.length
+        ? ` ${role.memoryAck}`
+        : "";
+
+    // a stated feeling: the reply is drawn from the canonical
+    // state record — ATOMIC consulted FROM the record (§5)
+    if (cls.kind === "state" && capture.feeling) {
+      const reaction = solveStateReaction(g, ws, capture.feeling.canonical);
+      const base = reaction ?? renderStateNoted(capture.feeling.text, capture.feeling.pattern);
+      session.lastIntent = "fact";
+      return finish(base + ackSuffix, "statement", reaction !== null);
+    }
+
+    if (!primary) {
+      // nothing resolved, but the statement still landed —
+      // as person data (a name, a fact for the file)
+      return finish(
+        capture.factsWritten.length
+          ? renderRememberAck(role.memoryAck, capture.factsWritten[0].display)
+          : renderStatementNoted(capture.doing ?? capture.newPerson ?? "that"),
+        "statement", false,
+      );
+    }
+
+    // the grounded acknowledgement fact, role-shaped in its
+    // selection (the pack's preferred relations lead) and
+    // judged against the operative context
     const factRels = ev
       ? ["at:xEffect", "at:xReact", "at:xWant", "at:oReact", "/r/IsA", "/r/HasProperty"]
-      : FACT_REL_PRIORITY;
-    const fact = bestStatementFact(g, sit, ev, resolved, primary, factRels, bd.topics, turnContextIds(g, ws));
+      : [
+          ...role.preferredRelations,
+          ...FACT_REL_PRIORITY.filter((r) => !role.preferredRelations.includes(r)),
+        ];
+    const fact = bestStatementFact(
+      g, sit, ev, resolved, primary, factRels, bd.topics,
+      turnContextIds(g, ws), relevanceFor(ws),
+    );
+    let text: string;
+    let grounded = false;
     if (fact) {
       addConclusions(ws, [fact]);
       noteStep(ws, "solve", "conclude", "statement acknowledgement fact", [edgeText(g, fact.edge)]);
-      session.lastIntent = "fact";
-      return finish(renderConclusion(g, fact), "statement", true);
+      text = renderConclusion(g, fact);
+      grounded = true;
+    } else {
+      text = renderStatementNoted(g.terms[primary.id]);
     }
-    return finish(renderStatementNoted(g.terms[primary.id]), "statement", false);
+    // connected: the reply SAYS the connection the person
+    // model found — a recorded preference whose object is the
+    // statement's topic earns the continuity clause
+    if (cls.kind === "connected" && fact) {
+      const pref = connections.find(
+        (c) => c.via === "object" && c.fact.kind === "preference" && c.fact.subject !== "self",
+      );
+      if (pref) text += ` ${renderContinuityClause(pref.fact.display, pref.fact.subject)}`;
+    }
+    // the role's follow-up policy decides whether the class
+    // earns a follow-up, and the statement's own slot forms it
+    const stance =
+      cls.kind === "schmooze" ? role.followupPolicy.schmooze
+      : cls.kind === "connected" ? role.followupPolicy.connected
+      : role.followupPolicy.informing;
+    if (stance === "follow-up") {
+      text += ` ${renderSchmoozeFollowup(cls.followupSlot, g.terms[primary.id])}`;
+    }
+    text += ackSuffix;
+    session.lastIntent = "fact";
+    return finish(text, "statement", grounded);
   }
 
   return declineUnplaced("statement");

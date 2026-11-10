@@ -5,7 +5,9 @@
  * piece (the engine map in engine-map.ts is the contract; a field
  * is only ever assigned inside its owner's functions):
  *
- *   situation, person   — awareness
+ *   situation, person,
+ *   role                — awareness
+ *   context             — the Context module (context.ts)
  *   breakdown           — discourse
  *   intent              — intent
  *   activeContext       — memory (its standing contribution)
@@ -27,15 +29,18 @@
  */
 import type { PersonContext, Situation } from "./awareness";
 import type { Conclusion } from "./articulate";
+import type { OperativeContext } from "./context";
 import type { Breakdown } from "./discourse";
 import type { EngineNodeId } from "./engine-map";
 import type { Intent } from "./intent";
 import type { QueryRecord } from "./loader";
 import type { ActiveContext } from "./memory";
+import type { RolePack } from "./roles";
 
 export type TraceStepKind =
   | "situate" | "resolve" | "intent" | "query" | "conclude"
-  | "decline" | "replay" | "correct" | "remember" | "triage";
+  | "decline" | "replay" | "correct" | "remember" | "triage"
+  | "compose" | "examine";
 
 export interface TraceStep {
   /** the engine-map node id of the piece that acted */
@@ -59,6 +64,10 @@ export interface TurnWorkspace {
   input: string;
   situation: Situation | null;
   person: PersonContext | null;
+  /** the role pack awareness loaded (roles.ts) */
+  role: RolePack | null;
+  /** the operative context the Context module composed */
+  context: OperativeContext | null;
   breakdown: Breakdown | null;
   intent: Intent | null;
   activeContext: ActiveContext | null;
@@ -75,6 +84,8 @@ export function createWorkspace(turn: number, input: string): TurnWorkspace {
     input,
     situation: null,
     person: null,
+    role: null,
+    context: null,
     breakdown: null,
     intent: null,
     activeContext: null,
