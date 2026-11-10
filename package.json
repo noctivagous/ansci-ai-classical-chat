@@ -9,6 +9,7 @@
   "scripts": {
     "ask": "npm run build --silent && node dist/src/cli.js",
     "chat": "npm run build --silent && node dist/src/chat.js",
+    "chat:once": "npm run build --silent && node scripts/chat-once.mjs",
     "build": "tsc",
     "dev": "npm run build --silent && node dist/src/cskg/devserver.js",
     "loop:tree": "node scripts/devloop-tree.mjs",
