@@ -20,6 +20,8 @@ import {
   renderCorrectionFact,
   renderCorrectionNoFact,
   renderPhatic,
+  renderToolDecline,
+  renderToolDeclinePlain,
   sentenceForEdge,
 } from "../src/cskg/articulate";
 import { seasonFor } from "../src/cskg/awareness";
@@ -271,6 +273,13 @@ test("adaptive offer: a planned coat-buying asks when, end to end", async () => 
   const s = createSession();
   const r = runTurn(g, s, "I'm thinking of buying a winter coat.");
   assert.match(r.text, /thinking of buying a winter coat\. When's that happening\?/);
+});
+
+test("tool decline: the use-to shape takes the infinitive frame", () => {
+  assert.match(renderToolDecline("opening wine bottles"), /used for opening wine bottles/);
+  assert.match(renderToolDecline("hang the cabinets", false), /used to hang the cabinets/);
+  assert.match(renderToolDeclinePlain("opening wine bottles"), /used for opening wine bottles/);
+  assert.match(renderToolDeclinePlain("hang the cabinets", false), /used to hang the cabinets/);
 });
 
 test("why continuity: a bare Why? keeps asking about the same happening", async () => {

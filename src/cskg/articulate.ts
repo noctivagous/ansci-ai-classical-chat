@@ -865,8 +865,14 @@ export function renderToolAnswer(tools: string[], firstRendered: string): string
   return `You could use ${tools.join(" or ")} — ${firstRendered}`;
 }
 
-export function renderToolDecline(usedForPhrase: string): string {
-  return `I don't have a tool for that in this graph — nothing here is recorded as used for ${usedForPhrase}.`;
+export function renderToolDecline(usedForPhrase: string, open = true): string {
+  // Gap B: the open shape already gerund-frames its target
+  // ("used for opening wine"), but the use-to shape carries a
+  // verb phrase ("hang the cabinets") — "used for hang" is
+  // broken grammar, "used to hang" is the frame it needs.
+  return open
+    ? `I don't have a tool for that in this graph — nothing here is recorded as used for ${usedForPhrase}.`
+    : `I don't have a tool for that in this graph — nothing here is recorded as used to ${usedForPhrase}.`;
 }
 
 /** The §6 disclosure: the strict set was empty and a fallback route was used. */
@@ -1046,6 +1052,8 @@ export function renderUnattestedAskPlain(aText: string, bText: string): string {
   return `I don't know — this graph doesn't record that: nothing in it connects "${aText}" with "${bText}".`;
 }
 
-export function renderToolDeclinePlain(usedForPhrase: string): string {
-  return `I don't know a tool for that — nothing here is recorded as used for ${usedForPhrase}.`;
+export function renderToolDeclinePlain(usedForPhrase: string, open = true): string {
+  return open
+    ? `I don't know a tool for that — nothing here is recorded as used for ${usedForPhrase}.`
+    : `I don't know a tool for that — nothing here is recorded as used to ${usedForPhrase}.`;
 }

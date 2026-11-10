@@ -12,6 +12,10 @@
 # Verified 2026-11-10 (gap 3, verdict PASS): should/could route to
 # findTools; unattested targets decline honestly. Only the two new
 # shapes moved; the can-shape control is byte-identical.
+#
+# Verified 2026-11-10 (gap B, verdict PASS): the use-to decline
+# takes the infinitive frame ("used to hang"), the open shape keeps
+# its gerund frame. All three turns moved exactly as declared.
 
 What should I use to hang the cabinets?
 What can I use to open a wine bottle?

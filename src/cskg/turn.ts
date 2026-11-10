@@ -592,8 +592,8 @@ export function runTurn(
     }
     return finish(
       plainDeclines
-        ? renderToolDeclinePlain(tool.isOpen ? `opening ${tool.target}` : tool.target)
-        : renderToolDecline(tool.isOpen ? `opening ${tool.target}` : tool.target),
+        ? renderToolDeclinePlain(tool.isOpen ? `opening ${tool.target}` : tool.target, tool.isOpen)
+        : renderToolDecline(tool.isOpen ? `opening ${tool.target}` : tool.target, tool.isOpen),
       "tool", false,
     );
   }
