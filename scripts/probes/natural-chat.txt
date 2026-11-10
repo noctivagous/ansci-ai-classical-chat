@@ -15,16 +15,16 @@
 # - how are you → decline as an unknown graph term
 # - mixed thanks → telegraphic restatement of the second clause
 #
-# Advice-shaped turns ("what else should I put in?", "should I
-# wear a coat?") are in the transcript as controls: this loop
-# does not own them.
+# Advice (loop 5): addition declines empty chicken-soup
+# composition; wear-a-coat cites UsedFor, not IsA hair.
 
 hey, how's it going?
 #! expect=grounded contains=hey notcontains=word
 pretty good over here. I'm making a big pot of soup tonight
 yeah, chicken soup. I have chicken, carrots, and celery. what else should I put in?
+#! expect=decline contains=HasA notcontains=cock
 no, I mean the food — the meat, for soup
-#! expect=grounded contains=food notcontains=for
+#! expect=grounded contains=food,chicken notcontains=for,here
 do onions go in chicken soup?
 #! expect=decline notcontains=is
 I know. I was asking about onions
@@ -37,6 +37,7 @@ where do people usually keep coffee?
 no, I meant the coffee
 what season is it right now?
 so should I wear a coat if I go out?
+#! expect=grounded contains=used notcontains=hair
 no I meant a winter coat, the jacket
 my name is James. I live in Chicago
 do you remember my name?

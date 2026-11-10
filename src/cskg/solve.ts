@@ -83,7 +83,7 @@ import {
 } from "./intent";
 import type { CskgEdge, CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
-import { verbBasePerTurn, verbLemmaPerTurn } from "./situation";
+import { entityById, verbBasePerTurn, verbLemmaPerTurn } from "./situation";
 import { noteStep, type TurnWorkspace } from "./workspace";
 
 /** E's one write: add conclusions to the workspace. */
@@ -560,6 +560,178 @@ export function solveComposition(
   }
   session.lastIntent = "fact";
   return renderAll(g, top);
+}
+
+const DISH_RE = /\b(soup|stew|broth|salad|curry|chili|chilli|casserole)\b/;
+const WEAR_USE_RE = /warm|wear|winter|chilly|cold|heat/;
+
+function statedHaveExclusions(input: string): Set<string> {
+  const out = new Set<string>();
+  const m = input.toLowerCase().match(/\bi have ([^.?!]+)/);
+  if (!m) return out;
+  for (const part of m[1].split(/\s*(?:,|and)\s*/)) {
+    const p = part.trim().replace(/^(?:a|an|the)\s+/, "");
+    if (p) out.add(p);
+  }
+  return out;
+}
+
+function dishLabelsFromModel(session: SessionState): string[] {
+  const labels: string[] = [];
+  const seen = new Set<string>();
+  const add = (s: string | null | undefined) => {
+    const t = (s ?? "").trim().toLowerCase().replace(/^(?:a|an|the)\s+/, "");
+    if (!t || seen.has(t)) return;
+    seen.add(t);
+    labels.push(t);
+  };
+  for (const ev of [...session.situation.events].reverse()) {
+    const content = ev.participants.find((p) => p.part === "content");
+    if (content) add(entityById(session.situation, content.entityId)?.label);
+    for (const p of ev.participants) {
+      if (p.role !== "object") continue;
+      const lab = entityById(session.situation, p.entityId)?.label;
+      if (lab && DISH_RE.test(lab)) add(lab);
+    }
+    if (ev.objectText && DISH_RE.test(ev.objectText)) add(ev.objectText);
+  }
+  return labels;
+}
+
+function adviceOuters(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+  named: string | null,
+): string[] {
+  const seen = new Set<string>();
+  const collect = (s: string | null | undefined, into: string[]) => {
+    const t = (s ?? "").trim().toLowerCase().replace(/^(?:a|an|the)\s+/, "");
+    if (!t || seen.has(t)) return;
+    seen.add(t);
+    into.push(t);
+  };
+  const fromTurn: string[] = [];
+  const fromNamed: string[] = [];
+  const fromModel: string[] = [];
+  for (const t of ws.breakdown?.terms ?? []) {
+    if (DISH_RE.test(t.text)) collect(t.text, fromTurn);
+  }
+  collect(named, fromNamed);
+  for (const lab of dishLabelsFromModel(session)) collect(lab, fromModel);
+  const longerFirst = (a: string, b: string) => b.length - a.length;
+  fromTurn.sort(longerFirst);
+  fromNamed.sort(longerFirst);
+  fromModel.sort(longerFirst);
+  return [...fromTurn, ...fromNamed, ...fromModel];
+}
+
+function compositionMemberHits(
+  g: CskgGraph,
+  outerIds: Set<number>,
+): Conclusion[] {
+  const hits: Conclusion[] = [];
+  const seen = new Set<string>();
+  const take = (edge: CskgEdge, about: "from" | "to"): void => {
+    const key = `${edge.from}:${edge.rel}:${edge.to}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    hits.push({ edge, about });
+  };
+  // Ingredients: HasA (the dish has X) and PartOf (X is part of
+  // the dish). AtLocation is where a thing is found — a potato
+  // in a pot of soup is not an ingredient of chicken soup.
+  for (const oid of outerIds) {
+    for (const e of g.outEdges(oid, "/r/HasA")) take(e, "from");
+    for (const e of g.inEdgesFor(oid, "/r/PartOf")) take(e, "to");
+  }
+  hits.sort((a, b) => b.edge.support - a.edge.support);
+  return hits;
+}
+
+function memberLabel(g: CskgGraph, c: Conclusion): string {
+  return c.about === "from" ? g.terms[c.edge.to] : g.terms[c.edge.from];
+}
+
+/**
+ * "What else should I put in?" — members of the dish's composition
+ * set (HasA / PartOf), minus things the person already said they
+ * have. Empty set declines; a neighbouring IsA is not the answer,
+ * a parent dish (soup for chicken soup) is not a substitute outer,
+ * and AtLocation scenes are not ingredients.
+ */
+export function solveAdviceAddition(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+  namedOuter: string | null,
+): { text: string; grounded: boolean; outer: string | null } {
+  const outers = adviceOuters(g, ws, session, namedOuter);
+  const excluded = statedHaveExclusions(ws.input);
+  const primary = outers[0] ?? null;
+  if (!primary) return { text: "", grounded: false, outer: null };
+  const rememberOuter = (): void => {
+    const id = g.id(primary);
+    if (id !== undefined) remember(session, id);
+  };
+  const outerIds = compositionIds(g, primary);
+  if (!outerIds.size) {
+    rememberOuter();
+    return { text: "", grounded: false, outer: primary };
+  }
+  const hits = compositionMemberHits(g, outerIds).filter((c) => {
+    const lab = memberLabel(g, c).toLowerCase();
+    return ![...excluded].some((x) => lab === x || lab.includes(x) || x.includes(lab));
+  });
+  if (!hits.length) {
+    rememberOuter();
+    return { text: "", grounded: false, outer: primary };
+  }
+  const top = hits.slice(0, 3);
+  addConclusions(ws, top);
+  remember(session, top[0].edge.from);
+  remember(session, top[0].edge.to);
+  for (const c of top) {
+    noteStep(ws, "solve", "conclude", "advice-addition", [edgeText(g, c.edge)]);
+  }
+  session.lastIntent = "advice";
+  return { text: renderAll(g, top), grounded: true, outer: primary };
+}
+
+/**
+ * "Should I wear a coat?" — UsedFor of the garment is the evidence.
+ * The clothing node is the one that carries UsedFor (hair IsA is
+ * not the asked set). Wear/warm uses outrank other uses when present.
+ */
+export function solveAdviceWear(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+  item: string,
+): string | null {
+  const sit = ws.situation!;
+  const resolved = resolveTerms(g, item);
+  let chosen: { id: number; uses: Conclusion[] } | null = null;
+  for (const r of resolved) {
+    const uses = topConclusions(g, r.id, "/r/UsedFor", "out", 6, sit);
+    if (!uses.length) continue;
+    chosen = { id: r.id, uses };
+    break;
+  }
+  if (!chosen) return null;
+  const wearish = chosen.uses.filter((c) =>
+    WEAR_USE_RE.test(g.terms[c.edge.to]));
+  const featured = (wearish.length ? wearish : chosen.uses).slice(0, 3);
+  addConclusions(ws, featured);
+  remember(session, chosen.id);
+  for (const c of featured) {
+    noteStep(ws, "solve", "conclude", "advice-wear", [edgeText(g, c.edge)]);
+  }
+  session.lastIntent = "advice";
+  const composed = composeConclusions(g, featured);
+  noteStep(ws, "articulate", "compose",
+    `advice-wear ${featured.length} UsedFor → headline ${composed.headline.length}`);
+  return renderComposed(g, composed);
 }
 
 /** Generic question fallback: best fact about the first candidate that has one. */

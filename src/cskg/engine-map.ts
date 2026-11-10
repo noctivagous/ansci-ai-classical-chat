@@ -133,10 +133,10 @@ export const ENGINE_NODES: EngineNode[] = [
   },
   {
     id: "solve",
-    label: "E — Query / problem solving (incl. the attestation check: specific-fact asks decline on the graph's silence)",
+    label: "E — Query / problem solving (incl. the attestation check: specific-fact asks decline on the graph's silence; advice: composition members or UsedFor)",
     file: "src/cskg/solve.ts",
     writes: ["conclusions"],
-    reads: ["breakdown", "intent", "activeContext", "situation"],
+    reads: ["breakdown", "intent", "activeContext", "situation", "situationModel"],
   },
   {
     id: "statement",

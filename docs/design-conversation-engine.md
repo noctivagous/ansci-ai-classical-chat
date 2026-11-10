@@ -940,6 +940,23 @@ slice), **closing** (a running slice owns it), **closed**.
   between the poles; an empty set declines in G10's shape and
   does not substitute a neighbouring IsA. Advice-shaped
   follow-ups ("what else should I put in?") remain undesigned.
+- **Advice (addition and wear).** Exposed by the unscripted-chat
+  sitting (2026-11-10): "what else should I put in?" after
+  chicken soup was a generic IsA of chicken ("Chicken is a
+  cock."); "should I wear a coat?" was IsA hair. *Closed*
+  (2026-11-10, advice loop): `detectAdvice` plus
+  `solveAdviceAddition` / `solveAdviceWear`. Addition gathers
+  HasA / PartOf members of the dish in play (this turn's dish
+  first, then named, then the situation model's food object)
+  and subtracts what the person already said they have; an
+  empty set declines in G10's shape and does not substitute a
+  neighbouring IsA, a parent dish, or an AtLocation scene. Wear answers from the
+  garment's UsedFor (the node that carries uses, not an IsA
+  homonym); wear/warm uses outrank other uses when present.
+  Honest limits: this dump has no chicken-soup ingredients, so
+  that sitting addition declines; extra Wikidata is a later
+  corpus. Resolver-on-statements (chicken→cock, coat→hair on
+  non-advice turns) stays open.
 - **Same-session recall forms.** Exposed by the same sitting:
   "do you remember my name?" after a stated name was a graph
   question about the node *name* ("Name is an affinity."),
@@ -950,6 +967,20 @@ slice), **closing** (a running slice owns it), **closed**.
   forms read the file when present, else this session. "What
   do you remember about me?" in general mode still names the
   missing file.
+- **Wikidata-CS unattached to speech.** Exposed while designing
+  advice (2026-11-10): CSKG includes Wikidata-CS (~102k WD
+  rows, 15 ConceptNet-mapped relations), but Q-ids interned as
+  `q1432535` while speech resolves `/c/en/chicken soup`. Labels
+  (`node1;label`) sat unused. WD PartOf/MadeOf is real
+  composition testimony (garlic → garlic soup; noodle → noodle
+  soup) that the engine could not hear. *Closed* (loader
+  identity): Q-id endpoints intern by English labels and join
+  the ConceptNet term of the same name; PartOf/MadeOf already
+  in KEEP feed composition. Honest limits: Wikidata-CS is not
+  full Wikidata — chicken soup has no ingredient PartOf in this
+  dump; `/r/dbpedia/*` and DistinctFrom stay dropped (genre,
+  genus, occupation, distinctness — not composition). Extra WD
+  properties are not in the file to keep.
 
 ## 10. Toward a real conversation: capability map and morphs
 

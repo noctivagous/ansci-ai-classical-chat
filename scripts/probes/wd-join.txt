@@ -1,0 +1,11 @@
+# Probe: Wikidata-CS Q-ids join English speech via labels.
+# Garlic PartOf garlic soup is WD; after label intern, composition
+# answers from that edge. Chicken soup has no WD ingredient PartOf
+# in this dump — that silence is still a decline.
+
+do garlic go in garlic soup?
+#! expect=grounded contains=garlic
+do noodles go in noodle soup?
+#! expect=grounded contains=noodle
+do onions go in chicken soup?
+#! expect=decline

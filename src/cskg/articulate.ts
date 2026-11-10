@@ -1029,6 +1029,32 @@ export function renderCompositionDeclinePlain(inner: string, outer: string): str
   return `I don't know whether ${inner} go in ${outer} — this graph has no HasA, PartOf, or AtLocation edge between them.`;
 }
 
+/** Empty composition set for "what else should I put in?". */
+export function renderAdviceAdditionDecline(outer: string): string {
+  return `This graph doesn't record what else to put in ${outer} — no HasA or PartOf ingredient of it, and I won't substitute a neighbouring fact.`;
+}
+
+export function renderAdviceAdditionDeclinePlain(outer: string): string {
+  return `I don't know what else to put in ${outer} — this graph has no HasA or PartOf ingredient of it.`;
+}
+
+export function renderAdviceAdditionNone(): string {
+  return "This graph doesn't record what else to put in — no dish is in play, and I won't substitute a neighbouring fact.";
+}
+
+/** Wear advice: the garment's UsedFor is the evidence for the yes. */
+export function renderAdviceWearYes(evidence: string): string {
+  return `Yes — ${evidence}`;
+}
+
+export function renderAdviceWearDecline(item: string): string {
+  return `This graph doesn't record what a ${item} is used for — no UsedFor edge in it reaches that, and I won't substitute a neighbouring fact.`;
+}
+
+export function renderAdviceWearDeclinePlain(item: string): string {
+  return `I don't know what a ${item} is used for — this graph has no UsedFor edge for it.`;
+}
+
 /**
  * The resolver's ASK (S8): opens with the clarity admission —
  * "I am not clear" is the tuple's clarity axis bottoming out —

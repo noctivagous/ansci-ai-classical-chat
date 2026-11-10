@@ -67,6 +67,12 @@ import {
   renderNoFact,
   renderNoFactPlain,
   renderPhatic,
+  renderAdviceAdditionDecline,
+  renderAdviceAdditionDeclinePlain,
+  renderAdviceAdditionNone,
+  renderAdviceWearDecline,
+  renderAdviceWearDeclinePlain,
+  renderAdviceWearYes,
   renderCompositionDecline,
   renderCompositionDeclinePlain,
   renderNoSurfaceRelation,
@@ -113,6 +119,7 @@ import {
   assignIntent,
   classifyStatement,
   classifySurface,
+  detectAdvice,
   detectComposition,
   detectCorrection,
   detectFollowup,
@@ -162,6 +169,8 @@ import {
   noteTriage,
   pickFact,
   relevanceFor,
+  solveAdviceAddition,
+  solveAdviceWear,
   solveComposition,
   solveDefinitionAnswer,
   solveEventConsequence,
@@ -660,6 +669,45 @@ export function runTurn(
         ? renderCompositionDeclinePlain(composition.inner, composition.outer)
         : renderCompositionDecline(composition.inner, composition.outer),
       "fact",
+      false,
+    );
+  }
+
+  // Recommendation: "what else should I put in?" (composition
+  // members of the dish, empty-set decline) and "should I wear
+  // a coat?" (UsedFor of the garment). Graph testimony is the
+  // evidence; a neighbouring IsA is not the answer.
+  const advice = detectAdvice(lower);
+  if (advice) {
+    if (advice.kind === "addition") {
+      const r = solveAdviceAddition(g, ws, session, advice.outer);
+      if (r.grounded) {
+        noteTriage(ws, "solve",
+          `advice-addition: HasA/PartOf members of "${r.outer}"`);
+        return finish(r.text, "advice", true);
+      }
+      noteTriage(ws, "solve",
+        `advice-addition: empty composition set for "${r.outer ?? "(no dish)"}" — decline, no substitution`);
+      const decline = r.outer
+        ? (plainDeclines
+          ? renderAdviceAdditionDeclinePlain(r.outer)
+          : renderAdviceAdditionDecline(r.outer))
+        : renderAdviceAdditionNone();
+      return finish(decline, "advice", false);
+    }
+    const worn = solveAdviceWear(g, ws, session, advice.item);
+    if (worn) {
+      noteTriage(ws, "retrieve",
+        `advice-wear: UsedFor of "${advice.item}"`);
+      return finish(renderAdviceWearYes(worn), "advice", true);
+    }
+    noteTriage(ws, "solve",
+      `advice-wear: empty UsedFor for "${advice.item}" — decline, no substitution`);
+    return finish(
+      plainDeclines
+        ? renderAdviceWearDeclinePlain(advice.item)
+        : renderAdviceWearDecline(advice.item),
+      "advice",
       false,
     );
   }

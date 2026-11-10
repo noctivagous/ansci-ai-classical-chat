@@ -24,6 +24,12 @@
  *   /c/en/<term>                     plain ConceptNet-style term
  *   /c/en/<term>/n/wn/<sense>        WordNet-sensed term
  *   at:personx_<event_phrase>        ATOMIC event (PersonX …)
+ *   Q<digits>                       Wikidata-CS (WD) — interned by
+ *                                   node1;label / node2;label so
+ *                                   speech meets the node (Q1432535
+ *                                   labelled "chicken soup" joins
+ *                                   /c/en/chicken_soup). Unlabelled
+ *                                   Q-ids stay as "q123".
  * Normalisation: strip the prefix, cut any /<pos>/wn/… suffix,
  * underscores → spaces, drop the "personx" actor token from ATOMIC
  * events. CSKG has no glosses — "what is X" answers must be built from
@@ -41,8 +47,11 @@
  * Dropped, counted in the load report: DerivedFrom /
  * Etymologically* (word-shape, not conversation), fn:HasLexicalUnit
  * (frame plumbing already covered by the main pipeline),
- * /r/dbpedia/* (encyclopedic trivia), Not* negations (fewer than
- * 700 rows), DistinctFrom, SymbolOf.
+ * /r/dbpedia/* (genre, genus, occupation, capital — encyclopedic
+ * trivia, not composition), Not* negations (fewer than 700 rows),
+ * DistinctFrom, SymbolOf. Wikidata in this dump is Wikidata-CS
+ * only (~102k rows, 15 ConceptNet-mapped relations). There are
+ * no extra unmapped WD properties in the file to keep.
  * Non-English endpoints are dropped and counted (either side).
  *
  * DEPTH PASS (2026-11-09, design §8/§10 graph-first): three more
@@ -246,6 +255,41 @@ export function normaliseNode(raw: string): string | null {
   s = s.replace(/\s+/g, " ").trim();
   if (!s || !/[a-z]/.test(s)) return null;
   return s;
+}
+
+const QID_TERM = /^q\d+$/;
+
+/** English labels from a CSKG lifted label cell (pipe-separated). */
+export function labelTerms(labelField: string): string[] {
+  const out: string[] = [];
+  for (const part of labelField.split("|")) {
+    const t = part.replace(/_/g, " ").toLowerCase().trim().replace(/\s+/g, " ");
+    if (t && /[a-z]/.test(t) && !QID_TERM.test(t) && !out.includes(t)) out.push(t);
+  }
+  return out;
+}
+
+/**
+ * The internable term(s) for one endpoint: ConceptNet/ATOMIC ids
+ * stay as normalised node strings; Wikidata Q-ids take their
+ * English labels so speech can resolve them. First term is the
+ * intern key; further labels are aliases onto the same id.
+ */
+export function termsFromEndpoint(raw: string, labelField: string): string[] {
+  const idTerm = normaliseNode(raw);
+  if (idTerm && QID_TERM.test(idTerm)) {
+    const labels = labelTerms(labelField);
+    return labels.length ? labels : [idTerm];
+  }
+  return idTerm ? [idTerm] : [];
+}
+
+function internEndpoint(g: CskgGraph, terms: string[]): number {
+  const id = g.intern(terms[0]);
+  for (const a of terms.slice(1)) {
+    if (!g.termId.has(a)) g.termId.set(a, id);
+  }
+  return id;
 }
 
 export class CskgGraph {
@@ -469,7 +513,7 @@ async function parseCskg(path: string): Promise<CskgGraph> {
     : fs.createReadStream(path);
   const rl = readline.createInterface({ input: stream, crlfDelay: Infinity });
 
-  let col: { n1: number; rel: number; n2: number; src: number; sen: number } | null = null;
+  let col: { n1: number; rel: number; n2: number; src: number; sen: number; l1: number; l2: number } | null = null;
   for await (const line of rl) {
     if (!line) continue;
     const fields = line.split("\t");
@@ -480,6 +524,8 @@ async function parseCskg(path: string): Promise<CskgGraph> {
         n2: fields.indexOf("node2"),
         src: fields.indexOf("source"),
         sen: fields.indexOf("sentence"),
+        l1: fields.indexOf("node1;label"),
+        l2: fields.indexOf("node2;label"),
       };
       if (col.n1 < 0 || col.rel < 0 || col.n2 < 0 || col.src < 0) {
         throw new Error(`CSKG header missing expected columns: ${fields.join(",")}`);
@@ -522,9 +568,9 @@ async function parseCskg(path: string): Promise<CskgGraph> {
       stats.droppedRelation++;
       continue;
     }
-    const t1 = normaliseNode(raw1);
-    const t2 = normaliseNode(raw2);
-    if (t1 === null || t2 === null) {
+    const t1s = termsFromEndpoint(raw1, col.l1 >= 0 ? (fields[col.l1] ?? "") : "");
+    const t2s = termsFromEndpoint(raw2, col.l2 >= 0 ? (fields[col.l2] ?? "") : "");
+    if (!t1s.length || !t2s.length) {
       if (
         (raw1.startsWith("/c/") && !raw1.startsWith("/c/en/")) ||
         (raw2.startsWith("/c/") && !raw2.startsWith("/c/en/"))
@@ -535,6 +581,8 @@ async function parseCskg(path: string): Promise<CskgGraph> {
       }
       continue;
     }
+    const t1 = internEndpoint(g, t1s);
+    const t2 = internEndpoint(g, t2s);
     if (t1 === t2) {
       stats.droppedMalformed++;
       continue;
@@ -543,9 +591,9 @@ async function parseCskg(path: string): Promise<CskgGraph> {
     for (const code of (fields[col.src] ?? "").split("|")) {
       if (code) mask |= 1 << srcBit(code);
     }
-    fArr.push(g.intern(t1));
+    fArr.push(t1);
     rArr.push(relIdx);
-    tArr.push(g.intern(t2));
+    tArr.push(t2);
     mArr.push(mask);
     const sen = col.sen >= 0 ? (fields[col.sen] ?? "").trim() : "";
     sArr.push(sen ? freshString(sen) : "");
@@ -655,7 +703,7 @@ async function parseCskg(path: string): Promise<CskgGraph> {
 // shipped dataset the file lands in data/raw/cskg/, which is
 // gitignored like the TSV itself.
 
-const CACHE_FORMAT_VERSION = 1;
+const CACHE_FORMAT_VERSION = 2;
 const CACHE_MAGIC = "CKGI";
 /** bytes of source hashed at each end for the fingerprint */
 const CACHE_HASH_BYTES = 256 * 1024;

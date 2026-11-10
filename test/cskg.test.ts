@@ -34,6 +34,7 @@ import {
 import { analyseInto, matchEventTemplate, preferQuestionSubject, resolveTerms } from "../src/cskg/discourse";
 import { verbLemmaPerTurn } from "../src/cskg/situation";
 import {
+  detectAdvice,
   detectComposition,
   detectCorrection,
   detectLeadingPhatic,
@@ -42,7 +43,7 @@ import {
   detectToolQuery,
 } from "../src/cskg/intent";
 import { contextFit, preferHappeningSubject } from "../src/cskg/solve";
-import { cachePathFor, loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
+import { cachePathFor, loadCskg, normaliseNode, termsFromEndpoint, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
 import {
   appendTraceRecord,
@@ -62,6 +63,12 @@ const HEADER =
 
 function row(n1: string, rel: string, n2: string, src: string): string {
   return ["x", n1, rel, n2, "", "", "", "", src, ""].join("\t");
+}
+
+function rowL(
+  n1: string, rel: string, n2: string, src: string, l1: string, l2: string,
+): string {
+  return ["x", n1, rel, n2, l1, l2, "", "", src, ""].join("\t");
 }
 
 const ROWS = [
@@ -143,6 +150,35 @@ test("normaliseNode strips prefixes, senses and personx", () => {
   assert.equal(normaliseNode("at:personx_chops_onions"), "chops onions");
   assert.equal(normaliseNode("/c/fr/banane"), null);
   assert.equal(normaliseNode("/c/en/83/a/wn"), null);
+});
+
+test("Wikidata Q-ids intern by English labels, not the Q-string", () => {
+  assert.deepEqual(termsFromEndpoint("Q21546392", "garlic"), ["garlic"]);
+  assert.deepEqual(termsFromEndpoint("Q15121455", "garlic soup"), ["garlic soup"]);
+  assert.deepEqual(termsFromEndpoint("/c/en/garlic", "ignored"), ["garlic"]);
+  assert.deepEqual(termsFromEndpoint("Q1", ""), ["q1"]);
+});
+
+test("WD PartOf on labelled Q-ids is composition testimony on speech", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cskg-wd-"));
+  const file = path.join(dir, "wd.tsv");
+  fs.writeFileSync(file, [
+    HEADER,
+    rowL("Q21546392", "/r/PartOf", "Q15121455", "WD", "garlic", "garlic soup"),
+    row("/c/en/garlic_soup", "/r/IsA", "/c/en/soup", "CN"),
+  ].join("\n") + "\n");
+  const g = await loadCskg(file, { cache: false });
+  const garlic = g.id("garlic");
+  const soup = g.id("garlic soup");
+  assert.notEqual(garlic, undefined);
+  assert.notEqual(soup, undefined);
+  assert.equal(g.id("q21546392"), undefined, "the Q-id is not a speakable term");
+  const parts = g.outEdges(garlic!, "/r/PartOf");
+  assert.ok(parts.some((e) => e.to === soup), "garlic PartOf garlic soup");
+  const r = runTurn(g, createSession(), "do garlic go in garlic soup?");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /garlic/i);
+  assert.doesNotMatch(r.text, /is a soup/i);
 });
 
 test("loader dedups rows and counts dataset support", async () => {
@@ -389,6 +425,59 @@ test("G9: where people keep coffee is about coffee", async () => {
   assert.equal(r.grounded, true);
   assert.match(r.text, /coffee/i);
   assert.doesNotMatch(r.text, /town/i);
+});
+
+test("advice: detect addition and wear shapes", () => {
+  assert.deepEqual(
+    detectAdvice("yeah, chicken soup. I have chicken, carrots, and celery. what else should I put in?"),
+    { kind: "addition", outer: null },
+  );
+  assert.deepEqual(
+    detectAdvice("what else should I put in the soup?"),
+    { kind: "addition", outer: "soup" },
+  );
+  assert.deepEqual(
+    detectAdvice("so should I wear a coat if I go out?"),
+    { kind: "wear", item: "coat" },
+  );
+  assert.equal(detectAdvice("what is a coat?"), null);
+});
+
+test("advice: what else to put in uses composition members, not IsA of a mentioned food", async () => {
+  const g = await graph();
+  const s = createSession();
+  runTurn(g, s, "I'm making a big pot of soup tonight");
+  const hit = runTurn(g, s, "what else should I put in?");
+  assert.equal(hit.grounded, true);
+  assert.match(hit.text, /onion/i);
+  assert.doesNotMatch(hit.text, /is a food|is a cock/i);
+  const s2 = createSession();
+  const skip = runTurn(g, s2, "I'm making soup. I have onions. what else should I put in?");
+  assert.equal(skip.grounded, false);
+  assert.match(skip.text, /HasA|PartOf/);
+  const corr = runTurn(g, s2, "No, I meant banana");
+  assert.match(corr.text, /soup/i);
+  assert.doesNotMatch(corr.text, /over here/i);
+});
+
+test("advice: wear a coat cites UsedFor, not IsA hair", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cskg-advice-"));
+  const file = path.join(dir, "advice.tsv");
+  fs.writeFileSync(file, [
+    HEADER,
+    row("/c/en/coat", "/r/IsA", "/c/en/hair", "WN"),
+    row("/c/en/coat", "/r/UsedFor", "/c/en/keep_warm", "CN"),
+    row("/c/en/keep_warm", "/r/RelatedTo", "/c/en/winter", "CN"),
+  ].join("\n") + "\n");
+  const g = await loadCskg(file, { cache: false });
+  const r = runTurn(g, createSession(), "should I wear a coat if I go out?");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /used for/i);
+  assert.match(r.text, /warm/i);
+  assert.doesNotMatch(r.text, /hair/i);
+  const empty = runTurn(g, createSession(), "should I wear a zorblax?");
+  assert.equal(empty.grounded, false);
+  assert.match(empty.text, /UsedFor/);
 });
 
 test("composition: does X go in Y uses HasA/PartOf/AtLocation, not IsA of Y", async () => {

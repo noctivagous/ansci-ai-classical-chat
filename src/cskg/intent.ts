@@ -26,7 +26,8 @@ export type IntentKind =
   | "replay" | "correction" | "situation" | "followup" | "why"
   | "tool" | "related" | "feel" | "purpose" | "location" | "madeof"
   | "part" | "capability" | "property" | "antonym" | "whatis"
-  | "fact" | "statement" | "question" | "clarification" | "memory";
+  | "fact" | "statement" | "question" | "clarification" | "memory"
+  | "advice";
 
 export interface Intent {
   kind: IntentKind;
@@ -164,6 +165,36 @@ export function detectComposition(lower: string): { inner: string; outer: string
   const t = lower.toLowerCase().replace(/[?]+$/, "").trim();
   const m = t.match(/^do(?:es)? (.+?) go in(?:to)? (?:a |an |the )?(.+)$/);
   if (m) return { inner: m[1].trim(), outer: m[2].trim() };
+  return null;
+}
+
+export type AdviceQuery =
+  | { kind: "addition"; outer: string | null }
+  | { kind: "wear"; item: string };
+
+/**
+ * Recommendation asks. Addition ("what else should I put in?")
+ * wants more members of a dish's composition set. Wear ("should
+ * I wear a coat?") asks whether to put on a garment. Matches the
+ * last clause so a mixed turn still classifies.
+ */
+export function detectAdvice(lower: string): AdviceQuery | null {
+  const t = lower.toLowerCase().replace(/[?]+$/, "").trim();
+  const additionOuter = (raw: string | undefined): string | null => {
+    const o = (raw ?? "").trim();
+    if (!o || o === "it") return null;
+    return o;
+  };
+  let m = t.match(
+    /\bwhat else (?:should|can|could) i (?:put in(?:to)?|add)(?:\s+(?:the |a |an )?(.+))?$/,
+  );
+  if (m) return { kind: "addition", outer: additionOuter(m[1]) };
+  m = t.match(
+    /\bwhat (?:should|can|could) i (?:put in(?:to)?|add)(?:\s+(?:the |a |an )?(.+))?$/,
+  );
+  if (m) return { kind: "addition", outer: additionOuter(m[1]) };
+  m = t.match(/\bshould i wear (?:a |an |the )?(.+?)(?:\s+if\b.*)?$/);
+  if (m) return { kind: "wear", item: m[1].trim() };
   return null;
 }
 
