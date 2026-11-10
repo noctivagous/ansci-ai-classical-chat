@@ -28,7 +28,7 @@
  */
 import type { Situation } from "./awareness";
 import { edgeText, type Conclusion } from "./articulate";
-import { STOPWORDS, matchEvent, type Breakdown, type ResolvedTerm } from "./discourse";
+import { STOPWORDS, isScaffoldSubject, matchEvent, type Breakdown, type ResolvedTerm } from "./discourse";
 import {
   BALANCED_DISPOSITION,
   type Disposition,
@@ -174,8 +174,9 @@ export function composeStatementReply(
   // greeting, thanks or farewell with no other content. The
   // reply is social (their word echoed back, or the thanks
   // acknowledgement); nothing is remembered as a topic and no
-  // graph claim is made. Content-bearing turns ("hi, I
-  // renovated…") never match and keep their normal route.
+  // graph claim is made. Content-bearing questions ("Hi, what
+  // is a banana?") never match; mixed greetings take the
+  // leading social clause and keep the rest.
   const phatic = detectPhatic(ws.input.toLowerCase());
   if (phatic) {
     noteStep(ws, "statement", "compose",
@@ -207,8 +208,11 @@ export function composeStatementReply(
   // slot licenses; zero graph facts is a complete success for
   // the class, never a decline.
   if (resolved.length || capture.feeling || capture.doing || capture.newPerson || capture.factsWritten.length || capture.sessionKept.length) {
-    const ev = resolved.length ? matchEvent(g, words, resolved) : null;
-    const primary = ev ?? bd.topics[0] ?? (resolved.length ? salient : null);
+    const contentResolved = resolved.filter((r) => !isScaffoldSubject(r.text));
+    const ev = contentResolved.length ? matchEvent(g, words, contentResolved) : null;
+    const topics = bd.topics.filter((t) => !isScaffoldSubject(t.text));
+    const primary = ev ?? topics[0] ?? contentResolved[0] ??
+      (salient && !isScaffoldSubject(salient.text) ? salient : null);
     if (primary) {
       remember(session, primary.id);
       // E2: memory's active set is fed by the scored topics (the
@@ -304,7 +308,7 @@ export function composeStatementReply(
           ...FACT_REL_PRIORITY.filter((r) => !role.preferredRelations.includes(r)),
         ];
     let fact = bestStatementFact(
-      g, sit, ev, resolved, primary, factRels, bd.topics,
+      g, sit, ev, contentResolved, primary, factRels, topics,
       turnContextIds(g, ws), relevanceFor(ws),
     );
     // Loop 2 (L2-J): the comprehensibility floor. A statement
@@ -321,7 +325,8 @@ export function composeStatementReply(
       const subjectId = fact.about === "from" ? fact.edge.from : fact.edge.to;
       const subjectText = (g.terms[subjectId] ?? "").toLowerCase();
       const timeTopic = (bd.contents?.times ?? []).some((t) => t.referentId === subjectId);
-      if (timeTopic || NUMBER_TOPIC_WORDS.has(subjectText) || STOPWORDS.has(subjectText)) {
+      if (timeTopic || NUMBER_TOPIC_WORDS.has(subjectText) || STOPWORDS.has(subjectText) ||
+          isScaffoldSubject(subjectText)) {
         noteStep(ws, "solve", "conclude",
           `statement fact suppressed (L2-J): a classification of "${subjectText}" — a time/number/auxiliary topic — is not a comprehensible reply; acknowledgement only`);
         fact = null;
@@ -513,10 +518,16 @@ export function composeStatementReply(
         lead: { label: ent?.label ?? null, text: stateLead.text, kind: stateLead.kind },
       };
       grounded = true;
-    } else if (fact) {
+    } else if (fact && !leading) {
       addConclusions(ws, [fact]);
       noteStep(ws, "solve", "conclude", "statement acknowledgement fact", [edgeText(g, fact.edge)]);
       content = { kind: "fact", fact };
+      grounded = true;
+    } else if (leading && !doing && !thirdEvent && !stateLead) {
+      // mixed greeting/thanks with no recorded happening: the
+      // social clause is the take-up. A leftover noun's
+      // classification ("Hey is often word.") is not the rest.
+      content = { kind: "leading-only" };
       grounded = true;
     } else if (sessionAckDisplays.length) {
       content = { kind: "session-ack" };

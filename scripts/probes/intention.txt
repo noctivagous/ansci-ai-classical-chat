@@ -1,0 +1,10 @@
+# Probe: telegraphic intention (loop 9).
+#
+# A two-clause statement with no "I" still records the intended
+# doing. The intensifier is not a graph topic. Control: the
+# existing I'm-thinking-of shape must keep its lead.
+
+pretty tired. thinking of making coffee
+#! expect=grounded contains=thinking,coffee notcontains=Pretty,noted
+I'm thinking of making coffee
+#! expect=grounded contains=thinking,coffee

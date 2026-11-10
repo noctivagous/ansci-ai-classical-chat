@@ -978,8 +978,10 @@ slice), **closing** (a running slice owns it), **closed**.
   the ConceptNet term of the same name; PartOf/MadeOf already
   in KEEP feed composition. Honest limits: Wikidata-CS is not
   full Wikidata — chicken soup has no ingredient PartOf in this
-  dump; `/r/dbpedia/*` and DistinctFrom stay dropped (genre,
-  genus, occupation, distinctness — not composition). Extra WD
+  dump; `/r/dbpedia/*` other than `/r/dbpedia/capital` and
+  DistinctFrom stay dropped (genre, genus, occupation,
+  distinctness — not composition). Capital-of questions read
+  that kept edge (oklahoma → oklahoma city). Extra WD
   properties are not in the file to keep.
 - **Parser structure for B (optional sidecar).** Exposed by the
   mixed-greeting / event-scan bugs (2026-11-10): *hey* became a

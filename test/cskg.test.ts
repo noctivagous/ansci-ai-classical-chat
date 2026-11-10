@@ -35,6 +35,7 @@ import { analyseInto, matchEventTemplate, preferQuestionSubject, resolveTerms } 
 import { verbLemmaPerTurn } from "../src/cskg/situation";
 import {
   detectAdvice,
+  detectValueOf,
   detectComposition,
   detectCorrection,
   detectLeadingPhatic,
@@ -43,7 +44,7 @@ import {
   detectToolQuery,
 } from "../src/cskg/intent";
 import { contextFit, preferHappeningSubject } from "../src/cskg/solve";
-import { cachePathFor, loadCskg, normaliseNode, termsFromEndpoint, type CskgGraph } from "../src/cskg/loader";
+import { cachePathFor, loadCskg, normaliseNode, relationForRoleNoun, termsFromEndpoint, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
 import {
   appendTraceRecord,
@@ -131,6 +132,7 @@ const ROWS = [
   row("/c/en/wearing", "/r/RelatedTo", "/c/en/winter", "CN"),
   row("/c/en/saturday", "/r/IsA", "/c/en/day", "CN"),
   row("/c/en/rains", "/r/HasSubevent", "/c/en/things_get_wet", "CN"),
+  row("/c/en/oklahoma", "/r/dbpedia/capital", "/c/en/oklahoma_city", "CN"),
 ];
 
 let graphPromise: Promise<CskgGraph> | null = null;
@@ -212,6 +214,15 @@ test("statement turn answers grounded, never a bare decline", async () => {
     r.trace.steps.some((st) => st.piece === "situationModel" && /event ev/.test(st.detail)),
     "the recorded event is in the trace",
   );
+});
+
+test("telegraphic thinking-of is the intended doing, not a note on pretty", async () => {
+  const g = await graph();
+  const r = runTurn(g, createSession(), "pretty tired. thinking of making coffee");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /thinking of making coffee/i);
+  assert.doesNotMatch(r.text, /Pretty — noted/i);
+  assert.doesNotMatch(r.text, /female animal/i);
 });
 
 test("obligation modal is restated, not used as the actor", async () => {
@@ -395,7 +406,7 @@ test("phatic: greeting, thanks and farewell take the social route", () => {
   assert.deepEqual(detectPhatic("how are you?"), { kind: "greeting", word: "how are you" });
   assert.deepEqual(detectPhatic("thanks anyway"), { kind: "thanks", word: "thanks" });
   assert.equal(detectPhatic("hi, i renovated the kitchen"), null,
-    "content-bearing turns keep their normal route");
+    "content-bearing turns are not phatic-only");
   assert.equal(detectPhatic("what is a banana?"), null);
   assert.equal(renderPhatic("greeting", "hi there"), "Hi there!");
   assert.equal(renderPhatic("thanks", "thanks"), "You're welcome!");
@@ -405,7 +416,16 @@ test("phatic: greeting, thanks and farewell take the social route", () => {
     detectLeadingPhatic("thanks anyway. I think I'll go make that coffee now"),
     { kind: "thanks", word: "thanks", rest: "i think i'll go make that coffee now" },
   );
-  assert.equal(detectLeadingPhatic("hi, i renovated the kitchen"), null);
+  assert.deepEqual(
+    detectLeadingPhatic("hi, i renovated the kitchen"),
+    { kind: "greeting", word: "hi", rest: "i renovated the kitchen" },
+  );
+  assert.deepEqual(
+    detectLeadingPhatic("hey, just got in. how's it going?"),
+    { kind: "greeting", word: "hey", rest: "just got in. how's it going?" },
+  );
+  assert.equal(detectLeadingPhatic("Hi, what is a banana?"), null);
+  assert.equal(detectPhatic("hey, just got in. how's it going?"), null);
 });
 
 test("phatic: open and close end to end, content untouched", async () => {
@@ -419,6 +439,9 @@ test("phatic: open and close end to end, content untouched", async () => {
   assert.match(mixed.text, /welcome/i);
   assert.match(mixed.text, /You go make that coffee now/i);
   assert.doesNotMatch(mixed.text, /I think go/i);
+  const mixedHi = runTurn(g, createSession(), "hey, just got in. how's it going?");
+  assert.match(mixedHi.text, /^Hey!/i);
+  assert.doesNotMatch(mixedHi.text, /often word/i);
   const r = runTurn(g, s, "Hi, what is a banana?");
   assert.match(r.text, /banana/i, "the definition route still serves content after a greeting");
   assert.doesNotMatch(r.text, /^Hi there/, "no greeting swallowed the question");
@@ -493,6 +516,29 @@ test("advice: wear a coat cites UsedFor, not IsA hair", async () => {
   const empty = runTurn(g, createSession(), "should I wear a zorblax?");
   assert.equal(empty.grounded, false);
   assert.match(empty.text, /UsedFor/);
+});
+
+test("value-of maps the role noun onto a kept relation and names the edge's object", async () => {
+  const g = await graph();
+  assert.deepEqual(detectValueOf("What is the capital of Oklahoma?"), {
+    role: "capital",
+    bearer: "oklahoma",
+  });
+  assert.deepEqual(detectValueOf("what's the capital of Oklahoma"), {
+    role: "capital",
+    bearer: "oklahoma",
+  });
+  assert.equal(detectValueOf("What is a banana?"), null);
+  assert.equal(relationForRoleNoun("capital"), "/r/dbpedia/capital");
+  assert.equal(relationForRoleNoun("purpose"), null);
+  const hit = runTurn(g, createSession(), "What is the capital of Oklahoma?");
+  assert.equal(hit.grounded, true);
+  assert.match(hit.text, /Oklahoma City/);
+  assert.doesNotMatch(hit.text, /largest city|livestock/i);
+  const miss = runTurn(g, createSession(), "What is the capital of France?");
+  assert.equal(miss.grounded, false);
+  assert.match(miss.text, /capital/i);
+  assert.doesNotMatch(miss.text, /Oklahoma City|largest city/i);
 });
 
 test("composition: does X go in Y uses HasA/PartOf/AtLocation, not IsA of Y", async () => {

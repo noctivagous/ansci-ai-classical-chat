@@ -53,6 +53,7 @@ import {
   renderCausedByLines,
   renderComposed,
   renderConclusion,
+  renderValueOf,
   renderDefinition,
   renderMeeting,
   renderStatePattern,
@@ -81,7 +82,7 @@ import {
   type EventQuestionKind,
   type SurfaceIntentKind,
 } from "./intent";
-import type { CskgEdge, CskgGraph } from "./loader";
+import { relationForRoleNoun, type CskgEdge, type CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
 import { entityById, verbBasePerTurn, verbLemmaPerTurn } from "./situation";
 import { noteStep, type TurnWorkspace } from "./workspace";
@@ -560,6 +561,62 @@ export function solveComposition(
   }
   session.lastIntent = "fact";
   return renderAll(g, top);
+}
+
+export type ValueOfSolve =
+  | { status: "hit"; text: string }
+  | { status: "empty"; role: string; bearer: string }
+  | { status: "unmapped" };
+
+/**
+ * Value-of: the ask named a role and a bearer. When a kept
+ * relation has that role as its name, the bearer's edges of
+ * that relation are the answer. Unmapped roles fall through
+ * (not a decline). Empty mapped sets decline; a neighbouring
+ * IsA or a gloss of the phrase is not the answer.
+ */
+export function solveValueOf(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+  role: string,
+  bearer: string,
+): ValueOfSolve {
+  const rel = relationForRoleNoun(role);
+  if (!rel) return { status: "unmapped" };
+  const ids: number[] = [];
+  const seen = new Set<number>();
+  const add = (id: number): void => {
+    if (!seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+  };
+  const resolved = resolveTerms(g, bearer)
+    .slice()
+    .sort((a, b) => b.words - a.words || a.start - b.start);
+  for (const r of resolved) add(r.id);
+  const stripped = bearer.trim().toLowerCase().replace(/^(?:the)\s+/, "");
+  const direct = g.id(stripped);
+  if (direct !== undefined) add(direct);
+  for (const id of ids) {
+    const edges = g.outEdges(id, rel);
+    if (!edges.length) continue;
+    const top = edges.slice().sort((a, b) =>
+      b.support - a.support ||
+      g.terms[a.to].length - g.terms[b.to].length,
+    )[0];
+    addConclusions(ws, [{ edge: top, about: "from" }]);
+    remember(session, top.from);
+    remember(session, top.to);
+    noteStep(ws, "solve", "conclude", `value-of ${rel}`, [edgeText(g, top)]);
+    session.lastIntent = "fact";
+    return {
+      status: "hit",
+      text: renderValueOf(role, g.terms[top.from], g.terms[top.to]),
+    };
+  }
+  return { status: "empty", role, bearer };
 }
 
 const DISH_RE = /\b(soup|stew|broth|salad|curry|chili|chilli|casserole)\b/;

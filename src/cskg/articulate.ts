@@ -200,6 +200,8 @@ export function renderConclusion(g: CskgGraph, c: Conclusion): string {
       return `${S} is defined as ${obj}.`;
     case "/r/InstanceOf":
       return `${S} is an instance of ${obj}.`;
+    case "/r/dbpedia/capital":
+      return `The capital of ${titleName(subj)} is ${titleName(obj)}.`;
     case "/r/Synonym":
       return `${S} can also be called ${obj}.`;
     case "/r/Antonym":
@@ -600,6 +602,27 @@ export function renderFeelingLead(feelingText: string): string | null {
 
 export function cap(s: string): string {
   return s.length ? s[0].toUpperCase() + s.slice(1) : s;
+}
+
+/** Place-name display: each word takes a capital ("oklahoma city"). */
+export function titleName(s: string): string {
+  return s
+    .split(/\s+/)
+    .map((w) => cap(w))
+    .join(" ");
+}
+
+/** Value-of from an asked role and a graph edge, plainly. */
+export function renderValueOf(role: string, bearer: string, value: string): string {
+  return `The ${role} of ${titleName(bearer)} is ${titleName(value)}.`;
+}
+
+export function renderValueOfDecline(role: string, bearer: string): string {
+  return `This graph doesn't record the ${role} of ${titleName(bearer)} — no ${role} edge for it, and I won't substitute a neighbouring fact.`;
+}
+
+export function renderValueOfDeclinePlain(role: string, bearer: string): string {
+  return `I don't know the ${role} of ${titleName(bearer)} — this graph has no ${role} edge for it.`;
 }
 
 /**

@@ -1,0 +1,7 @@
+# Probe set: capital-of from CSKG's /r/dbpedia/capital edges.
+#
+# The dump attests oklahoma —/r/dbpedia/capital→ oklahoma city (CN).
+# The question names the city. A gloss of the phrase is not the answer.
+
+What is the capital of Oklahoma?
+#! expect=grounded contains=Oklahoma,City notcontains=largest,livestock

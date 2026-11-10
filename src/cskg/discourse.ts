@@ -1365,17 +1365,28 @@ export const PHATIC_SCAFFOLDING = new Set([
   "bye", "goodbye",
 ]);
 
+/** Degree adverbs modify a state; they are not the topic ("pretty tired"). */
+export const DEGREE_SCAFFOLDING = new Set([
+  "pretty", "really", "very", "quite", "rather", "fairly", "slightly",
+]);
+
 export function isPhaticSubject(text: string): boolean {
   const t = text.toLowerCase();
   const head = t.split(/\s+/)[0] ?? "";
   return PHATIC_SCAFFOLDING.has(head) || PHATIC_SCAFFOLDING.has(t);
 }
 
+export function isScaffoldSubject(text: string): boolean {
+  const t = text.toLowerCase();
+  const head = t.split(/\s+/)[0] ?? "";
+  return isPhaticSubject(text) || DEGREE_SCAFFOLDING.has(head) || DEGREE_SCAFFOLDING.has(t);
+}
+
 export function preferQuestionSubject<T extends { text: string }>(candidates: T[]): T[] {
   const content = candidates.filter((c) => {
     const head = c.text.toLowerCase().split(/\s+/)[0] ?? "";
     return !QUESTION_SCAFFOLDING.has(head) && !QUESTION_SCAFFOLDING.has(c.text.toLowerCase()) &&
-      !isPhaticSubject(c.text);
+      !isScaffoldSubject(c.text);
   });
   return content.length ? content : candidates;
 }

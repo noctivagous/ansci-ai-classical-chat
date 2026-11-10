@@ -41,17 +41,19 @@
  * Synonym, Antonym, SimilarTo, LocatedNear, HasSubevent,
  * HasPrerequisite, CausesDesire, MotivatedByGoal, Desires, CreatedBy,
  * Entails, HasFirstSubevent, HasLastSubevent, DefinedAs, InstanceOf,
- * ReceivesAction, MannerOf), mw:MayHaveProperty, and the ATOMIC
- * event relations (xEffect, oEffect, xWant, oWant, xReact, oReact,
- * xNeed, xIntent, xAttr).
+ * ReceivesAction, MannerOf), mw:MayHaveProperty, /r/dbpedia/capital
+ * (place → capital city; the dump's capital-of testimony), and the
+ * ATOMIC event relations (xEffect, oEffect, xWant, oWant, xReact,
+ * oReact, xNeed, xIntent, xAttr).
  * Dropped, counted in the load report: DerivedFrom /
  * Etymologically* (word-shape, not conversation), fn:HasLexicalUnit
  * (frame plumbing already covered by the main pipeline),
- * /r/dbpedia/* (genre, genus, occupation, capital — encyclopedic
- * trivia, not composition), Not* negations (fewer than 700 rows),
- * DistinctFrom, SymbolOf. Wikidata in this dump is Wikidata-CS
- * only (~102k rows, 15 ConceptNet-mapped relations). There are
- * no extra unmapped WD properties in the file to keep.
+ * /r/dbpedia/* other than capital (genre, genus, occupation —
+ * encyclopedic trivia, not composition), Not* negations (fewer
+ * than 700 rows), DistinctFrom, SymbolOf. Wikidata in this dump
+ * is Wikidata-CS only (~102k rows, 15 ConceptNet-mapped
+ * relations). There are no extra unmapped WD properties in the
+ * file to keep.
  * Non-English endpoints are dropped and counted (either side).
  *
  * DEPTH PASS (2026-11-09, design §8/§10 graph-first): three more
@@ -117,6 +119,7 @@ export const KEEP_RELATIONS: ReadonlySet<string> = new Set([
   "/r/MotivatedByGoal", "/r/Desires", "/r/CreatedBy", "/r/Entails",
   "/r/HasFirstSubevent", "/r/HasLastSubevent", "/r/DefinedAs",
   "/r/InstanceOf", "/r/ReceivesAction", "/r/MannerOf",
+  "/r/dbpedia/capital",
   "mw:MayHaveProperty",
   "at:xEffect", "at:oEffect", "at:xWant", "at:oWant", "at:xReact",
   "at:oReact", "at:xNeed", "at:xIntent", "at:xAttr",
@@ -127,6 +130,23 @@ const REL_NAMES: string[] = [];
 for (const r of KEEP_RELATIONS) {
   REL_INDEX.set(r, REL_NAMES.length);
   REL_NAMES.push(r);
+}
+
+/**
+ * The kept relation whose last path segment is the role noun
+ * from a value-of ask ("capital" → `/r/dbpedia/capital`). Null
+ * when no kept relation has that name — the ask then keeps its
+ * other routes.
+ */
+export function relationForRoleNoun(role: string): string | null {
+  const key = role.trim().toLowerCase().replace(/\s+/g, "_");
+  if (!key) return null;
+  let hit: string | null = null;
+  for (const rel of KEEP_RELATIONS) {
+    const tail = rel.split("/").pop()?.toLowerCase();
+    if (tail === key) hit = rel;
+  }
+  return hit;
 }
 
 const SRC_BIT = new Map<string, number>();
@@ -703,7 +723,8 @@ async function parseCskg(path: string): Promise<CskgGraph> {
 // shipped dataset the file lands in data/raw/cskg/, which is
 // gitignored like the TSV itself.
 
-const CACHE_FORMAT_VERSION = 2;
+/** 3: KEEP includes /r/dbpedia/capital; source fingerprint is unchanged. */
+const CACHE_FORMAT_VERSION = 3;
 const CACHE_MAGIC = "CKGI";
 /** bytes of source hashed at each end for the fingerprint */
 const CACHE_HASH_BYTES = 256 * 1024;

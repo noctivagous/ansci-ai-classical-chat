@@ -1687,7 +1687,8 @@ export function analyseSituationInto(
       // but only when the speaker was the STATED actor (see
       // actorStated above): a defaulted actor records the
       // event without promoting it to the person's doing
-      if (!result.doingEvent && actorStated && built.actorEntity?.speaker && built.event.objectText) {
+      if (!result.doingEvent && built.actorEntity?.speaker && built.event.objectText &&
+          (actorStated || intent.planned)) {
         result.doingEvent = built.event;
       }
     }

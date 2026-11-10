@@ -11,10 +11,15 @@
 #
 # Verified 2026-11-10 (gap 1, verdict PASS): phatic-only turns take
 # the social route — their word echoed back, thanks acknowledged.
-# Content-bearing turns never match. Only the three social turns
-# moved; the doing control is byte-identical.
+# Loop 8: mixed greeting ("hey, just got in. how's it going?")
+# is social, not a graph fact about hey. Content questions after
+# a greeting stay unprefixed ("Hi, what is a banana?").
 
 Hi there!
 Thanks!
 Bye!
 I renovated the kitchen.
+hey, just got in. how's it going?
+#! expect=grounded contains=Hey notcontains=word
+Hi, what is a banana?
+#! expect=grounded contains=banana notcontains=Hi

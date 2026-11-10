@@ -79,6 +79,8 @@ import {
   renderAdviceWearDecline,
   renderAdviceWearDeclinePlain,
   renderAdviceWearYes,
+  renderValueOfDecline,
+  renderValueOfDeclinePlain,
   renderCompositionDecline,
   renderCompositionDeclinePlain,
   renderNoSurfaceRelation,
@@ -126,6 +128,7 @@ import {
   classifyStatement,
   classifySurface,
   detectAdvice,
+  detectValueOf,
   detectComposition,
   detectCorrection,
   detectFollowup,
@@ -177,6 +180,7 @@ import {
   relevanceFor,
   solveAdviceAddition,
   solveAdviceWear,
+  solveValueOf,
   solveComposition,
   solveDefinitionAnswer,
   solveEventConsequence,
@@ -1085,6 +1089,38 @@ export function runTurn(
           return finish(templ, "feel", true);
         }
         return null;
+      },
+    });
+
+    // Value-of: the ask names a role and a bearer ("what is
+    // the capital of Oklahoma?"). When a kept relation has that
+    // role as its name, those edges answer; otherwise this row
+    // returns null and the later routes run. Before attestation
+    // and definition so a mapped role is not glossed as a phrase.
+    lateRoutes.push({
+      form: "value-of",
+      detect: "C detectValueOf",
+      solve: "E solveValueOf; F renderValueOf*",
+      decline: "renderValueOfDecline",
+      run: () => {
+        const asked = detectValueOf(lower);
+        if (!asked) return null;
+        const hit = solveValueOf(g, ws, session, asked.role, asked.bearer);
+        if (hit.status === "unmapped") return null;
+        if (hit.status === "hit") {
+          noteTriage(ws, "retrieve",
+            `value-of: role "${asked.role}" of "${asked.bearer}"`);
+          return finish(hit.text, "fact", true);
+        }
+        noteTriage(ws, "solve",
+          `value-of: empty set for the ${asked.role} of "${asked.bearer}" — decline, no substitution`);
+        return finish(
+          plainDeclines
+            ? renderValueOfDeclinePlain(asked.role, asked.bearer)
+            : renderValueOfDecline(asked.role, asked.bearer),
+          "fact",
+          false,
+        );
       },
     });
 

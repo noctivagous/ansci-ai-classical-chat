@@ -121,20 +121,39 @@ function extractExclusions(lower: string): string[] {
  */
 export type PhaticKind = "greeting" | "thanks" | "farewell";
 
+const PHATIC_TAG = "(?:how(?:'s| is) it going|how are you(?: doing)?|what'?s up)";
+const GREETING_WORD = "(?:hi|hello|hey|howdy)";
+
+/** Strip a greeting opener and a trailing how-are-you tag. */
+export function stripPhaticFrame(lower: string): string {
+  let s = lower.toLowerCase().trim().replace(/[!]+$/g, "").trim();
+  s = s.replace(new RegExp(`[,.]?\\s*${PHATIC_TAG}\\s*[?.!]*$`), "").trim();
+  s = s.replace(new RegExp(`^${GREETING_WORD}(?: there)?[,.!]\\s+`), "").trim();
+  return s;
+}
+
+function isContentQuestion(text: string): boolean {
+  const t = text.toLowerCase().trim();
+  if (!t) return false;
+  const core = stripPhaticFrame(t) || t;
+  if (new RegExp(`^${PHATIC_TAG}$`).test(core.replace(/[?.!]+$/, "").trim())) return false;
+  return core.endsWith("?") ||
+    /^(what|why|how|where|when|who|can|could|is|are|do|does)\b/.test(core);
+}
+
 /**
  * Phatic-only turns (gap 1): greetings, thanks and farewells
  * with no other content. Full-input match only, so "hi, I
- * renovated the kitchen" keeps its normal route — only the
+ * renovated the kitchen" is mixed, not phatic-only — only the
  * bare social move is taken up here. The reply is social, in no
  * need of graph testimony (E4 schmooze doctrine: zero graph
  * facts is a complete success, never a decline).
  */
 export function detectPhatic(lower: string): { kind: PhaticKind; word: string } | null {
   const text = lower.toLowerCase().trim().replace(/[!.,?]+$/, "").trim();
-  const tag = "(?:how(?:'s| is) it going|how are you(?: doing)?|what'?s up)";
-  let m = text.match(new RegExp(`^(hi|hello|hey|howdy)( there)?(?:[,.]?\\s+${tag})?$`));
+  let m = text.match(new RegExp(`^(${GREETING_WORD})( there)?(?:[,.]?\\s+${PHATIC_TAG})?$`));
   if (m) return { kind: "greeting", word: `${m[1]}${m[2] ?? ""}` };
-  m = text.match(new RegExp(`^${tag}$`));
+  m = text.match(new RegExp(`^${PHATIC_TAG}$`));
   if (m) return { kind: "greeting", word: m[0] };
   m = text.match(/^(good morning|good afternoon|good evening)$/);
   if (m) return { kind: "greeting", word: m[1] };
@@ -147,16 +166,23 @@ export function detectPhatic(lower: string): { kind: PhaticKind; word: string } 
 
 /**
  * A social clause opening a mixed turn ("thanks anyway. I'll
- * go make coffee"). The leading move is taken up; the rest
- * keeps its normal route. Comma-joined content ("hi, I
- * renovated…") is not a leading clause.
+ * go make coffee", "hey, just got in. how's it going?"). The
+ * leading move is taken up; the rest keeps its normal route.
+ * Comma-joined *questions* ("Hi, what is a banana?") are not a
+ * leading clause — those keep the content route unprefixed.
  */
 export function detectLeadingPhatic(
   lower: string,
 ): { kind: PhaticKind; word: string; rest: string } | null {
   const text = lower.toLowerCase().trim();
-  const m = text.match(/^(thanks|thank you|thx|ty)(?:\s+anyway)?[.!]+\s+(.+)$/);
+  let m = text.match(/^(thanks|thank you|thx|ty)(?:\s+anyway)?[.!]+\s+(.+)$/);
   if (m && m[2].trim()) return { kind: "thanks", word: m[1], rest: m[2].trim() };
+  m = text.match(new RegExp(`^(${GREETING_WORD})( there)?[,.!]\\s+(.+)$`));
+  if (m && m[3].trim()) {
+    const rest = m[3].trim();
+    if (isContentQuestion(rest)) return null;
+    return { kind: "greeting", word: `${m[1]}${m[2] ?? ""}`, rest };
+  }
   return null;
 }
 
@@ -175,6 +201,26 @@ export function detectRemember(input: string): string | null {
     .replace(/^(?:please\s+)?remember that\s+/i, "")
     .replace(/[.!?]+$/, "");
   return stated ? stated : null;
+}
+
+/**
+ * "what is the X of Y?" — two sentence parts: a role noun and a
+ * bearer. Solve maps the role onto a kept relation (capital →
+ * /r/dbpedia/capital) when one shares that name. Not a
+ * per-relation detector.
+ */
+export function detectValueOf(lower: string): { role: string; bearer: string } | null {
+  const t = lower
+    .toLowerCase()
+    .replace(/^what's\b/, "what is")
+    .replace(/[?.!]+$/, "")
+    .trim();
+  const m = t.match(/^what (?:is|are) the (.+?) of (?:the )?(.+)$/);
+  if (!m) return null;
+  const role = m[1].trim();
+  const bearer = m[2].trim();
+  if (!role || !bearer) return null;
+  return { role, bearer };
 }
 
 /** "do onions go in chicken soup?" — composition of two poles. */
@@ -238,7 +284,9 @@ export function detectToolQuery(lower: string): ToolQuery | null {
 /* ---------------- question classification ----------------------- */
 
 export function isQuestionForm(lower: string): boolean {
-  return lower.endsWith("?") || /^(what|why|how|where|when|who|can|could|is|are|do|does)\b/.test(lower);
+  const t = lower.toLowerCase().trim();
+  const s = stripPhaticFrame(t) || t;
+  return s.endsWith("?") || /^(what|why|how|where|when|who|can|could|is|are|do|does)\b/.test(s);
 }
 
 export function hasRelatedPattern(lower: string): boolean {

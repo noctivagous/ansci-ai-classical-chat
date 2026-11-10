@@ -427,6 +427,29 @@ export function captureStatement(
         `person state captured: doing "${doing}" (session tier)`);
     }
   }
+  // Telegraphic intention: "thinking of making coffee" with no
+  // "I'm". Same doing as the I'm-thinking-of shape; the
+  // situation model records it as intended (L2-K).
+  if (!result.doing && !result.feeling) {
+    const think = lower.match(/\bthinking of\s+(.+)$/);
+    if (think) {
+      const doing = think[1].replace(/[.!?]+$/, "").trim();
+      if (doing) {
+        const entry: PersonStateEntry = {
+          kind: "doing",
+          text: doing,
+          canonical: doing,
+          turn: ws.turn,
+          pattern: null,
+        };
+        session.personStates = session.personStates.filter((s) => s.kind !== "doing");
+        session.personStates.push(entry);
+        result.doing = doing;
+        noteStep(ws, "memory", "remember",
+          `person state captured: doing "${doing}" (session tier, subjectless thinking-of)`);
+      }
+    }
+  }
 
   // --- a person introduced as new ---
   const newM = lower.match(
