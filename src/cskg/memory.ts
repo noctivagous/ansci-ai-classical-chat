@@ -93,6 +93,12 @@ export interface SessionState {
   personStates: PersonStateEntry[];
   /** explicit "remember that…" notes held for this session only */
   sessionNotes: string[];
+  /**
+   * Durable facts stated this session (name, lives-in, …).
+   * General mode keeps them here only — they do not survive
+   * a new session. Named-person mode also writes the file.
+   */
+  sessionFacts: { kind: string; object: string; display: string }[];
   /** a clarification ask awaiting the person's answer (§5) */
   pendingClarification: PendingClarification | null;
   /** clarifications asked so far (the interruption budget, §5) */
@@ -119,6 +125,7 @@ export function createSession(): SessionState {
     turnCount: 0,
     personStates: [],
     sessionNotes: [],
+    sessionFacts: [],
     pendingClarification: null,
     clarificationsAsked: 0,
     lastTurnWasAsk: false,
@@ -173,8 +180,19 @@ export function replayAnswer(
     return { text: renderReplayNoPrevious(), grounded: false };
   }
   const edgeLines = prev.conclusions.map((c) => edgeText(g, c.edge));
-  return {
-    text: renderReplay(edgeLines),
-    grounded: prev.conclusions.length > 0,
-  };
+  if (edgeLines.length) {
+    return { text: renderReplay(edgeLines), grounded: true };
+  }
+  // Empty-set declines consulted the graph and found silence.
+  // Replaying "it came from the conversation itself" is false:
+  // the previous answer named the missing relation, and that
+  // naming is the reason.
+  const emptySet = prev.steps.some(
+    (s) => s.kind === "triage" && /empty relation set/.test(s.detail),
+  );
+  if (emptySet && prev.answer) {
+    const rest = prev.answer.charAt(0).toLowerCase() + prev.answer.slice(1);
+    return { text: `Because ${rest}`, grounded: false };
+  }
+  return { text: renderReplay([]), grounded: false };
 }

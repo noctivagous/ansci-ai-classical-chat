@@ -1,0 +1,47 @@
+# Probe: unscripted-chat directing-layer gaps (first loop).
+#
+# Turns from the 2026-11-10 chat:once sitting. Expectations are
+# the behaviour the first loop asks for. Diagnose does not include
+# this file in the default set; leaves are judged by declaration.
+#
+# Known-failing (pre-loop, 2026-11-10 sitting):
+# - tagged greeting → "Hey is often word."
+# - correction tail → topic "for soup"
+# - onions-in-soup → "Chicken soup is a soup."
+# - onions-for → "Onion is a type of bulb." (purpose empty-set
+#   substitutes a generic IsA)
+# - people-keep-coffee → facts about people (G9 scaffolding)
+# - remember my name → "Name is an affinity."
+# - how are you → decline as an unknown graph term
+# - mixed thanks → telegraphic restatement of the second clause
+#
+# Advice-shaped turns ("what else should I put in?", "should I
+# wear a coat?") are in the transcript as controls: this loop
+# does not own them.
+
+hey, how's it going?
+#! expect=grounded contains=hey notcontains=word
+pretty good over here. I'm making a big pot of soup tonight
+yeah, chicken soup. I have chicken, carrots, and celery. what else should I put in?
+no, I mean the food — the meat, for soup
+#! expect=grounded contains=food notcontains=for
+do onions go in chicken soup?
+#! expect=decline notcontains=is
+I know. I was asking about onions
+what are onions for?
+#! expect=decline contains=used notcontains=bulb
+why did you say that?
+it's still dark out and I'm tired. I should probably make coffee
+where do people usually keep coffee?
+#! expect=grounded contains=coffee notcontains=town
+no, I meant the coffee
+what season is it right now?
+so should I wear a coat if I go out?
+no I meant a winter coat, the jacket
+my name is James. I live in Chicago
+do you remember my name?
+#! expect=grounded contains=James notcontains=affinity
+how are you?
+#! expect=grounded notcontains=term
+thanks anyway. I think I'll go make that coffee now
+#! expect=grounded contains=welcome

@@ -31,6 +31,7 @@ import {
   renderPhatic,
   renderFeelingLead,
   renderRememberAck,
+  renderSessionFactAck,
   renderStateLead,
   renderStateNoted,
   renderStatementNoted,
@@ -40,7 +41,7 @@ import {
   BALANCED_DISPOSITION,
   type Disposition,
 } from "./disposition";
-import { classifyStatement, detectPhatic } from "./intent";
+import { classifyStatement, detectLeadingPhatic, detectPhatic } from "./intent";
 import type { CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
 import type { CaptureResult, PersonConnection } from "./person";
@@ -115,6 +116,17 @@ export function composeStatementReply(
     session.lastIntent = "statement";
     return { text: renderPhatic(phatic.kind, phatic.word), grounded: true };
   }
+  // Leading social clause on a mixed turn ("thanks anyway. I'll
+  // go make coffee"): take up the thanks, then compose the rest.
+  const leading = detectLeadingPhatic(ws.input.toLowerCase());
+  const withLead = (
+    r: { text: string; grounded: boolean } | null,
+  ): { text: string; grounded: boolean } | null => {
+    if (!leading) return r;
+    const social = renderPhatic(leading.kind, leading.word);
+    if (!r) return { text: social, grounded: true };
+    return { text: `${social} ${r.text}`, grounded: true };
+  };
   // (7) statements — E4's set order (§2, piece C): person
   // knowledge was consulted first (capture + connections,
   // above); the classifier has judged the statement's
@@ -125,7 +137,7 @@ export function composeStatementReply(
   // grounded fact it can honestly add PLUS the follow-up its
   // slot licenses; zero graph facts is a complete success for
   // the class, never a decline.
-  if (resolved.length || capture.feeling || capture.doing || capture.newPerson || capture.factsWritten.length) {
+  if (resolved.length || capture.feeling || capture.doing || capture.newPerson || capture.factsWritten.length || capture.sessionKept.length) {
     const ev = resolved.length ? matchEvent(g, words, resolved) : null;
     const primary = ev ?? bd.topics[0] ?? (resolved.length ? salient : null);
     if (primary) {
@@ -145,6 +157,9 @@ export function composeStatementReply(
       `statement (${cls.kind}): person knowledge first, classification weighed, reply per role "${role.id}" + operative context`);
     // every file write is acknowledged in the reply, in the
     // role's voice — never silent (§5)
+    const sessionAck = !capture.factsWritten.length && capture.sessionKept.length
+      ? renderSessionFactAck(capture.sessionKept.map((f) => f.display))
+      : "";
     const ackSuffix = capture.factsWritten.length
       ? ` ${renderRememberAck(role.memoryAck, capture.factsWritten[0].display)}`
       : capture.patternsWritten.length
@@ -177,15 +192,17 @@ export function composeStatementReply(
         ? (lead ? `${lead} ${reaction}` : reaction)
         : renderStateNoted(capture.feeling.text, capture.feeling.pattern);
       session.lastIntent = "fact";
-      return { text: base + ackSuffix, grounded: reaction !== null };
+      return withLead({ text: base + ackSuffix, grounded: reaction !== null });
     }
 
     if (!primary) {
       // nothing resolved, but the statement still landed —
-      // as person data (a name, a fact for the file)
-      return { text:         capture.factsWritten.length
+      // as person data (a name, a fact for the file or session)
+      return withLead({ text: capture.factsWritten.length
           ? renderRememberAck(role.memoryAck, capture.factsWritten[0].display)
-          : renderStatementNoted(capture.doing ?? capture.newPerson ?? "that"), grounded: false };
+          : sessionAck
+            ? sessionAck
+            : renderStatementNoted(capture.doing ?? capture.newPerson ?? "that"), grounded: !!sessionAck });
     }
 
     // the grounded acknowledgement fact, role-shaped in its
@@ -351,6 +368,9 @@ export function composeStatementReply(
       noteStep(ws, "solve", "conclude", "statement acknowledgement fact", [edgeText(g, fact.edge)]);
       text = renderConclusion(g, fact);
       grounded = true;
+    } else if (sessionAck) {
+      text = sessionAck;
+      grounded = true;
     } else {
       text = renderStatementNoted(g.terms[primary.id]);
     }
@@ -384,7 +404,7 @@ export function composeStatementReply(
     // instead of trailing it as machinery narration.
     text += ackSuffix;
     session.lastIntent = "fact";
-    return { text: text, grounded: grounded };
+    return withLead({ text: text, grounded: grounded });
   }
-  return null;
+  return withLead(null);
 }

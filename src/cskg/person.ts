@@ -207,6 +207,8 @@ export interface CaptureResult {
   doing: string | null;
   /** a person introduced as new this turn ("my new girlfriend") */
   newPerson: string | null;
+  /** durable facts kept on the session this turn (either mode) */
+  sessionKept: PersonFact[];
 }
 
 const HABITUAL_TAILS: { re: RegExp; marker: string }[] = [
@@ -249,7 +251,18 @@ function fact(
  */
 export function factsFromStatement(input: string, source: "stated" | "asked"): PersonFact[] {
   const out: PersonFact[] = [];
+  // Each clause is its own statement: "My name is James. I live
+  // in Chicago" must not swallow the second sentence as the name.
+  for (const clause of input.split(/(?<=[.!?])\s+/)) {
+    out.push(...factsFromClause(clause, source));
+  }
+  return out;
+}
+
+function factsFromClause(input: string, source: "stated" | "asked"): PersonFact[] {
+  const out: PersonFact[] = [];
   const t = input.trim();
+  if (!t) return out;
   let m: RegExpMatchArray | null;
   if ((m = t.match(/\bmy name is\s+(.+)$/i))) {
     const name = m[1].replace(/[.!?]+$/, "").trim();
@@ -327,6 +340,7 @@ export function captureStatement(
     feeling: null,
     doing: null,
     newPerson: null,
+    sessionKept: [],
   };
   const input = ws.input;
   const lower = input.trim().toLowerCase();
@@ -420,9 +434,16 @@ export function captureStatement(
   );
   if (newM) result.newPerson = newM[1];
 
-  // --- durable facts → the file (named person only) ---
+  // --- durable facts: session always; the file named-person only ---
+  const stated = factsFromStatement(input, "stated");
+  for (const f of stated) {
+    session.sessionFacts.push({ kind: f.kind, object: f.object, display: f.display });
+    result.sessionKept.push(f);
+    noteStep(ws, "memory", "remember",
+      `session fact kept: ${f.display}`);
+  }
   if (data) {
-    for (const f of factsFromStatement(input, "stated")) {
+    for (const f of stated) {
       const written = writeFact(data, f, env);
       if (written) {
         result.factsWritten.push(written);

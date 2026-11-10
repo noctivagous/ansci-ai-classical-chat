@@ -46,9 +46,17 @@ export function detectReplay(lower: string): boolean {
 
 /** "no, I meant the illness" — returns the corrected phrase. */
 export function detectCorrection(lower: string): { phrase: string } | null {
-  const corr = lower.match(/^(?:no|nope)[,.]?\s+(?:i meant|i mean|not that,? i meant)\s+(.+?)[.!?]?$/) ??
-    lower.match(/^i meant\s+(.+?)[.!?]?$/);
-  return corr ? { phrase: corr[1] } : null;
+  const text = lower.toLowerCase().trim();
+  const corr = text.match(/^(?:no|nope)[,.]?\s+(?:i meant|i mean|not that,? i meant)\s+(.+?)[.!?]?$/) ??
+    text.match(/^i meant\s+(.+?)[.!?]?$/);
+  if (!corr) return null;
+  let phrase = corr[1].trim();
+  // Em-dash restatement ("the food — the meat, for soup")
+  // keeps the first intended referent. A trailing purpose
+  // adjunct ("for soup") is not the referent.
+  phrase = phrase.split(/\s+[—–]\s+/)[0].trim();
+  phrase = phrase.replace(/,?\s+for\s+.+$/, "").trim();
+  return phrase ? { phrase } : null;
 }
 
 /** A question about the situated self: time, season, or place. */
@@ -121,13 +129,52 @@ export type PhaticKind = "greeting" | "thanks" | "farewell";
  * facts is a complete success, never a decline).
  */
 export function detectPhatic(lower: string): { kind: PhaticKind; word: string } | null {
-  const text = lower.toLowerCase().trim().replace(/[!.,]+$/, "").trim();
-  let m = text.match(/^(hi|hello|hey|howdy)( there)?$/);
+  const text = lower.toLowerCase().trim().replace(/[!.,?]+$/, "").trim();
+  const tag = "(?:how(?:'s| is) it going|how are you(?: doing)?|what'?s up)";
+  let m = text.match(new RegExp(`^(hi|hello|hey|howdy)( there)?(?:[,.]?\\s+${tag})?$`));
   if (m) return { kind: "greeting", word: `${m[1]}${m[2] ?? ""}` };
-  m = text.match(/^(thanks|thank you|thx|ty)$/);
+  m = text.match(new RegExp(`^${tag}$`));
+  if (m) return { kind: "greeting", word: m[0] };
+  m = text.match(/^(good morning|good afternoon|good evening)$/);
+  if (m) return { kind: "greeting", word: m[1] };
+  m = text.match(/^(thanks|thank you|thx|ty)(?:\s+anyway)?$/);
   if (m) return { kind: "thanks", word: m[1] };
   m = text.match(/^(bye|goodbye|good ?night|see you(?: later)?)$/);
   if (m) return { kind: "farewell", word: m[1].replace(/ +/g, " ") };
+  return null;
+}
+
+/**
+ * A social clause opening a mixed turn ("thanks anyway. I'll
+ * go make coffee"). The leading move is taken up; the rest
+ * keeps its normal route. Comma-joined content ("hi, I
+ * renovated…") is not a leading clause.
+ */
+export function detectLeadingPhatic(
+  lower: string,
+): { kind: PhaticKind; word: string; rest: string } | null {
+  const text = lower.toLowerCase().trim();
+  const m = text.match(/^(thanks|thank you|thx|ty)(?:\s+anyway)?[.!]+\s+(.+)$/);
+  if (m && m[2].trim()) return { kind: "thanks", word: m[1], rest: m[2].trim() };
+  return null;
+}
+
+/** "do onions go in chicken soup?" — composition of two poles. */
+export function detectComposition(lower: string): { inner: string; outer: string } | null {
+  const t = lower.toLowerCase().replace(/[?]+$/, "").trim();
+  const m = t.match(/^do(?:es)? (.+?) go in(?:to)? (?:a |an |the )?(.+)$/);
+  if (m) return { inner: m[1].trim(), outer: m[2].trim() };
+  return null;
+}
+
+/** Ordinary-English recall of a stated name or place. */
+export function detectPersonRecall(lower: string): "file" | "name" | "place" | null {
+  const t = lower.toLowerCase();
+  if (/\bwhat do you (?:remember|know) about me\b|\bdo you remember me\b|\bwhat have i told you\b/.test(t)) {
+    return "file";
+  }
+  if (/\bdo you remember my name\b|\bwhat(?:'s| is) my name\b/.test(t)) return "name";
+  if (/\bwhere do i live\b|\bdo you remember where i live\b/.test(t)) return "place";
   return null;
 }
 

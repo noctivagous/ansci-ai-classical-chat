@@ -66,8 +66,14 @@ import {
   renderNamedReading,
   renderNoFact,
   renderNoFactPlain,
+  renderPhatic,
+  renderCompositionDecline,
+  renderCompositionDeclinePlain,
+  renderNoSurfaceRelation,
+  renderNoSurfaceRelationPlain,
   renderRecall,
   renderRecallGeneral,
+  renderRecallMissing,
   renderRememberAck,
   renderRememberSessionOnly,
   renderSituationAnswer,
@@ -99,6 +105,7 @@ import {
   contentCandidates,
   matchEvent,
   pickSalient,
+  preferQuestionSubject,
   resolveTerms,
   STOPWORDS,
 } from "./discourse";
@@ -106,8 +113,11 @@ import {
   assignIntent,
   classifyStatement,
   classifySurface,
+  detectComposition,
   detectCorrection,
   detectFollowup,
+  detectPersonRecall,
+  detectPhatic,
   detectReplay,
   detectSituationQuestion,
   detectToolQuery,
@@ -152,6 +162,7 @@ import {
   noteTriage,
   pickFact,
   relevanceFor,
+  solveComposition,
   solveDefinitionAnswer,
   solveEventConsequence,
   solveEventReaction,
@@ -411,10 +422,13 @@ export function runTurn(
     return finish(renderRememberSessionOnly(), "memory", false);
   }
 
-  // (1d) E4 — person recall: "what do you remember about me?"
-  // reads the file back. General mode's answer is honest:
-  // nothing is stored.
-  if (/\bwhat do you (?:remember|know) about me\b|\bdo you remember me\b|\bwhat have i told you\b/.test(lower)) {
+  // (1d) E4 — person recall. The file question reads the file
+  // (or honestly says general mode has none). Name and place
+  // forms read the file when present, else this session's
+  // stated facts — "do you remember my name?" is not a
+  // question about the node *name*.
+  const recall = detectPersonRecall(lower);
+  if (recall === "file") {
     if (personData) {
       const facts = activeFacts(personData).map((f) => f.display);
       const patterns = personData.patterns.map(
@@ -426,6 +440,37 @@ export function runTurn(
     }
     noteStep(ws, "memory", "remember", "person recall in general mode: no file exists — nothing is stored");
     return finish(renderRecallGeneral(), "memory", false);
+  }
+  if (recall === "name" || recall === "place") {
+    const kindOk = (k: string) =>
+      recall === "name" ? k === "name" : k === "lives-in" || k === "from";
+    const fromFile = personData
+      ? activeFacts(personData).filter((f) => kindOk(f.kind)).map((f) => f.display)
+      : [];
+    const fromSession = session.sessionFacts
+      .filter((f) => kindOk(f.kind))
+      .map((f) => f.display);
+    const displays = fromFile.length ? fromFile : fromSession;
+    if (displays.length) {
+      noteStep(ws, "memory", "remember",
+        `person recall (${recall}): ${displays.join("; ")}`);
+      return finish(renderRecall(displays, []), "memory", true);
+    }
+    noteStep(ws, "memory", "remember",
+      `person recall (${recall}): nothing stated this session`);
+    return finish(renderRecallMissing(recall), "memory", false);
+  }
+
+  // Surface phatic (S5): greetings, how-are-you, thanks, farewells
+  // with no other content — including question-shaped ones
+  // ("how are you?", "hey, how's it going?"). Taken up before
+  // discourse so they never become graph subjects.
+  const phatic = detectPhatic(lower);
+  if (phatic) {
+    noteStep(ws, "intent", "intent",
+      `phatic-only turn (${phatic.kind}): social reply, no topic remembered, no graph testimony`);
+    session.lastIntent = "statement";
+    return finish(renderPhatic(phatic.kind, phatic.word), "statement", true);
   }
 
   // (2) questions about the situated self
@@ -451,7 +496,7 @@ export function runTurn(
   // captured: capture is a statement-side discipline.
   const capture: CaptureResult = !isQuestionForm(lower)
     ? captureStatement(ws, session, env)
-    : { factsWritten: [], patternsWritten: [], feeling: null, doing: null, newPerson: null };
+    : { factsWritten: [], patternsWritten: [], feeling: null, doing: null, newPerson: null, sessionKept: [] };
   const connections = personData && !isQuestionForm(lower)
     ? personConnections(ws, personData)
     : [];
@@ -598,6 +643,27 @@ export function runTurn(
     );
   }
 
+  // "Does X go in Y?" — two poles, HasA / PartOf / AtLocation.
+  // Empty set declines; a neighbouring IsA of Y is not the answer.
+  const composition = detectComposition(lower);
+  if (composition) {
+    const r = solveComposition(g, ws, session, composition.inner, composition.outer);
+    if (r) {
+      noteTriage(ws, "retrieve",
+        `composition: HasA/PartOf/AtLocation between "${composition.inner}" and "${composition.outer}"`);
+      return finish(r, "fact", true);
+    }
+    noteTriage(ws, "solve",
+      `composition: empty set between "${composition.inner}" and "${composition.outer}" — decline, no substitution`);
+    return finish(
+      plainDeclines
+        ? renderCompositionDeclinePlain(composition.inner, composition.outer)
+        : renderCompositionDecline(composition.inner, composition.outer),
+      "fact",
+      false,
+    );
+  }
+
   // E5 — a follow-up or referring question the situation model
   // holds the answer to ("What are you making?", "When is
   // it?", "What's in it?", "Who is he bringing?", "Which
@@ -617,7 +683,8 @@ export function runTurn(
   if (isQuestion && resolved.length) {
     // E2: subject selection consumes discourse's scored topic
     // ranking; E1's ordering survives as the fallback.
-    const candidates = bd.topics.length ? bd.topics : contentCandidates(g, resolved);
+    const ranked = bd.topics.length ? bd.topics : contentCandidates(g, resolved);
+    const candidates = preferQuestionSubject(ranked);
     const primary = candidates[0] ?? salient!;
     remember(session, primary.id);
 
@@ -884,6 +951,23 @@ export function runTurn(
       if (r) {
         noteTriage(ws, "retrieve", `${kind} lookup over the subject's edges, ranked with the §6 floor`);
         return finish(r, kind, true);
+      }
+      // Empty-set decline (G10's shape, for purpose/location/…)
+      // — a classified relation with no edges must not fall
+      // through to a neighbouring IsA. whatis/property/antonym
+      // keep the generic-fact fallback they have always had.
+      if (kind !== "whatis" && kind !== "property" && kind !== "antonym") {
+        const subj = candidates[0] ?? primary;
+        remember(session, subj.id);
+        noteTriage(ws, "solve",
+          `${kind}: empty relation set for "${subj.text}" — decline, no substitution`);
+        return finish(
+          plainDeclines
+            ? renderNoSurfaceRelationPlain(subj.text, kind)
+            : renderNoSurfaceRelation(subj.text, kind),
+          kind,
+          false,
+        );
       }
     }
 

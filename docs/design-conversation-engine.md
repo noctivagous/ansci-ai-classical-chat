@@ -895,10 +895,17 @@ slice), **closing** (a running slice owns it), **closed**.
   they can't sleep?" — with no event match, the generic path
   answered a junk fact about *people* ("People is a better."),
   an attested edge about a scaffolding word. Words that frame a
-  question (people, someone, happens) are not topics. *Open*;
-  owner: discourse/intent. Related S9 evidence from the same
-  probe: ATOMIC template labels render roughly ("they was late
-  to office") — event-label articulation is saying-side work.
+  question (people, someone, happens) are not topics. Related S9
+  evidence from the same probe: ATOMIC template labels render
+  roughly ("they was late to office") — event-label articulation
+  is saying-side work. *Closed* (2026-11-10, first unscripted-chat
+  loop): discourse `preferQuestionSubject` drops scaffolding
+  (people, someone, thing, …) when a content object is also a
+  candidate — "Where do people keep coffee?" is about coffee;
+  a question whose only candidate is scaffolding still keeps it.
+  Event-template matching already dropped the same words
+  (`EVENT_UTT_DROP`); this closes the generic/location subject
+  pick. S9 event-label wording remains open.
 - **G10 — Unattested specific-fact asks answered by substitution.**
   Exposed by the abstention probes (2026-11-10): questions whose
   asked fact the graph does not attest — a neighbour's phone
@@ -924,6 +931,25 @@ slice), **closing** (a running slice owns it), **closed**.
   four ask forms are recognised (value-of, who-role/event,
   how-many, specific past event / future property); a specific
   ask in another shape still falls through to the old routes.
+- **Composition-in ("does X go in Y?").** Exposed by the
+  unscripted-chat sitting (2026-11-10): "do onions go in chicken
+  soup?" had no surface kind, so the generic path answered an
+  IsA of the outer ("Chicken soup is a soup."). *Closed*
+  (2026-11-10, first unscripted-chat loop): `detectComposition`
+  plus `solveComposition` look for HasA / PartOf / AtLocation
+  between the poles; an empty set declines in G10's shape and
+  does not substitute a neighbouring IsA. Advice-shaped
+  follow-ups ("what else should I put in?") remain undesigned.
+- **Same-session recall forms.** Exposed by the same sitting:
+  "do you remember my name?" after a stated name was a graph
+  question about the node *name* ("Name is an affinity."),
+  because recall only matched the file question and general
+  mode never kept stated facts on the session. *Closed*
+  (2026-11-10): `detectPersonRecall` distinguishes file / name
+  / place; capture always writes `sessionFacts`; name and place
+  forms read the file when present, else this session. "What
+  do you remember about me?" in general mode still names the
+  missing file.
 
 ## 10. Toward a real conversation: capability map and morphs
 
@@ -999,15 +1025,20 @@ unbuilt), *missing* (not yet designed):
   the chat's own output. *Missing.*
 - **S5 Phatic turns** — greetings, closings, thanks,
   acknowledgements, fitted to daypart and relationship.
-  *Missing.* Its engine-side counterpart is phatic *intent*
-  recognition — the schmoozing class in piece C (§2): a phatic
-  statement's correct reply is social continuation, not a fact.
+  Its engine-side counterpart is phatic *intent* recognition
+  — the schmoozing class in piece C (§2): a phatic statement's
+  correct reply is social continuation, not a fact.
   *Engine side landed* (2026-11-09, E4): the schmoozing class
   is live in piece C (classification with person knowledge
   first and graph evidence weighed), and its replies are
   social continuations formed from the statement's contents.
-  The surface phatic turns themselves (greetings, closings,
-  thanks as turns) remain missing.
+  *Surface turns landed* (2026-11-10, first unscripted-chat
+  loop): bare and tagged greetings (`hey, how's it going?`),
+  how-are-you family, thanks (including `thanks anyway`),
+  farewells, and a leading-thanks clause on a mixed turn
+  (`thanks anyway. I'll go make coffee`) — the social move
+  is taken up and the rest keeps its normal route. Daypart
+  and relationship fitting remain open.
 - **S6 Epistemic forms** — hedges and the three admissions read
   off the tuple. *Designed.* *Landed for the resolver path*
   (2026-11-09, E4): the tuple is carried by the E4 machinery,

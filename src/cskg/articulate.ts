@@ -977,6 +977,10 @@ export function offerForPlannedDoing(
  */
 export function renderPhatic(kind: "greeting" | "thanks" | "farewell", word: string): string {
   if (kind === "thanks") return "You're welcome!";
+  const w = word.toLowerCase();
+  if (/^(how(?:'s| is) it going|how are you(?: doing)?|what'?s up)$/.test(w)) {
+    return "Doing all right — thanks for asking.";
+  }
   return `${word.charAt(0).toUpperCase()}${word.slice(1)}!`;
 }
 
@@ -990,6 +994,11 @@ export function renderRememberSessionOnly(): string {
   return "I'll keep that in mind for this conversation — in general mode I don't keep a file for you, so it won't survive the session.";
 }
 
+/** General mode: a stated name/place kept for this session only. */
+export function renderSessionFactAck(displays: string[]): string {
+  return `I'll keep that in mind for this conversation — ${displays.join("; ")}.`;
+}
+
 /** "What do you remember about me?" — the file, read back plainly. */
 export function renderRecall(factDisplays: string[], patternLines: string[]): string {
   const parts = [...factDisplays, ...patternLines];
@@ -999,6 +1008,25 @@ export function renderRecall(factDisplays: string[], patternLines: string[]): st
 
 export function renderRecallGeneral(): string {
   return "I don't keep a file for you in general mode, so there's nothing stored about you from before this conversation.";
+}
+
+/** Same-session name or place when nothing was stated. */
+export function renderRecallMissing(kind: "name" | "place"): string {
+  return kind === "name"
+    ? "You haven't told me your name."
+    : "You haven't told me where you live.";
+}
+
+/**
+ * Empty-set decline for "does X go in Y?": the asked composition
+ * is named, and a neighbouring IsA of Y is not substituted.
+ */
+export function renderCompositionDecline(inner: string, outer: string): string {
+  return `This graph doesn't record that ${inner} go in ${outer} — no HasA, PartOf, or AtLocation edge between them, and I won't substitute a neighbouring fact.`;
+}
+
+export function renderCompositionDeclinePlain(inner: string, outer: string): string {
+  return `I don't know whether ${inner} go in ${outer} — this graph has no HasA, PartOf, or AtLocation edge between them.`;
 }
 
 /**
@@ -1050,6 +1078,42 @@ export function renderUnattestedAsk(aText: string, bText: string): string {
 
 export function renderUnattestedAskPlain(aText: string, bText: string): string {
   return `I don't know — this graph doesn't record that: nothing in it connects "${aText}" with "${bText}".`;
+}
+
+/**
+ * Empty-set decline for a classified surface intent (purpose,
+ * location, made-of, part, capability): the asked relation is
+ * named, and a neighbouring IsA is not substituted. Same honesty
+ * shape as the why-decline and G10's unattested-ask decline.
+ */
+export function renderNoSurfaceRelation(termText: string, kind: string): string {
+  return `This graph doesn't record what "${termText}" ${surfaceAsked(kind)} — no ${surfaceRel(kind)} edge in it reaches that, and I won't substitute a neighbouring fact.`;
+}
+
+export function renderNoSurfaceRelationPlain(termText: string, kind: string): string {
+  return `I don't know what "${termText}" ${surfaceAsked(kind)} — this graph has no ${surfaceRel(kind)} edge for it.`;
+}
+
+function surfaceAsked(kind: string): string {
+  switch (kind) {
+    case "purpose": return "is used for";
+    case "location": return "is found at";
+    case "madeof": return "is made of";
+    case "part": return "is a part of";
+    case "capability": return "is capable of";
+    default: return "has that relation";
+  }
+}
+
+function surfaceRel(kind: string): string {
+  switch (kind) {
+    case "purpose": return "UsedFor";
+    case "location": return "AtLocation";
+    case "madeof": return "MadeOf";
+    case "part": return "PartOf";
+    case "capability": return "CapableOf";
+    default: return kind;
+  }
 }
 
 export function renderToolDeclinePlain(usedForPhrase: string, open = true): string {

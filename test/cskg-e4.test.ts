@@ -34,6 +34,7 @@ import {
   activeFacts,
   captureStatement,
   clearPersonCache,
+  factsFromStatement,
   loadPersonData,
   type CaptureResult,
 } from "../src/cskg/person";
@@ -95,7 +96,7 @@ function graph(): Promise<CskgGraph> {
 }
 
 const EMPTY_CAPTURE: CaptureResult = {
-  factsWritten: [], patternsWritten: [], feeling: null, doing: null, newPerson: null,
+  factsWritten: [], patternsWritten: [], feeling: null, doing: null, newPerson: null, sessionKept: [],
 };
 
 function peopleEnv(): { env: NodeJS.ProcessEnv; dir: string } {
@@ -181,6 +182,14 @@ test("E4 roles: decline style differs by pack, decline honesty does not", async 
 
 /* ---------------- Part 3 — person file --------------------------- */
 
+test("E4 person: two clauses yield two facts — the name does not swallow the rest", () => {
+  const facts = factsFromStatement("My name is James. I live in Chicago", "stated");
+  assert.deepEqual(
+    facts.map((f) => [f.kind, f.object]),
+    [["name", "James"], ["lives-in", "Chicago"]],
+  );
+});
+
 test("E4 person: a stated fact is written to the file and acknowledged in the reply", async () => {
   const g = await graph();
   const { env, dir } = peopleEnv();
@@ -235,6 +244,19 @@ test("E4 person: general mode writes nothing and remembers nothing across sessio
   assert.deepEqual(fs.readdirSync(dir), [], "no person file is created in general mode");
   const recall = runTurn(g, createSession(), "What do you remember about me?", env);
   assert.match(recall.text, /general mode/, "general mode's recall is honestly empty");
+});
+
+test("E4 person: general mode recalls a name stated this session", async () => {
+  const g = await graph();
+  const s = createSession();
+  const stated = runTurn(g, s, "My name is James. I live in Chicago");
+  assert.match(stated.text, /James/);
+  assert.match(stated.text, /Chicago/);
+  const name = runTurn(g, s, "do you remember my name?");
+  assert.match(name.text, /James/);
+  assert.doesNotMatch(name.text, /affinity/i);
+  const fileQ = runTurn(g, s, "What do you remember about me?");
+  assert.match(fileQ.text, /general mode/, "the file question still names the missing file");
 });
 
 test("E4 person: recall reads the file back; explicit remember uses the second door", async () => {

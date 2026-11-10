@@ -1303,6 +1303,24 @@ export function isContentTerm(r: ResolvedTerm): boolean {
   );
 }
 
+/**
+ * G9: words that frame a question (people, someone, happens)
+ * are not the subject when a content object is also present.
+ * "Where do people keep coffee?" is about coffee.
+ */
+export const QUESTION_SCAFFOLDING = new Set([
+  "people", "someone", "somebody", "anyone", "everybody", "person",
+  "persons", "one", "thing", "things", "stuff",
+]);
+
+export function preferQuestionSubject<T extends { text: string }>(candidates: T[]): T[] {
+  const content = candidates.filter((c) => {
+    const head = c.text.toLowerCase().split(/\s+/)[0] ?? "";
+    return !QUESTION_SCAFFOLDING.has(head) && !QUESTION_SCAFFOLDING.has(c.text.toLowerCase());
+  });
+  return content.length ? content : candidates;
+}
+
 export function pickSalient(g: CskgGraph, resolved: ResolvedTerm[]): ResolvedTerm | null {
   const cands = contentCandidates(g, resolved);
   return cands[0] ?? resolved[0] ?? null;

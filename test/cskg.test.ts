@@ -31,9 +31,16 @@ import {
   definitionCandidates,
   loadDefinitionsStore,
 } from "../src/cskg/definitions";
-import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
+import { analyseInto, matchEventTemplate, preferQuestionSubject, resolveTerms } from "../src/cskg/discourse";
 import { verbLemmaPerTurn } from "../src/cskg/situation";
-import { detectPhatic, detectToolQuery } from "../src/cskg/intent";
+import {
+  detectComposition,
+  detectCorrection,
+  detectLeadingPhatic,
+  detectPersonRecall,
+  detectPhatic,
+  detectToolQuery,
+} from "../src/cskg/intent";
 import { contextFit, preferHappeningSubject } from "../src/cskg/solve";
 import { cachePathFor, loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
@@ -67,6 +74,10 @@ const ROWS = [
   row("/c/en/wine_bottle", "/r/MadeOf", "/c/en/glass", "CN"),
   row("/c/en/soup", "/r/IsA", "/c/en/food", "CN"),
   row("/c/en/soup", "/r/AtLocation", "/c/en/bowl", "CN"),
+  row("/c/en/soup", "/r/HasA", "/c/en/onion", "CN"),
+  row("/c/en/people", "/r/AtLocation", "/c/en/town", "CN"),
+  row("/c/en/people", "/r/AtLocation", "/c/en/town", "WN"),
+  row("/c/en/coffee", "/r/AtLocation", "/c/en/kitchen", "CN"),
   row("/c/en/common_cold", "/r/IsA", "/c/en/illness", "CN"),
   row("at:personx_chops_onions", "at:xEffect", "/c/en/cry", "AT"),
   row("/c/en/coat/n/wn/artifact", "/r/UsedFor", "/c/en/keep_warm", "CN"),
@@ -321,16 +332,31 @@ test("verb proof tiers: inflected forms testify, bare bases stay ambiguous", asy
     "a noun with no inflection and no lemma is not a verb");
 });
 
+test("correction: the intended referent, not an em-dash tail or for-adjunct", () => {
+  assert.deepEqual(detectCorrection("no, I meant the common cold"), { phrase: "the common cold" });
+  assert.deepEqual(detectCorrection("no, I mean the food — the meat, for soup"), { phrase: "the food" });
+  assert.deepEqual(detectCorrection("I meant the illness"), { phrase: "the illness" });
+});
+
 test("phatic: greeting, thanks and farewell take the social route", () => {
   assert.deepEqual(detectPhatic("hi there!"), { kind: "greeting", word: "hi there" });
   assert.deepEqual(detectPhatic("Thanks!"), { kind: "thanks", word: "thanks" });
   assert.deepEqual(detectPhatic("bye"), { kind: "farewell", word: "bye" });
+  assert.deepEqual(detectPhatic("hey, how's it going?"), { kind: "greeting", word: "hey" });
+  assert.deepEqual(detectPhatic("how are you?"), { kind: "greeting", word: "how are you" });
+  assert.deepEqual(detectPhatic("thanks anyway"), { kind: "thanks", word: "thanks" });
   assert.equal(detectPhatic("hi, i renovated the kitchen"), null,
     "content-bearing turns keep their normal route");
   assert.equal(detectPhatic("what is a banana?"), null);
   assert.equal(renderPhatic("greeting", "hi there"), "Hi there!");
   assert.equal(renderPhatic("thanks", "thanks"), "You're welcome!");
   assert.equal(renderPhatic("farewell", "bye"), "Bye!");
+  assert.equal(renderPhatic("greeting", "how are you"), "Doing all right — thanks for asking.");
+  assert.deepEqual(
+    detectLeadingPhatic("thanks anyway. I think I'll go make that coffee now"),
+    { kind: "thanks", word: "thanks", rest: "i think i'll go make that coffee now" },
+  );
+  assert.equal(detectLeadingPhatic("hi, i renovated the kitchen"), null);
 });
 
 test("phatic: open and close end to end, content untouched", async () => {
@@ -338,9 +364,58 @@ test("phatic: open and close end to end, content untouched", async () => {
   const s = createSession();
   assert.equal(runTurn(g, s, "Hi there!").text, "Hi there!");
   assert.equal(runTurn(g, s, "Thanks!").text, "You're welcome!");
+  assert.equal(runTurn(g, createSession(), "hey, how's it going?").text, "Hey!");
+  assert.equal(runTurn(g, createSession(), "how are you?").text, "Doing all right — thanks for asking.");
+  const mixed = runTurn(g, createSession(), "thanks anyway. I think I'll go make that coffee now");
+  assert.match(mixed.text, /welcome/i);
   const r = runTurn(g, s, "Hi, what is a banana?");
   assert.match(r.text, /banana/i, "the definition route still serves content after a greeting");
   assert.doesNotMatch(r.text, /^Hi there/, "no greeting swallowed the question");
+});
+
+test("G9: question scaffolding is not the location subject when a content object is present", () => {
+  const picked = preferQuestionSubject([
+    { text: "people" },
+    { text: "coffee" },
+  ]);
+  assert.deepEqual(picked.map((c) => c.text), ["coffee"]);
+  const onlyPeople = preferQuestionSubject([{ text: "people" }]);
+  assert.deepEqual(onlyPeople.map((c) => c.text), ["people"]);
+});
+
+test("G9: where people keep coffee is about coffee", async () => {
+  const g = await graph();
+  const r = runTurn(g, createSession(), "where do people usually keep coffee?");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /coffee/i);
+  assert.doesNotMatch(r.text, /town/i);
+});
+
+test("composition: does X go in Y uses HasA/PartOf/AtLocation, not IsA of Y", async () => {
+  const g = await graph();
+  assert.deepEqual(detectComposition("do onions go in soup?"), { inner: "onions", outer: "soup" });
+  const hit = runTurn(g, createSession(), "do onions go in soup?");
+  assert.equal(hit.grounded, true);
+  assert.match(hit.text, /onion/i);
+  assert.doesNotMatch(hit.text, /is a food/i);
+  const miss = runTurn(g, createSession(), "do bananas go in soup?");
+  assert.equal(miss.grounded, false);
+  assert.match(miss.text, /HasA|PartOf|AtLocation/);
+  assert.doesNotMatch(miss.text, /is a food|is a soup/i);
+});
+
+test("recall: same-session name is not a graph question about the node name", async () => {
+  const g = await graph();
+  const s = createSession();
+  const stated = runTurn(g, s, "My name is James. I live in Chicago");
+  assert.match(stated.text, /James/);
+  assert.equal(detectPersonRecall("do you remember my name?"), "name");
+  const r = runTurn(g, s, "do you remember my name?");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /James/);
+  assert.doesNotMatch(r.text, /affinity/i);
+  const place = runTurn(g, s, "where do I live?");
+  assert.match(place.text, /Chicago/);
 });
 
 test("repair frame: the no-fact correction names the superseded topic too", () => {
@@ -1022,6 +1097,23 @@ test("definitions: non-definition questions keep their routing (purpose, made-of
   assert.equal(m.grounded, true);
   assert.match(m.text, /made of glass/);
   assert.doesNotMatch(m.text, /^Wine bottle:/, "no definition lead on a made-of turn");
+});
+
+test("purpose: empty UsedFor declines instead of substituting a neighbouring fact", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = runTurn(g, s, "What are onions for?");
+  assert.equal(r.grounded, false);
+  assert.match(r.text, /used for/i);
+  assert.match(r.text, /UsedFor/);
+  assert.doesNotMatch(r.text, /crying|bulb|cause/i,
+    "Causes testimony on onion is not substituted for a purpose ask");
+  const coat = runTurn(g, createSession(), "What is a coat used for?");
+  assert.equal(coat.grounded, true, "a term with UsedFor still answers");
+  assert.match(coat.text, /keep warm/);
+  const why = runTurn(g, s, "why did you say that?");
+  assert.match(why.text, /UsedFor/, "replay of an empty-set decline names the missing relation");
+  assert.doesNotMatch(why.text, /conversation itself/);
 });
 
 // ---------------------------------------------------------------------------

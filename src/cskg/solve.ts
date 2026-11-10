@@ -502,6 +502,66 @@ export function solveSurfaceIntent(
   return null;
 }
 
+/**
+ * "Does X go in Y?" — composition of two poles. Testimony is a
+ * HasA (Y has X), PartOf (X is part of Y), or AtLocation (X at
+ * Y) edge either direction. Empty set is the caller's to decline.
+ */
+function compositionIds(g: CskgGraph, phrase: string): Set<number> {
+  const ids = new Set<number>();
+  for (const r of resolveTerms(g, phrase)) ids.add(r.id);
+  const stripped = phrase.trim().toLowerCase().replace(/^(?:a|an|the)\s+/, "");
+  for (const variant of [stripped, stripped.replace(/s$/, ""), stripped.replace(/ies$/, "y")]) {
+    const id = g.id(variant);
+    if (id !== undefined) ids.add(id);
+  }
+  return ids;
+}
+
+export function solveComposition(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+  inner: string,
+  outer: string,
+): string | null {
+  const innerIds = compositionIds(g, inner);
+  const outerIds = compositionIds(g, outer);
+  if (!innerIds.size || !outerIds.size) return null;
+  const hits: Conclusion[] = [];
+  const seen = new Set<string>();
+  const take = (edge: CskgEdge, about: "from" | "to"): void => {
+    const key = `${edge.from}:${edge.rel}:${edge.to}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    hits.push({ edge, about });
+  };
+  for (const oid of outerIds) {
+    for (const e of g.outEdges(oid, "/r/HasA")) {
+      if (innerIds.has(e.to)) take(e, "from");
+    }
+  }
+  for (const iid of innerIds) {
+    for (const e of g.outEdges(iid, "/r/PartOf")) {
+      if (outerIds.has(e.to)) take(e, "from");
+    }
+    for (const e of g.outEdges(iid, "/r/AtLocation")) {
+      if (outerIds.has(e.to)) take(e, "from");
+    }
+  }
+  if (!hits.length) return null;
+  hits.sort((a, b) => b.edge.support - a.edge.support);
+  const top = hits.slice(0, 3);
+  addConclusions(ws, top);
+  remember(session, top[0].edge.from);
+  remember(session, top[0].edge.to);
+  for (const c of top) {
+    noteStep(ws, "solve", "conclude", "composition", [edgeText(g, c.edge)]);
+  }
+  session.lastIntent = "fact";
+  return renderAll(g, top);
+}
+
 /** Generic question fallback: best fact about the first candidate that has one. */
 export function solveGenericFact(
   g: CskgGraph,
