@@ -11,6 +11,7 @@
     "chat": "npm run build --silent && node dist/src/chat.js",
     "build": "tsc",
     "dev": "npm run build --silent && node dist/src/cskg/devserver.js",
+    "loop:tree": "node scripts/devloop-tree.mjs",
     "test": "npm run build && node --test dist/test/*.test.js",
     "typecheck": "tsc --noEmit"
   },
