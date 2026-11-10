@@ -15,6 +15,10 @@
  *   trace               — the shared record: every piece appends
  *                         its steps via noteStep(); memory commits
  *                         it to the session's trace ring.
+ *   queries             — the turn's graph query log: appended by
+ *                         the loader's sink, which turn.ts installs
+ *                         only for a turn that opted in. No piece
+ *                         reads it; it exists for the trace file.
  *
  * At the end of the turn the workspace's trace IS the thought
  * trace: replaying "why did you say that?" shows which pieces
@@ -26,6 +30,7 @@ import type { Conclusion } from "./articulate";
 import type { Breakdown } from "./discourse";
 import type { EngineNodeId } from "./engine-map";
 import type { Intent } from "./intent";
+import type { QueryRecord } from "./loader";
 import type { ActiveContext } from "./memory";
 
 export type TraceStepKind =
@@ -60,6 +65,7 @@ export interface TurnWorkspace {
   conclusions: Conclusion[];
   reply: string | null;
   trace: ThoughtTrace;
+  queries: QueryRecord[];
 }
 
 export function createWorkspace(turn: number, input: string): TurnWorkspace {
@@ -75,6 +81,7 @@ export function createWorkspace(turn: number, input: string): TurnWorkspace {
     conclusions,
     reply: null,
     trace: { turn, input, intent: "", steps: [], conclusions, answer: "" },
+    queries: [],
   };
 }
 

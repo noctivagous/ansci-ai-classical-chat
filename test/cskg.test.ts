@@ -16,6 +16,7 @@ import { seasonFor } from "../src/cskg/awareness";
 import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
 import { loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
+import { appendTraceRecord, buildTraceRecord } from "../src/cskg/tracefile";
 import { runTurn } from "../src/cskg/turn";
 import { createWorkspace } from "../src/cskg/workspace";
 
@@ -480,4 +481,89 @@ test("depth: an event question with no template above threshold declines as befo
     r.trace.steps.some((st) => /no match above threshold/.test(st.detail)),
     "the failed match is recorded honestly",
   );
+});
+
+/* ---------------- trace files (2026-11-09, the step before E4) ----
+ * The central query log (loader accessors → the sink a turn
+ * installs) and the persistent trace file: the decline's empty
+ * set as query-level evidence, one JSON line per turn, and the
+ * guarantee that recording changes no reply. */
+
+const traced = (
+  g: CskgGraph,
+  s: ReturnType<typeof createSession>,
+  input: string,
+) => runTurn(g, s, input, process.env, new Date(), true);
+
+test("trace: the onion turn's query log holds the empty Causes set the decline rests on", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = traced(g, s, "Why do my eyes water when I chop onions?");
+  assert.equal(r.grounded, false);
+  assert.match(r.text, /doesn't record that causation/);
+  const causes = r.queries.filter((q) => q.rel === "/r/Causes");
+  // The decline's evidence, at query level. The fixture's onion
+  // HAS one Causes edge (to crying — the stray edge the E3 gate
+  // refuses to borrow), so the cause side is consulted and the
+  // direct query returns it; the two-step chain then probes out
+  // of crying — the only node the onion side reaches — and THAT
+  // Causes query comes back empty, which is where the search
+  // honestly dies. (On the production graph onion has no Causes
+  // edges at all, and the onion-side query itself is the 0.)
+  assert.ok(
+    causes.some((q) => q.via === "outEdges" && q.term === "onion" && q.hits === 1),
+    `the cause side was never consulted for Causes; records: ${JSON.stringify(causes)}`,
+  );
+  assert.ok(
+    causes.some((q) => q.via === "outEdges" && q.term === "crying" && q.hits === 0),
+    `expected the chain's empty /r/Causes query (out of "crying"); records: ${JSON.stringify(causes)}`,
+  );
+  // the sink is the turn's, not the graph's: detached afterwards
+  assert.equal(g.querySink, null);
+});
+
+test("trace file: one parseable JSON line per turn, with the required fields", async () => {
+  const g = await graph();
+  const s = createSession();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cskg-trace-"));
+  const file = path.join(dir, "run.trace.jsonl");
+  const r1 = traced(g, s, "What is a banana?");
+  appendTraceRecord(file, buildTraceRecord(r1, new Date("2026-11-09T12:00:00.000Z")));
+  const r2 = traced(g, s, "Why did you say that?");
+  appendTraceRecord(file, buildTraceRecord(r2, new Date("2026-11-09T12:00:05.000Z")));
+  const lines = fs.readFileSync(file, "utf8").trim().split("\n");
+  assert.equal(lines.length, 2, "append mode: the second run continues the file");
+  const recs = lines.map((l) => JSON.parse(l));
+  assert.equal(recs[0].turn, 1);
+  assert.equal(recs[0].at, "2026-11-09T12:00:00.000Z");
+  assert.ok("location" in recs[0]);
+  assert.equal(recs[0].utterance, "What is a banana?");
+  assert.equal(recs[0].reply, r1.text);
+  assert.equal(recs[0].grounded, r1.grounded);
+  assert.equal(recs[0].intent, r1.trace.intent);
+  assert.ok(Array.isArray(recs[0].steps) && recs[0].steps.length > 0);
+  assert.ok(Array.isArray(recs[0].queries) && recs[0].queries.length > 0);
+  assert.equal(recs[1].turn, 2);
+  // the replay turn re-queries nothing — its query log is empty
+  assert.deepEqual(recs[1].queries, []);
+});
+
+test("trace: query logging does not change replies (on vs off)", async () => {
+  const g = await graph();
+  const inputs = [
+    "I'm making a big pot of soup on Saturday.",
+    "My brother is bringing his new girlfriend.",
+    "Why do my eyes water when I chop onions?",
+    "What happens when it rains?",
+  ];
+  const off = createSession();
+  const on = createSession();
+  for (const input of inputs) {
+    const a = runTurn(g, off, input);
+    const b = traced(g, on, input);
+    assert.equal(b.text, a.text, `reply changed under tracing for: ${input}`);
+    assert.equal(b.grounded, a.grounded);
+    assert.deepEqual(b.queries.length > 0, true, `expected a query log for: ${input}`);
+    assert.deepEqual(a.queries, [], "an untraced turn records nothing");
+  }
 });

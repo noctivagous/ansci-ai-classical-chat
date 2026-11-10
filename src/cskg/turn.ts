@@ -28,6 +28,13 @@
  * before the ATOMIC reaction path. Every branch that reaches
  * solve records the turn's triage (retrieve | solve |
  * combination) in the trace.
+ *
+ * Trace-file step (2026-11-09): a turn may opt into the graph
+ * query log (collectQueries) — the coordinator lends the graph a
+ * sink feeding the workspace's query list and detaches it in
+ * finish(). The list rides out on TurnResult for the CLI's trace
+ * file (tracefile.ts); no piece reads it, so a traced turn is a
+ * byte-identical turn.
  */
 import { loadAwarenessInto } from "./awareness";
 import {
@@ -72,7 +79,7 @@ import {
   isQuestionForm,
   type IntentKind,
 } from "./intent";
-import type { CskgGraph } from "./loader";
+import type { CskgGraph, QueryRecord } from "./loader";
 import {
   commitTrace,
   currentTopicId,
@@ -109,6 +116,14 @@ export interface TurnResult {
   text: string;
   trace: ThoughtTrace;
   grounded: boolean;
+  /**
+   * The turn's graph queries, in issue order — populated only
+   * when the turn opted into the query log (collectQueries);
+   * empty otherwise. Write-only observation for the trace file.
+   */
+  queries: QueryRecord[];
+  /** The session's configured place name, or null (trace files). */
+  location: string | null;
 }
 
 export function runTurn(
@@ -117,9 +132,18 @@ export function runTurn(
   input: string,
   env: NodeJS.ProcessEnv = process.env,
   now: Date = new Date(),
+  collectQueries = false,
 ): TurnResult {
   session.turnCount++;
   const ws: TurnWorkspace = createWorkspace(session.turnCount, input);
+
+  // Query log (trace files): opt-in and passive. When asked, the
+  // turn lends the graph a sink that appends to the workspace's
+  // query list; finish() detaches it. Nothing reads the list
+  // during the turn, so recording cannot affect the reply. The
+  // unconditional assignment also clears any sink a faulted
+  // earlier turn might have left installed.
+  g.querySink = collectQueries ? (rec) => { ws.queries.push(rec); } : null;
 
   // 1 — awareness loads: the situated self, and who is talking.
   loadAwarenessInto(ws, now, env);
@@ -132,6 +156,7 @@ export function runTurn(
   supplyContextInto(ws, session);
 
   const finish = (text: string, intent: IntentKind, grounded: boolean): TurnResult => {
+    g.querySink = null; // the turn's last act of recording is over
     assignIntent(ws, intent);
     speak(ws, text);
     // Depth pass: the trace records which rendering path each
@@ -146,7 +171,13 @@ export function runTurn(
     ws.trace.intent = intent;
     ws.trace.answer = text;
     commitTrace(session, ws.trace);
-    return { text, trace: ws.trace, grounded };
+    return {
+      text,
+      trace: ws.trace,
+      grounded,
+      queries: ws.queries,
+      location: sit.place ? sit.place.name : null,
+    };
   };
 
   const lower = input.trim().toLowerCase();

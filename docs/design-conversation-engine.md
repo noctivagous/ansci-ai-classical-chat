@@ -573,6 +573,21 @@ a slice is judged on exactly that declaration.
   gloss, neighbourhood facts follow. Judged on the what-is turns
   gaining true definitions with the contextually right sense, no
   regressions elsewhere.
+- **Trace files** *(small step before E4, landed 2026-11-09).*
+  The ThoughtTrace and a central graph-query log are persisted
+  per turn: the chat CLI's `--trace` appends one JSON line per
+  turn (utterance, reply, grounded, intent, the trace steps
+  verbatim, and every graph query — accessor, key term,
+  relation/direction, hit count — recorded passively at the
+  loader's accessors, the engine's single graph choke point).
+  What it gives E4's judgement: stored, diffable traces — the
+  Context module's "traceable difference" becomes a file diff
+  between runs rather than an impression, declines carry their
+  query-level evidence (the empty Causes set behind the onion
+  turn is a line in the file), and emergence candidates can be
+  certified against a derivation that survives the session.
+  Recording is opt-in per turn and write-only; traced and
+  untraced transcripts are byte-identical.
 - **E4 — The conversation frame: role and person** *(enables, then
   moves).* Opens with the **Context module** (§2) — the frame made
   operative during analysis; its evidence is the

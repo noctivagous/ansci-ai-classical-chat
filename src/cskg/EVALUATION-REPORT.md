@@ -683,3 +683,91 @@ template keying of a paraphrased feeling question with its
 expansions traced, intent via xIntent, subevent ordering, the
 coverage rule, the no-match decline). Project suite 120/120;
 `tsc` clean. Nothing pushed.
+
+## Trace-file step note (2026-11-09)
+
+A small, behaviour-neutral step before E4, at the user's
+direction: the ThoughtTrace used to live only in the session's
+ring and in --debug's console output — when a session ended,
+the record of why each reply happened ended with it, and a
+re-run is not the same turn (situation lines read the real
+clock). Now a turn's derivation can be persisted, with the
+graph queries it issued as first-class records.
+
+What was built:
+
+- **A central query log at the loader's accessors.** The
+  CskgGraph accessors are the engine's single graph choke
+  point — verified by grep before building: no piece touches
+  the CSR arrays or the depth-pass side stores directly (label
+  reads via `terms[]` on already-materialised edges are not
+  queries, and internal helpers — `materialise`,
+  `isAtomicEvent` — are not accessors). Every accessor
+  (`id`, `outEdges`, `inEdgesFor`, `edgesOf`, `topEdges`,
+  `contextsOf`, `lemmaOf`, `eventTermIds`, `degree`) reports
+  to `graph.querySink` when a turn has installed one:
+  { via, term, rel, dir, hits }. `topEdges` was rerouted
+  through the private gather so it records one query under
+  its own name instead of two under its delegates'. The sink
+  is installed by `runTurn` only for a turn that opts in
+  (`collectQueries`), appended to the workspace's query list,
+  and detached in `finish()`. Recording is write-only: no
+  piece reads the log, and with no sink installed an accessor
+  pays one null test and builds nothing.
+- **The trace file** (`src/cskg/tracefile.ts`; the CLI's new
+  `--trace`). One JSON line per turn, appended: { turn, at,
+  location, utterance, reply, grounded, intent, steps
+  (verbatim), queries }. In --script mode `--trace` alone
+  defaults to the script path + ".trace.jsonl"; interactive
+  mode requires an explicit path and refuses without one.
+  Append mode — a resumed run continues the file. Generated
+  .trace.jsonl files are local artifacts, not source.
+
+Gate: suite 120 → 123 (three new tests, below); `tsc` clean.
+Chicago and Sydney run with tracing OFF and ON: Sydney
+byte-identical outright; Chicago byte-identical except the
+real-clock line (the two runs straddled a minute: 2:20 AM vs
+2:21 AM on "What time is it?"). The Chicago trace file holds
+28 lines for 28 turns.
+
+First readings — the log paying rent immediately:
+
+1. The onion decline's evidence is literal. The turn issues
+   `outEdges("chop onions", "/r/Causes")` three times and
+   `outEdges("onion", "/r/Causes")` / `("onions", …)` twice
+   each — every one returns **0 hits** on the production
+   graph. The empty set the reply names is a set of lines in
+   the file. (The fixture graph, by design, gives onion one
+   stray Causes edge to crying; there the evidence is the
+   chain probe `outEdges("crying", "/r/Causes")` → 0, and the
+   fixture test pins exactly that.)
+2. The brother turn issues 4,324 queries. The within-node
+   arbitration re-probes the same IsA sets (brother's 11,
+   sibling's 2, male's 5, monk's 5, girlfriend's 4) once per
+   candidate per scoring pass — no within-turn caching. The
+   answer is right; the log prices how it is reached.
+3. "What happens when it rains?" issues 64,951 queries,
+   64,760 of them `lemmaOf`: the template matcher re-lemmatises
+   the words of all 23,811 ATOMIC event keys on every matching
+   turn (`eventTermIds` itself is cached; the per-key word
+   lemmatisation is not). Trace files are correspondingly
+   large — Chicago's 28 turns are 9.6 MB, dominated by
+   event-matching turns. This is designed machinery whose
+   cost was invisible until the log existed; a candidate
+   optimisation for a later slice, deliberately NOT taken
+   here — this step is observation only.
+
+### Undesigned behaviour
+
+None observed. The volumes in readings 2–3 are designed
+mechanisms acting as built; the step's whole point is that
+their costs are now measured rather than suspected, and they
+are listed rather than hidden.
+
+Tests: three fixture tests added (the onion turn's query log
+holds the empty Causes evidence and the sink is detached
+afterwards; the trace writer emits one parseable JSON line
+per turn with the required fields, append-mode, and the
+replay turn's query log is empty; traced vs untraced replies
+are identical across four turns, and an untraced turn records
+nothing). Project suite 123/123; `tsc` clean. Nothing pushed.

@@ -67,6 +67,16 @@
  * chunks) alive — retaining 585k raw sentence fields pinned
  * ~680 MB of heap; the copies cost ~30 MB.
  *
+ * QUERY LOG (2026-11-09, the trace-file step before E4): the
+ * accessors on CskgGraph are the engine's single graph choke
+ * point — no piece touches the CSR arrays or the side stores
+ * directly (label reads via `terms[]` on already-materialised
+ * edges are not queries). Each accessor reports its call to
+ * `graph.querySink` when a turn has installed one: accessor name,
+ * key term, relation/direction where applicable, hit count. The
+ * sink is passive and write-only; with no sink installed the
+ * recording costs one null test per call and changes nothing.
+ *
  * STORAGE: edges live in parallel typed arrays (from/to as Int32,
  * relation as Uint8 index, provenance as a dataset bitmask), deduped
  * by a numeric sort, with CSR adjacency in both directions. A first
@@ -120,6 +130,32 @@ function popcount(n: number): number {
   while (n) { n &= n - 1; c++; }
   return c;
 }
+
+/**
+ * One recorded graph query (trace files, 2026-11-09). The graph's
+ * accessors report each call to the query sink when one is
+ * installed; the record names the accessor, the key it was keyed
+ * on, the relation/direction restriction where the accessor has
+ * one, and how many results came back. Recording is strictly
+ * write-only observation: nothing in the engine ever reads the
+ * log, and no ranking, selection, filtering or ordering may
+ * depend on it.
+ */
+export interface QueryRecord {
+  /** the accessor that was called ("id", "outEdges", …) */
+  via: string;
+  /** the key term (or looked-up string) the query was keyed on */
+  term?: string;
+  /** the relation the query was restricted to, when it was */
+  rel?: string;
+  /** traversal direction, where the accessor takes one */
+  dir?: "out" | "in";
+  /** how many results the accessor returned */
+  hits: number;
+}
+
+/** A per-turn consumer of query records; see CskgGraph.querySink. */
+export type QuerySink = (rec: QueryRecord) => void;
 
 export interface CskgEdge {
   from: number; // term id
@@ -227,8 +263,38 @@ export class CskgGraph {
   formLemmas = new Map<string, string>();
   private eventIds: number[] | null = null;
 
+  /**
+   * The passive query-log sink (trace files). A turn that wants
+   * its queries recorded installs one (turn.ts); every accessor
+   * below reports to it. Null — the default — means no recording:
+   * logQuery returns on the null test before building a record,
+   * so an inactive log costs nothing and can change nothing.
+   */
+  querySink: QuerySink | null = null;
+
+  private logQuery(
+    via: string,
+    hits: number,
+    term?: string,
+    rel?: string,
+    dir?: "out" | "in",
+  ): void {
+    const sink = this.querySink;
+    if (!sink) return;
+    // built in field order (via, term, rel, dir, hits) so raw
+    // trace lines read consistently
+    const rec: Partial<QueryRecord> & Pick<QueryRecord, "via"> = { via };
+    if (term !== undefined) rec.term = term;
+    if (rel !== undefined) rec.rel = rel;
+    if (dir !== undefined) rec.dir = dir;
+    rec.hits = hits;
+    sink(rec as QueryRecord);
+  }
+
   id(term: string): number | undefined {
-    return this.termId.get(term);
+    const found = this.termId.get(term);
+    this.logQuery("id", found === undefined ? 0 : 1, term);
+    return found;
   }
 
   /** The retained assertion sentence for an edge index, if any. */
@@ -238,12 +304,16 @@ export class CskgGraph {
 
   /** HasContext register tags recorded for a term (evidence only). */
   contextsOf(id: number): string[] {
-    return this.contextTags.get(id) ?? [];
+    const tags = this.contextTags.get(id) ?? [];
+    this.logQuery("contextsOf", tags.length, this.terms[id]);
+    return tags;
   }
 
   /** FormOf: the lemma recorded for an inflected form, if any. */
   lemmaOf(form: string): string | undefined {
-    return this.formLemmas.get(form);
+    const lemma = this.formLemmas.get(form);
+    this.logQuery("lemmaOf", lemma === undefined ? 0 : 1, form);
+    return lemma;
   }
 
   /** True when the term carries ATOMIC (at:) out-edges — an event. */
@@ -256,13 +326,15 @@ export class CskgGraph {
 
   /** All ATOMIC event term ids (built once, cached). */
   eventTermIds(): number[] {
-    if (this.eventIds) return this.eventIds;
-    const out: number[] = [];
-    for (let id = 0; id < this.terms.length; id++) {
-      if (this.isAtomicEvent(id)) out.push(id);
+    if (!this.eventIds) {
+      const out: number[] = [];
+      for (let id = 0; id < this.terms.length; id++) {
+        if (this.isAtomicEvent(id)) out.push(id);
+      }
+      this.eventIds = out;
     }
-    this.eventIds = out;
-    return out;
+    this.logQuery("eventTermIds", this.eventIds.length);
+    return this.eventIds;
   }
 
   intern(term: string): number {
@@ -298,11 +370,13 @@ export class CskgGraph {
   /** Materialised edges of one relation (small relations only). */
   edgesOf(rel: string): CskgEdge[] {
     const ri = REL_INDEX.get(rel);
-    if (ri === undefined) return [];
     const out: CskgEdge[] = [];
-    for (let i = 0; i < this.eRel.length; i++) {
-      if (this.eRel[i] === ri) out.push(this.materialise(i));
+    if (ri !== undefined) {
+      for (let i = 0; i < this.eRel.length; i++) {
+        if (this.eRel[i] === ri) out.push(this.materialise(i));
+      }
     }
+    this.logQuery("edgesOf", out.length, undefined, rel);
     return out;
   }
 
@@ -318,17 +392,28 @@ export class CskgGraph {
   }
 
   outEdges(id: number, rel?: string): CskgEdge[] {
-    return this.gather(this.outOff, this.outIdx, id, rel);
+    const res = this.gather(this.outOff, this.outIdx, id, rel);
+    this.logQuery("outEdges", res.length, this.terms[id], rel);
+    return res;
   }
 
   inEdgesFor(id: number, rel?: string): CskgEdge[] {
-    return this.gather(this.inOff, this.inIdx, id, rel);
+    const res = this.gather(this.inOff, this.inIdx, id, rel);
+    this.logQuery("inEdgesFor", res.length, this.terms[id], rel);
+    return res;
   }
 
   /** Best (highest-support, then shortest-label) edges of one relation. */
   topEdges(id: number, rel: string, dir: "out" | "in", n = 3): CskgEdge[] {
-    const all = dir === "out" ? this.outEdges(id, rel) : this.inEdgesFor(id, rel);
-    return all
+    // Straight to gather (not via outEdges/inEdgesFor) so a
+    // topEdges call records ONE query, under its own name.
+    const all = this.gather(
+      dir === "out" ? this.outOff : this.inOff,
+      dir === "out" ? this.outIdx : this.inIdx,
+      id,
+      rel,
+    );
+    const res = all
       .sort(
         (a, b) =>
           b.support - a.support ||
@@ -336,12 +421,15 @@ export class CskgGraph {
             this.terms[dir === "out" ? b.to : b.from].length,
       )
       .slice(0, n);
+    this.logQuery("topEdges", res.length, this.terms[id], rel, dir);
+    return res;
   }
 
   degree(id: number): number {
-    return (
-      this.outOff[id + 1] - this.outOff[id] + (this.inOff[id + 1] - this.inOff[id])
-    );
+    const d =
+      this.outOff[id + 1] - this.outOff[id] + (this.inOff[id + 1] - this.inOff[id]);
+    this.logQuery("degree", d, this.terms[id]);
+    return d;
   }
 }
 
