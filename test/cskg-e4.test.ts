@@ -259,11 +259,13 @@ test("E4 person: the companion acknowledges memory in its own voice", async () =
 
 /* ---------------- Part 3 — statement classification -------------- */
 
-test("E4 statements: the soup statement schmoozes — grounded fact plus the slot's follow-up", async () => {
+test("E4 statements: the soup statement schmoozes — the recorded event leads (Loop 2 L2-A), plus the slot's follow-up", async () => {
   const g = await graph();
   const r = runTurn(g, createSession(), "I'm making a big pot of soup on Saturday.", {});
   assert.equal(r.grounded, true);
-  assert.match(r.text, /Soup is a dish\./);
+  assert.match(r.text, /You are making a big pot of soup/);
+  assert.doesNotMatch(r.text, /Soup is a dish\./,
+    "the bare classification of the object noun no longer leads the reply");
   assert.match(r.text, /And what made you want to do that\?/,
     "the canonical follow-up, formed from the doing slot");
   assert.ok(
@@ -444,5 +446,5 @@ test("E4 clarification: an unrelated turn clears the pending ask and proceeds fr
   };
   const r = runTurn(g, session, "I'm making a big pot of soup on Saturday.", {});
   assert.equal(session.pendingClarification, null, "the ask is spent");
-  assert.match(r.text, /Soup is a dish\./, "the fresh turn is analysed on its own terms");
+  assert.match(r.text, /You are making a big pot of soup/, "the fresh turn is analysed on its own terms");
 });

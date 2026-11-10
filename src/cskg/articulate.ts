@@ -251,8 +251,287 @@ export function renderAll(g: CskgGraph, cs: Conclusion[]): string {
   return cs.map((c) => renderConclusion(g, c)).join(" ");
 }
 
+/* ---------------- the state pattern (L2-M3) ----------------
+ *
+ * A stated feeling is answered with the GENERAL PATTERN it
+ * belongs to — what people in that state typically feel, want
+ * and do. That is the classical gesture this engine exists
+ * for: pattern-knowledge over the particular. But ATOMIC's
+ * script phrases are fragments — a finite verb phrase for the
+ * event ("waits nervously"), bare tails for the rest
+ * ("injured", "cries") — and pasting them raw into sentence
+ * frames produced agreement-broken soup ("they want to
+ * injured", "they cries"). So the pattern is rendered with
+ * real morphology, and GATED: a sentence is included only
+ * when its forms can be put right from the graph's own lemma
+ * knowledge; if no sentence can be said correctly, the
+ * pattern is declined whole and the state stands as captured.
+ */
+
+/**
+ * A verb surface's base form, vouched for by the graph: the
+ * lemma map records inflected surfaces, and a word already in
+ * base form may have no entry there — then the word itself
+ * serves, when it carries no inflectional ending and the
+ * graph holds it as a term.
+ */
+function verbBaseOf(g: CskgGraph, word: string): string | null {
+  const lemma = g.lemmaOf(word);
+  if (lemma) return lemma;
+  if (!/s$|ed$|en$|ing$/.test(word) && g.id(word) !== undefined) return word;
+  return null;
+}
+
+/** The copula's forms — a closed function-word paradigm. */
+const COPULA = new Set(["is", "am", "are", "was", "were", "be", "been", "being"]);
+
+/** The -ing form of a base verb (standard spelling rules). */
+function gerundOf(base: string): string {
+  if (base.endsWith("ie")) return `${base.slice(0, -2)}ying`;
+  if (base.length > 2 && /[^aeiou]e$/.test(base)) return `${base.slice(0, -1)}ing`;
+  if (/[^aeiou][aeiou][^aeiouwxy]$/.test(base)) return `${base}${base.slice(-1)}ing`;
+  return `${base}ing`;
+}
+
+/**
+ * The base form for an ATOMIC effect tail after "they": the
+ * tail is stored as a finite third-person form ("cries",
+ * "yawns", "goes") whose lemma is the base. A participle
+ * ("injured") is the person's PASSIVE — "they injured" would
+ * reverse it — so participles are unsayable here and rejected.
+ */
+function effectBaseOf(g: CskgGraph, word: string): string | null {
+  const lemma = g.lemmaOf(word);
+  if (!lemma) {
+    return /s$|ed$|en$|ing$/.test(word) || g.id(word) === undefined ? null : word;
+  }
+  if (lemma !== word) return word.endsWith("s") ? lemma : null;
+  return /s$|ed$|en$/.test(word) ? null : word;
+}
+
+/**
+ * Render one ATOMIC event's reaction conclusions as the
+ * general pattern, said correctly — or null when it cannot
+ * be. The event label becomes a gerund clause ("waiting
+ * nervously"); PersonX may stand as the label's subject (the
+ * pattern supplies its own), but a person placeholder in any
+ * argument position is a slot the saying cannot fill, and
+ * the event is unsayable.
+ */
+export function renderStatePattern(
+  g: CskgGraph,
+  eventLabel: string,
+  cs: Conclusion[],
+): { text: string; used: Conclusion[] } | null {
+  let words = eventLabel.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words[0] === "personx") words = words.slice(1);
+  words = words.filter((w) => w !== "___");
+  if (!words.length || words.some((w) => w === "personx" || w === "persony")) return null;
+  // The event clause in its two frames: the when-frame of a
+  // reaction and the after-frame of a want/effect. A lexical
+  // verb gives one gerund clause for both ("waiting
+  // nervously"). A copula event ("is tired") is a STATE, not
+  // an action: the when-frame takes the bare complement
+  // ("when tired"), the after-frame the being-form ("after
+  // being tired").
+  let whenClause: string;
+  let afterClause: string;
+  if (COPULA.has(words[0])) {
+    const rest = words.slice(1).join(" ");
+    if (!rest) return null;
+    whenClause = rest;
+    afterClause = `being ${rest}`;
+  } else {
+    const headBase = verbBaseOf(g, words[0]);
+    if (!headBase) return null;
+    whenClause = afterClause = [gerundOf(headBase), ...words.slice(1)].join(" ");
+  }
+  const gerundClause = afterClause;
+
+  const sentences: string[] = [];
+  const used: Conclusion[] = [];
+  for (const c of cs) {
+    if (sentences.length >= 3) break;
+    const obj = (g.terms[c.edge.to] ?? "").toLowerCase().trim();
+    if (!obj || /\bpersonx\b|\bpersony\b/.test(obj)) continue;
+    const ow = obj.split(/\s+/).filter(Boolean);
+    const others = c.edge.rel.startsWith("at:o");
+    let sentence: string | null = null;
+    if (c.edge.rel === "at:xReact" || c.edge.rel === "at:oReact") {
+      // "People often feel <obj> when <event>" — the object is
+      // a feeling word/phrase; a finite verb form in it would
+      // break the frame, so it is gated out.
+      const finiteInside = ow.some((w) => {
+        const l = g.lemmaOf(w);
+        return l !== undefined && l !== w && w.endsWith("s");
+      });
+      if (ow.length <= 3 && !finiteInside) {
+        sentence = others
+          ? `Others often feel ${obj} when ${whenClause}.`
+          : `People ${c.edge.support >= 2 ? "" : "often "}feel ${obj} when ${whenClause}.`;
+      }
+    } else if (c.edge.rel === "at:xEffect" || c.edge.rel === "at:oEffect") {
+      const base = effectBaseOf(g, ow[0]);
+      if (base && ow.length <= 4) {
+        sentence = `After ${gerundClause}, ${others ? "others" : "they"} ${[base, ...ow.slice(1)].join(" ")}.`;
+      }
+    } else if (c.edge.rel === "at:xWant" || c.edge.rel === "at:oWant") {
+      // "they want to <phrase>" — the phrase must be an
+      // infinitive the data itself gives ("to go home"), or a
+      // bare base-verb phrase. A participle object
+      // ("injured") would need a guessed "be" and reverses
+      // who acts — declined.
+      let phrase: string | null = null;
+      if (obj.startsWith("to ") && ow.length <= 5 && verbBaseOf(g, ow[1])) {
+        phrase = obj.slice(3);
+      } else {
+        const l = g.lemmaOf(ow[0]);
+        if ((l === undefined || l === ow[0]) && !/s$|ed$|en$/.test(ow[0]) && ow.length <= 4) {
+          phrase = obj;
+        }
+      }
+      if (phrase) {
+        sentence = `After ${gerundClause}, ${others ? "others" : "they"} want to ${phrase}.`;
+      }
+    }
+    if (sentence) {
+      sentences.push(sentence);
+      used.push(c);
+    }
+  }
+  if (!sentences.length) return null;
+  const text = sentences.join(" ");
+  if (/\bpersonx\b|\bpersony\b/i.test(text)) return null;
+  return { text, used };
+}
+
+/**
+ * The addressed lead for a feeling statement whose pattern
+ * rendered (L2-M3): the person's own state, taken up in
+ * second person from the record, before the general pattern
+ * speaks. Null when the recorded text can't head the frame.
+ */
+export function renderFeelingLead(feelingText: string): string | null {
+  const t = feelingText.trim().toLowerCase();
+  if (!t || t.length > 40 || /^like\b/.test(t)) return null;
+  return `You're ${t}.`;
+}
+
 export function cap(s: string): string {
   return s.length ? s[0].toUpperCase() + s.slice(1) : s;
+}
+
+/**
+ * Perspective flip for a span of the PERSON's own words being
+ * echoed back to them (Loop 2, L2-B): the situation model stores
+ * surface spans as spoken — "selling my bike" — and an answer
+ * that repeats them verbatim speaks about the wrong person.
+ * Rendered for the addressee, the speaker's first-person
+ * possessives turn second-person: my → your, mine → yours.
+ *
+ * Apply ONLY to model spans (event actions, object phrases,
+ * entity labels) at the point where a reply echoes them about
+ * the speaker. Never apply to graph text (terms, glosses, edge
+ * restatements are quoted as attested) and never to the engine's
+ * own first person in templates ("I couldn't place…").
+ */
+export function forAddressee(text: string): string {
+  return text
+    .replace(/\bmy\b/g, "your")
+    .replace(/\bMy\b/g, "Your")
+    .replace(/\bmine\b/g, "yours")
+    .replace(/\bMine\b/g, "Yours")
+    .replace(/\bme\b/g, "you")
+    .replace(/\bMe\b/g, "You");
+}
+
+/**
+ * The statement acknowledgement LEAD, composed from the
+ * situation model's own event entry (Loop 2, L2-A): when a
+ * statement records the speaker doing something, the reply is
+ * about THAT — the event restated to the person in second
+ * person, with its stated time — not about a topic noun. The
+ * verb form follows the recorded surface: a gerund action takes
+ * the progressive ("You are selling your bike"); a past or base
+ * form stands as spoken ("You set up the tent"). The action span
+ * is the person's own words, so it is perspective-flipped for
+ * the addressee (L2-B) before it is echoed.
+ */
+/**
+ * A recorded time expression as it should READ in a reply
+ * (Loop 2, L2-L): the model stores the surface it sliced,
+ * which can carry a title-cased form ("Tomorrow") from the
+ * graph term it resolved through. A relative time word is a
+ * circumstance, not a participant's name — it takes its
+ * natural lowercase. Weekday and month names are names and
+ * keep their capitals.
+ */
+const RELATIVE_TIME_WORDS = new Set(["tomorrow", "yesterday", "today", "tonight"]);
+export function displayTime(timeText: string): string {
+  const m = timeText.match(/^([A-Za-z]+)(.*)$/);
+  if (!m) return timeText;
+  return RELATIVE_TIME_WORDS.has(m[1].toLowerCase())
+    ? m[1].toLowerCase() + m[2]
+    : timeText;
+}
+
+export function renderEventLead(
+  verbSurface: string, action: string, timeText: string | null,
+  mode: "ongoing" | "intended" = "ongoing", intentMarker: string | null = null,
+): string {
+  const addressed = forAddressee(action);
+  // Loop 2 (L2-K): an intended event renders AS an intention,
+  // in the person's own marker — the mode the situation model
+  // recorded — never as a present fact.
+  const head = mode === "intended"
+    ? intentMarker === "plan to"
+      ? `You plan to ${addressed}`
+      : `You're thinking of ${addressed}`
+    : /ing$/i.test(verbSurface.trim())
+      ? `You are ${addressed}`
+      : `You ${addressed}`;
+  return `${head}${timeText ? `, ${displayTime(timeText)}` : ""}.`;
+}
+
+/**
+ * The statement acknowledgement LEAD for a recorded STATE
+ * (Loop 2, L2-C): when a statement records a state in the
+ * situation model — a circumstance with its stated duration
+ * ("third day of rain") or a property of a thing ("bananas …
+ * brown") — the reply leads with the state AS REPORTED,
+ * attributed to the person's telling (the record's own
+ * attribution stamp), instead of a filing about the topic
+ * noun. The state spans are the person's own words, so they
+ * are perspective-flipped for the addressee (L2-B) first.
+ */
+/**
+ * The third-person form of the event lead (Loop 2, L2-D):
+ * a statement that reports someone else's (or something's)
+ * happening leads with that happening, the actor named as
+ * the model holds them — "Your brother is bringing his new
+ * girlfriend.", "Rain flooded the garden." The action span
+ * is the person's own words, perspective-flipped for the
+ * addressee (the speaker inside it — "teaching me to sail" —
+ * is "you" in the reply).
+ */
+export function renderEventLeadFor(
+  actorLabel: string, verbSurface: string, action: string, timeText: string | null,
+): string {
+  const who = cap(forAddressee(actorLabel));
+  const addressed = forAddressee(action);
+  const head = /ing$/i.test(verbSurface.trim()) ? `${who} is ${addressed}` : `${who} ${addressed}`;
+  return `${head}${timeText ? `, ${displayTime(timeText)}` : ""}.`;
+}
+
+export function renderStateLead(
+  label: string | null, text: string, kind: string,
+): string {
+  if (kind === "circumstance" || !label) {
+    return `${cap(forAddressee(text))} — as you said.`;
+  }
+  const who = cap(forAddressee(label));
+  const verb = /s$/i.test(label.trim()) ? "are" : "is";
+  return `${who} ${verb} ${forAddressee(text)} — as you said.`;
 }
 
 /* ---------------- causal phrasings (solve selects, F words) ----- */
@@ -512,6 +791,23 @@ export function renderWhyNoCausePlain(effectText: string, causeText: string | nu
 export function renderDeclineUnplacedPlain(unplaced: string[]): string {
   const named = unplaced.length ? `"${unplaced.slice(0, 3).join('", "')}"` : "that";
   return `I don't know ${named} — it isn't in what I know yet.`;
+}
+
+/**
+ * The attestation decline (Loop 1, design-abstention): a
+ * specific-fact ask whose two poles — the bearer/subject and
+ * the value, role, count or event asked for — are connected by
+ * no graph edge and stated in no record. The reply names the
+ * poles and the missing connection, the same honesty shape as
+ * the why-decline: the graph's silence about what was asked is
+ * the answer, and no neighbouring fact is substituted.
+ */
+export function renderUnattestedAsk(aText: string, bText: string): string {
+  return `This graph doesn't record that: nothing in it connects "${aText}" with "${bText}" — the fact asked for isn't attested here, and I won't substitute a neighbouring one.`;
+}
+
+export function renderUnattestedAskPlain(aText: string, bText: string): string {
+  return `I don't know — this graph doesn't record that: nothing in it connects "${aText}" with "${bText}".`;
 }
 
 export function renderToolDeclinePlain(usedForPhrase: string): string {

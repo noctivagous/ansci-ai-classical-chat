@@ -29,6 +29,7 @@ export type EngineNodeId =
   | "resolver"
   | "situationModel"
   | "solve"
+  | "statement"
   | "articulate"
   | "interface";
 
@@ -123,10 +124,17 @@ export const ENGINE_NODES: EngineNode[] = [
   },
   {
     id: "solve",
-    label: "E — Query / problem solving",
+    label: "E — Query / problem solving (incl. the attestation check: specific-fact asks decline on the graph's silence)",
     file: "src/cskg/solve.ts",
     writes: ["conclusions"],
     reads: ["breakdown", "intent", "activeContext", "situation"],
+  },
+  {
+    id: "statement",
+    label: "Statement-turn composition — the reply policy for statements: the conversation's own records lead (situation, person, state), graph testimony only as the graph-distance rule allows (extracted from the turn coordinator, Loop 2)",
+    file: "src/cskg/statement.ts",
+    writes: ["reply"],
+    reads: ["breakdown", "intent", "situation", "person", "conclusions", "situationModel"],
   },
   {
     id: "articulate",

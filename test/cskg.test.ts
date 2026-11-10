@@ -136,13 +136,21 @@ test("longest match wins: brown banana over banana", async () => {
   assert.ok(found.some((f) => f.text === "brown banana"));
 });
 
-test("statement turn answers with a grounded fact, never a bare decline", async () => {
+test("statement turn answers grounded, never a bare decline", async () => {
   const g = await graph();
   const s = createSession();
   const r = runTurn(g, s, "I'm making a big pot of soup on Saturday.");
   assert.equal(r.grounded, true);
   assert.match(r.text, /soup/i);
-  assert.ok(r.trace.conclusions.length >= 1);
+  // Loop 2 (L2-A): the grounding is the conversation's own
+  // record — the reply leads with the event the situation
+  // model recorded, so the trace carries the event step even
+  // when no graph conclusion is stated
+  assert.match(r.text, /You are making a big pot of soup/);
+  assert.ok(
+    r.trace.steps.some((st) => st.piece === "situationModel" && /event ev/.test(st.detail)),
+    "the recorded event is in the trace",
+  );
 });
 
 test("tool question finds the corkscrew via reverse UsedFor", async () => {
@@ -231,7 +239,11 @@ test("E2: an ordinal mention cannot outscore the noun it modifies", async () => 
   const s = createSession();
   const r = runTurn(g, s, "It's the third day of rain here.");
   assert.equal(r.grounded, true);
-  assert.match(r.text, /precipitation/);
+  // Loop 2 (L2-C): the reply leads with the recorded state,
+  // not the topic filing — the resolver evidence is the
+  // breakdown assertion above; the reply just must not fall
+  // to the ordinal's wrong sense
+  assert.match(r.text, /Third day of rain/);
   assert.doesNotMatch(r.text, /echelon/);
 });
 
@@ -248,7 +260,10 @@ test("E2: bananas — the fruit sense beats the film sense in a food conversatio
   runTurn(g, s, "I'm making a big pot of soup on Saturday.");
   const r = runTurn(g, s, "My bananas have gone all brown.");
   assert.equal(r.grounded, true);
-  assert.match(r.text, /fruit/);
+  // Loop 2 (L2-C): the reply leads with the recorded state;
+  // the sense evidence is the chosen-candidate assertion
+  // above — the reply just must not fall to the film sense
+  assert.match(r.text, /Bananas are brown/);
   assert.doesNotMatch(r.text, /film/);
 });
 
@@ -275,7 +290,11 @@ test("E3: within-node fact choice — context beats support (brother is a siblin
   const s = createSession();
   const r = runTurn(g, s, "My brother is bringing his new girlfriend.");
   assert.equal(r.grounded, true);
-  assert.match(r.text, /sibling/);
+  // Loop 2 (L2-D): the reply now leads with the recorded
+  // event, so the fact choice is not what the reply shows;
+  // what must still hold is that the monk filing surfaces
+  // nowhere — the lead is the conversation's own record
+  assert.match(r.text, /Your brother is bringing his new girlfriend/);
   assert.doesNotMatch(r.text, /monk/);
 });
 

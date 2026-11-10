@@ -53,6 +53,7 @@ import {
   renderConclusion,
   renderDefinition,
   renderMeeting,
+  renderStatePattern,
   type Conclusion,
 } from "./articulate";
 import { chooseDefinition, definitionTraceNote } from "./definitions";
@@ -61,6 +62,7 @@ import {
   contentCandidates,
   matchEvent,
   matchEventTemplate,
+  resolveTerms,
   STOPWORDS,
   TEMPLATE_STRONG,
   tokenise,
@@ -71,6 +73,7 @@ import {
 import { contextRelevance } from "./context";
 import { definitionForSynset } from "./definitions";
 import {
+  classifySurface,
   isDefinitionQuestion,
   type EventQuestionKind,
   type SurfaceIntentKind,
@@ -104,7 +107,8 @@ export function noteTriage(ws: TurnWorkspace, kind: TriageKind, detail: string):
  * numbers are unchanged; solve imports and re-exports it.
  */
 
-import { affinityBetween } from "./everydaysense";
+import { affinityBetween, clusterEvidenceIds, filingClusters } from "./everydaysense";
+import { definitionCandidates, senseClusterLabel, senseEvidence } from "./definitions";
 export { affinityBetween, typicalityOf } from "./everydaysense";
 
 /**
@@ -729,6 +733,247 @@ export function answerWhyQuestion(
   };
 }
 
+/* ---------------- attestation (Loop 1: design-abstention) -------
+ *
+ * A responsibility Solve owns and no piece held before: some
+ * questions ask for a SPECIFIC FACT — a value of a bearer, the
+ * person filling a role or winning an event, a count, one
+ * particular happening — and the graph either attests that fact
+ * or it does not. When it does not, the honest answer is a
+ * decline; what the engine did instead was substitute: define a
+ * term the question contains, or offer an arbitrary fact about
+ * a neighbouring term ("Night is a time of day." for last
+ * night's match). The substitution is grounded in the graph but
+ * not in the question.
+ *
+ * The check is about ATTESTATION OF WHAT WAS ASKED, never about
+ * topics: a specific-fact ask names two poles — a bearer /
+ * subject pole and a value / role / event pole — and the asked
+ * fact is attested exactly when testimony connects the poles:
+ * a direct graph edge between the pole nodes (either
+ * direction, any relation — the loader's own accessors), or a
+ * record of this conversation (a situation state, an entity, a
+ * person-fact term in play) that states both poles together.
+ * Silence on that connection is evidence, and the turn declines
+ * on it, naming the poles.
+ *
+ * Conservative by construction:
+ *   - only asks headed for the two substitution-prone paths
+ *     are checked (surface intent whatis, or unclassified —
+ *     the definition route and the generic-fact fallback);
+ *     every classified intent keeps its own empty-set rules;
+ *   - only four specific-fact FORMS are recognised (value-of,
+ *     who-role / who-event, how-many, specific past event /
+ *     future property) — a form whose poles cannot both be
+ *     named from the question's own resolved terms is not the
+ *     check's shape and falls through untouched;
+ *   - situated testimony outranks the check: the coordinator
+ *     consults it only after the situation model and person
+ *     recall have had their turns, so a fact the person stated
+ *     stays answerable;
+ *   - a count ask is attested only by a record (the graph's
+ *     edges carry no instance counts — sand↔beach edges exist
+ *     and attest nothing about grains), never by an edge.
+ */
+
+export interface AttestationGap {
+  form: "value" | "who" | "count" | "event";
+  /** the bearer / subject pole, in the question's own words */
+  aText: string;
+  /** the value / role / count / event pole, in the question's own words */
+  bText: string;
+}
+
+const ATTEST_TIME_TAIL =
+  /\s+(right now|at this moment|at the moment|last night|today|tonight|tomorrow|yesterday)$/;
+
+/** Copulas and auxiliaries are never the event a who/what-did
+ * ask is about ("Who is Sarah?", "What did you do?"). */
+const ATTEST_AUX = new Set([
+  "is", "was", "are", "were", "am", "be", "been", "being",
+  "do", "does", "did", "has", "have", "had",
+]);
+
+export function attestationGap(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  session: SessionState,
+): AttestationGap | null {
+  // Loop 2 (L2-H): the form patterns below are written in the
+  // uncontracted shapes ("what is …"); a "what's" ask names
+  // exactly the same poles and must meet the same check —
+  // normalise the contraction for form matching only.
+  const lower = ws.input.trim().toLowerCase().replace(/^what's\b/, "what is");
+  const kind = classifySurface(lower);
+  if (kind !== null && kind !== "whatis") return null;
+
+  const clean = (s: string): string => s.replace(/[?.!]+$/, "").trim();
+  /** The longest term discourse resolves inside a pole phrase. */
+  const poleId = (phrase: string): number | null => {
+    const rs = resolveTerms(g, phrase);
+    if (!rs.length) return null;
+    return [...rs].sort((x, y) => y.words - x.words || y.start - x.start)[0].id;
+  };
+  /** A direct edge between the two pole phrases' nodes. */
+  const polesConnected = (aPhrase: string, bPhrase: string): boolean => {
+    const a = poleId(aPhrase);
+    const b = poleId(bPhrase);
+    if (a === null || b === null || a === b) return false;
+    return (
+      g.outEdges(a).some((e) => e.to === b) ||
+      g.outEdges(b).some((e) => e.to === a)
+    );
+  };
+  const recordTexts: string[] = [
+    ...session.situation.states.map((s) => s.text.toLowerCase()),
+    ...session.situation.entities.map((e) => e.label.toLowerCase()),
+    ...(ws.context?.personFactIds ?? [])
+      .map((id) => g.terms[id]?.toLowerCase())
+      .filter((t): t is string => !!t),
+  ];
+  const poleWords = (phrase: string): string[] =>
+    phrase.split(/[^a-z']+/).filter((w) => w.length > 2 && !STOPWORDS.has(w));
+  /** A single record stating words from both poles together. */
+  const recordAttests = (aPhrase: string, bPhrase: string): boolean => {
+    const aw = poleWords(aPhrase);
+    const bw = poleWords(bPhrase);
+    if (!aw.length || !bw.length) return false;
+    return recordTexts.some(
+      (t) => aw.some((w) => t.includes(w)) && bw.some((w) => t.includes(w)),
+    );
+  };
+  const gap = (form: AttestationGap["form"], aText: string, bText: string): AttestationGap => {
+    noteStep(ws, "solve", "decline",
+      `attestation (${form}): the ask names "${aText}" and "${bText}" — no edge connects them and no record states it; the asked fact is unattested`);
+    return { form, aText, bText };
+  };
+
+  let m: RegExpMatchArray | null;
+
+  /* value-of: "what is the <NP> of <bearer>?" */
+  m = lower.match(/^what (?:is|are) the (.+?) of (.+?)[?.!]?$/);
+  if (m) {
+    const np = clean(m[1]);
+    const bearer = clean(m[2]).replace(ATTEST_TIME_TAIL, "");
+    if (!polesConnected(np, bearer) && !recordAttests(np, bearer)) {
+      return gap("value", bearer, np);
+    }
+    return null;
+  }
+
+  /* value-of, possessive: "what is <possessor>'s <NP>?" */
+  m = lower.match(
+    /^what (?:is|are) (?:(?:my|your|his|her|their|our) )?([a-z][a-z' -]*?)'s (.+?)[?.!]?$/,
+  );
+  if (m) {
+    const bearer = clean(m[1]);
+    const np = clean(m[2]);
+    if (!polesConnected(np, bearer) && !recordAttests(np, bearer)) {
+      return gap("value", bearer, np);
+    }
+    return null;
+  }
+
+  /* who: the person filling a role, or the outcome of an event */
+  if (lower.startsWith("who ")) {
+    const role = lower.match(/^who is the (.+?) of (.+?)[?.!]?$/);
+    if (role) {
+      const roleNp = clean(role[1]).replace(/^(current|present|new)\s+/, "");
+      const org = clean(role[2]);
+      if (!polesConnected(org, roleNp) && !recordAttests(org, roleNp)) {
+        return gap("who", org, roleNp);
+      }
+      return null;
+    }
+    const ev = lower.match(/^who (\w+) (.+?)[?.!]?$/);
+    if (ev && !ATTEST_AUX.has(ev[1])) {
+      const lemma = g.lemmaOf(ev[1]);
+      if ((lemma && lemma !== ev[1].toLowerCase()) || /ed$/.test(ev[1])) {
+        // a past-tense content verb: the event's outcome is asked
+        const subject = clean(ev[2])
+          .replace(ATTEST_TIME_TAIL, "")
+          .replace(/^the\s+/, "");
+        const verbDisplay = lemma ?? ev[1];
+        if (
+          !polesConnected(subject, ev[1]) &&
+          !polesConnected(subject, verbDisplay) &&
+          !recordAttests(subject, verbDisplay)
+        ) {
+          return gap("who", subject, verbDisplay);
+        }
+        return null;
+      }
+    }
+    return null;
+  }
+
+  /* count: "how many <counted> …?" — attested only by a record
+   * that states a number for the counted thing */
+  if (/^how many\b/.test(lower)) {
+    const cm =
+      lower.match(/^how many (.+?)(?: are there| is there| are| is| were| was| do| does| did)\b/) ??
+      lower.match(/^how many (.+?)[?.!]?$/);
+    if (cm) {
+      const counted = clean(cm[1]);
+      const placeM = lower.match(/\b(?:on|in|at) ([a-z][a-z ]+?)[?.!]?$/);
+      const place = placeM ? clean(placeM[1]) : null;
+      const head = counted.split(" ").pop() ?? counted;
+      const stated = recordTexts.some(
+        (t) =>
+          t.includes(head) &&
+          /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b/.test(t),
+      );
+      if (!stated) return gap("count", counted, place ?? "a count");
+      return null;
+    }
+    return null;
+  }
+
+  /* a specific past event: "what did <subject> <verb> …?" —
+   * "did" itself carries the past, so the verb stands in base
+   * form and any non-auxiliary verb is the asked event. */
+  const past = lower.match(/^what did (.+?) (\w+) (.+?)[?.!]?$/);
+  if (past && !ATTEST_AUX.has(past[2])) {
+    const lemma = g.lemmaOf(past[2]);
+    const subject = clean(past[1]);
+    const rest = clean(past[3]);
+    const restTerms = resolveTerms(g, rest)
+      .filter((r) => r.words >= 1 && r.text.length > 2)
+      .sort((a, b) => a.start - b.start);
+    const objectDisplay = restTerms.length
+      ? restTerms[0].text.replace(/^(for|on|in|at|to|with)\s+/, "")
+      : (lemma ?? past[2]);
+    const attested =
+      polesConnected(subject, past[2]) ||
+      (lemma ? polesConnected(subject, lemma) : false) ||
+      restTerms.some((r) => polesConnected(subject, r.text)) ||
+      recordAttests(subject, objectDisplay);
+    if (!attested) return gap("event", subject, objectDisplay);
+    return null;
+  }
+
+  /* a future property of a placed subject: "what will the
+   * <NP> be like on <place>?" */
+  const future = lower.match(
+    /^what will (?:the )?(.+?) be like(?: (?:on|in|at) (.+?))?[?.!]?$/,
+  );
+  if (future) {
+    const np = clean(future[1]);
+    const place = future[2]
+      ? clean(future[2]).replace(ATTEST_TIME_TAIL, "")
+      : null;
+    if (place) {
+      if (!polesConnected(place, np) && !recordAttests(place, np)) {
+        return gap("event", place, np);
+      }
+      return null;
+    }
+    return null;
+  }
+
+  return null;
+}
+
 /* ---------------- relatedness ----------------------------------- */
 
 export function answerRelated(
@@ -1074,6 +1319,103 @@ export function findTools(
  * neighbourhood conclusions follow it, as they always have.
  */
 
+/**
+ * Phase 3 (P3-D) — the definition route's combination step.
+ * The whatis queries gather the term's neighbourhood under
+ * several relations, but the term node files EVERY sense's
+ * edges together. The combination is arbitrated by the sense
+ * the route chose: a conclusion whose endpoint belongs to a
+ * RIVAL sense's filing cluster is excluded — named in the
+ * trace, never stacked onto this sense's answer. Endpoints in
+ * the chosen cluster, or in no cluster at all (properties,
+ * uses), stand. No chosen cluster → no arbitration is
+ * possible and the neighbourhood stands, noted.
+ */
+function arbitrateDefinitionCombination(
+  g: CskgGraph,
+  ws: TurnWorkspace,
+  cand: ResolvedTerm,
+  synsetId: string,
+  cs: Conclusion[],
+): Conclusion[] {
+  const label = senseClusterLabel(g, g.terms[cand.id], synsetId);
+  if (!label) {
+    noteStep(ws, "solve", "arbitrate",
+      `definition combination for "${g.terms[cand.id]}": no filing cluster holds the chosen sense — the gathered neighbourhood stands unarbitrated`);
+    return cs;
+  }
+  const clusters = filingClusters(g, cand.id);
+  const chosen = clusters.find((c) => c.anchorText === label);
+  if (!chosen) return cs;
+  const chosenIds = clusterEvidenceIds(chosen);
+  for (const id of [...chosenIds]) {
+    for (const e of g.outEdges(id, "/r/IsA")) chosenIds.add(e.to);
+  }
+  const rivalIds = new Set<number>();
+  for (const c of clusters) {
+    if (c === chosen) continue;
+    for (const id of clusterEvidenceIds(c)) {
+      if (!chosenIds.has(id)) rivalIds.add(id);
+    }
+  }
+  // Second signal (P3-D, second pass): the synsets' own
+  // evidence — a conclusion endpoint a RIVAL synset's lemmas
+  // or gloss attests, and the chosen synset does not, is
+  // rival-sense evidence even where the filing clusters merge
+  // the two worlds into one cluster (kettle: pot and drum
+  // share a cluster; their glosses share no words). Evidence
+  // is sense-specific by construction, so it outranks cluster
+  // co-membership. Attribution follows the design's filing
+  // channel: an endpoint is attested for a sense when the
+  // endpoint itself — or one of its own IsA parents — is in
+  // the sense's evidence (so "containerful", filed under
+  // "quantity", belongs to the quantity synset whose gloss
+  // attests "quantity").
+  const termText = g.terms[cand.id];
+  const allCands = definitionCandidates(g, termText);
+  const chosenCand = allCands.find((c) => c.synsetId === synsetId);
+  const chosenEvidence = new Set<number>(
+    chosenCand ? senseEvidence(g, chosenCand, termText).map((e) => e.id) : [],
+  );
+  const rivalEvidence = new Set<number>();
+  for (const c of allCands) {
+    if (c.synsetId === synsetId) continue;
+    for (const e of senseEvidence(g, c, termText)) {
+      if (!chosenEvidence.has(e.id)) rivalEvidence.add(e.id);
+    }
+  }
+  // attested within two IsA hops — the same depth the
+  // resolver's branch footprints walk (turn.ts): "containerful"
+  // files under "indefinite quantity", whose own parent is the
+  // "quantity" the quantity synset's gloss attests.
+  const attested = (set: Set<number>, id: number): boolean => {
+    if (set.has(id)) return true;
+    const parents = g.outEdges(id, "/r/IsA").map((e) => e.to);
+    if (parents.some((p) => set.has(p))) return true;
+    return parents.some((p) =>
+      g.outEdges(p, "/r/IsA").some((e) => set.has(e.to)));
+  };
+  const kept: Conclusion[] = [];
+  const dropped: { c: Conclusion; why: string }[] = [];
+  for (const c of cs) {
+    const to = c.edge.to;
+    if (attested(rivalEvidence, to) && !attested(chosenEvidence, to)) {
+      dropped.push({ c, why: "a rival sense's own evidence" });
+    } else if (rivalIds.has(to) && !attested(chosenEvidence, to)) {
+      dropped.push({ c, why: "rival filing cluster" });
+    } else kept.push(c);
+  }
+  if (dropped.length) {
+    noteStep(ws, "solve", "arbitrate",
+      `definition combination arbitrated for the chosen sense (filing cluster "${label}"): ` +
+      `${kept.length} conclusions kept, ${dropped.length} rival-sense conclusions excluded (${dropped.map((d) => `${g.terms[d.c.edge.to]} — ${d.why}`).join("; ")}) — a rival sense's filings are not stacked onto this sense's answer`);
+  } else {
+    noteStep(ws, "solve", "arbitrate",
+      `definition combination: every gathered filing belongs to the chosen sense's world (cluster "${label}", its own evidence) — nothing to arbitrate away`);
+  }
+  return kept;
+}
+
 export function solveDefinitionAnswer(
   g: CskgGraph,
   ws: TurnWorkspace,
@@ -1083,7 +1425,8 @@ export function solveDefinitionAnswer(
 ): string | null {
   const gloss = definitionForSynset(g, g.terms[cand.id], synsetId);
   if (!gloss) return null;
-  const cs = SURFACE_BUILDERS.whatis(g, cand.id, ws.situation!);
+  const gathered = SURFACE_BUILDERS.whatis(g, cand.id, ws.situation!);
+  const cs = arbitrateDefinitionCombination(g, ws, cand, synsetId, gathered);
   if (cs.length) addConclusions(ws, cs);
   session.lastIntent = "whatis";
   remember(session, cand.id);
@@ -1130,9 +1473,18 @@ export function solveStateReaction(
       if (w.endsWith("s")) labelForms.add(w.slice(0, -1));
       if (w.endsWith("ing") && w.length > 5) labelForms.add(w.slice(0, -3));
     }
+    // Loop 2 (L2-M3): prefix matching needs real morphology
+    // on BOTH sides (≥3 letters). The derived-form set of
+    // "dots the is and cross the ts" contains "t" (from
+    // "ts"), and a one-letter form prefix-matches EVERY word
+    // starting with that letter — "tired" and "today" both
+    // "covered" by it, keying a template about dotting i's
+    // for a tiredness state. Short forms attest nothing.
     const hit = words.every(
       (w) => labelForms.has(w) || labelForms.has(w + "s") ||
-        [...labelForms].some((lf) => lf.startsWith(w) || w.startsWith(lf)),
+        (w.length >= 3 &&
+          [...labelForms].some(
+            (lf) => lf.length >= 3 && (lf.startsWith(w) || w.startsWith(lf)))),
     );
     if (!hit) continue;
     let support = 0;
@@ -1146,11 +1498,25 @@ export function solveStateReaction(
       cs.push(...topConclusions(g, cand.id, rel, "out", n, ws.situation!));
     }
     if (!cs.length) continue;
-    addConclusions(ws, cs);
+    // Loop 2 (L2-M3, generalising L2-M2's floor): the reaction
+    // is the state's GENERAL PATTERN, rendered by
+    // renderStatePattern with real morphology and a sayability
+    // gate — raw script phrases pasted into sentence frames
+    // ("they want to injured", "when waits nervously") are
+    // declined whole, exactly as the PersonX/PersonY
+    // renderings were under L2-M2, and the state stands as
+    // captured.
+    const pat = renderStatePattern(g, g.terms[cand.id], cs);
+    if (!pat) {
+      noteStep(ws, "solve", "query",
+        `state reaction from "${g.terms[cand.id]}" declined (L2-M3): the pattern its edges attest could not be said correctly — not a comprehensible reply; the state stands as captured`);
+      continue;
+    }
+    addConclusions(ws, pat.used);
     noteStep(ws, "solve", "query",
-      `state record "${stateText}" keys ATOMIC event "${g.terms[cand.id]}" — reaction knowledge consulted from the record`,
-      cs.map((c) => edgeText(g, c.edge)));
-    return renderAll(g, cs);
+      `state record "${stateText}" keys ATOMIC event "${g.terms[cand.id]}" — reaction knowledge consulted from the record, rendered as the state's general pattern`,
+      pat.used.map((c) => edgeText(g, c.edge)));
+    return pat.text;
   }
   noteStep(ws, "solve", "query",
     `state record "${stateText}": no ATOMIC event keys it — the state stands as captured, without a graph reaction`);

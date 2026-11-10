@@ -5,14 +5,17 @@
 # context-dependent follow-ups in the order a conversation
 # actually produces them.
 #
-# Known-failing: 2 of 6, verified by diagnose on 2026-11-10.
+# Passing: 6 of 6, verified by diagnose on 2026-11-10 (Loop 1).
 # The soup chain (making / when / what's in it) resolves fully.
-# "What am I selling?" after the bike statement answers about
-# selling in general ("Selling involves set price.") instead of
-# the situation model's bike; "How long has it been raining?"
-# answers generic weather instead of the stated third day. Both
-# are event/state questions the situation model holds but the
-# ask path doesn't consult for those shapes.
+# The two turns that failed before Loop 1 now answer from the
+# situation model: "What am I selling?" after the bike statement
+# answers "You are selling my bike." (the doing-form question
+# gained the am/I subject), and "How long has it been raining?"
+# answers from the stated duration ("Third day of rain") — the
+# duration statement is now recorded as a circumstance state,
+# closing the duration half of E5b's temporal family. Before
+# Loop 1 both fell through to generic graph facts ("Selling
+# involves set price.", generic weather).
 
 I'm making a big pot of soup Saturday.
 What are you making?

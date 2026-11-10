@@ -347,6 +347,18 @@ export function captureStatement(
       feelM = [bare[0], bare[1].toLowerCase()];
     }
   }
+  if (!feelM) {
+    // Loop 2 (L2-M): the qualified form — "I'm a bit nervous
+    // because I can't swim", "I'm really tired today": an
+    // intensifier phrase, then the feeling word, then whatever
+    // else the sentence carries. Same guards as the bare form
+    // (uncapitalised, not a gerund — those are doings).
+    const qualified = input.trim().match(
+      /^i(?:'m| am)\s+(?:a bit\s+|a little\s+|really\s+|so\s+|very\s+|quite\s+|rather\s+)([a-z][a-z'-]*)\b/i);
+    if (qualified && !/^[A-Z]/.test(qualified[1]) && !qualified[1].endsWith("ing")) {
+      feelM = [qualified[0], qualified[1].toLowerCase()];
+    }
+  }
   if (feelM) {
     const { text, marker } = stripTail(feelM[1].replace(/^so\s+/, ""));
     if (text) {

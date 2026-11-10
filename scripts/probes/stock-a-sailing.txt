@@ -1,0 +1,29 @@
+# Stock conversation A — the sailing conversation.
+# Stored template (user decision, 2026-11-10): the canonical conversation
+# whose handling is to BECOME NATURAL. It is an acceptance yardstick, not
+# a script to overfit: fresh scenarios remain the generalisation check,
+# and Stock A's turns must pass because the aspects work, not because
+# these words were rehearsed.
+#
+# What natural means here, turn by turn:
+# - the teaching statement records an event with its teacher (Marcus),
+#   so the who-question is answered from the situation, not a filing;
+# - the nervous statement is taken up as a state of the person;
+# - the buying statement keeps its modality (thinking of buying is an
+#   intention, not a present fact) and its time as a circumstance;
+# - the follow-up never asks for a motive the conversation already
+#   contains (nervous about swimming -> the life jacket);
+# - the fog statement's duration is captured, so the how-long question
+#   is answered from what was said;
+# - the boat's name declines by attestation; the tide definition is
+#   combined, not stacked; the why declines without borrowing a cause.
+My brother Marcus is teaching me to sail this summer.
+Who is teaching me to sail?
+I'm a bit nervous because I can't swim very well.
+I'm thinking of buying my own life jacket tomorrow.
+What am I buying?
+The harbour has been foggy for three mornings straight.
+How long has the harbour been foggy?
+What's Marcus's boat called?
+What is a tide?
+Why does the tide come in?

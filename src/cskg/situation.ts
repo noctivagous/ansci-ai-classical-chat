@@ -46,6 +46,7 @@
  * itself is mutated only by this module's functions.
  * Reads: `breakdown`, `context`, `activeContext`.
  */
+import { displayTime, forAddressee } from "./articulate";
 import { formSet, matchEvent } from "./discourse";
 import { frameRoleName, framesForVerb, getFramesStore, type FrameInfo } from "./frames";
 import type { CskgGraph } from "./loader";
@@ -112,6 +113,17 @@ export interface SituationEvent {
   /** the time expression as stated ("Saturday"), or null */
   timeText: string | null;
   tense: EventTense;
+  /**
+   * Loop 2 (L2-K): the event's MODE — an intention is not an
+   * occurrence. A doing stated under "thinking of" / "plan to"
+   * is "intended", with the marker as spoken in intentMarker;
+   * everything else is "ongoing" (present, past and simple
+   * future statements of fact). Rendering must preserve the
+   * mode: "You're thinking of buying…" never "You are buying…".
+   */
+  mode: "ongoing" | "intended";
+  /** the intention marker as spoken ("thinking of", "plan to"), when intended */
+  intentMarker: string | null;
   turn: number;
   /** the FrameNet frame that named the roles, when one matched */
   frameName: string | null;
@@ -198,9 +210,23 @@ const ACTION_VERBS = new Set([
   "arrive", "start", "finish", "send", "show", "tell", "ask",
   "help", "drive", "walk", "run", "swim", "study", "work",
   "sleep", "wake", "fall", "break", "dry", "fill", "empty",
-  "light", "set",
+  "light", "set", "teach", "lend",
 ]);
-const GIVE_VERBS = new Set(["give", "bring", "send", "show", "tell"]);
+const GIVE_VERBS = new Set(["give", "bring", "send", "show", "tell", "lend"]);
+
+/**
+ * Clause connectives and contractions: words that can sit in
+ * a scan event's actor slot only as mention artefacts ("because
+ * I can't swim" keys a junk event whose actor is the word
+ * "because"). They are never referents, so an event attributed
+ * to one was never stated and is discarded at extraction.
+ */
+const CONNECTIVE_WORDS = new Set([
+  "because", "although", "though", "while", "when", "since",
+  "until", "unless", "if", "as", "so", "but", "and", "or",
+  "can't", "cant", "don't", "dont", "won't", "wont", "isn't",
+  "didn't", "aren't", "wasn't", "weren't", "couldn't", "shouldn't",
+]);
 
 /** Irregular pasts the regular form machinery cannot derive. */
 const IRREGULAR_PASTS: Record<string, string> = {
@@ -210,7 +236,8 @@ const IRREGULAR_PASTS: Record<string, string> = {
   left: "leave", caught: "catch", ate: "eat", drank: "drink",
   wrote: "write", fell: "fall", broke: "break", woke: "wake",
   swam: "swim", ran: "run", drove: "drive", slept: "sleep",
-  met: "meet", lit: "light", set: "set",
+  met: "meet", lit: "light", set: "set", taught: "teach",
+  lent: "lend",
 };
 
 /** surface form → base form, over the action vocabulary */
@@ -785,6 +812,8 @@ function supersedeState(
     participants: [{ entityId: prior.entityId, role: "object", frameRole: null }],
     timeText: null,
     tense: "present",
+    mode: "ongoing",
+    intentMarker: null,
     turn,
     frameName: null,
     atomicText: null,
@@ -822,13 +851,24 @@ function entityInPhrase(
 ): SituationEntity | null {
   const p = " " + phrase.toLowerCase().replace(/[^a-z ]/g, " ") + " ";
   let best: SituationEntity | null = null;
+  let bestPos = Number.POSITIVE_INFINITY;
   let bestLen = 0;
   for (const e of model.entities) {
     const surfaces = [...e.surfaces, e.label];
     for (const s of surfaces) {
       const t = s.toLowerCase().replace(/^(your|my|the|a|an)\s+/, "").trim();
-      if (t.length >= 3 && p.includes(` ${t} `) && t.length > bestLen) {
+      if (t.length < 3) continue;
+      const pos = p.indexOf(` ${t} `);
+      if (pos < 0) continue;
+      // Loop 2 (L2-G3): a phrase names its entity by its HEAD,
+      // which comes first — "the street outside" is about the
+      // street, not the outside. Longest-surface matching let
+      // a longer modifier ("outside", 7) steal the state from
+      // the head noun ("street", 5). Earliest position wins;
+      // length breaks ties.
+      if (pos < bestPos || (pos === bestPos && t.length > bestLen)) {
         best = e;
+        bestPos = pos;
         bestLen = t.length;
       }
     }
@@ -921,6 +961,8 @@ function buildEvent(
     phrase: string;
     actor: SituationEntity | null;
     planned?: boolean;
+    /** the intention marker as spoken, when planned (L2-K) */
+    intentMarker?: string | null;
     clause: string;
   },
   speaker: SituationEntity,
@@ -1093,6 +1135,8 @@ function buildEvent(
     participants,
     timeText,
     tense: tenseOf(ws, spec.verbSurface, timeText, spec.planned ?? false),
+    mode: spec.planned ? "intended" : "ongoing",
+    intentMarker: spec.planned ? (spec.intentMarker ?? null) : null,
     turn,
     frameName: frame ? frame.name : null,
     atomicText: atomic ? atomic.text : null,
@@ -1290,6 +1334,53 @@ export function analyseSituationInto(
           `state: ${subj.label} is ${st.text} [asserted]`);
       }
     }
+    // a stated duration of a phenomenon: "it's the third day
+    // of rain" — the temporal family's duration case (§5 names
+    // durations; before Loop 1 they were recorded nowhere the
+    // question path could read). The duration is recorded as a
+    // circumstance state on the phenomenon's entity, in the
+    // person's own words, so "how long has it been raining?"
+    // is answered from the record, not from generic weather.
+    const duration = lower.match(
+      /\b(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) day of ([a-z]+)\b/);
+    if (duration) {
+      const phenomenon = model.entities.find(
+        (e) => e.label.toLowerCase() === duration[2] ||
+          e.surfaces.some((s) => s.toLowerCase() === duration[2])) ??
+        entityInPhrase(model, duration[2]);
+      if (phenomenon && !phenomenon.speaker) {
+        const st = addState(model, {
+          entityId: phenomenon.id,
+          text: `${duration[1]} day of ${duration[2]}`,
+          kind: "circumstance", attribution: "asserted",
+        }, turn);
+        result.statesAdded.push(st);
+        noteStep(ws, "situationModel", "situate-model",
+          `duration: ${phenomenon.label} — ${st.text} [asserted]`);
+      }
+    }
+    // Loop 2 (L2-G): the same duration record in its other
+    // common surface — an ongoing state of affairs with its
+    // span stated: "my knee has been aching for a week". The
+    // circumstance state sits on the subject entity, in the
+    // person's words ("aching for a week"), so the how-long
+    // question is answered from the record exactly as the
+    // ordinal-day form is.
+    const beenFor = lower.match(
+      /\b([a-z][a-z ]*?) (?:has|have) been ([a-z]+) for (a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+) (days?|weeks?|months?|years?|hours?|mornings?|evenings?|nights?)\b/);
+    if (beenFor) {
+      const subj = entityInPhrase(model, beenFor[1]);
+      if (subj && !subj.speaker) {
+        const st = addState(model, {
+          entityId: subj.id,
+          text: `${beenFor[2]} for ${beenFor[3]} ${beenFor[4]}`,
+          kind: "circumstance", attribution: "asserted",
+        }, turn);
+        result.statesAdded.push(st);
+        noteStep(ws, "situationModel", "situate-model",
+          `duration: ${subj.label} — ${st.text} [asserted]`);
+      }
+    }
     const goneState = lower.match(/\b([a-z][a-z ]*?) (?:have|has) gone (?:all )?([a-z]+)\b/);
     if (goneState) {
       const subj = entityInPhrase(model, goneState[1]);
@@ -1319,6 +1410,11 @@ export function analyseSituationInto(
           phrase: cap.doing,
           actor: speaker,
           planned: /\bi plan to\b/.test(lower) || lower.includes("thinking of"),
+          intentMarker: /\bi plan to\b/.test(lower)
+            ? "plan to"
+            : lower.includes("thinking of")
+              ? "thinking of"
+              : null,
           clause: cap.doing,
         }, speaker);
         if (built) {
@@ -1369,6 +1465,14 @@ export function analyseSituationInto(
           referentId: g.id(base), surface: "it",
         }, turn);
       }
+      // a subjectless verb gets the speaker as its DEFAULT actor
+      // so the event can be recorded — but a defaulted actor is
+      // not a STATED doing: "Tell me about the orange" is an
+      // imperative addressed to the system, not the person
+      // stating what they are doing, and it must not earn the
+      // doingEvent promotion the reply acknowledgement keys on
+      // (Loop 2, L2-A's trigger).
+      const actorStated = actor !== null;
       if (!actor) actor = speaker;
       const phrase = cw.slice(i).join(" ");
       // skip when the capture's doing already built this event
@@ -1377,6 +1481,15 @@ export function analyseSituationInto(
         verbSurface: cw[i], phrase, actor, clause,
       }, speaker);
       if (!built) continue;
+      // a connective or contraction in the actor slot is a
+      // mention artefact, not a referent ("because I can't
+      // swim very well" keys a junk "swim" event whose actor
+      // is the word "because"): the happening was never
+      // stated — discard it rather than recording nonsense
+      if (built.actorEntity && CONNECTIVE_WORDS.has(built.actorEntity.label.toLowerCase())) {
+        model.events = model.events.filter((e) => e.id !== built.event.id);
+        continue;
+      }
       // a speaker-actor scan event with no object is a state of
       // affairs, not a happening ("I work at the library" —
       // employment is the person file's business): discard it
@@ -1386,8 +1499,11 @@ export function analyseSituationInto(
       }
       result.events.push(built.event);
       // a first-person happening found by the scan earns the
-      // statement acknowledgement too, like a captured doing
-      if (!result.doingEvent && built.actorEntity?.speaker && built.event.objectText) {
+      // statement acknowledgement too, like a captured doing —
+      // but only when the speaker was the STATED actor (see
+      // actorStated above): a defaulted actor records the
+      // event without promoting it to the person's doing
+      if (!result.doingEvent && actorStated && built.actorEntity?.speaker && built.event.objectText) {
         result.doingEvent = built.event;
       }
     }
@@ -1431,6 +1547,30 @@ export function analyseSituationInto(
 
     /* temporal relations over the model's event chain */
     temporalRelations(ws, model, previousLatest, result.events);
+  }
+
+  /* Loop 2 (L2-M): a motive link. When this turn records the
+   * person's doing while a feeling they stated EARLIER is
+   * still live, the situation is connected, not a pile of
+   * isolated entries: the feeling stands behind the doing as
+   * its motive in the conversation's own record. The link is
+   * the model's inference and is stamped inferred; the
+   * follow-up policy consults it before ever asking for a
+   * motive the conversation already contains. */
+  if (result.doingEvent) {
+    const feeling = [...model.states].reverse().find(
+      (s) => s.entityId === speaker.id && s.kind === "feeling" &&
+        !s.supersededBy && s.turn < turn);
+    if (feeling) {
+      addRelation(model, {
+        family: "causal", kind: "motivatedBy",
+        from: feeling.id, to: result.doingEvent.id,
+        attribution: "inferred",
+        note: `the stated feeling "${feeling.text}" (turn ${feeling.turn}) stands behind this doing — inferred from the conversation's own record`,
+      }, turn);
+      noteStep(ws, "situationModel", "situate-model",
+        `motive link: feeling "${feeling.text}" —motivatedBy→ "${result.doingEvent.action}" [inferred]`);
+    }
   }
 
   ws.situationModel = {
@@ -1486,6 +1626,17 @@ function eventMentions(model: SituationModel, ev: SituationEvent, text: string):
  * not in fresh topic lookup. Returns null when the question is
  * not the model's to answer; the caller falls through.
  */
+/**
+ * The subject head for restating the speaker's doing (L2-K):
+ * an intended doing keeps its intention in the answer too —
+ * "You are thinking of" / "You plan to" — never a bare
+ * "You are" that upgrades the intention to a present fact.
+ */
+function doingSubject(ev: SituationEvent): string {
+  if (ev.mode !== "intended") return "You are";
+  return ev.intentMarker === "plan to" ? "You plan to" : "You are thinking of";
+}
+
 export function answerSituationQuestion(
   ws: TurnWorkspace,
   session: SessionState,
@@ -1501,12 +1652,16 @@ export function answerSituationQuestion(
     return r.entityId ? entityById(model, r.entityId) : null;
   };
 
-  /* "what are you making?" / "what is he making?" / "what is sarah cooking?" */
+  /* "what are you making?" / "what is he making?" / "what is sarah cooking?"
+   * / "what am i selling?" — the first-person form names the
+   * speaker with "am i"; the model holds the speaker's events
+   * under the speaker entity, so it is the model's to answer
+   * exactly like the second-person form. */
   const whatDoing = lower.match(
-    /\bwhat (?:are|is) (you|he|she|they|[a-z]+) (\w+ing)\b/);
+    /\bwhat (?:are|is|am) (you|he|she|they|i|[a-z]+) (\w+ing)\b/);
   if (whatDoing) {
     const who = whatDoing[1];
-    const actor = who === "you"
+    const actor = who === "you" || who === "i"
       ? model.entities.find((e) => e.speaker) ?? null
       : PRONOUNS.has(who)
         ? actorForPronoun(who)
@@ -1515,30 +1670,30 @@ export function answerSituationQuestion(
       (e) => actor !== null && eventActor(model, e)?.id === actor.id);
     const ev = byActor.find((e) => e.verb === whatDoing[2].toLowerCase()) ?? byActor[0];
     if (ev && actor) {
-      const subject = actor.speaker ? "You are" : `${cap(actor.label)} is`;
+      const subject = actor.speaker ? doingSubject(ev) : `${cap(actor.label)} is`;
       noteStep(ws, "situationModel", "situate-model",
         `referring question answered from the model: ${ev.action} (event ${ev.id}, asserted turn ${ev.turn})`);
       return {
-        text: `${subject} ${ev.action}${ev.timeText ? `, ${ev.timeText}` : ""}.`,
+        text: `${subject} ${forAddressee(ev.action)}${ev.timeText ? `, ${displayTime(ev.timeText)}` : ""}.`,
         grounded: true,
       };
     }
   }
 
-  /* "what are you doing?" / "what is he doing?" */
-  const whatDoingBare = lower.match(/\bwhat (?:are|is) (you|he|she|they) doing\b/);
+  /* "what are you doing?" / "what is he doing?" / "what am i doing?" */
+  const whatDoingBare = lower.match(/\bwhat (?:are|is|am) (you|he|she|they|i) doing\b/);
   if (whatDoingBare && latest) {
     const who = whatDoingBare[1];
-    const actor = who === "you"
+    const actor = who === "you" || who === "i"
       ? model.entities.find((e) => e.speaker) ?? null
       : actorForPronoun(who);
     const ev = actor
       ? [...model.events].reverse().find((e) => eventActor(model, e)?.id === actor.id) ?? latest
       : latest;
     const a = eventActor(model, ev);
-    const subject = a && a.speaker ? "You are" : a ? `${cap(a.label)} is` : "That is";
+    const subject = a && a.speaker ? doingSubject(ev) : a ? `${cap(a.label)} is` : "That is";
     return {
-      text: `${subject} ${ev.action}${ev.timeText ? `, ${ev.timeText}` : ""}.`,
+      text: `${subject} ${forAddressee(ev.action)}${ev.timeText ? `, ${displayTime(ev.timeText)}` : ""}.`,
       grounded: true,
     };
   }
@@ -1554,14 +1709,35 @@ export function answerSituationQuestion(
     const named = noun
       ? model.events.filter((e) => eventMentions(model, e, noun))
       : [];
-    const ev = named.length ? named[named.length - 1] : latest;
+    // Loop 2 (L2-E): the question's own content words — above
+    // all the verb it names ("when is Dana arriving?") —
+    // select the event they match BEFORE the recency fallback:
+    // the fallback answers about whatever happened last, which
+    // is how an arrival question came to be answered about an
+    // unrelated later event's missing time. Pronoun questions
+    // ("when is it?") name no content words and keep the
+    // fallback, as designed.
+    const qWords = new Set(
+      lower.split(/[^a-z']+/).filter((w) =>
+        w.length > 2 &&
+        !["when", "is", "was", "are", "does", "did", "the", "it", "that", "this", "what"].includes(w)),
+    );
+    const wordMatched = qWords.size
+      ? model.events.filter((e) =>
+          e.action.toLowerCase().split(/[^a-z']+/).some((w) => qWords.has(w)))
+      : [];
+    const ev = named.length
+      ? named[named.length - 1]
+      : wordMatched.length
+        ? wordMatched[wordMatched.length - 1]
+        : latest;
     if (ev) {
       noteStep(ws, "situationModel", "situate-model",
         `when-question answered from the model: event ${ev.id} time ${ev.timeText ?? "(none stated)"}`);
       return ev.timeText
-        ? { text: `${cap(ev.action)} — ${ev.timeText}.`, grounded: true }
+        ? { text: `${cap(forAddressee(ev.action))} — ${displayTime(ev.timeText)}.`, grounded: true }
         : {
-            text: `You didn't say when ${ev.action} is — no time was stated for it.`,
+            text: `You didn't say when ${forAddressee(ev.action)} is — no time was stated for it.`,
             grounded: false,
           };
     }
@@ -1595,9 +1771,13 @@ export function answerSituationQuestion(
       const actor = eventActor(model, ev);
       if (actor) {
         return {
+          // Loop 2 (L2-W): the answer said twice was a saying
+          // defect — a false start ("Your brother is — your
+          // brother is the one…") duplicated the clause. The
+          // model's content was always right; say it once.
           text: actor.speaker
-            ? `You are — you're the one ${ev.action}.`
-            : `${cap(actor.label)} is — ${actor.label} is the one ${ev.action}.`,
+            ? `You're the one ${forAddressee(ev.action)}.`
+            : `${cap(actor.label)} is the one ${forAddressee(ev.action)}.`,
           grounded: true,
         };
       }
@@ -1639,7 +1819,39 @@ export function answerSituationQuestion(
       ? [...model.events].reverse().find((e) => eventActor(model, e)?.id === actor.id)
       : null;
     if (ev && ev.objectText) {
-      return { text: `${cap(ev.objectText)}.`, grounded: true };
+      return { text: `${cap(forAddressee(ev.objectText))}.`, grounded: true };
+    }
+  }
+
+  /* Loop 2 (L2-F): "what is Priya bringing?" — a named
+   * person's doing asked by NAME: that person's recorded
+   * event with the asked verb, restated with the name the
+   * question used. The speaker forms are the what-am-I
+   * branches above; until now the named form fell through
+   * to a definition of the verb, as if the conversation had
+   * never recorded the happening. A person with no such
+   * recorded event falls through unchanged. */
+  const whatNamed = lower.match(/\bwhat (is|was) ([a-z]+(?: [a-z]+)?) (\w+ing)\b/);
+  if (whatNamed) {
+    const actorPhrase = whatNamed[2].trim();
+    const actor = PRONOUNS.has(actorPhrase)
+      ? actorForPronoun(actorPhrase)
+      : model.entities.find((e) =>
+          e.label.toLowerCase() === actorPhrase ||
+          e.label.toLowerCase().replace(/^your /, "") === actorPhrase ||
+          e.surfaces.some((s) => s.toLowerCase() === actorPhrase)) ?? null;
+    const lemma = verbBase(whatNamed[3]) ?? whatNamed[3].replace(/ing$/, "");
+    const ev = actor
+      ? [...model.events].reverse().find(
+          (e) => eventActor(model, e)?.id === actor.id && e.verbLemma === lemma)
+      : null;
+    if (ev) {
+      noteStep(ws, "situationModel", "situate-model",
+        `referring question answered from the model: ${ev.action} (event ${ev.id}, asserted turn ${ev.turn})`);
+      return {
+        text: `${cap(actorPhrase)} ${whatNamed[1]} ${forAddressee(ev.action)}.`,
+        grounded: true,
+      };
     }
   }
 
@@ -1667,9 +1879,9 @@ export function answerSituationQuestion(
     const first = model.events[0];
     if (first && model.events.length >= 2) {
       const rel = rels[0];
-      const rest = model.events.slice(1).map((e) => e.action).join(", then ");
+      const rest = model.events.slice(1).map((e) => forAddressee(e.action)).join(", then ");
       return {
-        text: `First: ${first.action}. Then: ${rest}.` +
+        text: `First: ${forAddressee(first.action)}. Then: ${rest}.` +
           (rel && rel.attribution === "inferred"
             ? " (That's the order you told me in — the sequence itself is my inference from the telling.)"
             : ""),
@@ -1688,8 +1900,8 @@ export function answerSituationQuestion(
           ((r.from === aEv.id && r.to === bEv.id) || (r.from === bEv.id && r.to === aEv.id)));
       return {
         text: (yes
-          ? `Yes — ${aEv.action} came before ${bEv.action}.`
-          : `No — ${bEv.action} came before ${aEv.action}.`) +
+          ? `Yes — ${forAddressee(aEv.action)} came before ${forAddressee(bEv.action)}.`
+          : `No — ${forAddressee(bEv.action)} came before ${forAddressee(aEv.action)}.`) +
           (rel && rel.attribution === "inferred"
             ? " (Going by the order you told me in.)"
             : ""),
@@ -1711,7 +1923,7 @@ export function answerSituationQuestion(
         (s) => s.entityId === ent.id && !s.supersededBy);
       if (live) {
         return {
-          text: `${cap(ent.label)} is ${live.text} — that's the latest state you mentioned.`,
+          text: `${cap(forAddressee(ent.label))} is ${live.text} — that's the latest state you mentioned.`,
           grounded: true,
         };
       }
@@ -1728,6 +1940,52 @@ export function answerSituationQuestion(
           ? { text: `As far as you've said, yes — the ${ent.label} is ${live.text}.`, grounded: true }
           : { text: `No — the latest you said is that the ${ent.label} is ${live.text}.`, grounded: true };
       }
+    }
+  }
+
+  /* duration: "how long has it been raining?" — answered from
+   * a duration the person stated ("the third day of rain"),
+   * recorded as a circumstance state on the phenomenon. The
+   * question's verb names the phenomenon by its base form; a
+   * duration state whose text or entity matches it is the
+   * record's answer. No recorded duration → null, and the
+   * ordinary machinery answers as it always has. */
+  const howLong = lower.match(/\bhow long (?:has|have) it been (\w+ing)\b/);
+  if (howLong) {
+    const lemma = verbBase(howLong[1]) ?? howLong[1].replace(/ing$/, "");
+    const st = [...model.states].reverse().find((s) =>
+      s.kind === "circumstance" && !s.supersededBy &&
+      (s.text.includes(lemma) ||
+        entityById(model, s.entityId)?.label.toLowerCase() === lemma));
+    if (st) {
+      noteStep(ws, "situationModel", "situate-model",
+        `duration question answered from the model: "${st.text}" [${st.attribution}, stated turn ${st.turn}]`);
+      return {
+        text: `${cap(st.text)} — that's how long, by what you said.`,
+        grounded: true,
+      };
+    }
+  }
+
+  /* Loop 2 (L2-G): the subject form of the same question —
+   * "how long has my knee been aching?" — answered from the
+   * circumstance state the "has been … for …" statement
+   * recorded on that subject's entity. */
+  const howLongSubject = lower.match(/\bhow long (?:has|have) ([a-z' ]+?) been ([a-z]+)\b/);
+  if (howLongSubject && howLongSubject[1].trim() !== "it") {
+    const subj = entityInPhrase(model, howLongSubject[1].trim());
+    const predicate = howLongSubject[2];
+    const st = [...model.states].reverse().find((s) =>
+      s.kind === "circumstance" && !s.supersededBy &&
+      s.text.includes(predicate) &&
+      (!subj || s.entityId === subj.id));
+    if (st) {
+      noteStep(ws, "situationModel", "situate-model",
+        `duration question answered from the model: "${st.text}" [${st.attribution}, stated turn ${st.turn}]`);
+      return {
+        text: `${cap(st.text)} — that's how long, by what you said.`,
+        grounded: true,
+      };
     }
   }
 
@@ -1758,8 +2016,8 @@ export function answerSituationWhy(
     const mentioned = [...effectWords].some((w) => lower.includes(w)) ||
       lower.includes(nodeLabel(model, rel.from).toLowerCase().replace(/^the /, ""));
     if (!mentioned) continue;
-    const causeLabel = nodeLabel(model, rel.from);
-    const effectText = nodeLabel(model, rel.to);
+    const causeLabel = forAddressee(nodeLabel(model, rel.from));
+    const effectText = forAddressee(nodeLabel(model, rel.to));
     noteStep(ws, "situationModel", "situate-model",
       `why-question answered from the model's causal relation ${rel.id} [${rel.attribution}]: ${rel.note}`);
     if (rel.attribution === "known") {

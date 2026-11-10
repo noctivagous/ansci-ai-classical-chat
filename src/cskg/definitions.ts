@@ -318,7 +318,7 @@ export interface SenseChoice {
  * words themselves kept beside their ids for the trace.
  * Family words and gloss stopwords never resolve.
  */
-function senseEvidence(
+export function senseEvidence(
   g: CskgGraph,
   cand: GlossCandidate,
   term: string,

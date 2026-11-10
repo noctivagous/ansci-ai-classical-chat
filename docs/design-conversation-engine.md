@@ -716,6 +716,18 @@ submodule (§2, piece B) is factored out as the opening,
 behaviour-neutral step of E3 — named and bounded in code, with the
 evaluation diff as its check — rather than disturbing E2's landing.
 
+**Loop 1 (2026-11-10)** — the first dev-loop pass (diagnose →
+problem tree → declared, verdict-judged leaves) landed three
+engine changes outside the E-slice order: the definition route's
+unplaced-word decline (a crash fix), two situation-question forms
+(the doing-form's am/I subject; a stated-duration answer for
+how-long asks, closing the duration half of E5b's named
+temporal family), and Solve's **attestation check** (G10,
+§9) — the decision layer consulting the graph's silence about
+what was asked, as E5b consults its causal testimony. Each leaf
+was declared before editing and judged by verdict under the dev
+loop; the loop report lives outside the repo with the tree.
+
 ## 9. Feature gaps — the watch list
 
 Maintained per the user's standing instruction (2026-11-09): gaps
@@ -887,6 +899,31 @@ slice), **closing** (a running slice owns it), **closed**.
   owner: discourse/intent. Related S9 evidence from the same
   probe: ATOMIC template labels render roughly ("they was late
   to office") — event-label articulation is saying-side work.
+- **G10 — Unattested specific-fact asks answered by substitution.**
+  Exposed by the abstention probes (2026-11-10): questions whose
+  asked fact the graph does not attest — a neighbour's phone
+  number, last night's match result, the population of a city
+  *at this moment* — were answered with a definition of, or an
+  arbitrary fact about, a term the question contains: grounded
+  in the graph, ungrounded in the question. No piece owned the
+  responsibility "is what was asked attested at all?".
+  *Closed* (2026-11-10, Loop 1): Solve gained the **attestation
+  check** (`attestationGap`, trace step solve/attest): a
+  specific-fact ask names two poles (bearer/subject and the
+  value, role, count or event asked for); the asked fact counts
+  as attested when a direct graph edge connects the poles or
+  a record of this conversation states them together (a count
+  is attested only by a record — edges carry no instance
+  counts). The coordinator consults it after situated testimony
+  (situation model, person recall, related/why/event answers)
+  and before the definition route and generic fallback, for
+  whatis-shaped and unclassified asks only; the decline names
+  the poles and the missing connection. Verified by the
+  abstention probes under the dev loop's declaration gate
+  (8/8 declines; no other scripted turn moved). Honest limits:
+  four ask forms are recognised (value-of, who-role/event,
+  how-many, specific past event / future property); a specific
+  ask in another shape still falls through to the old routes.
 
 ## 10. Toward a real conversation: capability map and morphs
 
@@ -1211,3 +1248,82 @@ examine explicit and last (recorded in the E4 evaluation
 note). When this is unparked, its slice declares — per problem
 type — the consultation sequence and the transcript effect it
 will be judged on, like every other slice.
+
+## 11. Direction recorded 2026-11-10: the entity, distance, and the loop
+
+Recorded from the owner's direction during the transcript
+reference improve round on Stock Conversation A. These are
+standing rulings for all later slices, stated once here.
+
+**The telos.** The chat is an entity, not a question-answerer.
+It knows it is talking to someone; it knows the situation, how
+to analyse it, how to find out answers, how to solve problems.
+It will have a personality and temperament later (deliberately
+deferred, not now), and a situated self that knows where it is,
+what time it is, and in time the weather and other senses of
+its frame. The end state: a person has a very real experience
+with the chat, believing it is a real entity — earned by the
+machinery working, never performed. Deepened later still, its
+decisions will be informed by the classical layer: a situation
+read through Taiji (the whole and its two turning tendencies),
+assessed through the 64 hexagrams, its temperament shaped from
+Wuxing. SURFACE RULE for that layer: built into the
+architecture, never announced in the chat — no naming of
+hexagrams, phases, or Taiji in replies; the classical structure
+shapes assessment and response silently, and its only evidence
+is the quality of the conversation.
+
+**The graph-distance rule.** The graph must not be close to the
+response. A turn travels through the whole architecture —
+memory, the state of things, who the person is, the processing
+machinery — and the reply is the product of that. A direct
+graph query result pasted as a response ("Ladder is a type of
+degree") is an architecture violation, wherever it occurs: each
+intervening piece must transform what it touches (weigh,
+combine, contextualise), never merely relay. On statement
+turns there is no graph-to-response path at all; testimony may
+inform a statement reply only as arbitrated, combined
+conclusions that serve the conversation, and otherwise the
+situation machinery answers with a clean acknowledgement.
+
+**Questions come from the adaptive tree.** A question is a
+conclusion the architecture reaches by processing the specific
+thing said, the whole conversation, memory, the situation and
+the person — never an appendage scheduled by policy. It may be
+asked only for a genuine gap or fork the person can fill, and
+never when the conversation already contains the answer. The
+resolver's clarification and the person layer's name admission
+are the model instances; the role follow-up stands re-grounded
+under this rule or silent.
+
+**Answers are sequences, combined.** No response is the result
+of a single query: one query gathers too little information to
+decide on. Answering follows an adaptive tree — the next query
+chosen from what earlier queries returned (contested evidence
+branches to discriminating queries, thin evidence widens, a
+dominant attested result concludes) — and the conclusion is
+formed by combining multiple results under arbitration:
+agreement strengthens, conflict is named or asked about, never
+silently stacked. The resolver's study → organise → plan →
+consult → examine is the working instance; the other routes
+convert to the same shape.
+
+**The working loop: transcript reference improve.** Take a
+stock conversation (A: the sailing conversation,
+scripts/probes/stock-a-sailing.txt), go through it and fix all
+of its problems inside the architecture until its handling is
+natural; then make a new stock conversation and repeat. A turn
+counts as fixed only by a deep solution — the aspect actually
+working, checkable in the trace and the model state — not by a
+line that merely reads well. Fresh scenarios run alongside as
+the anti-overfit check, and transcripts are the acceptance
+evidence, read in the chat as it improves.
+
+**Division of labour (restated).** CSKG testifies: facts,
+relations, and their absence — silence is evidence for a
+decline. Ours is the directing layer: state, memory, decision,
+chain of thought — which may consult the graph as evidence
+wherever honest, but is never expected from it. Policy lives in
+named pieces on the engine map; the turn coordinator conducts,
+extracting one policy at a time, behaviour-neutral, proven by
+identical transcript diffs.

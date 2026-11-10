@@ -5,14 +5,18 @@
 # nobody told it, live events, private data, and specifics no
 # commonsense graph attests.
 #
-# Known-failing: ALL 8 turns, verified by diagnose on 2026-11-10.
-# The engine declines none of them; it answers each with a grounded
-# definition or fact about some term in the question ("Night is a
-# time of day." for the football match, "Eat is a worry." for
-# Napoleon's breakfast). The answers are grounded in the graph but
-# not in the question — no piece owns "this asks for something no
-# graph can attest". This set is the standing probe for that gap;
-# expectations stay as written until the behaviour changes.
+# Passing: 8 of 8, verified by diagnose on 2026-11-10 (Loop 1).
+# Solve's attestation check owns the responsibility this set
+# probes: a specific-fact ask names two poles (bearer/subject
+# and the value, role, count or event asked for), and the turn
+# declines — naming the poles — when no graph edge connects
+# them and no record of the conversation states them together.
+# Before Loop 1 all 8 failed: the engine declined none of them
+# and substituted a grounded definition or fact about some term
+# in the question ("Night is a time of day." for the football
+# match, "Eat is a worry." for Napoleon's breakfast) — grounded
+# in the graph but not in the question. Expectations unchanged
+# from the failing era; the behaviour changed, not the probe.
 
 What is my neighbour's phone number?
 #! expect=decline

@@ -44,7 +44,11 @@ import type { SituationSnapshot } from "./situation";
 export type TraceStepKind =
   | "situate" | "resolve" | "intent" | "query" | "conclude"
   | "decline" | "replay" | "correct" | "remember" | "triage"
-  | "compose" | "examine" | "situate-model";
+  | "compose" | "examine" | "situate-model"
+  // Phase 3: the combination step of an adaptive query tree —
+  // gathered conclusions arbitrated against each other before
+  // the turn concludes (kept / excluded, with the reason).
+  | "arbitrate";
 
 export interface TraceStep {
   /** the engine-map node id of the piece that acted */

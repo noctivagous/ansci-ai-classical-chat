@@ -60,7 +60,9 @@ import {
   renderDeclineUnplaced,
   renderDeclineUnplacedPlain,
   renderDefinition,
-  renderEventAcknowledgement,
+  renderEventLead,
+  renderEventLeadFor,
+  renderStateLead,
   renderNamedReading,
   renderNoFact,
   renderNoFactPlain,
@@ -70,12 +72,15 @@ import {
   renderRememberSessionOnly,
   renderSchmoozeFollowup,
   renderSituationAnswer,
+  renderFeelingLead,
   renderStateNoted,
   renderStatementNoted,
   renderToolAnswer,
   renderToolDecline,
   renderToolDeclinePlain,
   renderToolFallbackNote,
+  renderUnattestedAsk,
+  renderUnattestedAskPlain,
   renderUnrelated,
   renderWhyNoCause,
   renderWhyNoCausePlain,
@@ -140,6 +145,7 @@ import {
   answerRelated,
   answerWhy,
   answerWhyQuestion,
+  attestationGap,
   bestStatementFact,
   contextFit,
   FACT_REL_PRIORITY,
@@ -160,8 +166,10 @@ import {
   analyseSituationInto,
   answerSituationQuestion,
   answerSituationWhy,
+  entityById,
 } from "./situation";
 import { admissionFor, standingTrace } from "./standing";
+import { composeStatementReply } from "./statement";
 import {
   createWorkspace,
   noteStep,
@@ -513,7 +521,20 @@ export function runTurn(
       noteTriage(ws, "retrieve", "the current topic's own causal edges");
       return finish(cause, "why", true);
     }
-    return noFact(g.terms[t], "why");
+    // No causal testimony for the standing topic: the decline
+    // must be the WHY-shaped one, naming the topic as the
+    // missing cause — not the generic no-fact decline, which
+    // claims the graph says nothing usable about a topic the
+    // conversation may just have answered from (Loop 1,
+    // extend-bare-why).
+    noteTriage(ws, "solve", "bare why: no Causes testimony reaches the standing topic — why-shaped decline");
+    return finish(
+      plainDeclines
+        ? renderWhyNoCausePlain(g.terms[t], null)
+        : renderWhyNoCause(g.terms[t], null),
+      "why",
+      false,
+    );
   }
 
   const isQuestion = isQuestionForm(lower);
@@ -679,6 +700,27 @@ export function runTurn(
       }
     }
 
+    /* Loop 1 (design-abstention): Solve's attestation check.
+     * What remains after this point is the definition route and
+     * the generic-fact fallback — the two paths that substitute
+     * a neighbouring fact when the asked fact itself is
+     * unattested. The check runs here, after the situation
+     * model, person recall and the related / why / event
+     * answers have had their turns (situated testimony first),
+     * and declines a specific-fact ask whose two poles no
+     * testimony connects. */
+    const gap = attestationGap(g, ws, session);
+    if (gap) {
+      noteTriage(ws, "solve", "attestation decline — the asked fact is unattested; no substitution");
+      return finish(
+        plainDeclines
+          ? renderUnattestedAskPlain(gap.aText, gap.bText)
+          : renderUnattestedAsk(gap.aText, gap.bText),
+        gap.form === "value" ? "whatis" : "fact",
+        false,
+      );
+    }
+
     // E4 — a definition-shaped what-is turn runs through the
     // AmbiguityResolver before solve executes. The flow keeps
     // the study → organise → plan → consult → examine shape:
@@ -692,6 +734,16 @@ export function runTurn(
     // exactly its previous route.
     if (classifySurface(lower) === "whatis" && isDefinitionQuestion(lower)) {
       const cand = candidates[0];
+      if (!cand) {
+        // No content candidate at all resolved: the word the
+        // definition asks about is one the graph does not hold
+        // ("what is a zorblax?"). The definition route's honest
+        // answer is the unplaced decline, naming the word —
+        // dereferencing candidates[0] here crashed the turn.
+        noteStep(ws, "solve", "decline",
+          "definition question with no resolved candidate — the asked word is unplaced");
+        return declineUnplaced("whatis");
+      }
       const termText = g.terms[cand.id];
       const choice = chooseDefinition(
         g, termText, [...turnContextIds(g, ws), cand.id], contextFit,
@@ -836,115 +888,16 @@ export function runTurn(
     return declineUnplaced("question");
   }
 
-  // (7) statements — E4's set order (§2, piece C): person
-  // knowledge was consulted first (capture + connections,
-  // above); the classifier has judged the statement's
-  // conversational intent with the graph's evidence weighed
-  // in; the reply is formulated only now — per the class, the
-  // role's strategy and follow-up policy, and the operative
-  // context. A schmooze reply succeeds socially with the
-  // grounded fact it can honestly add PLUS the follow-up its
-  // slot licenses; zero graph facts is a complete success for
-  // the class, never a decline.
-  if (resolved.length || capture.feeling || capture.doing || capture.newPerson || capture.factsWritten.length) {
-    const ev = resolved.length ? matchEvent(g, words, resolved) : null;
-    const primary = ev ?? bd.topics[0] ?? (resolved.length ? salient : null);
-    if (primary) {
-      remember(session, primary.id);
-      // E2: memory's active set is fed by the scored topics (the
-      // best few that scored as topical), not by every resolved
-      // fragment — "third" no longer becomes a conversation topic.
-      for (const t of bd.topics.slice(0, 4)) {
-        if (t.score >= 0) remember(session, t.id);
-      }
-    }
-    if (ev) noteStep(ws, "intent", "intent", `statement; ATOMIC event match: ${ev.text}`);
-    const cls = classifyStatement(
-      g, ws, capture, connections, env.CSKG_CLASSIFY_GRAPH !== "off",
-    );
-    noteTriage(ws, "retrieve",
-      `statement (${cls.kind}): person knowledge first, classification weighed, reply per role "${role.id}" + operative context`);
-    // every file write is acknowledged in the reply, in the
-    // role's voice — never silent (§5)
-    const ackSuffix = capture.factsWritten.length
-      ? ` ${renderRememberAck(role.memoryAck, capture.factsWritten[0].display)}`
-      : capture.patternsWritten.length
-        ? ` ${role.memoryAck}`
-        : "";
-
-    // a stated feeling: the reply is drawn from the canonical
-    // state record — ATOMIC consulted FROM the record (§5)
-    if (cls.kind === "state" && capture.feeling) {
-      const reaction = solveStateReaction(g, ws, capture.feeling.canonical);
-      const base = reaction ?? renderStateNoted(capture.feeling.text, capture.feeling.pattern);
-      session.lastIntent = "fact";
-      return finish(base + ackSuffix, "statement", reaction !== null);
-    }
-
-    if (!primary) {
-      // nothing resolved, but the statement still landed —
-      // as person data (a name, a fact for the file)
-      return finish(
-        capture.factsWritten.length
-          ? renderRememberAck(role.memoryAck, capture.factsWritten[0].display)
-          : renderStatementNoted(capture.doing ?? capture.newPerson ?? "that"),
-        "statement", false,
-      );
-    }
-
-    // the grounded acknowledgement fact, role-shaped in its
-    // selection (the pack's preferred relations lead) and
-    // judged against the operative context
-    const factRels = ev
-      ? ["at:xEffect", "at:xReact", "at:xWant", "at:oReact", "/r/IsA", "/r/HasProperty"]
-      : [
-          ...role.preferredRelations,
-          ...FACT_REL_PRIORITY.filter((r) => !role.preferredRelations.includes(r)),
-        ];
-    const fact = bestStatementFact(
-      g, sit, ev, resolved, primary, factRels, bd.topics,
-      turnContextIds(g, ws), relevanceFor(ws),
-    );
-    let text: string;
-    let grounded = false;
-    if (fact) {
-      addConclusions(ws, [fact]);
-      noteStep(ws, "solve", "conclude", "statement acknowledgement fact", [edgeText(g, fact.edge)]);
-      text = renderConclusion(g, fact);
-      grounded = true;
-    } else {
-      text = renderStatementNoted(g.terms[primary.id]);
-    }
-    // connected: the reply SAYS the connection the person
-    // model found — a recorded preference whose object is the
-    // statement's topic earns the continuity clause
-    if (cls.kind === "connected" && fact) {
-      const pref = connections.find(
-        (c) => c.via === "object" && c.fact.kind === "preference" && c.fact.subject !== "self",
-      );
-      if (pref) text += ` ${renderContinuityClause(pref.fact.display, pref.fact.subject)}`;
-    }
-    // the role's follow-up policy decides whether the class
-    // earns a follow-up, and the statement's own slot forms it
-    const stance =
-      cls.kind === "schmooze" ? role.followupPolicy.schmooze
-      : cls.kind === "connected" ? role.followupPolicy.connected
-      : role.followupPolicy.informing;
-    if (stance === "follow-up") {
-      text += ` ${renderSchmoozeFollowup(cls.followupSlot, g.terms[primary.id])}`;
-    }
-    // E5: a first-person doing the situation model recorded
-    // as an event is acknowledged AS an event — the happening
-    // named, with its time — beside the topic acknowledgement
-    // above (a pre-declared E5 transcript effect)
-    if (sitResult.doingEvent) {
-      const ev = sitResult.doingEvent;
-      text += ` ${renderEventAcknowledgement(ev.action, ev.timeText, ev.frameName)}`;
-    }
-    text += ackSuffix;
-    session.lastIntent = "fact";
-    return finish(text, "statement", grounded);
-  }
+  // (7) statements — the statement-turn composition policy
+  // lives in statement.ts (Loop 2, L2-X1: policy extracted
+  // from the coordinator a piece at a time, behaviour-neutral;
+  // the coordinator keeps order and route arbitration). Null
+  // = the turn carried nothing the policy could take up.
+  const stmt = composeStatementReply({
+    g, ws, session, env, role, capture, connections, sitResult,
+    bd, resolved, salient, words, sit,
+  });
+  if (stmt) return finish(stmt.text, "statement", stmt.grounded);
 
   return declineUnplaced("statement");
 }
