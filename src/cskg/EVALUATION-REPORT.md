@@ -771,3 +771,204 @@ per turn with the required fields, append-mode, and the
 replay turn's query log is empty; traced vs untraced replies
 are identical across four turns, and an untraced turn records
 nothing). Project suite 123/123; `tsc` clean. Nothing pushed.
+
+## Trace levels note (2026-11-09)
+
+A follow-up the same day, also at the user's direction: the
+first traced Chicago file was 9.6 MB — a record nobody opens
+pinpoints nothing. Trace records are now built at a
+granularity, chosen by `--trace-level <steps|queries|full>`
+(default `queries`; an unknown level is a clean CLI error
+before the graph loads). Collapsing happens in tracefile.ts
+at record-build time, from the turn's complete query list —
+collection (turn.ts) stays level-unaware and complete, so
+replay and every other consumer are untouched, and no reply
+can depend on the level. Every record also carries
+`queryCount`, the turn's total issued queries.
+
+- **steps** — header + steps only, `queries: []`, the total in
+  `queryCount`. The module path, nothing else.
+- **queries** (default) — decision queries stay individual
+  (edge lookups by relation/direction, contextsOf, degree —
+  including every zero-hit record a decline rests on); the two
+  bulk-scan accessors, `lemmaOf` and `id`, collapse per turn
+  into one summary per accessor —
+  { via, summary: true, count, distinctTerms, zeroHits,
+  totalHits } — placed where that accessor first occurred.
+  The counts are stated, never silent: summary counts +
+  individual records reconcile to `queryCount` on every line
+  (verified mechanically on both regenerated files).
+- **full** — every query record verbatim, in issue order:
+  the original record shape in its `queries` array.
+
+Measured (Chicago, 28 turns; transcripts byte-identical
+across levels and vs tracing off, the real-clock line
+excepted):
+
+- full: 9,584,366 bytes — the step's baseline, regenerated
+  and confirmed.
+- queries: 6,822,369 bytes.
+- steps: 67,789 bytes.
+
+Sydney (3 turns): full 375,889; queries 373,927; steps 5,679.
+The on-disk trace files were regenerated at the default
+level (Chicago 6,822,369 bytes; Sydney 373,927).
+
+One measurement corrects the previous note's framing. That
+note said the 9.6 MB was "dominated by event-matching turns"
+— true per turn, but the accessor histogram shows only ONE
+of the four big turns is a lemmaOf scan (turn 18, "What
+happens when it rains?": 64,760 lemmaOf of 64,951 queries;
+the queries level removes almost exactly that mass,
+~2.7 MB). The other three — the coat statement (43,312
+outEdges + 9,967 degree of 53,642), the bananas (16,890 +
+7,542 of 24,570), the rain statement (12,117 + 4,949 of
+17,195) — are solve's within-node arbitration re-probing
+edge sets and degrees per candidate per scoring pass, the
+no-within-turn-caching cost the previous note's reading 2
+observed on the brother turn, now attributed per accessor.
+Those are decision-accessor records, so the queries level
+keeps them individual by design — which is why Sydney
+barely shrinks (its coat turn is 5,210 outEdges of 5,825
+queries; there was almost no scan noise to collapse). The
+dramatic reduction lives at the steps level; the queries
+level's gain is that a scan turn no longer buries the
+decision records around it. Whether arbitration probing
+should itself summarise at some future level is a question
+the log can now ask precisely; not taken here.
+
+### Undesigned behaviour
+
+None observed. The levels reshape records after the turn is
+finished; the runs above differ only in the clock line.
+
+Tests: four fixture tests added (steps keeps header + steps
+with queries as a count; queries keeps the onion decline's
+0-hit Causes probe individual, summaries match the full
+record's counts/hits/terms exactly and sit at their
+accessor's first occurrence, both levels reconcile to the
+turn total, and the queries record is smaller than full;
+the default is queries at builder and parser; unknown
+levels are rejected). Project suite 127/127; `tsc` clean.
+Nothing pushed.
+
+## Definitions slice note (2026-11-09)
+
+G7 is closed: CSKG terms now join to the repo's own WordNet
+glosses (Open English WordNet 2024, the slice-2a extract —
+117,008 synsets, glosses kept at import, examples stripped).
+
+**What was built.** `src/cskg/definitions.ts`: a side store in
+the depth-pass style — only the extract's synset parts are
+read (the relations/forms parts are skipped), indexed by
+normalised lemma (148,858 keys), loaded LAZILY on the first
+definition request, outside `loadCskg` and outside the CSR
+index, so no degree, neighbourhood or ranking can shift.
+Candidates for a term come through the loader's lemma
+machinery (the term itself, then its FormOf lemma via
+`graph.lemmaOf`), each carrying provenance: synset id, lemma,
+part of speech, gloss. Sense choice runs three channels in
+precedence — FILING SHARE (the support-weighted fraction of
+the term's 1-hop IsA filing that the candidate's evidence
+words account for, at one or two hops), CONTEXT FIT (solve's
+best-single contextFit, capped at 8), and a POS prior
+(noun > verb > adjective) — with extraction order breaking
+exact ties. On a definition-shaped "what is/are" turn
+(intent.isDefinitionQuestion — "what does X do" is not one),
+the chosen gloss leads in S16 form ("Term: gloss.") and the
+neighbourhood conclusions the turn has always produced follow
+it, undropped. A correction gives the settled term's
+definition in place of a neighbourhood fact, the "Got it —"
+acknowledgement unchanged. No gloss → exactly the old answer;
+every other question shape (purpose, made-of, part, …) is
+never attempted. The chosen sense, its filing evidence, and
+every rival's score are traced (definition steps appear on
+Chicago turns 11, 21, 22 at every trace level; trace files
+verified writing at steps/queries/full).
+
+**Why the measure has three channels** (probed on the live
+graph before wiring; each channel exists because the previous
+design failed a named word):
+- Plain context fit crowns the WRONG headache: solve's
+  contextFit discounts inherited overlap by design, so the
+  pain sense's evidence scores 0 — the graph files headache
+  under ache under pain — while the metaphorical anxiety
+  sense's "worry" corroborates at 25. The filing channel is
+  the signal the discount throws away.
+- Raw IsA-closure membership crowns the wrong passport: the
+  merged node files every sense at full strength
+  ("characteristic" [support 2] beside "legal document"
+  [support 2]). The SHARE separates them — the document chain
+  accounts for more of the filing, and the recommendation
+  sense's remaining words corroborate nothing (its context
+  fit is 0; the document sense's citizen/travel/country fit
+  7/6/5).
+- Evidence from the term's own lexical family is excluded
+  ("coldness" for cold, "pass" for passport): a sense
+  applauding its own string is not corroboration — solve's
+  own-family rule, mirrored. Live outcomes: headache → the
+  pain synset (20 vs 12 in probe context; 28 in the run),
+  passport → the document synset (17 vs 10/8), money → "the
+  most common medium of exchange" (14.7, order over the
+  currency sense's equal 14.7), bicycle → the vehicle synset.
+
+**Named turns, before → after.**
+- "What is a headache?" — "Headache is a type of ache." →
+  "Headache: pain in the head caused by dilation of cerebral
+  arteries or muscle contractions or a reaction to drugs.
+  Headache is a type of ache."
+- "What is a cold?" — the four IsA facts → "Cold: the absence
+  of heat." leads, all four facts follow unchanged. Honest
+  note: cold's three noun senses TIE at 12 on a bare turn
+  (filing separates none of them; every context fit caps),
+  so extraction order gives the temperature reading — the
+  same reading the old reply led with. The illness sense is
+  reached by the path the design names for it:
+- "No, I meant the common cold" — "Got it — common cold.
+  Common cold is a disease." → "Got it — common cold. Common
+  cold: a mild viral infection involving the nose and
+  respiratory passages (but not the lungs)." ("common cold"
+  files under exactly one synset; the choice is deterministic,
+  filing evidence "infection".)
+- "What is a passport used for?", "What is money used for?",
+  "What is a bicycle made of?" — byte-identical (purpose and
+  made-of routing never reach the definitions layer).
+
+**Evaluation.** Chicago: 26 grounded / 0 ungrounded /
+2 declined / 0 wrong-sense — the baseline HOLDS, and the
+transcript diff against the pre-slice run is exactly the
+three turns above plus the clock line: no turn changed
+class. Sydney: byte-identical. Trace volume grew on the
+definition turns (queries-level Chicago file 9.34 MB vs
+6.82 MB pre-slice): sense-choice evidence resolution is
+real graph work and the log records it like everything else.
+
+**Load and memory.** The graph load is untouched (~31 s).
+The store builds on first use: 215 ms in-function (~0.56 s
+wall cold), +71 MB heap after GC — against the old track's
+full extract load (560 ms, ~136 MB heap un-GC'd in the
+first probe) for the same synsets, the saving being the
+skipped relations/forms assembly.
+
+**Known limit.** Where CSKG's own filing is sense-piled, the
+share can crown the pile's heavier side: bare "coat" chooses
+the animal-fur synset (its "hair" filing carries support 2)
+over the garment senses. No evaluation turn asks what a coat
+IS (coat questions are purpose-routed), and a clothing
+conversation is the context channel's to win; recorded here
+as the measure's honest edge, in the class E4's resolver
+work owns.
+
+### Undesigned behaviour
+
+None observed. Every changed turn is one of the three the
+slice aimed at, by the traced route it designed.
+
+Tests: eight fixture tests added (store join + provenance;
+FormOf-lemma candidates; filing+context choice over
+fabricated synsets, incl. the empty-context order fallback
+and the subject's-own-world separation; filing endorsement;
+gloss-led what-is with facts following; the correction
+definition; no-gloss fallback byte-identical; purpose and
+made-of routing untouched). Project suite 135/135;
+`tsc` clean. Nothing pushed.

@@ -11,6 +11,14 @@
  *                                              the default is the script path
  *                                              + ".trace.jsonl"; interactive
  *                                              mode needs an explicit file
+ *   node dist/src/cskg/chat.js --trace-level <steps|queries|full>
+ *                                              granularity of each trace
+ *                                              record (default: queries —
+ *                                              decision queries individual,
+ *                                              bulk lemmaOf/id scans
+ *                                              summarised; steps = module
+ *                                              path only; full = every
+ *                                              query verbatim)
  *
  * Data: data/raw/cskg/cskg.tsv.gz by default (override with CSKG_PATH;
  * the pre-merge cskg_star.tsv.gz also loads — same columns). Location
@@ -23,7 +31,12 @@ import * as path from "path";
 import * as readline from "readline";
 import { loadCskg, type CskgGraph } from "./loader";
 import { createSession, type SessionState } from "./memory";
-import { appendTraceRecord, buildTraceRecord } from "./tracefile";
+import {
+  appendTraceRecord,
+  buildTraceRecord,
+  parseTraceLevel,
+  type TraceLevel,
+} from "./tracefile";
 import { runTurn } from "./turn";
 
 function printTurn(
@@ -32,6 +45,7 @@ function printTurn(
   line: string,
   debug: boolean,
   traceFile?: string,
+  traceLevel: TraceLevel = "queries",
 ): void {
   const res = runTurn(g, session, line, process.env, new Date(), traceFile !== undefined);
   console.log(`Q: ${line}`);
@@ -43,7 +57,7 @@ function printTurn(
       if (s.edges) for (const e of s.edges) console.log(`      ${e}`);
     }
   }
-  if (traceFile) appendTraceRecord(traceFile, buildTraceRecord(res));
+  if (traceFile) appendTraceRecord(traceFile, buildTraceRecord(res, new Date(), traceLevel));
   console.log();
 }
 
@@ -72,6 +86,26 @@ async function main(): Promise<void> {
     }
   }
 
+  // --trace-level <steps|queries|full>: the granularity records
+  // are built at (tracefile.ts). Validated here, before any data
+  // loads — an unknown level is a usage error, not a discovery
+  // made after a 30-second graph load.
+  let traceLevel: TraceLevel = "queries";
+  const levelIdx = args.indexOf("--trace-level");
+  if (levelIdx >= 0) {
+    const raw = args[levelIdx + 1];
+    if (!raw || raw.startsWith("--")) {
+      console.error("--trace-level needs a value: steps, queries or full");
+      process.exit(1);
+    }
+    try {
+      traceLevel = parseTraceLevel(raw);
+    } catch (err) {
+      console.error((err as Error).message);
+      process.exit(1);
+    }
+  }
+
   const dataPath =
     process.env.CSKG_PATH ??
     path.join(__dirname, "..", "..", "..", "data", "raw", "cskg", "cskg.tsv.gz");
@@ -95,14 +129,14 @@ async function main(): Promise<void> {
   );
 
   const session = createSession();
-  if (traceFile) console.error(`tracing turns to ${traceFile}`);
+  if (traceFile) console.error(`tracing turns to ${traceFile} (level: ${traceLevel})`);
   if (script) {
     const lines = fs
       .readFileSync(script, "utf8")
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l && !l.startsWith("#"));
-    for (const line of lines) printTurn(g, session, line, debug, traceFile);
+    for (const line of lines) printTurn(g, session, line, debug, traceFile, traceLevel);
     return;
   }
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -121,7 +155,7 @@ async function main(): Promise<void> {
           console.log(`[intent: ${res.trace.intent}, grounded: ${res.grounded}]`);
           for (const s of res.trace.steps) console.log(`  · [${s.piece}] ${s.kind}: ${s.detail}`);
         }
-        if (traceFile) appendTraceRecord(traceFile, buildTraceRecord(res));
+        if (traceFile) appendTraceRecord(traceFile, buildTraceRecord(res, new Date(), traceLevel));
       }
       ask();
     });

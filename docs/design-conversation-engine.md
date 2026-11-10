@@ -566,13 +566,17 @@ a slice is judged on exactly that declaration.
   resolver and EverydaySense). Judged on named turns: the rain
   question gains event content, a tired-state turn gains a
   reaction/want-grounded response, and no grounded totals fall.
-- **Definitions** *(small slice, after E3; closes G7).* A
-  `definitions.ts` source in the CSKG package joining terms to
-  the repo's own WordNet glosses (lemma + part of speech, sense
-  chosen by contents/context); "what is X" answers lead with the
-  gloss, neighbourhood facts follow. Judged on the what-is turns
+- **Definitions** *(small slice, after E3; closes G7 — LANDED
+  2026-11-09, evaluation report note).* A `definitions.ts`
+  source in the CSKG package joining terms to the repo's own
+  WordNet glosses (lemma + part of speech, sense chosen by
+  contents/context); "what is X" answers lead with the gloss,
+  neighbourhood facts follow. Judged on the what-is turns
   gaining true definitions with the contextually right sense, no
-  regressions elsewhere.
+  regressions elsewhere. As landed: the store loads lazily as a
+  side store (synset parts only); sense choice runs filing
+  share → context fit → POS prior; corrections give the settled
+  sense's definition; S16's form is "Term: gloss."
 - **Trace files** *(small step before E4, landed 2026-11-09).*
   The ThoughtTrace and a central graph-query log are persisted
   per turn: the chat CLI's `--trace` appends one JSON line per
@@ -587,7 +591,15 @@ a slice is judged on exactly that declaration.
   turn is a line in the file), and emergence candidates can be
   certified against a derivation that survives the session.
   Recording is opt-in per turn and write-only; traced and
-  untraced transcripts are byte-identical.
+  untraced transcripts are byte-identical. Records are built at
+  a granularity chosen by `--trace-level` (`steps` | `queries` |
+  `full`, default `queries`): `steps` keeps the module path plus
+  the turn's query count, `queries` keeps decision queries
+  individual (decline evidence included) while the bulk lemmaOf/
+  id scans collapse into per-accessor summaries whose counts
+  reconcile to the turn's total, and `full` keeps every query
+  verbatim — collapsing happens at record-build time, so
+  collection stays complete and level-unaware.
 - **E4 — The conversation frame: role and person** *(enables, then
   moves).* Opens with the **Context module** (§2) — the frame made
   operative during analysis; its evidence is the
@@ -701,6 +713,17 @@ slice), **closing** (a running slice owns it), **closed**.
   Cure: join the CSKG package to the repo WordNet as a
   definitions layer, sense chosen by contents/context; scheduled
   as the small Definitions slice in §8.
+  *Closed* (2026-11-09, Definitions slice): the join is
+  `src/cskg/definitions.ts` — a lazily loaded side store over
+  the extract's synset parts (lemma + POS + gloss, provenance
+  on every candidate), terms reaching synsets via the loader's
+  FormOf lemma machinery; sense chosen by filing share (the
+  support-weighted share of the term's IsA filing a candidate's
+  evidence accounts for), then solve's context fit, then a POS
+  prior. Definition-shaped "what is/are" turns lead with the
+  gloss (S16 form), neighbourhood facts follow; corrections
+  give the settled sense's definition; no gloss falls back to
+  the previous answer exactly.
 - **G8 — Cold start.** ~27 s graph load, no serialised index.
   *Open* (engineering); matters for the demo and any hosting.
   (Depth pass measured the sentence/context side stores at
@@ -812,7 +835,9 @@ unbuilt), *missing* (not yet designed):
 - **S15 Delivery shape** — segmentation and streaming of the
   reply at the interface. *Parked* (piece G territory).
 - **S16 Definition form** — genus-and-difference answers from
-  the gloss layer. *Scheduled* (Definitions slice).
+  the gloss layer. *Landed* (Definitions slice, 2026-11-09):
+  the form is "Term: gloss." — the attested gloss quoted, the
+  neighbourhood facts following it.
 
 - **Conversing over time.** *Have:* topic memory, trace replay.
   *Designed:* person state (two tiers) and long-term memory,

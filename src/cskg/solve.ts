@@ -51,9 +51,11 @@ import {
   renderCausalLinkLine,
   renderCausedByLines,
   renderConclusion,
+  renderDefinition,
   renderMeeting,
   type Conclusion,
 } from "./articulate";
+import { chooseDefinition, definitionTraceNote } from "./definitions";
 import { pureTimeLabel } from "./contents";
 import {
   contentCandidates,
@@ -66,7 +68,11 @@ import {
   type ResolvedTerm,
   type ScoredTerm,
 } from "./discourse";
-import type { EventQuestionKind, SurfaceIntentKind } from "./intent";
+import {
+  isDefinitionQuestion,
+  type EventQuestionKind,
+  type SurfaceIntentKind,
+} from "./intent";
 import type { CskgEdge, CskgGraph } from "./loader";
 import { remember, type SessionState } from "./memory";
 import { noteStep, type TurnWorkspace } from "./workspace";
@@ -386,9 +392,13 @@ const SURFACE_BUILDERS: Record<
     ...topConclusions(g, id, "/r/IsA", "out", 1, sit),
   ],
   antonym: (g, id) => topConclusions(g, id, "/r/Antonym", "out", 1),
-  // what-is: IsA + HasProperty neighbourhood (CSKG has no glosses).
-  // Over-long targets are usually mangled sentence fragments in
-  // ConceptNet ("ache ailment condition"), so cap their length.
+  // what-is: the IsA + HasProperty neighbourhood. On a
+  // definition-shaped turn (intent.isDefinitionQuestion) the
+  // WordNet gloss leads and this set follows it (Definitions
+  // slice); on any other whatis turn it is the whole answer, as
+  // before. Over-long targets are usually mangled sentence
+  // fragments in ConceptNet ("ache ailment condition"), so cap
+  // their length.
   whatis: (g, id, sit) => [
     ...topConclusions(g, id, "/r/IsA", "out", 4, sit)
       .filter((c) => g.terms[c.edge.to].split(" ").length <= 2),
@@ -403,6 +413,16 @@ const SURFACE_BUILDERS: Record<
  * candidate (in preference order) that actually yields conclusions —
  * a longer match must not hide a richer term it contains. Returns
  * the rendered answer, or null when no candidate yields anything.
+ *
+ * Definitions slice: on a definition-shaped what-is turn, the
+ * candidate's WordNet gloss (definitions.ts — sense chosen
+ * against the turn's judged context plus the candidate itself)
+ * LEADS the answer, and the neighbourhood conclusions this
+ * function has always produced follow it, un dropped — the
+ * gloss replaces nothing the old reply carried. A candidate
+ * with a gloss but no neighbourhood still answers (the gloss
+ * alone); a candidate with neither is skipped, exactly as
+ * before; a term with no synsets gets exactly the old answer.
  */
 export function solveSurfaceIntent(
   g: CskgGraph,
@@ -413,16 +433,25 @@ export function solveSurfaceIntent(
 ): string | null {
   const build = SURFACE_BUILDERS[kind];
   const sit = ws.situation!;
+  const definitionTurn =
+    kind === "whatis" && isDefinitionQuestion(ws.input.toLowerCase());
+  const context = definitionTurn ? turnContextIds(g, ws) : [];
   for (const cand of candidates.slice(0, 4)) {
     const cs = build(g, cand.id, sit);
-    if (!cs.length) continue;
-    addConclusions(ws, cs);
+    const choice = definitionTurn
+      ? chooseDefinition(g, g.terms[cand.id], [...context, cand.id], contextFit)
+      : null;
+    if (!cs.length && !choice) continue;
+    if (cs.length) addConclusions(ws, cs);
     session.lastIntent = kind;
+    if (choice) noteStep(ws, "solve", "query", definitionTraceNote(choice));
     for (const c of cs) {
       noteStep(ws, "solve", "conclude", kind, [edgeText(g, c.edge)]);
     }
     remember(session, cand.id);
-    return renderAll(g, cs);
+    if (!choice) return renderAll(g, cs);
+    const definition = renderDefinition(g.terms[cand.id], choice.chosen.gloss);
+    return cs.length ? `${definition} ${renderAll(g, cs)}` : definition;
   }
   return null;
 }

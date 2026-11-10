@@ -13,10 +13,26 @@ import * as path from "path";
 import { test } from "node:test";
 import { sentenceForEdge } from "../src/cskg/articulate";
 import { seasonFor } from "../src/cskg/awareness";
+import {
+  buildDefinitionsStore,
+  chooseDefinition,
+  definitionCandidates,
+  loadDefinitionsStore,
+} from "../src/cskg/definitions";
 import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
+import { contextFit } from "../src/cskg/solve";
 import { loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
-import { appendTraceRecord, buildTraceRecord } from "../src/cskg/tracefile";
+import {
+  appendTraceRecord,
+  buildTraceRecord,
+  parseTraceLevel,
+  DEFAULT_TRACE_LEVEL,
+  type QuerySummaryRecord,
+  type TraceFileRecord,
+  type TraceQueryEntry,
+} from "../src/cskg/tracefile";
+import type { QueryRecord } from "../src/cskg/loader";
 import { runTurn } from "../src/cskg/turn";
 import { createWorkspace } from "../src/cskg/workspace";
 
@@ -566,4 +582,258 @@ test("trace: query logging does not change replies (on vs off)", async () => {
     assert.deepEqual(b.queries.length > 0, true, `expected a query log for: ${input}`);
     assert.deepEqual(a.queries, [], "an untraced turn records nothing");
   }
+});
+
+/* ---------------- trace levels (2026-11-09) ----
+ * Granularity at record-build time (tracefile.ts): steps keeps
+ * the module path and a query count; queries keeps decision
+ * queries individual and folds the bulk lemmaOf/id scans into
+ * stated-count summaries; full keeps every record verbatim.
+ * Collection is level-unaware — the same finished turn is built
+ * at several levels below and must account for itself at each. */
+
+const isSummary = (e: TraceQueryEntry): e is QuerySummaryRecord => "summary" in e;
+
+/** How many issued queries a record accounts for: 1 per individual record, `count` per summary. */
+const accountedFor = (rec: TraceFileRecord): number =>
+  rec.queries.reduce((n, q) => n + (isSummary(q) ? q.count : 1), 0);
+
+test("trace level steps: header and steps survive, queries become a count", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = traced(g, s, "Why do my eyes water when I chop onions?");
+  const rec = buildTraceRecord(r, new Date("2026-11-09T12:00:00.000Z"), "steps");
+  assert.deepEqual(rec.queries, [], "no query records at the steps level");
+  assert.equal(rec.queryCount, r.queries.length);
+  assert.ok(rec.queryCount > 0, "the turn did issue queries — at this level the count is their only trace");
+  assert.equal(rec.turn, r.trace.turn);
+  assert.equal(rec.at, "2026-11-09T12:00:00.000Z");
+  assert.ok("location" in rec);
+  assert.equal(rec.utterance, "Why do my eyes water when I chop onions?");
+  assert.equal(rec.reply, r.text);
+  assert.equal(rec.grounded, r.grounded);
+  assert.equal(rec.intent, r.trace.intent);
+  assert.deepEqual(rec.steps, r.trace.steps, "the module path is intact");
+});
+
+test("trace level queries: decision records stay individual, scans summarise and reconcile", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = traced(g, s, "Why do my eyes water when I chop onions?");
+  const at = new Date("2026-11-09T12:00:00.000Z");
+  const full = buildTraceRecord(r, at, "full");
+  const q = buildTraceRecord(r, at, "queries");
+
+  // full is the original record: the turn's query list verbatim.
+  assert.deepEqual(full.queries, r.queries, "full keeps every query record verbatim");
+  assert.equal(full.queryCount, r.queries.length);
+  assert.equal(q.queryCount, r.queries.length);
+
+  // The decline's evidence survives the level: the empty Causes
+  // chain probe is an individual record, never folded into a
+  // summary (it is an outEdges query — a decision, not a scan).
+  const individual = q.queries.filter((e): e is QueryRecord => !isSummary(e));
+  assert.ok(
+    individual.some(
+      (e) => e.via === "outEdges" && e.term === "crying" && e.rel === "/r/Causes" && e.hits === 0,
+    ),
+    "the 0-hit /r/Causes probe out of \"crying\" stays an individual record at the queries level",
+  );
+  // Individual records are exactly full's non-scan records, in order.
+  assert.deepEqual(
+    individual,
+    full.queries.filter((e) => e.via !== "lemmaOf" && e.via !== "id"),
+    "the queries level neither drops, invents nor reorders a decision record",
+  );
+
+  // Summaries exist only for the scan accessors, and every number
+  // in them matches the full record exactly.
+  const summaries = q.queries.filter(isSummary);
+  assert.ok(summaries.length > 0, "the onion turn does scan (id at least) — a summary must exist");
+  const fullQueries: QueryRecord[] = full.queries as QueryRecord[];
+  for (const sum of summaries) {
+    assert.ok(sum.via === "lemmaOf" || sum.via === "id", `unexpected summarised accessor: ${sum.via}`);
+    const raw: QueryRecord[] = fullQueries.filter((e) => e.via === sum.via);
+    assert.equal(sum.count, raw.length, `${sum.via}: summary count matches the full record`);
+    assert.equal(sum.totalHits, raw.reduce((n, e) => n + e.hits, 0), `${sum.via}: totalHits`);
+    assert.equal(sum.zeroHits, raw.filter((e) => e.hits === 0).length, `${sum.via}: zeroHits`);
+    assert.equal(sum.distinctTerms, new Set(raw.map((e) => e.term)).size, `${sum.via}: distinctTerms`);
+    // Placement: the summary sits where the accessor's first
+    // query occurred — the records before it in q are individuals
+    // whose counterparts all precede that first occurrence in full.
+    const firstRaw: number = fullQueries.findIndex((e) => e.via === sum.via);
+    const before = q.queries.slice(0, q.queries.indexOf(sum)).filter((e) => !isSummary(e));
+    assert.equal(
+      before.length,
+      fullQueries
+        .slice(0, firstRaw)
+        .filter((e) => e.via !== "lemmaOf" && e.via !== "id").length,
+      `${sum.via}: summary placed at its accessor's first occurrence`,
+    );
+  }
+
+  // Nothing silently dropped at either level: summaries +
+  // individuals account for every query the turn issued.
+  assert.equal(accountedFor(q), full.queryCount, "queries level reconciles to the turn's total");
+  assert.equal(accountedFor(full), full.queryCount, "full level reconciles to the turn's total");
+
+  // The level earns its keep on the very turn whose log is evidence.
+  assert.ok(
+    JSON.stringify(q).length < JSON.stringify(full).length,
+    `queries record (${JSON.stringify(q).length} bytes) should be smaller than full (${JSON.stringify(full).length} bytes)`,
+  );
+});
+
+test("trace level: the default is queries, at the builder and in the parser", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = traced(g, s, "What is a banana?");
+  const at = new Date("2026-11-09T12:00:00.000Z");
+  assert.equal(DEFAULT_TRACE_LEVEL, "queries");
+  assert.deepEqual(
+    buildTraceRecord(r, at),
+    buildTraceRecord(r, at, "queries"),
+    "buildTraceRecord without a level builds at queries",
+  );
+  assert.equal(parseTraceLevel(undefined), "queries", "an absent --trace-level parses to the default");
+  assert.equal(parseTraceLevel("steps"), "steps");
+  assert.equal(parseTraceLevel("queries"), "queries");
+  assert.equal(parseTraceLevel("full"), "full");
+});
+
+test("trace level: an unknown level is rejected", () => {
+  assert.throws(() => parseTraceLevel("verbose"), /invalid trace level "verbose"/);
+  assert.throws(() => parseTraceLevel(""), /invalid trace level/);
+  assert.throws(() => parseTraceLevel("FULL"), /invalid trace level/, "levels are exact, not case-folded");
+});
+
+/* ---------------- definitions (2026-11-09, closes G7) ----
+ * The join to the repo's own WordNet glosses (definitions.ts):
+ * provenance on every candidate, sense choice by filing share
+ * + context fit + POS prior, the gloss leading definition-
+ * shaped what-is turns (neighbourhood facts following), the
+ * correction path giving the settled sense's definition, and
+ * the fallbacks — no gloss, no change; other question shapes,
+ * no change. */
+
+test("definitions: the store joins terms to WordNet glosses, with provenance", () => {
+  const store = loadDefinitionsStore();
+  assert.equal(store.stats.synsets, 117008, "the full OEWN 2024 synset set");
+  const headache = store.candidatesFor("headache");
+  const pain = headache.find((c) => c.synsetId === "wn-n14571315");
+  assert.ok(pain, "the pain synset is among headache's candidates");
+  assert.equal(pain.pos, "n");
+  assert.equal(pain.lemma, "headache");
+  assert.match(pain.gloss, /pain in the head/);
+  const cc = store.candidatesFor("common cold");
+  assert.deepEqual(
+    cc.map((c) => c.synsetId),
+    ["wn-n14389489"],
+    "common cold files under exactly the illness synset",
+  );
+});
+
+test("definitions: candidates reach synsets through the graph's FormOf lemma", async () => {
+  const g = await depthGraph(); // fixture: apologizes —FormOf→ apologize
+  const cands = definitionCandidates(g, "apologizes");
+  assert.ok(cands.length > 0, "the inflected form finds its lemma's synsets");
+  assert.ok(cands.every((c) => c.lemma === "apologize"), "found under the lemma, not the form");
+});
+
+test("definitions: sense choice — filing share and context beat extraction order", async () => {
+  const g = await graph();
+  // a fabricated pair over the fixture graph's "coat": the paint
+  // sense is filed FIRST (extraction order would pick it), but
+  // its words resolve nowhere in the fixture; the garment
+  // sense's "winter" lives in coat's world (RelatedTo winter,
+  // shared warm neighbours).
+  const store = buildDefinitionsStore(
+    [
+      { id: "wn-n90000001", pos: "n", gloss: "a layer of paint applied to a surface", lemmas: ["coat"] },
+      { id: "wn-n90000002", pos: "n", gloss: "an outer garment worn to keep warm in winter", lemmas: ["coat"] },
+    ],
+    { source: "test", edition: "test", license: "test" },
+  );
+  const coat = g.id("coat")!;
+  const winter = g.id("winter")!;
+  const bare = chooseDefinition(g, "coat", [], contextFit, store);
+  assert.equal(bare!.chosen.synsetId, "wn-n90000001",
+    "no evidence either way: the first candidate stands (deterministic dominance)");
+  const subjectOnly = chooseDefinition(g, "coat", [coat], contextFit, store);
+  assert.equal(subjectOnly!.chosen.synsetId, "wn-n90000002",
+    "the subject's own graph world already separates them: \"winter\" lives in it, the paint words resolve nowhere");
+  const inContext = chooseDefinition(g, "coat", [coat, winter], contextFit, store);
+  assert.equal(inContext!.chosen.synsetId, "wn-n90000002",
+    "context corroborates the garment sense's world");
+  assert.equal(inContext!.rivals.length, 2, "both rivals are recorded with scores");
+});
+
+test("definitions: sense choice — the graph's own filing endorses its sense", async () => {
+  const g = await graph();
+  // fixture banana IsA fruit [support 2 of 3]: a candidate whose
+  // evidence names the filing ("fruit") takes the filing share
+  // even with no other context.
+  const store = buildDefinitionsStore(
+    [
+      { id: "wn-n90000003", pos: "n", gloss: "a curved yellow fruit with soft flesh", lemmas: ["banana"] },
+      { id: "wn-n90000004", pos: "n", gloss: "an elongated herblike plant of the tropics", lemmas: ["banana"] },
+    ],
+    { source: "test", edition: "test", license: "test" },
+  );
+  const banana = g.id("banana")!;
+  const choice = chooseDefinition(g, "banana", [banana], contextFit, store);
+  assert.equal(choice!.chosen.synsetId, "wn-n90000003");
+  assert.ok(choice!.taxonomy.includes("fruit"), "the filing evidence is named");
+});
+
+test("definitions: a definition-shaped what-is turn leads with the gloss, facts follow", async () => {
+  const g = await graph();
+  const s = createSession();
+  const r = runTurn(g, s, "What is a common cold?");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /^Common cold: a mild viral infection/);
+  assert.match(r.text, /Common cold is an illness\./, "the neighbourhood fact the old reply carried still follows");
+  assert.ok(
+    r.trace.steps.some((st) => /definition: "common cold" → wn-n14389489/.test(st.detail)),
+    "the trace carries the chosen sense and its provenance",
+  );
+});
+
+test("definitions: a correction gives the settled sense's definition", async () => {
+  const g = await graph();
+  const s = createSession();
+  runTurn(g, s, "What is a banana?");
+  const r = runTurn(g, s, "No, I meant the common cold");
+  assert.equal(r.trace.intent, "correction");
+  assert.equal(r.grounded, true);
+  assert.match(r.text, /^Got it — common cold\. Common cold: a mild viral infection/);
+});
+
+test("definitions: a term with no gloss falls back to exactly the old answer", async () => {
+  const g = await graph();
+  const s = createSession();
+  // "brown banana" is a fixture term with no WordNet lemma:
+  // the reply is the pre-slice neighbourhood answer, unchanged.
+  const r = runTurn(g, s, "What is a brown banana?");
+  assert.equal(r.grounded, true);
+  assert.equal(r.text, "Brown banana is often sweet.");
+  assert.ok(
+    !r.trace.steps.some((st) => /definition:/.test(st.detail)),
+    "no definition was attempted into the trace",
+  );
+});
+
+test("definitions: non-definition questions keep their routing (purpose, made-of)", async () => {
+  const g = await graph();
+  const s = createSession();
+  // "coat" HAS WordNet glosses; a purpose question must not
+  // become a definition.
+  const p = runTurn(g, s, "What is a coat used for?");
+  assert.equal(p.grounded, true);
+  assert.match(p.text, /keep warm/);
+  assert.doesNotMatch(p.text, /^Coat:/, "no definition lead on a purpose turn");
+  const m = runTurn(g, s, "What is a wine bottle made of?");
+  assert.equal(m.grounded, true);
+  assert.match(m.text, /made of glass/);
+  assert.doesNotMatch(m.text, /^Wine bottle:/, "no definition lead on a made-of turn");
 });

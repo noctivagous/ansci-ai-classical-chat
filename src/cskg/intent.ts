@@ -152,6 +152,19 @@ export function eventQuestionKind(lower: string): EventQuestionKind | null {
   return null;
 }
 
+/**
+ * The definition shape within what-is (Definitions slice): the
+ * turn asks what a term IS ("what is a headache?", "what are
+ * the symptoms…" aside) — as opposed to "what does X do", which
+ * the whatis catch-all also catches but which asks for behaviour,
+ * not a definition. Only definition-shaped turns lead with a
+ * WordNet gloss (definitions.ts); the rest of the whatis family
+ * keeps the neighbourhood answer it has always had.
+ */
+export function isDefinitionQuestion(lower: string): boolean {
+  return /^what (?:is|are)\b/.test(lower.trim());
+}
+
 export type SurfaceIntentKind =
   | "purpose" | "location" | "madeof" | "part"
   | "capability" | "property" | "antonym" | "whatis";

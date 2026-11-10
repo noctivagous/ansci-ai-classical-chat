@@ -11,11 +11,14 @@
  *     -> plain assertion
  *   support == 1
  *     -> softened form ("often", "can", "tends to")
- * CSKG has no glosses, so there is no definition text to quote;
- * every sentence here is a relation restated in English, or a fixed
- * conversational template (declines, acknowledgements, answers
- * about the situated self) whose wording the coordinator selects
- * but does not compose.
+ * CSKG has no glosses, so relation sentences here are relations
+ * restated in English, or fixed conversational templates
+ * (declines, acknowledgements, answers about the situated self)
+ * whose wording the coordinator selects but does not compose.
+ * Definition text is the one exception: the Definitions slice
+ * joins terms to the repo's WordNet glosses (definitions.ts),
+ * and renderDefinition below is their S16 form — the gloss
+ * quoted as attested, never extended, exactly like an edge.
  *
  * For now the style target is simply normal responses (proposal:
  * "for now should be just getting normal responses"); selection and
@@ -229,6 +232,19 @@ export function renderConclusion(g: CskgGraph, c: Conclusion): string {
 
 export function joinSentences(sentences: string[]): string {
   return sentences.join(" ");
+}
+
+/**
+ * The definition form (S16): "Term: gloss." — the dictionary
+ * shape. The gloss is WordNet's attested text; F adds only the
+ * term, the colon and the terminal stop, so the sentence can
+ * never claim more than the synset says. Glosses are fragments
+ * (noun phrases for noun senses), which the colon form carries
+ * without forcing a verb the data doesn't have.
+ */
+export function renderDefinition(termText: string, gloss: string): string {
+  const body = gloss.trim().replace(/\s+/g, " ");
+  return `${cap(termText)}: ${body}${/[.!?]$/.test(body) ? "" : "."}`;
 }
 
 export function renderAll(g: CskgGraph, cs: Conclusion[]): string {

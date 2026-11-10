@@ -45,6 +45,7 @@ import {
   renderCorrectionNoFact,
   renderCorrectionUnplaced,
   renderDeclineUnplaced,
+  renderDefinition,
   renderNoFact,
   renderSituationAnswer,
   renderStatementNoted,
@@ -56,6 +57,7 @@ import {
   renderWhyNoTopic,
   speak,
 } from "./articulate";
+import { chooseDefinition, definitionTraceNote } from "./definitions";
 import {
   analyseInto,
   contentCandidates,
@@ -94,6 +96,7 @@ import {
   answerWhy,
   answerWhyQuestion,
   bestStatementFact,
+  contextFit,
   FACT_REL_PRIORITY,
   findTools,
   noteTriage,
@@ -199,6 +202,26 @@ export function runTurn(
       remember(session, term.id);
       noteStep(ws, "discourse", "resolve", `re-resolved: ${term.text}`);
       noteTriage(ws, "retrieve", "fact about the corrected term");
+      // Definitions slice: a correction SETTLES the sense — when
+      // the corrected term has a WordNet gloss, the reply gives
+      // that sense's definition in place of a neighbourhood fact
+      // ("No, I meant the common cold" → the illness gloss, the
+      // "Got it —" acknowledgement unchanged). No gloss → the
+      // fact path below, exactly as before.
+      const choice = chooseDefinition(
+        g, g.terms[term.id], [...turnContextIds(g, ws), term.id], contextFit,
+      );
+      if (choice) {
+        noteStep(ws, "solve", "query", definitionTraceNote(choice));
+        return finish(
+          renderCorrectionFact(
+            g.terms[term.id],
+            renderDefinition(g.terms[term.id], choice.chosen.gloss),
+          ),
+          "correction",
+          true,
+        );
+      }
       const fact = pickFact(g, term.id, sit, FACT_REL_PRIORITY, ws.activeContext?.topics ?? []);
       if (fact) {
         addConclusions(ws, [fact]);
