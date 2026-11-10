@@ -210,6 +210,16 @@ npm run chat                                       # WordNet + ontology REPL
 npm run chat -- --script examples/chat-demo.txt    # scripted demo: sleet/hail climb, common-cold sense
 ```
 
+## Dev loop (improving the CSKG engine)
+
+A dedicated toolset for the ask → diagnose → declare → edit →
+reload → verdict improvement loop, with the judgment layer built
+in: the design served as data, failures counted into clusters,
+and every change declared before it is made and judged after.
+`npm run dev` serves it on loopback :4174; every operation is
+also a one-shot CLI (`node dist/src/cskg/devcli.js …`) printing
+JSON. See [docs/devloop.md](docs/devloop.md).
+
 ## Tooling choices (kept minimal on purpose)
 
 - **Only dev dependencies: TypeScript + @types/node.** No runtime dependencies at all.

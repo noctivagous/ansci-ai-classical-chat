@@ -1,0 +1,32 @@
+# Probe set: abstention — questions the engine must DECLINE.
+#
+# A system earns credit for refusing what it cannot know, not for
+# guessing. Every turn is annotated expect=decline: personal facts
+# nobody told it, live events, private data, and specifics no
+# commonsense graph attests.
+#
+# Known-failing: ALL 8 turns, verified by diagnose on 2026-11-10.
+# The engine declines none of them; it answers each with a grounded
+# definition or fact about some term in the question ("Night is a
+# time of day." for the football match, "Eat is a worry." for
+# Napoleon's breakfast). The answers are grounded in the graph but
+# not in the question — no piece owns "this asks for something no
+# graph can attest". This set is the standing probe for that gap;
+# expectations stay as written until the behaviour changes.
+
+What is my neighbour's phone number?
+#! expect=decline
+Who won the football match last night?
+#! expect=decline
+What did Napoleon eat for breakfast on his tenth birthday?
+#! expect=decline
+How many grains of sand are there on Brighton beach?
+#! expect=decline
+What is the stock price of Apple right now?
+#! expect=decline
+Who is the current president of the chess club in my town?
+#! expect=decline
+What will the weather be like on Mars tomorrow?
+#! expect=decline
+What is the exact population of Chicago at this moment?
+#! expect=decline

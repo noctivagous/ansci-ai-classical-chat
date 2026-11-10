@@ -1,0 +1,32 @@
+# Probe set: coreference — multi-turn pronoun and definite chains.
+#
+# Later turns refer back with "it", "them", "when is it" and only
+# resolve against the conversation's own situation model (E5):
+# context-dependent follow-ups in the order a conversation
+# actually produces them.
+#
+# Known-failing: 2 of 6, verified by diagnose on 2026-11-10.
+# The soup chain (making / when / what's in it) resolves fully.
+# "What am I selling?" after the bike statement answers about
+# selling in general ("Selling involves set price.") instead of
+# the situation model's bike; "How long has it been raining?"
+# answers generic weather instead of the stated third day. Both
+# are event/state questions the situation model holds but the
+# ask path doesn't consult for those shapes.
+
+I'm making a big pot of soup Saturday.
+What are you making?
+#! expect=grounded contains=soup
+When is it?
+#! expect=grounded contains=Saturday
+What's in it?
+#! expect=grounded contains=soup
+I'm thinking of selling my bike online.
+What am I selling?
+#! expect=grounded contains=bike
+My bananas have gone all brown.
+Can I still make banana bread with them?
+#! expect=grounded
+It's the third day of rain here.
+How long has it been raining?
+#! expect=grounded contains=third

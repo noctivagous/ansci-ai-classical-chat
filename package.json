@@ -10,6 +10,7 @@
     "ask": "npm run build --silent && node dist/src/cli.js",
     "chat": "npm run build --silent && node dist/src/chat.js",
     "build": "tsc",
+    "dev": "npm run build --silent && node dist/src/cskg/devserver.js",
     "test": "npm run build && node --test dist/test/*.test.js",
     "typecheck": "tsc --noEmit"
   },

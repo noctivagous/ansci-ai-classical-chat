@@ -1,0 +1,19 @@
+# Probe set: correction and topic shift — conversational repair.
+#
+# Answers must follow the conversation's repairs and shifts, not
+# just the current sentence: "No, I meant X" replaces the
+# referent; "What about Y?" moves the topic while keeping the
+# question shape.
+#
+# Known-failing: none — 4/4 verified by diagnose on 2026-11-10.
+
+What is a cold?
+No, I meant the common cold
+#! expect=grounded contains=cold
+What about the flu?
+#! expect=grounded contains=flu
+I'm thinking of buying a winter coat.
+Is a coat a type of clothing?
+#! expect=grounded contains=coat
+What about a jacket?
+#! expect=grounded contains=jacket

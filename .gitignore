@@ -13,3 +13,7 @@ data/experience/
 
 # person files (E4, design §5): the person's own data, local-first
 data/people/
+
+# dev-loop toolset state (docs/devloop.md): baselines, pending
+# declarations, last diagnosis — working state, never source
+.devloop/

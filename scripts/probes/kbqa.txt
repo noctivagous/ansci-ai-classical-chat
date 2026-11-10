@@ -1,0 +1,24 @@
+# Probe set: factual graph questions — one relation each.
+#
+# Each question maps to a single graph relation, so a failure
+# names the relation, not the whole engine: purpose, location,
+# part-of, made-of, relatedness, event consequence.
+#
+# Known-failing: none — 8/8 verified by diagnose on 2026-11-10.
+
+What can I use a hammer for?
+#! expect=grounded contains=hammer
+Where would I find a penguin?
+#! expect=grounded
+What is a passport used for?
+#! expect=grounded
+Is a wheel part of a bicycle?
+#! expect=grounded contains=wheel
+What is a bicycle made of?
+#! expect=grounded
+What is money used for?
+#! expect=grounded
+How are a coat and a jacket related?
+#! expect=grounded
+What happens when it rains?
+#! expect=grounded contains=rain
