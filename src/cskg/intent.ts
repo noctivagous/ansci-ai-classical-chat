@@ -103,12 +103,18 @@ function extractExclusions(lower: string): string[] {
   return out;
 }
 
-/** "what can I open a wine bottle with?" / "what can I use to …?" */
+/**
+ * "what can I open a wine bottle with?" / "what can/should/could
+ * I use to …?" — can, should and could ask the same problem
+ * (gap 3: "what should I use to hang the cabinets?" fell through
+ * to a definition answer). The route — reverse-UsedFor set
+ * operations with honest decline — is identical for all three.
+ */
 export function detectToolQuery(lower: string): ToolQuery | null {
   const exclusions = extractExclusions(lower);
   const openMatch = lower.match(/what can i open (?:a |an |the )?(.+?) with/);
   if (openMatch) return { target: openMatch[1], verb: "open", isOpen: true, exclusions };
-  const useToMatch = lower.match(/what can i use to (.+?)[?]?$/);
+  const useToMatch = lower.match(/what (?:can|should|could) i use to (.+?)[?]?$/);
   if (useToMatch) return { target: useToMatch[1], verb: null, isOpen: false, exclusions };
   return null;
 }

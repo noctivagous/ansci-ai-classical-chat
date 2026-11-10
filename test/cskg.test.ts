@@ -29,6 +29,7 @@ import {
   loadDefinitionsStore,
 } from "../src/cskg/definitions";
 import { analyseInto, matchEventTemplate, resolveTerms } from "../src/cskg/discourse";
+import { detectToolQuery } from "../src/cskg/intent";
 import { contextFit } from "../src/cskg/solve";
 import { cachePathFor, loadCskg, normaliseNode, type CskgGraph } from "../src/cskg/loader";
 import { createSession } from "../src/cskg/memory";
@@ -170,6 +171,22 @@ test("tool question finds the corkscrew via reverse UsedFor", async () => {
   assert.match(r.text, /corkscrew/i);
   assert.match(r.text, /bottle opener/i);
   assert.doesNotMatch(r.text, /related terms/, "direct route: no fallback disclosure");
+});
+
+test("tool shapes: should/could ask the same problem as can", () => {
+  const can = detectToolQuery("what can i use to open a wine bottle?");
+  const should = detectToolQuery("what should i use to hang the cabinets?");
+  const could = detectToolQuery("what could i use to pound nails?");
+  for (const q of [can, should, could]) assert.ok(q, "each modal detects");
+  assert.equal(should!.target, "hang the cabinets");
+  assert.equal(should!.verb, null);
+  assert.equal(should!.isOpen, false);
+  assert.equal(could!.target, "pound nails");
+  assert.equal(detectToolQuery("what is a hammer?"), null, "not every what-question is a tool ask");
+  assert.equal(
+    detectToolQuery("what should i use for dinner?")?.target, undefined,
+    "the for-shape stays out of scope",
+  );
 });
 
 test("E3: an exclusion removes the excluded tool from its own answer (DIFFERENCE)", async () => {

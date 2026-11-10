@@ -1,0 +1,18 @@
+# Probe: tool-question shapes (gap 3).
+#
+# "What can I open X with / use to Y" is not the only way people
+# ask for a tool. should/could ask the same problem; the route
+# (reverse-UsedFor set operations with honest decline) is
+# identical. Diagnose runs a fixed probe set, so this file is
+# judged by the declaration gate.
+#
+# Baseline 2026-11-10 (pre-fix): should/could shapes miss the
+# detector entirely and fall through to definition answers.
+#
+# Verified 2026-11-10 (gap 3, verdict PASS): should/could route to
+# findTools; unattested targets decline honestly. Only the two new
+# shapes moved; the can-shape control is byte-identical.
+
+What should I use to hang the cabinets?
+What can I use to open a wine bottle?
+What could I use to pound nails?
