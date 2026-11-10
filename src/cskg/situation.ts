@@ -47,7 +47,7 @@
  * Reads: `breakdown`, `context`, `activeContext`.
  */
 import { displayTime, forAddressee } from "./articulate";
-import { formSet, matchEvent } from "./discourse";
+import { formSet, matchEvent, STOPWORDS } from "./discourse";
 import { frameRoleName, framesForVerb, getFramesStore, type FrameInfo } from "./frames";
 import type { CskgGraph } from "./loader";
 import type { CaptureResult } from "./person";
@@ -2051,6 +2051,25 @@ export function answerSituationQuestion(
  * a why the record cannot support returns null and the ordinary
  * why-machinery declines on its own terms).
  */
+/**
+ * Content words for mention matching: length-gated like the old
+ * scan, but function words can never be a mention — matching on
+ * "the" let any causal relation answer any question containing
+ * those three letters, and substring matching let "eat" match
+ * "weather". Whole words only, at the call site.
+ */
+export function mentionWords(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .filter((w) => w.length > 2 && !STOPWORDS.has(w));
+}
+
+/** Whole-word mention: "eat" must not match inside "weather". */
+export function mentionsWord(lower: string, word: string): boolean {
+  return new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(lower);
+}
+
 export function answerSituationWhy(
   ws: TurnWorkspace,
   session: SessionState,
@@ -2065,10 +2084,10 @@ export function answerSituationWhy(
   for (const rel of [...causals].reverse()) {
     const effectLabel = nodeLabel(model, rel.to).toLowerCase();
     const effectEv = eventById(model, rel.to);
-    const effectWords = new Set(
-      (effectEv ? effectEv.action : effectLabel).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 2));
-    const mentioned = [...effectWords].some((w) => lower.includes(w)) ||
-      lower.includes(nodeLabel(model, rel.from).toLowerCase().replace(/^the /, ""));
+    const effectWords = new Set(mentionWords(effectEv ? effectEv.action : effectLabel));
+    const causeText = nodeLabel(model, rel.from).toLowerCase().replace(/^the /, "");
+    const mentioned = [...effectWords].some((w) => mentionsWord(lower, w)) ||
+      (causeText !== "" && mentionsWord(lower, causeText));
     if (!mentioned && !bare) continue;
     const causeLabel = forAddressee(nodeLabel(model, rel.from));
     const effectText = forAddressee(nodeLabel(model, rel.to));

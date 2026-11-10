@@ -30,6 +30,8 @@ import { createSession, type SessionState } from "../src/cskg/memory";
 import { collectSetupFacts, decideSetup } from "../src/cskg/setup";
 import {
   causalTestimony,
+  mentionWords,
+  mentionsWord,
   resolvePronoun,
 } from "../src/cskg/situation";
 import { runTurn } from "../src/cskg/turn";
@@ -235,6 +237,16 @@ test("E5b causal: CSKG testimony is checkable, and a checked link stamps known",
   assert.equal(rel!.attribution, "known",
     "graph-checked testimony upgrades the stamp to known");
   assert.match(say(g, s, "Why is the garden flooded?"), /graph backs/);
+});
+
+test("mention matching: function words never count, substrings never count", () => {
+  assert.deepEqual(mentionWords("moved the picnic indoors"), ["moved", "picnic", "indoors"]);
+  assert.ok(!mentionWords("why is paint peeling off the walls?").includes("the"),
+    "the commonest word in the question is never offered as a mention");
+  assert.equal(mentionsWord("why is paint peeling off the walls?", "peeling"), true);
+  assert.equal(mentionsWord("the weather is nice", "eat"), false,
+    "eat does not match inside weather");
+  assert.equal(mentionsWord("they met because of the rain", "rain"), true);
 });
 
 test("E5b causal: a stated because-of the graph cannot check stays asserted, and says so", async () => {
