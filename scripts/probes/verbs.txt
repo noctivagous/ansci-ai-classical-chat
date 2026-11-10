@@ -1,0 +1,14 @@
+# Probe: per-turn verb derivation (Item 2, G6 open half).
+#
+# Event scan must key happenings phrased outside the hand ACTION_VERBS list,
+# deriving the verb per turn from the graph (lemmaOf/FormOf + HasContext).
+# Control turn uses an in-list verb and must not move.
+#
+# Verified 2026-11-10 (Item 2, dev-loop verdict PASS): renovated keys an
+# event per turn via the graph FormOf testimony ("You renovated the kitchen.");
+# painted control unmoved. Limits: third-person-singular and irregular
+# out-of-list pasts, -ing nouns with a real lemma.
+
+I renovated the kitchen.
+
+I painted the kitchen.

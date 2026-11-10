@@ -43,6 +43,7 @@ function row(n1: string, rel: string, n2: string, src: string): string {
 }
 
 const ROWS = [
+  row("/c/en/renovated", "/r/FormOf", "/c/en/renovate", "CN"),
   row("/c/en/soup", "/r/IsA", "/c/en/food", "CN"),
   row("/c/en/saturday", "/r/IsA", "/c/en/day", "CN"),
   row("/c/en/brother", "/r/IsA", "/c/en/man", "CN"),
@@ -112,6 +113,19 @@ test("E5a: a doing statement builds an event with surface-supported participants
     ev.participants.every((p) => ["actor", "object", "time"].includes(p.role)),
     "only actor/object/time roles — no recipient or instrument was stated, none appears",
   );
+});
+
+test("E5a: per-turn derivation keys a happening outside the hand verb list", async () => {
+  const g = await graph();
+  const s = createSession();
+  say(g, s, "I renovated the kitchen.");
+  const model = s.situation;
+  const ev = model.events.find((e) => e.verbLemma === "renovate");
+  assert.ok(ev, "renovated keys an event via the graph FormOf testimony, not the hand list");
+  assert.match(ev!.objectText ?? "", /kitchen/);
+  const actorPid = ev!.participants.find((p) => p.role === "actor");
+  const actor = model.entities.find((e) => e.id === actorPid?.entityId);
+  assert.ok(actor?.speaker, "the stated actor is the speaker");
 });
 
 test("E5a: the contents kind set gained 'event' — an ATOMIC-keyed mention is one", async () => {

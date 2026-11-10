@@ -262,6 +262,28 @@ function verbBase(word: string): string | null {
   return FORM_TO_BASE.get(word) ?? null;
 }
 
+/**
+ * Per-turn verb derivation (Item 2, G6 open half): the hand list
+ * first, else the graph's own FormOf testimony for this turn's
+ * word (g.lemmaOf). FormOf carries junk mappings (i→y,
+ * the→lack of supplies, bananas→banana), so a derived verb must
+ * look like a verb form (past/participle/gerund ending) and
+ * resolve to a single verb-shaped base; closed-class words never
+ * qualify. Third-person-singular out-of-list forms (flies) and
+ * irregular out-of-list pasts (spent) remain limits, as do
+ * -ing nouns with a real lemma (evening→even).
+ */
+function verbBasePerTurn(g: CskgGraph, word: string): string | null {
+  const listed = verbBase(word);
+  if (listed) return listed;
+  if (PRONOUNS.has(word) || CONNECTIVE_WORDS.has(word)) return null;
+  if (word === "i" || word === "we" || word === "you") return null;
+  if (!/(ed|en|ing)$/.test(word)) return null;
+  const lemma = g.lemmaOf(word);
+  if (!lemma || !/^[a-z]{2,}$/.test(lemma)) return null;
+  return lemma;
+}
+
 /** Is this referent filed under food, within two IsA steps? */
 function isFoodish(g: CskgGraph, id: number): boolean {
   const seen = new Set<number>([id]);
@@ -1421,7 +1443,7 @@ export function analyseSituationInto(
     if (cap && cap.doing) {
       const doingWords = cap.doing.split(/\s+/).filter(Boolean);
       const verbSurface = doingWords[0]?.toLowerCase() ?? "";
-      if (verbSurface && (verbBase(verbSurface) || /ing$/.test(verbSurface))) {
+      if (verbSurface && (verbBasePerTurn(g, verbSurface) || /ing$/.test(verbSurface))) {
         const built = buildEvent(ws, g, model, {
           verbSurface,
           phrase: cap.doing,
@@ -1452,7 +1474,7 @@ export function analyseSituationInto(
       // any later true verb in the same clause.
       const candidates: number[] = [];
       for (let i = 0; i < cw.length; i++) {
-        if (!verbBase(cw[i])) continue;
+        if (!verbBasePerTurn(g, cw[i])) continue;
         if (cw[i - 1] === "to" || cw[i - 1] === "of") continue;
         candidates.push(i);
       }
@@ -1460,7 +1482,7 @@ export function analyseSituationInto(
         candidates[0];
       if (pick === undefined) continue;
       const i = pick;
-      const base = verbBase(cw[i])!;
+      const base = verbBasePerTurn(g, cw[i])!;
       // actor: the nearest preceding entity mention or pronoun
       let actor: SituationEntity | null = null;
       for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
