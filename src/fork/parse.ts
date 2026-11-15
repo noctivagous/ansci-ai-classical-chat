@@ -138,7 +138,7 @@ function enTokenize(text: string): { tokens: string[]; interrogative: boolean } 
 }
 
 function enItems(tokens: string[]): EnItem[] {
-  return tokens.map((text, index) => {
+  const items = tokens.map((text, index) => {
     const lower = text.toLowerCase();
     const item: EnItem = { text, lower, index, kind: "proper" };
     if (lower === ",") item.kind = "comma";
@@ -183,6 +183,22 @@ function enItems(tokens: string[]): EnItem[] {
     }
     return item;
   });
+  // "her" is classified as a determiner by EN_DET (the possessive),
+  // but it is the object pronoun when no noun phrase can follow it:
+  // in "showed her the photo" the next item is another determiner,
+  // which no chunk can contain, so the pronoun reading is the only
+  // one. Without this, the token was silently dropped by the chunker.
+  for (let k = 0; k < items.length; k++) {
+    const it = items[k];
+    if (it.lower !== "her" || it.kind !== "det") continue;
+    const next = items[k + 1];
+    const canHeadChunk = next && (next.kind === "noun" || next.kind === "pronoun" || next.kind === "proper" || next.kind === "adjective");
+    if (!canHeadChunk) {
+      const entry = EN_LEXICON["her"];
+      if (entry) { it.entry = entry; it.kind = "pronoun"; }
+    }
+  }
+  return items;
 }
 
 interface EnChunk {
@@ -663,6 +679,35 @@ function parseEn(text: string): ParsedSentence {
           e.to = resultNode.id;
           e.cycle = cycleOf("Water", "Fire");
         }
+      }
+    }
+  }
+
+  /* --- Lone-object alternation (stage 1): a ditransitive frame
+   *     ([recipient, theme]) with exactly ONE bare object has that
+   *     object positionally in the recipient slot — but the canonical
+   *     single-object reading is the required object role ("He showed
+   *     the photo", "She taught grammar", "She sang a song"). Relabel
+   *     it to the unfilled required object slot, unless the filler is
+   *     a pronoun: a lone pronoun object keeps the recipient reading
+   *     ("He showed her"). Full-NP animate objects ("the students")
+   *     are the known trade-off of this partial animacy gate — the
+   *     depth-cycle evaluation named the full gate as future work. --- */
+  if (!isPassive) {
+    const objectEdges = b.edges.filter(
+      (e) => e.from === root.id && (e.relation === "recipient" || e.relation === "theme" || e.relation === "patient"),
+    );
+    const recipientEdge = objectEdges.find((e) => e.relation === "recipient");
+    const coreRequired = verb.frameSignature?.required ?? verb.required;
+    const requiredObject = ["theme", "patient"].find(
+      (r) => coreRequired.includes(r) && !objectEdges.some((e) => e.relation === r),
+    );
+    if (objectEdges.length === 1 && recipientEdge && requiredObject) {
+      const filler = b.nodes.find((n) => n.id === recipientEdge.to);
+      const PRONOUNS = new Set(["i", "you", "it", "them", "she", "he", "him", "her", "we", "they", "me", "us"]);
+      if (filler && !PRONOUNS.has(filler.lemma)) {
+        recipientEdge.relation = requiredObject as Relation;
+        filler.role = requiredObject;
       }
     }
   }

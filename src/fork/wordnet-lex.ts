@@ -72,6 +72,7 @@ import {
   type WordNetExtract,
 } from "../wordnet";
 import type { AspectKey } from "../graph";
+import { frameSignature } from "./framenet-lex";
 import {
   EN_LEXICON,
   type Element,
@@ -117,6 +118,12 @@ export function enableWordnetLexicon(on: boolean): void {
     for (const key of derivedKeys) delete EN_LEXICON[key];
     derivedKeys.clear();
     derivedKeyOwner.clear();
+    // The entry cache must go too: a cached derived entry would be
+    // handed back by wordnetVerb/Noun/Adjective even with the lexicon
+    // purged, silently defeating the toggle (caught in stage 1, where
+    // a held-out arm kept seeing the signatures it had withheld).
+    entryCache.clear();
+    derivedLemmas.clear();
   }
 }
 
@@ -205,16 +212,29 @@ export function wordnetVerb(surface: string): VerbEntry | undefined {
   if (!entry) {
     if (entryCache.has(cacheKey)) return undefined;
     const past = regularPast(lemma);
+    // Valency: FrameNet frame evidence when an LU exists for this
+    // lemma (framenet-lex, Part C.4); otherwise the permissive
+    // fallback — one optional patient, nothing required — which the
+    // valency assessment (check.ts) reports as evidence-free rather
+    // than licensed.
+    const sig = frameSignature(lemma);
     entry = {
       kind: "verb",
       lemma,
       element: "Wood",
-      // WordNet gives no valency: one optional patient slot, nothing
-      // required. Permissive by design (see the module header).
-      slots: ["patient"],
+      slots: sig ? sig.slots : ["patient"],
+      // FrameNet core is not obligation (core FEs are routinely
+      // null-instantiated), so a signature contributes NO VerbEntry
+      // required slots: the binary checker must not flag an
+      // intransitive use of a transitively-framed derived verb. The
+      // signature's core-object record lives on frameSignature and
+      // is judged by the three-state assessment, where an unfilled
+      // core object is unusual-but-licensed, not unsupported.
       required: [],
+      ...(sig?.prepSlot ? { prepSlot: { slot: sig.prepSlot.slot, preps: sig.prepSlot.preps } } : {}),
       forms: { base: lemma, third: thirdForm(lemma), past, participle: past },
       source: "wordnet",
+      ...(sig ? { frameSignature: { frame: sig.frame, luId: sig.luId, slots: sig.slots, required: sig.required } } : {}),
     };
     entryCache.set(cacheKey, entry);
   }

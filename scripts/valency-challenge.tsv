@@ -1,0 +1,55 @@
+# Valency challenge set — depth programme stage 1 (Part C.2/C.4).
+# Authored by Kavi against FrameNet 1.5 frame semantics, 2026-11-15.
+# Columns (tab-separated): verb <TAB> class <TAB> sentence <TAB> expected roles (role:lemma;... for pos items) <TAB> note
+# Classes: pos = legitimate argument pattern; neg = an argument the frame does not license (excess object);
+#          unusual = alternation / coercion / boundary case, reported descriptively.
+# This file is frozen once written: its sha256 is the manifest hash recorded in docs/fork/valency-challenge.md.
+# Any change is a new version of the set and must be reported as such.
+bake	pos	She baked a cake.	agent:she;theme:cake	 canonical transitive
+bake	pos	She baked the bread in the oven.	agent:she;theme:bread;location:oven	 prep location from Apply_heat Container
+bake	neg	She baked a cake the flour.		 second bare object is excess
+bake	unusual	She baked him a cake.		 benefactive double-object alternation, not in Apply_heat
+send	pos	She sent him a letter.	agent:she;recipient:him;theme:letter	 ditransitive
+send	pos	She sent the letter to him.	agent:she;theme:letter;goal:him	 prep goal
+send	neg	She sent him a letter a parcel.		 excess object
+send	unusual	She sent a letter him.	agent:she;recipient:him;theme:letter	 scrambled order; role-scored trap
+carry	pos	He carried the box.	agent:he;theme:box	 canonical
+carry	pos	He carried the box to the car.	agent:he;theme:box;goal:car	 prep goal
+carry	neg	He carried the box the bag.		 excess object
+carry	unusual	The car carried the family.		 inanimate agent; must not be rejected for inanimacy
+build	pos	He built a house.	agent:he;theme:house	 canonical
+build	pos	He built the bridge.	agent:he;theme:bridge	 canonical
+build	neg	He built a house a garage.		 excess object
+build	unusual	The beaver built a dam.		 animal agent; must be accepted
+wash	pos	She washed the car.	agent:she;theme:car	 canonical (signature frame is Filling — see report)
+wash	pos	She washed the dishes.	agent:she;theme:dish	 canonical
+wash	neg	She washed the car the soap.		 excess object
+wash	unusual	She washed him.		 person as theme; mechanically supported
+push	pos	She pushed the cart.	agent:she;theme:cart	 canonical
+push	pos	She pushed the cart to the door.	agent:she;theme:cart;goal:door	 prep goal
+push	neg	She pushed him the cart.		 him has no slot in Cause_motion's nominal inventory
+push	unusual	He pushed the door open.		 resultative; theme supported
+pull	pos	He pulled the rope.	agent:he;theme:rope	 canonical
+pull	pos	He pulled the sled to the hill.	agent:he;theme:sled;goal:hill	 prep goal
+pull	neg	He pulled him the sled.		 him unlicensed
+pull	unusual	The magnet pulled the nail.		 inanimate agent; must be accepted
+show	pos	He showed her the photo.	agent:he;recipient:her;theme:photo	 ditransitive (Perceiver as recipient)
+show	pos	He showed the photo.	agent:he;theme:photo	 recipient omitted (optional)
+show	neg	He showed her the photo the painting.		 excess object
+show	unusual	The photo showed her age.		 theme as subject; structurally agent
+teach	pos	She taught the students grammar.	agent:she;recipient:student;theme:grammar	 held-out verb; ditransitive
+teach	pos	She taught grammar.	agent:she;theme:grammar	 held-out verb; recipient omitted
+teach	neg	She taught the students grammar the piano.		 held-out verb; excess object
+teach	unusual	The book taught him patience.		 held-out verb; inanimate agent
+fill	pos	She filled the bottle.	agent:she;theme:bottle	 held-out verb; canonical under Filling slots
+fill	pos	He filled the glasses.	agent:he;theme:glass	 held-out verb
+fill	neg	She filled the bottle the jar.		 held-out verb; excess object
+fill	unusual	She filled the bottle with water.		 held-out verb; with-alternation the signature does not cover
+sing	pos	She sang a song.	agent:she;theme:song	 held-out verb; single object is the Message, not the Addressee
+sing	pos	She sang him a song.	agent:she;recipient:him;theme:song	 held-out verb; ditransitive
+sing	neg	She sang a song a ballad.		 held-out verb; excess object
+sing	unusual	The birds sang.		 held-out verb; theme omitted — intransitive use of a theme-requiring signature
+paint	pos	She painted a portrait.	agent:she;theme:portrait	 held-out verb; canonical under chosen slots (frame name is Filling — see report)
+paint	pos	He painted the wall.	agent:he;theme:wall	 held-out verb
+paint	neg	He painted a portrait a landscape.		 held-out verb; excess object
+paint	unusual	She painted him a portrait.		 held-out verb; benefactive alternation

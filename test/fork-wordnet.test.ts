@@ -49,7 +49,7 @@ test("the wind sentence: 'blows' derives as a Wood verb; wind and east classify 
   assert.equal((EN_LEXICON["blow"] as VerbEntry).source, "wordnet", "the verb entry is the provider's, marked as such");
   assert.ok(isWordnetDerived("blow"));
   assert.equal(generate(p), "The wind blows from the east.", "round-trips exactly");
-  assert.deepEqual(checkSentence(p), [], "no violations: derived verbs are permissive (no valency to check against)");
+  assert.deepEqual(checkSentence(p), [], "no violations: blow's FrameNet signature (Bungling — a wrong frame name for this sense, recorded in the stage-1 report) contributes slots but no obligation, since FrameNet core FEs are not obligatory; the three-state assessment, not the binary checker, judges its unfilled core object");
   // wind and east are seed correspondence terms (Wood trigram / Wood
   // direction): the join classifies both through the curated table.
   const derived = deriveSentence(graph, p);

@@ -21,7 +21,8 @@
     "test": "npm run build && node --test dist/test/*.test.js",
     "typecheck": "tsc --noEmit",
     "fork:demo": "npm run build --silent && node demo/wuxing-parser/run.mjs",
-    "fork:depth-baseline": "npm run build --silent && node scripts/fork-depth-baseline.mjs"
+    "fork:depth-baseline": "npm run build --silent && node scripts/fork-depth-baseline.mjs",
+    "fork:valency": "npm run build --silent && node scripts/fork-valency-challenge.mjs"
   },
   "type": "commonjs",
   "version": "0.1.0"

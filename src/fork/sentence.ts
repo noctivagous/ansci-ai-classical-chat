@@ -184,6 +184,12 @@ export interface VerbEntry {
   /** Provenance of this entry: set when the WordNet lexicon provider
    *  (wordnet-lex.ts) derived it at runtime instead of the hand lexicon. */
   source?: "wordnet";
+  /** FrameNet frame signature backing this entry's slots, when the
+   *  framenet-lex provider supplied them (Part C.4): the slots are
+   *  frame evidence, not a permissive default. Absent on hand-lexicon
+   *  entries (their frames are the lexicon's own) and on derived
+   *  entries with no FrameNet LU (evidence-free, permissive). */
+  frameSignature?: { frame: string; luId: number; slots: string[]; required: string[] };
 }
 
 export interface SimpleEntry {
@@ -277,6 +283,9 @@ en(simple("pronoun", "them", "Earth", { person: "3pl" }), "them");
 en(simple("pronoun", "she", "Earth", { person: "3sg" }), "she");
 en(simple("pronoun", "he", "Earth", { person: "3sg" }), "he");
 en(simple("pronoun", "him", "Earth", { person: "3sg" }), "him");
+en(simple("pronoun", "her", "Earth", { person: "3sg" }), "her");
+en(simple("pronoun", "me", "Earth", { person: "1sg" }), "me");
+en(simple("pronoun", "us", "Earth", { person: "1pl" }), "us");
 en(simple("pronoun", "we", "Earth", { person: "1pl" }), "we");
 en(simple("pronoun", "they", "Earth", { person: "3pl" }), "they");
 en(simple("adjective", "angry", "Fire", { semanticElement: "Wood" }));
