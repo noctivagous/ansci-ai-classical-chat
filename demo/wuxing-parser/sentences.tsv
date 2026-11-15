@@ -1,0 +1,34 @@
+# The standing demonstration corpus for the Wuxing sentence layer.
+# Columns (tab-separated): lang <TAB> sentence <TAB> what it demonstrates <TAB> expectation
+# Expectations:  exact     = parses, checker clean, round-trips to the identical string
+#                canonical = parses, checker clean, round-trips canonicalised
+#                flagged:<name> = the checker must flag violation <name>
+# This file changes only by deliberate corpus decisions. The runner
+# (run.mjs) scores the parser against it and regenerates transcript.md
+# and RESULTS.md. Failures stay in the output — they are the exhibit too.
+en	The dog bit the man.	canonical clause: predicate, agent, patient	exact
+en	The man was bitten by the dog.	passive — the meaning graph must be identical to the active	exact
+en	I was furious.	two addresses: adjective in syntax (Fire), anger in the net (Wood)	exact
+en	She didn't arrive.	negation arrives on a Metal carrier (the auxiliary), which carries the tense	exact
+en	She didn't arrived.	the K6 violation: tense on both carrier and verb — must be flagged	flagged:negation-carrier-tense
+en	What did you make?	fronted question word, gap in the object slot	exact
+en	There is a cat on the roof.	expletive: 'there' classifies nothing	exact
+en	It is raining.	weather predication: rain with no Earth participant	exact
+en	My bananas have gone all brown.	resultative change of state on the generating arc	exact
+en	If I were king, I would abdicate.	conditional + subjunctive mood	exact
+en	The soup needs more salt.	food vocabulary joining the net by taste correspondence	exact
+en	Today is Monday.	nominal predication in English: the predicated-as relation	exact
+en	He was given a book.	passive with the agent suppressed — recorded, never invented back	exact
+en	The wind blows from the east.	a verb the hand lexicon does not list (WordNet-fed, if enabled)	exact
+en	Winter is coming.	season as subject, progressive canonicalised	canonical
+zh	我吃了饭。	aspect particle as clause scope, not a word in the chain	exact
+zh	他一边走一边唱歌。	one correlative relation realised by two discontinuous tokens	exact
+zh	你买什么？	wh-in-situ: the question word stays in its object slot	exact
+zh	今天星期一。	verbless nominal predication — entry at Earth, predicated-as	exact
+zh	他很忙。	adjectival predication with no copula (R1)	exact
+zh	他跑得很快。	degree complement carrying the main content	exact
+zh	他买三本书。	classifier present: numeral–classifier–noun in fixed order	exact
+zh	他买三书。	missing classifier — must be flagged	flagged:missing-classifier
+zh	你去不去？	A-not-A question form	exact
+zh	他走了吗？	sentence-final particles in scope order （了 before 吗）	exact
+zh	饭被吃了。	agentless 被 passive: the agent slot is suppressed, not filled	exact
