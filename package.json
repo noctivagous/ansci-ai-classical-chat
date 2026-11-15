@@ -12,6 +12,7 @@
     "chat:once": "npm run build --silent && node scripts/chat-once.mjs",
     "build": "tsc",
     "dev": "npm run build --silent && node dist/src/cskg/devserver.js",
+    "fork:chat": "npm run build --silent && node scripts/fork-chat.mjs",
     "fork:density": "npm run build --silent && node scripts/fork-density.mjs",
     "fork:transcript": "npm run build --silent && node scripts/fork-transcript.mjs",
     "loop:tree": "node scripts/devloop-tree.mjs",
