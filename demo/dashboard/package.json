@@ -1,0 +1,21 @@
+{
+  "name": "ansci-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "AnSci capability and evaluation dashboard — a live, inspectable progress exhibit for the Wuxing sentence layer and knowledge graph. Runs the real fork engine in the browser.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.0",
+    "typescript": "^5.8.0",
+    "vite": "^6.3.0"
+  }
+}

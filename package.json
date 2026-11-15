@@ -25,7 +25,8 @@
     "fork:valency": "npm run build --silent && node scripts/fork-valency-challenge.mjs",
     "fork:aspect": "npm run build --silent && node scripts/fork-aspect-challenge.mjs",
     "fork:construction": "npm run build --silent && node scripts/fork-construction-challenge.mjs",
-    "fork:sense": "npm run build --silent && node scripts/fork-sense-challenge.mjs"
+    "fork:sense": "npm run build --silent && node scripts/fork-sense-challenge.mjs",
+    "fork:dashboard": "npm --prefix demo/dashboard run build"
   },
   "type": "commonjs",
   "version": "0.1.0"
