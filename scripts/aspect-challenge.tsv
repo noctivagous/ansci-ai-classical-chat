@@ -1,0 +1,28 @@
+# Aspect challenge set — depth programme stage 2 (Part C.2, WP4 spec).
+# Columns (tab-separated): lang <TAB> class <TAB> sentence <TAB> expected root bundle features (comma list, or "unmarked"; checker items: "violation:aspect-compatibility" / "no-violation") <TAB> note
+# Classes: core = scored; checker = checker expectations, scored; probe = abstention territory, reported descriptively.
+# Authored by Kavi, 2026-11-15; frozen once written — sha256 recorded in docs/fork/aspect-challenge.md.
+en	core	Winter is coming.	ongoing	 progressive, present
+en	core	She is baking a cake.	ongoing	 progressive with object
+en	core	He was carrying the box.	ongoing	 progressive, past
+en	core	They are building a bridge.	ongoing	 progressive, plural subject
+en	core	She is not coming.	ongoing	 negated progressive (generation canonicalises to isn't)
+en	core	She has baked a cake.	perfect	 perfect
+en	core	He had carried the box.	perfect	 perfect, past auxiliary
+en	core	They have built a bridge.	perfect	 perfect, plural
+en	core	She has been baking a cake.	perfect,ongoing	 perfect-progressive
+en	core	He had been carrying the box.	perfect,ongoing	 perfect-progressive, past
+en	core	She baked a cake.	bounded	 simple past
+en	core	He carried the box.	bounded	 simple past
+en	core	She bakes a cake.	unmarked	 simple present is aspectually unmarked here
+en	core	He carries the box.	unmarked	 simple present
+en	checker	She is knowing the answer.	violation:aspect-compatibility	 stative progressive
+en	checker	She is baking a cake.	no-violation	 activity progressive (control)
+zh	core	他去了学校。	bounded	 了 perfective
+zh	core	他吃着饭。	ongoing	 着 durative
+zh	core	他去过北京。	perfect,experiential	 过 experiential
+zh	core	他吃了饭去学校。	bounded	 serial chain: 了 on the first verb (the root)
+zh	core	他没去学校。	unmarked	 negation without aspect particle (F1 territory: the negation itself is a known parse gap)
+en	probe	She used to bake cakes.	habitual	 EN habitual construction: dispatcher abstains in v1
+en	probe	He began to sing.	inchoative	 EN inchoative construction: dispatcher abstains in v1
+zh	probe	他常去学校。	habitual	 ZH habitual adverb: coverage depends on the adverb's lexicon entry

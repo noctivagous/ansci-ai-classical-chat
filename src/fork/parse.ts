@@ -29,6 +29,7 @@
  * controlling cycle rejects.
  */
 import {
+  AspectBundle,
   ConnectiveGraph,
   EN_LEXICON,
   Language,
@@ -44,6 +45,7 @@ import {
   type LexEntry,
 } from "./sentence";
 import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { zhAspectFor } from "./aspect";
 
 class Builder {
   nodes: MeaningNode[] = [];
@@ -117,6 +119,11 @@ const EN_MODAL = new Set(["would", "could", "should"]);
 /** The -ing form of a verb lemma (rain -> raining, make -> making). */
 export function ingForm(lemma: string): string {
   if (/[^aeiou]e$/.test(lemma)) return lemma.slice(0, -1) + "ing";
+  // Final-consonant doubling after a single short vowel, the same
+  // rule as regularPast (swim -> swimming, stop -> stopping).
+  // Multi-syllable cases (begin -> beginning) turn on stress, which
+  // this rule cannot see; they stay undoubled — a recorded limit.
+  if (/^[^aeiou]*[aeiou][^aeiouwx]$/.test(lemma)) return lemma + lemma.slice(-1) + "ing";
   return lemma + "ing";
 }
 
@@ -188,6 +195,18 @@ function enItems(tokens: string[]): EnItem[] {
   // in "showed her the photo" the next item is another determiner,
   // which no chunk can contain, so the pronoun reading is the only
   // one. Without this, the token was silently dropped by the chunker.
+  // "been" after a have-auxiliary is the perfect progressive's (or
+  // perfect passive's) be-carrier, never the main verb: left
+  // unclassified, the WordNet provider derives a verb entry for it
+  // (lemma "be", regular past "bed") and it steals the verb slot
+  // from the -ing verb that follows.
+  for (let k = 0; k < items.length; k++) {
+    const it = items[k];
+    if (it.lower === "been" && items.slice(0, k).some((x) => x.kind === "aux" && ["had", "have", "has"].includes(x.lower))) {
+      it.kind = "be";
+      it.entry = undefined;
+    }
+  }
   for (let k = 0; k < items.length; k++) {
     const it = items[k];
     if (it.lower !== "her" || it.kind !== "det") continue;
@@ -199,6 +218,32 @@ function enItems(tokens: string[]): EnItem[] {
     }
   }
   return items;
+}
+
+/**
+ * The EN aspect dispatcher (WP4 spec §2): construction families over
+ * the bundle. be + V-ing is {ongoing}; have/has/had + participle is
+ * {perfect}; both together are {perfect, ongoing}; a simple past with
+ * neither marking is {bounded}. Anything else abstains (no bundle).
+ */
+function enAspectBundle(
+  auxItem: EnItem | undefined,
+  beItem: EnItem | undefined,
+  verbItem: EnItem,
+  isPassive: boolean,
+  hasBeen: boolean,
+): { aspect?: AspectBundle } {
+  if (isPassive) return {};
+  const perfect = !!auxItem && ["had", "have", "has"].includes(auxItem.lower);
+  // "been" is not in EN_BE (it is no copula), so the perfect
+  // progressive's be-carrier is detected positionally: a "been"
+  // token between the have-auxiliary and the -ing verb.
+  const ongoing = (!!beItem || hasBeen) && verbItem.formTag === "ing";
+  if (perfect && ongoing) return { aspect: { perfect: true, ongoing: true } };
+  if (perfect) return { aspect: { perfect: true } };
+  if (ongoing) return { aspect: { ongoing: true } };
+  if (verbItem.formTag === "past" || verbItem.formTag === "past/participle") return { aspect: { bounded: true } };
+  return {};
 }
 
 interface EnChunk {
@@ -371,7 +416,7 @@ function parseEn(text: string): ParsedSentence {
   if (first?.lower === "it" && beItem && verbItem && verbItem.formTag === "ing" && verbItem.entry) {
     const verb = verbItem.entry as VerbEntry;
     const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
-    root.states = { construction: "weather", aspect: "progressive", aux: beItem.lower, tense: "present", verbForm: "ing", mood: interrogative ? "interrogative" : "indicative" };
+    root.states = { construction: "weather", aspect: { ongoing: true }, aux: beItem.lower, tense: "present", verbForm: "ing", mood: interrogative ? "interrogative" : "indicative" };
     const scaffolding = [
       { index: first.index, kind: "expletive-it" },
       { index: beItem.index, kind: "copula" },
@@ -539,8 +584,8 @@ function parseEn(text: string): ParsedSentence {
     mood: interrogative ? "interrogative" : "indicative",
     ...(negItem ? { negated: true } : {}),
     ...(auxItem ? { aux: auxItem.lower } : {}),
-    ...(beItem && isPassive ? { aux: beItem.lower } : {}),
-    ...(auxItem && ["had", "have", "has"].includes(auxItem.lower) ? { aspect: "perfect" as const } : {}),
+    ...(beItem && (isPassive || verbItem.formTag === "ing") && !auxItem ? { aux: beItem.lower } : {}),
+    ...enAspectBundle(auxItem, beItem, verbItem, isPassive, !!items.find((i) => i.lower === "been" && auxItem && i.index > auxItem.index && i.index < verbItem.index)),
   };
 
   // Topic fronting (R3): a chunk set off by a comma before the clause is
@@ -876,7 +921,7 @@ function parseZh(text: string): ParsedSentence {
     if (agent) b.edge(root, agent, "agent");
     collectParticles(0, items.length, [root]);
     const aspectP = scope.find((s) => s.kind === "aspect");
-    if (aspectP) root.states.aspect = "perfect";
+    if (aspectP) root.states.aspect = zhAspectFor(aspectP.form);
     spans.push({ start: 0, end: 1, label: "theme(topic)" });
     return { meaning: b.graph(root), connective: connective("zh", tokens, spans, 0), realizes: b.realizes, scopeAttachments: scope };
   }
@@ -1048,7 +1093,7 @@ function parseZh(text: string): ParsedSentence {
         kind: it.func === "aspect-particle" ? "aspect" : it.func === "question-particle" ? "question" : "attitude",
         ...(current ? { targetId: current.id } : {}),
       });
-      if (it.func === "aspect-particle" && current) current.states = { ...current.states, aspect: "perfect" };
+      if (it.func === "aspect-particle" && current) current.states = { ...current.states, aspect: zhAspectFor(it.text) };
       continue;
     }
     if (it.entry?.kind === "verb") {

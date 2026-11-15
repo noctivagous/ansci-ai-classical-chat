@@ -61,7 +61,7 @@ test("EN negation rides the auxiliary (K6 mechanism): hadn't + participle", () =
   const root = p.meaning.nodes.find((n) => n.id === p.meaning.rootId);
   assert.equal(root?.states?.negated, true);
   assert.equal(root?.states?.aux, "had");
-  assert.equal(root?.states?.aspect, "perfect");
+  assert.deepEqual(root?.states?.aspect, { perfect: true });
   assert.deepEqual(violations("She hadn't yet arrived.", "en"), []);
 });
 

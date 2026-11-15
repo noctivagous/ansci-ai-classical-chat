@@ -203,6 +203,70 @@ function lemmaFor(surface: string, pos: "n" | "v" | "a"): string | undefined {
 
 /* ---------------- entry derivation ---------------- */
 
+/* ---------------- irregular-form selection (WP4 spec §4) ----------------
+ * The extract's forms index holds non-identity inflections only.
+ * Inverted per lemma, the attested verb surfaces are filtered by
+ * form class (the index also contains regularised forms of strong
+ * verbs — "beginned" is an attested surface — so membership alone
+ * proves nothing). Selection: the u-form of an a/u ablaut pair
+ * (sang/sung, drank/drunk, began/begun) is the participle, else an
+ * -en/-n candidate is; a candidate that is another candidate + -en
+ * (sunken over sunk) is dropped as the derived form; the past takes
+ * the remaining candidate. Identity-past verbs (cut, hit) and
+ * identity participles (become) are invisible to the index and keep
+ * the regular/default form — a recorded gap. */
+let verbFormsIndex: Map<string, string[]> | null = null;
+
+export function irregularForms(lemma: string): { past?: string; participle?: string } {
+  const ex = extract();
+  if (!ex) return {};
+  if (!verbFormsIndex) {
+    verbFormsIndex = new Map();
+    for (const [surface, cands] of ex.forms) {
+      for (const c of cands) {
+        if (c.pos !== "v") continue;
+        const list = verbFormsIndex.get(c.lemma) ?? [];
+        if (!list.includes(surface)) list.push(surface);
+        verbFormsIndex.set(c.lemma, list);
+      }
+    }
+  }
+  const surfaces = verbFormsIndex.get(lemma) ?? [];
+  // Filter by FORM CLASS, not by equality with this module's own
+  // regularisers: the index itself contains regularised forms of
+  // strong verbs ("beginned", "forgetted" are attested surfaces in
+  // it), and its doubling rules differ from the local ones. A strong
+  // past/participle never ends in -ed or -ing and is never the
+  // third-person form, so those classes are excluded wholesale.
+  const thirdVariants = new Set([thirdForm(lemma), lemma + "s", lemma + "es"]);
+  const candidates = surfaces.filter(
+    (x) => x !== lemma && !thirdVariants.has(x) && !/ing$/.test(x) && !/ed$/.test(x),
+  ).sort();
+  // A candidate that is another candidate + -en/-n is the derived
+  // adjectival-style form (sunken from sunk) — but only when a third
+  // candidate (the past) exists alongside: with just [broke, broken]
+  // the longer form IS the participle, and dropping it was a real
+  // error this rule's first version made on the whole o-class.
+  const irregular = candidates.filter(
+    (x) => !(candidates.length >= 3 && candidates.some((y) => y !== x && x.startsWith(y) && /^(e?n)$/.test(x.slice(y.length)))),
+  );
+  if (!irregular.length) return {};
+  // Ablaut pairs first (sang/sung, began/begun): the u-form is the
+  // participle. Then the -en/-n preference (written, taught-class).
+  let participle: string | undefined;
+  if (irregular.length === 2) {
+    const [a, b] = irregular;
+    if (a.length === b.length) {
+      const diffs = [...a].map((ch, i) => (ch !== b[i] ? i : -1)).filter((i) => i >= 0);
+      if (diffs.length === 1 && a[diffs[0]] === "a" && b[diffs[0]] === "u") participle = b;
+      else if (diffs.length === 1 && b[diffs[0]] === "a" && a[diffs[0]] === "u") participle = a;
+    }
+  }
+  participle ??= irregular.find((x) => /en$/.test(x)) ?? irregular.find((x) => /n$/.test(x));
+  const past = irregular.find((x) => x !== participle) ?? participle;
+  return { past, participle: participle ?? past };
+}
+
 export function wordnetVerb(surface: string): VerbEntry | undefined {
   if (!enabled) return undefined;
   const lemma = lemmaFor(surface, "v");
@@ -211,7 +275,8 @@ export function wordnetVerb(surface: string): VerbEntry | undefined {
   let entry = entryCache.get(cacheKey) as VerbEntry | undefined;
   if (!entry) {
     if (entryCache.has(cacheKey)) return undefined;
-    const past = regularPast(lemma);
+    const irr = irregularForms(lemma);
+    const past = irr.past ?? regularPast(lemma);
     // Valency: FrameNet frame evidence when an LU exists for this
     // lemma (framenet-lex, Part C.4); otherwise the permissive
     // fallback — one optional patient, nothing required — which the
@@ -232,7 +297,7 @@ export function wordnetVerb(surface: string): VerbEntry | undefined {
       // core object is unusual-but-licensed, not unsupported.
       required: [],
       ...(sig?.prepSlot ? { prepSlot: { slot: sig.prepSlot.slot, preps: sig.prepSlot.preps } } : {}),
-      forms: { base: lemma, third: thirdForm(lemma), past, participle: past },
+      forms: { base: lemma, third: thirdForm(lemma), past, participle: irr.participle ?? past },
       source: "wordnet",
       ...(sig ? { frameSignature: { frame: sig.frame, luId: sig.luId, slots: sig.slots, required: sig.required } } : {}),
     };

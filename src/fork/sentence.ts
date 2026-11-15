@@ -45,11 +45,27 @@ export function cycleOf(from: Element, to: Element): CycleKind {
   return "other";
 }
 
+/**
+ * The aspect feature bundle (WP4 spec): the five aspect patterns are
+ * named configurations over these compositional features, not
+ * exclusive states — perfect-progressive is {perfect, ongoing},
+ * experiential is {perfect, experiential}, and so on.
+ */
+export interface AspectBundle {
+  bounded?: boolean;
+  ongoing?: boolean;
+  perfect?: boolean;
+  experiential?: boolean;
+  habitual?: boolean;
+  inchoative?: boolean;
+  resultative?: boolean;
+}
+
 export interface NodeStates {
   voice?: "active" | "passive";
   negated?: boolean;
   mood?: "indicative" | "interrogative" | "imperative" | "subjunctive";
-  aspect?: "perfect" | "progressive";
+  aspect?: AspectBundle;
   tense?: "present" | "past";
   /** Surface auxiliary that carries tense for a negated/perfect clause (K6: the Metal carrier). */
   aux?: string;
@@ -318,6 +334,7 @@ zh(simple("noun", "书", "Earth", { classifier: "本" }));
 zh(simple("noun", "桌子", "Earth"));
 zh(simple("noun", "冬天", "Earth", { semanticElement: "Water" }));
 zh(simple("noun", "学校", "Earth"));
+zh(simple("noun", "北京", "Earth"));
 /* Nominal predication vocabulary （今天星期一）: time nominals and the
  * weekday names as Earth nouns. */
 zh(simple("noun", "今天", "Earth"));
@@ -336,6 +353,8 @@ zh(simple("pronoun", "什么", "Earth", { question: true }));
 /** ZH function words: not content nodes, but the connective/scope layer needs their kinds. */
 export const ZH_FUNCTION: Record<string, string> = {
   "了": "aspect-particle",
+  "着": "aspect-particle",
+  "过": "aspect-particle",
   "吗": "question-particle",
   "吧": "attitude-particle",
   "不": "negation",

@@ -15,6 +15,7 @@
  *    interrogative force and may not combine.
  */
 import { EN_LEXICON, ParsedSentence, VerbEntry, ZH_FUNCTION, ZH_LEXICON } from "./sentence";
+import { vendlerClass } from "./aspect";
 
 export interface Violation {
   name: string;
@@ -71,6 +72,16 @@ export function checkSentence(parsed: ParsedSentence): Violation[] {
           name: "agreement",
           cycle: "Metal→Wood",
           message: `third-person singular subject requires the -s form of '${node.lemma}'`,
+        });
+      }
+      // Vendler compatibility (WP4 §3): the progressive over a
+      // stative lemma is a form the content cannot bear. The layer
+      // abstains for every verb outside the curated stative set.
+      if (st.aspect?.ongoing && vendlerClass(node.lemma) === "state") {
+        out.push({
+          name: "aspect-compatibility",
+          cycle: "Metal→Wood",
+          message: `'${node.lemma}' is stative; the progressive does not apply to a state`,
         });
       }
       if (st.negated && st.aux === "did" && st.verbForm !== "base") {

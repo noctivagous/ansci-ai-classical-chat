@@ -145,7 +145,7 @@ scoreboard and `README.md` for how to read this.
 - relations: come -agent-> winter
 - in the net: winter -> Water (seed node 'water') [fork-curated @0.95]
 - checker: no violations
-- round-trip: Winter comes.  *(canonicalised)*
+- round-trip: Winter is coming.  *(exact)*
 
 ### 我吃了饭。
 

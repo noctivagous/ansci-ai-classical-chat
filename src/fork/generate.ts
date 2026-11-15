@@ -10,6 +10,7 @@
  */
 import { EN_LEXICON, MeaningNode, ParsedSentence, VerbEntry } from "./sentence";
 import { ingForm } from "./parse";
+import { enBeForm, zhParticleFor } from "./aspect";
 
 function nodeById(p: ParsedSentence, id: string): MeaningNode {
   return p.meaning.nodes.find((n) => n.id === id)!;
@@ -136,16 +137,30 @@ function enGenerate(p: ParsedSentence): string {
   const preAdverbs = adverbs.filter((a) => !TIME_ADVERBS.has(a.lemma));
   const postAdverbs = adverbs.filter((a) => TIME_ADVERBS.has(a.lemma));
   if (agent) words.push(enNp(p, agent));
+  // The verb phrase is composed from the aspect bundle (WP4 spec):
+  // perfect contributes the have-auxiliary + participle, ongoing the
+  // be-form + -ing form, both together have + been + -ing; bounded
+  // alone is the simple form, which is also the unmarked default.
+  const bundle = st.aspect ?? {};
+  const pushAdverbs = () => { for (const a of preAdverbs) words.push(a.form.toLowerCase()); };
   if (st.negated && st.aux) {
     words.push(NEG_CONTRACTION[st.aux] ?? `${st.aux} not`);
-    for (const a of preAdverbs) words.push(a.form.toLowerCase());
-    words.push(st.aspect === "perfect" ? entry.forms.participle : entry.forms.base);
-  } else if (st.aspect === "perfect" && st.aux) {
+    pushAdverbs();
+    if (bundle.perfect && bundle.ongoing) words.push("been", ingForm(entry.lemma));
+    else if (bundle.perfect) words.push(entry.forms.participle);
+    else if (bundle.ongoing) words.push(ingForm(entry.lemma));
+    else words.push(entry.forms.base);
+  } else if (bundle.perfect && st.aux) {
     words.push(st.aux);
-    for (const a of preAdverbs) words.push(a.form.toLowerCase());
-    words.push(entry.forms.participle);
+    pushAdverbs();
+    if (bundle.ongoing) words.push("been", ingForm(entry.lemma));
+    else words.push(entry.forms.participle);
+  } else if (bundle.ongoing) {
+    words.push(st.aux ?? enBeForm(st.tense, st.subjectPerson));
+    pushAdverbs();
+    words.push(ingForm(entry.lemma));
   } else {
-    for (const a of preAdverbs) words.push(a.form.toLowerCase());
+    pushAdverbs();
     const form =
       st.tense === "past" ? entry.forms.past : st.subjectPerson === "3sg" ? entry.forms.third : entry.forms.base;
     words.push(form);
@@ -199,8 +214,9 @@ function zhNp(p: ParsedSentence, node: MeaningNode): string {
 }
 
 function zhClauseTail(p: ParsedSentence, verb: MeaningNode): string {
-  // Aspect particle rides immediately after the verb's own chunk.
-  return verb.states?.aspect === "perfect" ? "了" : "";
+  // The aspect particle the verb's bundle selects (WP4 spec) rides
+  // immediately after the verb's own chunk.
+  return zhParticleFor(verb.states?.aspect ?? {});
 }
 
 function zhGenerate(p: ParsedSentence): string {

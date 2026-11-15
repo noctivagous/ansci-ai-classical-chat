@@ -1,6 +1,6 @@
 # Results — the Wuxing sentence layer, scored (generated)
 
-Generated 2026-11-15 by `npm run fork:demo`. **26/26 expectations met · 26 parsed · 23 exact round-trips.**
+Generated 2026-11-15 by `npm run fork:demo`. **26/26 expectations met · 26 parsed · 24 exact round-trips.**
 
 Scored against the expectations in `sentences.tsv`: a sentence
 passes when the parser does what the corpus says it should —
@@ -42,3 +42,4 @@ real result and stays in the table until the parser improves.
 | Date | Expectations met | Parsed | Checker-clean | Exact round-trips | Expected flags raised |
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-15 | 26/26 | 26 | 24 | 23 | 2 |
+| 2026-11-15 | 26/26 | 26 | 24 | 24 | 2 |
