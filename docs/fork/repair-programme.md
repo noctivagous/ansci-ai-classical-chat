@@ -617,7 +617,9 @@ the physical aspect to the climate category). (From the v6 survey,
 `sentencesToWuxing-6.txt` §2; registered for GAP-5, whose revised
 statement is in `wp1-classification-survey.md` §3.)
 **Status. REGISTERED HYPOTHESIS (adopted 2026-11-15).** A proposed
-project rule, not classical doctrine. Not implemented.
+project rule, not classical doctrine. Implemented for the table's
+four whole-phenomenon entries 2026-11-15 — see the implementation
+record at the end of this entry.
 
 The five climate categories （风 wind, 热 heat, 湿 damp, 燥
 dryness, 寒 cold — catalogue §1.5) are not interchangeable with
@@ -702,6 +704,48 @@ is a **separate implementation task**: it interacts with the join
 tests and the density record, and it has **not** been done in this
 adoption. The entries stand as they are until that task is taken
 up.
+
+**Implementation record (2026-11-15, the re-scope slice, commissioned
+as its own slice).** Done in `src/fork/classify.ts`:
+- The four whole-phenomenon entries are withdrawn from the table.
+- **Rain** carries one aspect-level assertion: aspect
+  `precipitation`, Water, confidence 0.71 = 0.95 × 0.75 (one
+  inferred link, at this rule's ceiling), provenance fork-creative,
+  marked H6-derived and provisional. Competing interpretation
+  recorded per condition (4): the moisture/effect route
+  (rain → dampness → Earth) is a deliberate non-assignment —
+  precipitation and dampness are not identical.
+- **Sleet, snow, hail are phase-null in the table**: frozen or
+  mixed precipitation; no documented aspect rule carries them, and
+  the provisional table above already names snow and hail
+  phase-null. The IS_A precipitation edges are untouched.
+- **Assertion ≠ anchor.** Withdrawing snow's entry silently removed
+  the hypernym climb's anchor for the precipitation family —
+  blow's snow sense lost its Water candidate outright, and the
+  stage-4 sense evidence regressed (set A 11/11 → 10/11) before
+  this was caught. The seed graph carries snow as a curated Water
+  exemplar; that exemplar role is infrastructure, not an assertion.
+  Resolution: `CLIMB_ANCHORS` in classify.ts — anchor-only records
+  the climb may terminate at, which lookupClassification never
+  returns and the join never derives from. With it, set A is back
+  to 11/11 and set B unchanged at 5/6. The climb still derives
+  Water for sleet/snow/hail at its own provenance (wordnet-derived,
+  decayed) — the table's silence is not the system's silence, and
+  whether the climb should also respect H6 phase-null is an open
+  question recorded here, not settled by this slice.
+- **Deltas.** Suite 308/308 (one test updated deliberately: the
+  sleet line of the X1-brake test now pins the new split — table
+  phase-null, climb derives). Demo exhibit unchanged (26/26).
+  Density re-run against the frozen first-run record: conclusions
+  447 → 414 (×1), 488 → 456 (×10), 546 → 497 (×100); precision
+  proxy 0.917 → 0.913 (×1), 0.842 → 0.831 (×10) — the sublinear
+  shape and the brakes are unchanged; the drop is the withdrawn
+  assertions' derivations, as expected.
+- **Noticed, not touched** (outside this slice's commissioned
+  scope): frost, ice, fog and storm stand in the table as
+  whole-phenomenon `weather` entries of the same pre-H6 shape —
+  frost is even named phase-null in the provisional table above.
+  Their re-scope is a follow-on decision.
 
 ### H7 — FLAVOR_BRIDGE_V1: bencao flavor assertions composed with Neijing flavor correspondences
 

@@ -73,8 +73,17 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cur("fear", "Water", "emotion", "state"),
   // Weather/season anchors the seed's own derivations use.
   cur("cold", "Water", "temperature", "temperature", 0.95, "the temperature sense: winter's quality, derived in the seed by the shared Yin prior"),
-  cur("rain", "Water", "weather"), cur("snow", "Water", "weather"),
-  cur("sleet", "Water", "weather"), cur("hail", "Water", "weather"),
+  // H6 re-scope (2026-11-15): the whole-phenomenon weather entries that
+  // stood here (rain/snow/sleet/hail, all Water under "weather") are
+  // WITHDRAWN. Under WEATHER_ASPECT_DERIVATION_V1 a phenomenon is
+  // classified only through a documented, defining physical aspect.
+  // Rain's re-scoped provisional entry lives in the Weather & world
+  // section (aspect "precipitation"); sleet, snow and hail are
+  // phase-null — frozen or mixed precipitation, no documented aspect
+  // route, named in H6 as deliberate non-assignments. The table asserts
+  // nothing for them now. (Same-shape entries elsewhere in the table —
+  // frost, ice, fog, storm — were noticed during this pass and are
+  // recorded in the H6 registry note; they are outside this slice.)
   cur("salt", "Water", "food", "overall", 0.9, "by the attested salty taste of Water"),
   cur("sleep", "Water", "state", "state", 0.9, "night is Water in the seed's time-of-day table"),
 
@@ -150,6 +159,7 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("frost", "Water", "weather", "overall", 0.8),
   cre("fog", "Water", "weather", "overall", 0.7),
   cre("precipitation", "Water", "weather", "overall", 0.85, "the IS_A parent the seed's winter derivations climb through"),
+  cre("rain", "Water", "precipitation", "overall", 0.71, "H6-derived, provisional: defining aspect = liquid aqueous precipitation; C = 0.95 × 0.75, one derivation step under WEATHER_ASPECT_DERIVATION_V1; the moisture/effect route (rain → dampness → Earth) is a deliberate non-assignment under H6"),
   cre("storm", "Wood", "weather", "overall", 0.7, "wind-driven"),
   cre("breeze", "Wood", "weather", "overall", 0.75),
   cre("lightning", "Fire", "weather", "overall", 0.7),
@@ -211,6 +221,22 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
  * pass has structure to travel: IS_A inheritance (children inherit the
  * parent's leanings at decay) and ASSOCIATED_WITH leanings.
  */
+/**
+ * CLIMB_ANCHORS — anchor-only records for the WordNet hypernym climb.
+ * These are NOT classifications: lookupClassification never returns
+ * them and the join derives nothing from them. They exist because an
+ * assertion and an anchor are different jobs. The seed graph carries
+ * snow as a curated Water exemplar (its winter derivations climb
+ * through it); when the H6 re-scope withdrew the table's snow
+ * assertion, the climb silently lost the anchor other words' senses
+ * terminate at (blow's snow sense lost its Water candidate entirely).
+ * The anchor is restored here, explicitly labelled, so the table can
+ * stay phase-null while the climb keeps its infrastructure.
+ */
+export const CLIMB_ANCHORS: ClassificationEntry[] = [
+  { concept: "snow", aspect: "weather", aspectKey: "overall", element: "Water", confidence: 0.9, provenance: "fork-curated", note: "anchor only, NOT a classification (H6 phase-null stands for the table): the seed graph's curated Water exemplar for the precipitation family" },
+];
+
 export const CONCEPT_LINKS: { from: string; to: string; type: "IS_A" | "ASSOCIATED_WITH" }[] = [
   { from: "sleet", to: "precipitation", type: "IS_A" },
   { from: "snow", to: "precipitation", type: "IS_A" },

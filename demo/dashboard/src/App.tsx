@@ -83,12 +83,22 @@ const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   {
     title: "Anchor coverage is the binding constraint",
     body: "Of 8,099 polysemous words, only 28 have anchored senses in more than one element — and several anchors are reached by wayward paths (rock arrives at Earth via “sweet”; snap via “cake”). Better disambiguation cannot fix thin, noisy anchors; classification coverage and path quality are the long pole.",
-    status: "measured in the stage-4 census · coverage work is next on that side",
+    status: "measured in the stage-4 census · the 100-object pilot has run; scale-up awaits a coverage ruling",
   },
   {
     title: "Review does not scale yet",
-    body: "At ×100 classification density the review queue is 1,047 items — beyond hand review — and the automatic precision proxy degrades to 0.751. Whether the proxy or the derivations are wrong is undecided until the judged benchmark (WP2) gets independent human judges.",
+    body: "At ×100 classification density the review queue is 1,047 items — beyond hand review — and the automatic precision proxy degrades (0.917 → 0.751 on the first run; 0.913 → 0.763 after the H6 re-scope). Whether the proxy or the derivations are wrong is undecided until the judged benchmark (WP2) gets independent human judges.",
     status: "open · triage protocol ratified, judges not yet available",
+  },
+  {
+    title: "The coverage bar is unmet — and meeting it would require inventing anchors",
+    body: "The Slice 1 pilot classified 100 ordinary objects under the ratified protocol and fell short of its own ≥90% coverage bar: 80 objects carry any assertion, 47.5% of axes are filled. The sample was deliberately loaded with cases the protocol requires abstention on — animals outside the attested five-livestock row, animal-derived materials, living plants on the material axis, the glass family. A run that hit 90% could only do so by inventing correspondences the tradition doesn't offer. Either the bar was meant for a classifiable inventory rather than a trap-loaded sample, or its denominator needs redefining; the pilot hands over the numbers and the question rather than choosing quietly.",
+    status: "pilot run 2026-11-15 · the denominator ruling is the user's, before the 500-object scale-up",
+  },
+  {
+    title: "Four weather entries still predate the H6 discipline",
+    body: "The H6 re-scope withdrew the table's whole-phenomenon entries for rain, snow, sleet and hail. Frost, ice, fog and storm still stand in the table in the same older shape — frost is even named phase-null in H6's own provisional table. They were noticed during the re-scope and deliberately left untouched: same-shape is a reason to schedule the work, not to expand a commissioned slice silently.",
+    status: "flagged in the H6 implementation record · follow-on decision",
   },
 ];
 

@@ -80,7 +80,7 @@ import {
   type SimpleEntry,
   type VerbEntry,
 } from "./sentence";
-import { CLASSIFICATIONS, lookupClassification, type ClassificationEntry } from "./classify";
+import { CLASSIFICATIONS, CLIMB_ANCHORS, lookupClassification, type ClassificationEntry } from "./classify";
 import { CONFIDENCE_GATE } from "./join";
 import { ingForm } from "./parse";
 
@@ -396,10 +396,17 @@ const MAX_CLIMB_HOPS = 6;
 const HOP_DECAY = 0.9;
 
 /** Anchor vocabulary: the curated table's concepts (whose curated
- *  layer restates the seed graph's correspondence tables). First
- *  entry per concept is the anchor's classification. */
+ *  layer restates the seed graph's correspondence tables), plus the
+ *  anchor-only CLIMB_ANCHORS — seed exemplars that are deliberately
+ *  NOT classifications (see classify.ts: an assertion and an anchor
+ *  are different jobs; H6's phase-null governs the table, not the
+ *  climb's infrastructure). First entry per concept wins, so a real
+ *  classification always outranks an anchor-only record. */
 const anchorByConcept = new Map<string, ClassificationEntry>();
 for (const e of CLASSIFICATIONS) {
+  if (!anchorByConcept.has(e.concept)) anchorByConcept.set(e.concept, e);
+}
+for (const e of CLIMB_ANCHORS) {
   if (!anchorByConcept.has(e.concept)) anchorByConcept.set(e.concept, e);
 }
 

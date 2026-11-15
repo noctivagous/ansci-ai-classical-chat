@@ -114,7 +114,12 @@ test("the gate: hurricane's climb finds the storm anchor but decays below 0.6 an
 
 test("X1 brake: 'cold' is table-owned, and the illness aspect derives no winter", () => {
   assert.equal(climbClassification("cold"), undefined, "the climb never sees a tabled concept");
-  assert.equal(climbClassification("sleet"), undefined, "sleet is tabled too (curated, weather)");
+  // H6 re-scope (2026-11-15): sleet is NO LONGER tabled — the table is
+  // phase-null for frozen/mixed precipitation. The climb, a separate
+  // derived mechanism at its own provenance, still derives Water for
+  // it through the precipitation anchor; the table asserts nothing.
+  assert.equal(lookupClassification("sleet"), undefined, "sleet is phase-null in the table after the H6 re-scope");
+  assert.equal(climbClassification("sleet")?.element, "Water", "the climb derives sleet via the precipitation anchor");
   const illness = derive(graph, "cold", "illness");
   assert.equal(illness.classification?.element, "Metal", "the illness sense is the lungs' element");
   assert.ok(
