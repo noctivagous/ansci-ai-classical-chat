@@ -20,6 +20,22 @@ the sentence to the same knowledge graph the rest of the system
 reasons over, so a classification learned from a sentence is
 knowledge, not annotation.
 
+## What the scoreboard does and does not show
+
+The corpus below is a *fitted* demonstration: every sentence in it was
+chosen because it exhibits a mechanism this parser was built to handle,
+so a full score here shows the mechanisms work — it is not a general
+parser accuracy result. On sentences the parser was never fitted to
+(the frozen 80-sentence holdout in `docs/fork/`), the parse success
+rate is 85% with the WordNet provider on — a parse *success* rate, not
+a correct-meaning rate; exact round-trip regeneration there is ~12%,
+which is why the project's current work is a feature-preservation
+metric rather than string matching (see Part C of
+`docs/fork/repair-programme.md`). Mechanical reproducibility is not
+independent validation; the project's judged benchmarks are separate
+instruments, and their results will be reported separately when they
+exist.
+
 ## Run it
 
 From the repo root (Node >= 20):

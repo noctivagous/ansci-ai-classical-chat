@@ -867,3 +867,285 @@ passage, recension), `rule_id` (H7, with version), `scope`,
 > The cycles determine the permitted dynamics. The ontology supplies
 > what those dynamics operate upon. Experiments determine which
 > proposed relationships have earned the right to remain.
+
+
+## Part C — Depth, independence, coverage (adopted 2026-11-15)
+
+Adopted from the Brief 5 answer (the v8 document), with Kavi's amendments
+A1 and A2 recorded where they apply. Full reasoning: the v8 desk
+evaluation. This part supplies the working specification for WP2
+(benchmark infrastructure) and the valency half of WP4.
+
+### C.0 Three ledgers
+
+The system is evaluated through three independent ledgers, and a gain in
+one must never be presented as a gain in another:
+
+1. **Mechanical feature preservation** — whether the system retains its
+   own analysis through generation (C.1). A preserving round trip is NOT
+   evidence the analysis was correct.
+2. **Externally judged semantic correctness** — the human instruments
+   (the preregistered H3 experiment; the human-judged derivation
+   benchmark under Part B's ratified thresholds). Not suppliable inside
+   the build loop; their absence is recorded, not papered over.
+3. **Evidence-qualified ontology coverage** — classifications held at
+   their evidence levels under the ratified protocol (C.6).
+
+### C.1 The depth metric (feature preservation)
+
+**Pipeline.** Original sentence → frozen parser → meaning graph G0 →
+frozen generator → sentence S1 → same frozen parser → graph G1 →
+mechanical feature comparison G0 ↔ G1. Surface exactness is reported as
+a diagnostic only; feature preservation is the depth measure.
+
+**Feature atoms.** Each feature is an atomic record (feature_id, family,
+scope_id, value, source node/edge, required_for_round_trip) over the
+families the parser actually represents: predicate and roles; role
+realization (the six slot states); aspect features; number; mood; voice;
+negation and modality with scope; suppressed slots; particle scope;
+connective structure; entity reference. A represented feature may not be
+omitted from scoring because the generator finds it hard; an
+unimplemented feature is not scored as present. Uncertainty recorded in
+G0 must survive as uncertainty, never silently become definite in G1.
+
+**Outcomes.** Preserved (same key, same value) = 1. Canonicalized
+(different surface, same normalized feature value and scope) = 1.
+Partially preserved = fraction of atoms, only across atoms of a declared
+multi-valued bundle. Lost, contradicted, duplicated, added = 0, with
+duplicated/added reported separately as the spurious rate. A role swap
+(Patient→Agent) is a contradiction, not partial credit. A dropped
+numeral where number was represented is a loss; progressive→simple is
+loss of the progressive atom; a suppressed agent becoming overt is a
+realization change, not canonicalization.
+
+**Scores.** Micro score P = matched atoms / required atoms in G0; macro
+score = unweighted mean of per-family preservation over represented
+families. Report lost rate, contradiction rate, spurious rate, family
+scores, exact-string rate, and canonicalized rate alongside. A family
+with too few atoms reports as under-tested, never as passing.
+
+**Canonicalization discipline.** Canonicalization is a fixed, versioned
+normalization function over feature values and known surface variants,
+frozen before a run. No normalization exception may be added after
+inspecting a failure and applied to the same test version.
+
+**Records.** Every round trip emits one record per original atom
+(round_trip_id; parser, generator, normalizer versions; sentence hashes;
+feature_id; family; scope; original and reparsed values; outcome;
+score), so any loss is traceable to one atom of one sentence.
+
+**Bars.** The ratified aggregate bar stands: feature preservation ≥ 95%.
+**Amendment A2 (policy note):** for this metric's first release, each
+adequately sampled family must additionally reach ≥ 90%. This 90% family
+floor is a target of THIS metric, adopted with it; it is not a revision
+of the ratified threshold policy, whose 85% floors govern derivation
+depth categories and relation types — a different instrument.
+
+**Amendment A1 (G0 must also be scored).** Preservation against an
+unscored G0 can certify consistent wrongness. In the baseline run and in
+every sealed run, determinate items also report G0's accuracy against
+the sealed expected graphs (C.5), alongside G0↔G1 preservation.
+
+### C.2 The depth programme (stage order and frozen targets)
+
+| Stage | Held-out target | Must not regress | Failure test |
+| --- | --- | --- | --- |
+| 0. Baseline instrumentation | Complete feature-level score for every round trip on the frozen 80-holdout and the 26-demo (reported separately, never pooled); every mismatch classified mechanically | Existing parse results unchanged | Same inputs + versions produce different records or scores |
+| 1. Valency repair (C.4) | On a separate sealed valency challenge set: role precision ≥ 90%, invalid-argument rejection ≥ 85%, legitimate-argument acceptance ≥ 90% | Holdout parse rate ≥ 85%, no new regressions | FrameNet-only baseline matches or beats the elemental-prior model on unseen lexical units |
+| 2. Aspect bundle + dispatcher | Aspect-feature preservation ≥ 95% on aspect-bearing round trips; overall feature preservation ≥ 90% on the holdout after this stage | Parse rate ≥ 85%; no loss in voice, mood, number, suppressed-slot families | Any of progressive / habitual / inchoative / resultative disappears or changes scope across a round trip |
+| 3. Construction repair | ≥ 90% of the frozen copular-question, contraction, and fragment cases parse with the expected construction record | Existing holdout successes stay successful | A family improves only by misclassifying another family |
+| 4. Sense selection (restraint asymmetry) | Beat the dictionary-order baseline on independently constructed conflict cases; meet the preregistered H3 criterion | No rise in unsupported-sense or contradiction rates | The gain disappears on the second sealed item set |
+| 5. Remaining generation features | Aggregate feature preservation ≥ 95%, no critical family below 90% on an adequately sampled set | Parse rate ≥ 85%; no regression on the original holdout | The aggregate passes only because easy families dominate the denominator |
+
+Stage 4 is gated: it begins only after the H3 predictions are frozen and
+the relevant evidence features exist; an unvalidated elemental scoring
+rule must never become a hidden fallback for dictionary order. Exact
+string rate is reported at every stage but is never the primary measure,
+and the global 95% bar is not claimable before stage 5.
+
+### C.3 What is elemental here, and what is not
+
+- **Valency: partly.** The argument inventory is lexical/frame evidence;
+  the elemental domain prior is a defeasible hypothesis that must beat a
+  FrameNet-only baseline on held-out lexical units or be removed.
+- **Sense selection: potentially.** Restraint asymmetry is the one
+  distinctive elemental mechanism in the depth programme. A candidate
+  earns restraint-based corroboration only when (1) the relation is
+  explicitly represented, (2) it is a valid member of the closed
+  controlling cycle, (3) sense-specific evidence supports the relevant
+  aspect, (4) the restraint predicts a distinction the conventional
+  baseline does not already capture, and (5) it is tested against the
+  negative control where the same cycle would amplify a wrong
+  classification. Otherwise sense selection uses lexical, frame,
+  collocation, and discourse evidence without elemental scoring.
+- **Aspect/morphology, construction coverage, generation feature loss:
+  not elemental.** These are representation and engineering problems;
+  they are not to be dressed in cycle language.
+
+### C.4 The valency contract
+
+Three levels, with authorities: **domain prior** (weak, defeasible) →
+**frame signature** (strong frame evidence) → **lexical-unit
+realization** (primary source of argument licensing). Derivation runs
+evidence-up, never element-down. A WordNet-derived verb receives a
+lexical candidate, never a universal permissive frame.
+
+Lexical-unit record: lexical_unit_id, lemma, sense_id, frame_id,
+frame_element_id, grammatical_function, phrase_type, argument_status,
+attestation_count, source_ids, source_version, confidence.
+argument_status distinguishes: core-realized; core-optionally-unexpressed;
+implicit; suppressed; elliptical; constructionally licensed; not normally
+licensed. The checker returns three states — **supported**,
+**unusual-but-licensed** (recognized alternation, coercion, or
+metaphorical frame shift; inanimacy alone never makes an argument
+unsupported), **unsupported**. Evaluation holds out entire lexical units,
+never merely sentences containing known verbs.
+
+### C.5 The sealed-materials protocol (standing evaluation protocol)
+
+Adopted as the project's mechanical evaluation protocol, alongside — not
+replacing — the two human instruments of ledger 2.
+
+**Roles.** Item author (writes items, expected analyses, predictions;
+may not modify anything after sealing). System operator (runs the frozen
+build; may not inspect expected analyses before execution or change
+anything mid-run). Custodian (holds the manifest, verifies hashes,
+releases the scoring key after execution; for distinctive elemental
+claims the custodian should be a different party from the author).
+
+**Sealed per item:** item_id; item_text and language; source_id;
+sampling_frame; selection_seed; item_class (positive control, negative
+control, near-miss, brake case, discriminating case); target_claim_id;
+conventional_prediction; elemental_prediction; expected_graph (feature
+atoms, not a sentence-level label); acceptable_variants (finite, declared
+in advance); excluded_decisions; scoring_rule_version;
+parser_build_target; creation_timestamp; content_hash; manifest_hash.
+A post-run claim that an unexpected output was "also acceptable" is
+inadmissible. Each run preserves: commit/build id; parser, generator,
+lexical provider, ontology, configuration, and normalizer versions; the
+exact command and deterministic settings; raw outputs and reparsed
+graphs; per-item and aggregate scores; the manifest and its hash. Any
+component change makes a new run under a new manifest.
+
+**Sampling.** Representative sampling (seeded, stratified by language,
+construction family, length band, sentence type, lexical domain)
+estimates ordinary performance; adversarial sampling (predeclared
+structural criteria, never current parser success) tests distinctive
+claims. The two are reported separately; neither impersonates the other.
+
+**Item statuses.** Determinate (one expected graph; mechanical scoring);
+finite ambiguity (declared set of acceptable graphs); unresolved (no
+defensible expected graph — excluded from binary scoring but reported by
+class and count; a set with too many unresolved items is defective and
+redesigned before execution).
+
+**Adversarial composition** (per 100 items): 40 discriminating, 20
+near-miss, 20 brake/negative-control (including X1-style cases where a
+wrong classification would be amplified if the brakes failed), 20
+ordinary/positive controls. Every discriminating item carries the
+prediction-admission fields, a negative control, and a falsification
+condition; no elemental win is counted unless the conventional baseline
+ran on the same item.
+
+**Standing demotions (phrasing rules for all project reports).** The
+demo corpus result (26/26, 23 exact) is a *fitted demonstration result*,
+not a general parser accuracy result. The holdout's 85% is a *parse
+success rate*, not a correct-meaning rate. The 6/6 prediction run and the
+cycle-probe outcomes are *internal evidence* until an independently
+authored sealed set reproduces them. Mechanical reproducibility is not
+independent validation.
+
+### C.6 Coverage policy (post-pilot)
+
+**Prioritisation.** After the 100-object pilot (which proceeds under its
+frozen protocol in the catalogue), tranches are selected by
+D(x) = 0.50·F(x) + 0.30·E(x) + 0.20·R(x), all terms normalized to [0,1]:
+F = log-normalized frequency in a frozen representative corpus; E =
+failure demand, counting distinct held-out failure cases where the
+candidate is a necessary missing classification (one missing node counts
+once, however many downstream errors it causes); R = rotation need,
+c_min / max(1, c_d) over accepted classifications per domain, recomputed
+at tranche start. The weights are project policy, frozen per tranche,
+reviewed only between tranches. **Eligibility gates precede ranking:**
+stable identity or resolvable sense; at least one aspect in scope; an
+admissible source or a registered derivation hypothesis; the aspect
+distinguishable from the entity's other aspects; not a duplicate. A
+candidate failing the evidence gate is recorded as a **coverage gap**,
+never converted into a classification task. Selection inputs (corpus
+snapshot, failure-log snapshot, domain counts, candidate list,
+deduplication rules, formula, weights) are frozen per run; ties break by
+distinct failure count, then frequency, then smaller domain count, then
+lexical order of stable ID. Tranche size 20, at most 8 from one domain;
+unfilled slots carry forward, never filled with unsupported items.
+
+**Source admissibility.** A source is admissible for the assertion it
+actually supports, not for every assertion about the entity. Identity,
+composition, and property sources (craft texts and technical standards
+for artefacts; botanical and zoological taxonomies for identity;
+food-composition tables for nutrients) establish what they state and
+nothing about phases; phase correspondences require an explicitly
+attested correspondence source or a registered, tested derivation rule
+(H5 for artefacts, H6 for weather aspects, H7 for flavor-mediated
+correspondences). Confirmed absences stand as recorded: no early
+five-phase taxonomy of individual tools exists in the surveyed sources;
+botanical and zoological taxonomies supply no phase classification; no
+general phase classification of ordinary places is established.
+
+**Review triage (density).** Rule validation is not instance validation.
+Risk classes: **critical** (new derivation rule or version; new
+cycle-related relation; anything that could support clinical, safety,
+efficacy, or function claims) and **high** (conflicting evidence;
+multiple possible phases; composites; uncertain scope; contested sense;
+cross-language transfer; disputed H7 leg; non-straightforward H5
+dominance; multi-aspect weather) — 100% human review before admission.
+**Medium** (validated rule, new source family/domain/entity type) —
+stratified sample review, all exceptions escalated. **Low** (deterministic
+reapplication of a validated rule to clear source assertions) —
+statistical audit; for a queue of ~1,047, a stratified random sample of
+~283 estimates overall error at 95% ±5% (finite-population corrected),
+with per-stratum minimums and under-tested strata reported as such.
+Rule status and instance status are separate fields: a validated rule's
+unreviewed instances remain machine-derived and provisional, usable for
+exploratory search only, never as independently verified evidence in a
+high-confidence conclusion. Admitted confidence:
+C_admitted = min(C_source, C_rule-calibration, C_instance), with
+C_instance never set to 1.0 for an unreviewed instance. Escalation: a
+sampled unsupported-inference rate above 5%, an unresolved-contradiction
+rate above 1%, or a lower 95% precision bound below the ratified bar
+suspends automatic admission for that stratum pending investigation.
+Ratified thresholds do not drop at any density.
+
+**Language parity.** (1) No cross-language promotion: an English
+assertion never becomes an attested Chinese assertion by translation.
+(2) Separate denominators: coverage, parse success, feature preservation,
+and judged precision are reported per language; no pooled pass may hide a
+Chinese failure. (3) Shared identity only when justified: bilingual
+alignment connects language-specific lexical units without erasing sense
+differences, and alignment is a candidate relation, never an attestation.
+(4) Chinese claims require native-speaker judgment for grammaticality and
+naturalness. (5) Coverage gate: a domain is not described as covered
+while its Chinese lexical inventory is substantially incomplete; the
+imbalance is published. The Chinese feeder is language-specific (CWN and
+HowNet as sense resources, CCL for corpus evidence, COW for alignment
+only — its Princeton-WordNet basis makes it an alignment resource, not
+an independent authority), feeding the shared representation downstream
+of Chinese sense resolution, with original Chinese wording retained in
+every assertion.
+
+### C.7 Consequences for the work packages
+
+- **Next deliverable: the baseline feature-preservation report** (stage 0
+  of C.2) — the metric implemented and run over the frozen holdout and
+  demo corpora, including the A1 G0-accuracy report on determinate
+  items — before any valency or aspect code changes.
+- **WP2** now has its specification: C.1 (metric) + C.5 (protocol) +
+  C.6 triage for the density side. The judging itself still requires
+  independent humans (ledger 2).
+- **WP4 valency**: the specification task is superseded by the C.4
+  contract — remaining work is the FrameNet signature inventory and a
+  build review against the contract, not a from-scratch spec. **WP4
+  aspect** still needs its buildable spec from the v5 review (feature
+  bundle, Vendler compatibility layer, dispatcher contract with
+  abstention).
+- The claim demotions of C.5 apply to the demo README and all future
+  reports from adoption onward.
