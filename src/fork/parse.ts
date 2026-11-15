@@ -45,6 +45,7 @@ import {
   type LexEntry,
 } from "./sentence";
 import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { applySenseSelection } from "./sense";
 import { zhAspectFor } from "./aspect";
 
 class Builder {
@@ -109,11 +110,11 @@ interface EnItem {
   formTag?: string;
 }
 
-const EN_DET = new Set(["the", "a", "an", "my", "his", "her", "that", "more"]);
+const EN_DET = new Set(["the", "a", "an", "my", "his", "her", "that", "this", "more"]);
 const EN_PREP = new Set(["on", "in", "by", "to", "with", "past", "at", "from"]);
 const EN_BE: Record<string, "present" | "past"> = { is: "present", are: "present", am: "present", was: "past", were: "past" };
 const EN_AUX = new Set(["had", "did", "does", "do", "has", "have", "can"]);
-const EN_WH = new Set(["what", "who", "where", "when"]);
+const EN_WH = new Set(["what", "who", "where", "when", "which"]);
 const EN_MODAL = new Set(["would", "could", "should"]);
 
 /** The -ing form of a verb lemma (rain -> raining, make -> making). */
@@ -137,6 +138,15 @@ function enTokenize(text: string): { tokens: string[]; interrogative: boolean } 
       tokens.push("can", "n't"); // can + n't contracts by apostrophe only
     } else if (/n't$/i.test(t) && t.length > 3) {
       tokens.push(t.slice(0, -3), "n't");
+    } else if (/^(what|where|when|who|how|it|that|there|he|she)'s$/i.test(t)) {
+      // Copula contraction on a question word or pronoun ("what's",
+      // "it's"). Possessive 's on a noun is NOT split — the base list
+      // is what licenses the split.
+      tokens.push(t.slice(0, -2), "is");
+    } else if (/^(you|we|they)'re$/i.test(t)) {
+      tokens.push(t.slice(0, -3), "are");
+    } else if (/^i'm$/i.test(t)) {
+      tokens.push("I", "am");
     } else {
       tokens.push(t);
     }
@@ -246,12 +256,33 @@ function enAspectBundle(
   return {};
 }
 
+/** Expected answer type by question word (Part D D1). */
+function whExpectedType(wh: string): string {
+  switch (wh) {
+    case "who": return "person";
+    case "where": return "location";
+    case "when": return "time";
+    case "which": return "selection";
+    case "why": return "reason";
+    default: return "entity";
+  }
+}
+
+/** Measurable-property head nouns: a "what is the X of Y" question over
+ *  one of these asks for a quantity, not a kind (stage 3, case 12). */
+const MEASURABLE_HEADS = new Set([
+  "population", "temperature", "price", "cost", "age", "size",
+  "height", "weight", "distance", "speed", "number", "amount",
+]);
+
 interface EnChunk {
   head: EnItem;
   adjectives: EnItem[];
   det?: string;
   start: number;
   end: number;
+  /** An absorbed of-PP ("the population of Chicago"): NP-internal. */
+  ofChunk?: EnChunk;
 }
 
 /** Parse an NP chunk starting at items[i]; returns chunk + next index. */
@@ -261,9 +292,44 @@ function enChunk(items: EnItem[], i: number): { chunk: EnChunk; next: number } |
   let j = i;
   if (items[j]?.kind === "det") { det = items[j].lower; j++; }
   while (items[j]?.kind === "adjective") { adjectives.push(items[j]); j++; }
-  const head = items[j];
+  let head = items[j];
+  if ((!head || (head.kind !== "noun" && head.kind !== "pronoun" && head.kind !== "proper")) && adjectives.length) {
+    // Adjective in head position: "a cold" (the illness) — the run of
+    // adjectives consumed the only candidate head. If the last
+    // adjective also has a noun reading, that reading is the head;
+    // position is the evidence, as elsewhere in this parser.
+    const lastAdj = adjectives[adjectives.length - 1];
+    const nounEntry = wordnetNoun(lastAdj.lower);
+    if (nounEntry) {
+      head = { ...lastAdj, kind: "noun", entry: nounEntry };
+      adjectives.pop();
+      j = lastAdj.index;
+    }
+  }
   if (!head || (head.kind !== "noun" && head.kind !== "pronoun" && head.kind !== "proper")) return null;
-  return { chunk: { head, adjectives, det, start: i, end: j }, next: j + 1 };
+  const chunk: EnChunk = { head, adjectives, det, start: i, end: j };
+  // Of-PP absorption: "the population of Chicago" is ONE noun phrase.
+  // Only "of" is absorbed, and only immediately after the head — verb
+  // arguments keep their own prepositions, so this cannot swallow a
+  // clause-level PP.
+  if (items[j + 1]?.lower === "of") {
+    const sub = enChunk(items, j + 2);
+    if (sub) {
+      chunk.ofChunk = sub.chunk;
+      chunk.end = sub.chunk.end;
+      return { chunk, next: sub.next };
+    }
+    // A lone adjective after "of" is the complement substantivised:
+    // "the opposite of hot" — hot is the opposed quality itself, and
+    // its node keeps the adjective entry's classification.
+    const adj = items[j + 2];
+    if (adj?.kind === "adjective") {
+      chunk.ofChunk = { head: adj, adjectives: [], start: j + 2, end: j + 2 };
+      chunk.end = j + 2;
+      return { chunk, next: j + 3 };
+    }
+  }
+  return { chunk, next: j + 1 };
 }
 
 function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode {
@@ -292,6 +358,11 @@ function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode
     );
     b.edge(aNode, node, "qualifies"); // Fire→Earth: generating
   }
+  if (chunk.ofChunk) {
+    const ofNode = enNodeFromChunk(b, chunk.ofChunk);
+    ofNode.prep = "of";
+    b.edge(node, ofNode, "modifier");
+  }
   return node;
 }
 
@@ -307,6 +378,64 @@ function parseEn(text: string): ParsedSentence {
   const negItem = items.find((i) => i.kind === "neg");
   const whyItem = items.find((i) => i.kind === "why");
   const contentStart = whyItem ? whyItem.index + 1 : 0;
+
+  /* --- Imperative (stage 3): a sentence-initial verb with no subject
+   *     ("Tell me about winter."). The initial word is classified as a
+   *     noun by the provider (a "tell" is also a mound), and the verb
+   *     scan only looks AFTER a subject chunk, so the imperative was
+   *     invisible and a later noun with verb synsets ("winter") stole
+   *     the verb slot. The signature is exact: the first chunk is the
+   *     single verb-resolvable word and a pronoun argument follows
+   *     it — "Wind blows." fails the pronoun test and stays a
+   *     declarative. The addressee agent is constructionally implicit
+   *     (C.4), recorded as suppressed. --- */
+  {
+    const impItem = items[contentStart];
+    if (impItem && impItem.kind !== "verb" && !items.some((i) => i.kind === "be") && !items.some((i) => i.kind === "aux")) {
+      const impVerb = wordnetVerb(impItem.lower);
+      const impChunk = enChunk(items, contentStart);
+      if (impVerb && impChunk && impChunk.chunk.head === impItem && impChunk.next === contentStart + 1 && items[impChunk.next]?.kind === "pronoun") {
+        const root = b.node({ lemma: impVerb.lemma, form: impItem.text, syntacticElement: "Wood", role: "verb" }, [impItem.index]);
+        root.states = { mood: "imperative", construction: "imperative", tense: "present", verbForm: "base", voice: "active", suppressedRoles: ["agent"], subjectPerson: "2" };
+        const bareSlots = [...impVerb.slots];
+        let i = contentStart + 1;
+        while (i < items.length) {
+          const item = items[i];
+          if (item.kind === "adverb") {
+            const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
+            b.edge(aNode, root, "modulates");
+            i++;
+            continue;
+          }
+          if (item.kind === "prep" || item.lower === "about") {
+            const pc = enChunk(items, i + 1);
+            if (pc) {
+              const slot = impVerb.prepSlot && impVerb.prepSlot.preps.includes(item.lower) ? impVerb.prepSlot.slot : bareSlots.includes("theme") ? "theme" : "location";
+              if (slot === "theme") bareSlots.splice(bareSlots.indexOf("theme"), 1);
+              const n = enNodeFromChunk(b, pc.chunk, slot);
+              n.prep = item.lower;
+              b.edge(root, n, slot as Relation);
+              i = pc.next;
+              continue;
+            }
+            i++;
+            continue;
+          }
+          const c = enChunk(items, i);
+          if (c && bareSlots.length) {
+            const rel = bareSlots.shift()!;
+            const n = enNodeFromChunk(b, c.chunk, rel);
+            b.edge(root, n, rel as Relation);
+            i = c.next;
+            continue;
+          }
+          break;
+        }
+        return { meaning: b.graph(root), connective: connective("en", tokens, spans), realizes: b.realizes, scopeAttachments: scope };
+      }
+    }
+  }
+
   let verbItem = items.find((i) => i.kind === "verb");
   if (!verbItem) {
     // WordNet fallback (wordnet-lex.ts): no hand-lexicon verb exists,
@@ -340,12 +469,20 @@ function parseEn(text: string): ParsedSentence {
       if (items[k - 1]?.kind === "det") continue;
       const derived = wordnetVerb(it.lower);
       if (!derived) continue;
-      it.entry = derived;
-      it.kind = "verb";
       const f = derived.forms;
-      it.formTag =
+      const formTag =
         it.lower === ingForm(f.base) ? "ing"
         : it.lower === f.base ? "base" : it.lower === f.third ? "third" : it.lower === f.past && it.lower === f.participle ? "past/participle" : it.lower === f.past ? "past" : it.lower === f.participle ? "participle" : "base";
+      // With a copula present, only a participle or -ing surface can
+      // be the clause's verb (passive / progressive). A base- or
+      // third-shaped surface after the copula is its complement —
+      // "They are doctors" names a complement noun that merely has
+      // verb synsets ("doctor"), and upgrading it steals the clause
+      // from the copula path.
+      if (beItem && formTag !== "participle" && formTag !== "past/participle" && formTag !== "ing") continue;
+      it.entry = derived;
+      it.kind = "verb";
+      it.formTag = formTag;
       verbItem = it;
       break;
     }
@@ -433,26 +570,65 @@ function parseEn(text: string): ParsedSentence {
     const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
     root.states = {
       mood: "interrogative",
-      tense: auxItem?.lower === "did" ? "past" : "present",
+      // The carrier fixes tense when present ("did"); a questioned
+      // subject has no carrier, so the verb's own form carries it
+      // ("Who arrived?" is past though nothing says "did").
+      tense: auxItem?.lower === "did" || verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
       verbForm: verbItem.formTag,
       voice: "active",
       ...(auxItem ? { aux: auxItem.lower } : {}),
     };
     const agentStart = (auxItem?.index ?? first.index) + 1;
     const subjC = enChunk(items, agentStart);
+    let slot: string;
     if (subjC) {
       const agent = enNodeFromChunk(b, subjC.chunk, "agent");
       b.edge(root, agent, "agent");
       root.states.subjectPerson = subjC.chunk.head.entry && "person" in subjC.chunk.head.entry ? (subjC.chunk.head.entry as { person?: string }).person : "3sg";
+      slot = verb.required[0] ?? verb.slots[0] ?? "patient";
+    } else {
+      // No overt subject chunk: the question word IS the subject
+      // ("Who arrived?", "Which happened first?"). Assigning it the
+      // verb's object slot instead was the old behaviour and produced
+      // a patient reading for an intransitive's only argument.
+      slot = "agent";
     }
-    const slot = verb.required[0] ?? verb.slots[0] ?? "patient";
     const qNode = b.node(
       { lemma: first.lower, form: first.text, syntacticElement: "Earth", role: slot, questionWord: true },
       [first.index],
     );
     b.edge(root, qNode, slot as Relation);
+    if (slot === "agent") {
+      // Post-verbal material of a subject question: bare chunks fill
+      // the frame's slots in order; adverbs modulate ("happened
+      // first"). Object questions keep the earlier behaviour — their
+      // post-verbal region was the gap itself.
+      const bareSlots = [...verb.slots];
+      let i = verbItem.index + 1;
+      while (i < items.length) {
+        const item = items[i];
+        if (item.kind === "adverb") {
+          const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
+          b.edge(aNode, root, "modulates");
+          i++;
+          continue;
+        }
+        const c = enChunk(items, i);
+        if (c && bareSlots.length) {
+          const rel = bareSlots.shift()!;
+          const n = enNodeFromChunk(b, c.chunk, rel);
+          b.edge(root, n, rel as Relation);
+          i = c.next;
+          continue;
+        }
+        break;
+      }
+    }
     const scaffolding = auxItem ? [{ index: auxItem.index, kind: "do-support" }] : [];
-    return { meaning: b.graph(root), connective: connective("en", tokens, spans, undefined, scaffolding), realizes: b.realizes, scopeAttachments: scope };
+    return {
+      meaning: b.graph(root), connective: connective("en", tokens, spans, undefined, scaffolding), realizes: b.realizes, scopeAttachments: scope,
+      query: { relation: slot, expectedType: whExpectedType(first.lower) },
+    };
   }
 
   /* --- Relative clause (R5): a clause graph attached as modifier of its
@@ -490,6 +666,37 @@ function parseEn(text: string): ParsedSentence {
       b.edge(head, root, predRelation(root));
       return { meaning: b.graph(root), connective: connective("en", tokens, spans, headC.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
     }
+  }
+
+  /* --- Fragments (stage 3, Part D D2/D3): complete discourse acts
+   *     that are not propositions. A topic proposal realises its act
+   *     in the connective scaffolding and holds only the topic in the
+   *     meaning graph — no predicate is invented for it. A bare
+   *     "Why?" is a reason query over a discourse antecedent: with no
+   *     antecedent in the sentence it stays unresolved rather than
+   *     acquiring a manufactured target. --- */
+  if (first?.lower === "what" && items[contentStart + 1]?.lower === "about") {
+    const tc = enChunk(items, contentStart + 2);
+    if (tc && tc.next >= items.length) {
+      const topic = enNodeFromChunk(b, tc.chunk, "topic");
+      const scaffolding = [
+        { index: first.index, kind: "discourse-act" },
+        { index: items[contentStart + 1].index, kind: "discourse-act" },
+      ];
+      return {
+        meaning: b.graph(topic), connective: connective("en", tokens, spans, tc.chunk.head.index, scaffolding), realizes: b.realizes, scopeAttachments: scope,
+        discourseAct: "topic-proposal",
+      };
+    }
+  }
+  if (items.length === 1 && whyItem) {
+    // (whyItem, not first: contentStart already points past it.)
+    const root = b.node({ lemma: "why", form: whyItem.text, syntacticElement: "Water", role: "reason", questionWord: true }, [whyItem.index]);
+    root.states = { mood: "interrogative" };
+    return {
+      meaning: b.graph(root), connective: connective("en", tokens, spans), realizes: b.realizes, scopeAttachments: scope,
+      discourseAct: "reason-query", query: { relation: "explanation", expectedType: "reason" },
+    };
   }
 
   /* --- Reduced relative (R5, H9's structure): a participle/past clause
@@ -530,6 +737,106 @@ function parseEn(text: string): ParsedSentence {
     }
   }
 
+  /* --- Copular question (stage 3, Part D D1): Wh + be + complement.
+   *     The relation stays the declarative one (predicated-as /
+   *     location / time / contains); the question is an operator over
+   *     it, recorded in the query record — never an assertion with a
+   *     null filler. The questioned node is the root for nominal,
+   *     locative, temporal and containment questions, mirroring the
+   *     declarative copula path where the complement is the root. --- */
+  if (beItem && !verbItem && first?.kind === "wh") {
+    const afterBe = beItem.index + 1;
+    const firstAfter = items[afterBe];
+    const whNode = (role: string) => b.node(
+      { lemma: first.lower, form: first.text, syntacticElement: "Earth", role, questionWord: true },
+      [first.index],
+    );
+    const scaffolding = [{ index: beItem.index, kind: "copula" }];
+    if (firstAfter?.kind === "adjective") {
+      // Questioned subject, adjective predicate: "What is hot?" — the
+      // adjective stays the root; the question word is its topic.
+      const aEntry = firstAfter.entry;
+      const root = b.node(
+        {
+          lemma: aEntry ? aEntry.lemma : firstAfter.lower,
+          form: firstAfter.text,
+          syntacticElement: "Fire",
+          ...(aEntry && "semanticElement" in aEntry && aEntry.semanticElement ? { semanticElement: aEntry.semanticElement } : {}),
+          role: "predicate",
+        },
+        [firstAfter.index],
+      );
+      root.states = { copulaTense: EN_BE[beItem.lower], mood: "interrogative" };
+      b.edge(whNode("subject"), root, "predicate");
+      return {
+        meaning: b.graph(root), connective: connective("en", tokens, spans, undefined, scaffolding), realizes: b.realizes, scopeAttachments: scope,
+        query: { relation: "predicate", expectedType: "entity" },
+      };
+    }
+    if (firstAfter?.kind === "prep" && firstAfter.lower === "in") {
+      // Containment: "What's in it?" — NOT nominal predication (D4).
+      const cc = enChunk(items, afterBe + 1);
+      if (cc) {
+        const container = enNodeFromChunk(b, cc.chunk, "container");
+        container.prep = "in";
+        const root = whNode("contained");
+        root.states = { copulaTense: EN_BE[beItem.lower], mood: "interrogative" };
+        b.edge(container, root, "contains");
+        return {
+          meaning: b.graph(root), connective: connective("en", tokens, spans, undefined, scaffolding), realizes: b.realizes, scopeAttachments: scope,
+          query: { relation: "contains", expectedType: "entity" },
+        };
+      }
+    }
+    const subjC = enChunk(items, afterBe);
+    if (subjC) {
+      const subject = enNodeFromChunk(b, subjC.chunk, "subject");
+      const person = subjC.chunk.head.entry && "person" in subjC.chunk.head.entry
+        ? (subjC.chunk.head.entry as { person?: string }).person
+        : subjC.chunk.head.lower.endsWith("s") ? "3pl" : "3sg";
+      let root: MeaningNode;
+      let query: ParsedSentence["query"];
+      if (first.lower === "where") {
+        root = whNode("location");
+        b.edge(subject, root, "location");
+        query = { relation: "location", expectedType: "location" };
+      } else if (first.lower === "when") {
+        root = whNode("time");
+        b.edge(subject, root, "time");
+        query = { relation: "time", expectedType: "time" };
+      } else {
+        root = whNode("predicate");
+        b.edge(subject, root, "predicated-as");
+        const headLemma = subjC.chunk.head.entry ? subjC.chunk.head.entry.lemma : subjC.chunk.head.lower;
+        const expectedType =
+          first.lower === "who" ? "person"
+          : subjC.chunk.det === "a" || subjC.chunk.det === "an" ? "kind"
+          : MEASURABLE_HEADS.has(headLemma) ? "quantity"
+          : "entity";
+        query = { relation: "predicated-as", expectedType };
+      }
+      root.states = { copulaTense: EN_BE[beItem.lower], mood: "interrogative", subjectPerson: person };
+      // A trailing PP after the subject chunk is preserved as a
+      // modifier of the subject ("...of Chicago at this moment") —
+      // parse-side preservation (amendment A3); its round-trip
+      // accounting belongs to stage 5.
+      const tail = items[subjC.next];
+      if (tail?.kind === "prep") {
+        const tc = enChunk(items, subjC.next + 1);
+        if (tc) {
+          const tNode = enNodeFromChunk(b, tc.chunk, "modifier");
+          tNode.prep = tail.lower;
+          b.edge(subject, tNode, "modifier");
+        }
+      }
+      return {
+        meaning: b.graph(root), connective: connective("en", tokens, spans, subjC.chunk.head.index, scaffolding), realizes: b.realizes, scopeAttachments: scope,
+        query,
+      };
+    }
+    throw new Error(`cannot parse copular question: ${text}`);
+  }
+
   /* --- Predicate clause: copula + NP/adjective complement (R1 entry at Earth/Fire). --- */
   if (beItem && !verbItem) {
     // Inverted order (questions: "Is summer hot?", "Why is winter cold?")
@@ -542,6 +849,17 @@ function parseEn(text: string): ParsedSentence {
     const compStart = inverted ? subj.chunk.end + 1 : beItem.index + 1;
     const rest = items.slice(compStart);
     let root: MeaningNode;
+    if (rest[0]?.kind === "prep") {
+      // Locative complement: the place is the predicate ("You are in
+      // Chicago") — the declarative counterpart of "Where are you?".
+      const pc = enChunk(items, compStart + 1);
+      if (!pc) throw new Error(`cannot parse complement of: ${text}`);
+      root = enNodeFromChunk(b, pc.chunk, "location");
+      root.prep = rest[0].lower;
+      root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}), subjectPerson: subj.chunk.head.entry && "person" in subj.chunk.head.entry ? (subj.chunk.head.entry as { person?: string }).person : "3sg" };
+      b.edge(subject, root, "location");
+      return { meaning: b.graph(root), connective: connective("en", tokens, spans, subj.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
+    }
     const compChunk = enChunk(rest.map((r, k) => ({ ...r, index: r.index })), 0);
     if (compChunk && rest[0] && (rest[0].kind === "det" || rest[0].kind === "noun" || rest[0].kind === "proper" || rest[0].kind === "pronoun")) {
       // re-index chunk onto the rest slice
@@ -562,11 +880,22 @@ function parseEn(text: string): ParsedSentence {
         [adj.index],
       );
     }
-    root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}) };
+    root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}), subjectPerson: subj.chunk.head.entry && "person" in subj.chunk.head.entry ? (subj.chunk.head.entry as { person?: string }).person : subj.chunk.head.lower.endsWith("s") ? "3pl" : "3sg" };
     b.edge(subject, root, predRelation(root));
     return { meaning: b.graph(root), connective: connective("en", tokens, spans, subj.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
   }
 
+  if (!verbItem && !beItem) {
+    // Bare nominal fragment ("Coffee."): a complete discourse act
+    // whose function is discourse-recovered — the parser records the
+    // nominal and deliberately assigns NO discourse act (D2/A1: the
+    // distinction from a topic proposal is exactly the act field).
+    const c = enChunk(items, contentStart);
+    if (c && c.next >= items.length) {
+      const root = enNodeFromChunk(b, c.chunk, "topic");
+      return { meaning: b.graph(root), connective: connective("en", tokens, spans, c.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
+    }
+  }
   if (!verbItem || !verbItem.entry) throw new Error(`no verb found in: ${text}`);
   const verb = verbItem.entry as VerbEntry;
 
@@ -583,6 +912,7 @@ function parseEn(text: string): ParsedSentence {
     verbForm: verbItem.formTag,
     mood: interrogative ? "interrogative" : "indicative",
     ...(negItem ? { negated: true } : {}),
+    ...(whyItem ? { questionKind: "why" as const } : {}),
     ...(auxItem ? { aux: auxItem.lower } : {}),
     ...(beItem && (isPassive || verbItem.formTag === "ing") && !auxItem ? { aux: beItem.lower } : {}),
     ...enAspectBundle(auxItem, beItem, verbItem, isPassive, !!items.find((i) => i.lower === "been" && auxItem && i.index > auxItem.index && i.index < verbItem.index)),
@@ -605,12 +935,25 @@ function parseEn(text: string): ParsedSentence {
 
   // Subject chunk: everything before the first of aux/be/verb.
   const boundary = Math.min(...[auxItem?.index, beItem?.index, verbItem.index].filter((x): x is number => x !== undefined));
-  const subj = enChunk(items, subjStart);
+  let subj = enChunk(items, subjStart);
+  let invertedSubject = false;
+  if ((!subj || subj.chunk.end >= boundary + 1) && interrogative && boundary < verbItem.index) {
+    // Inverted question order ("Why did she leave?", "Why is the
+    // garden flooded?"): the subject sits between the fronted
+    // auxiliary/copula and the verb. Without this recovery the main
+    // path silently dropped it — the parse behind the stage-0 F3
+    // generation crash on "Why is the garden flooded?".
+    const alt = enChunk(items, boundary + 1);
+    if (alt && alt.chunk.end < verbItem.index) {
+      subj = alt;
+      invertedSubject = true;
+    }
+  }
   let subjectNode: MeaningNode | undefined;
   let subjectEdge: MeaningEdge | undefined;
   /** Passive bare-NP arguments, slot assignment deferred to finalisation. */
   const passiveBareArgs: { node: MeaningNode; edge: MeaningEdge }[] = [];
-  if (subj && subj.chunk.end < boundary + 1) {
+  if (subj && (invertedSubject || subj.chunk.end < boundary + 1)) {
     subjectNode = enNodeFromChunk(b, subj.chunk, isPassive ? "patient" : "agent");
     spans.push({ start: subj.chunk.start, end: subj.chunk.end + 1, label: "subject" });
     b.edge(root, subjectNode, isPassive ? "patient" : "agent");
@@ -806,7 +1149,10 @@ function parseEn(text: string): ParsedSentence {
   }
 
   const topicIndex = frontedTopic ?? (isPassive ? (subjectNode ? items.findIndex((x) => x.lower === subjectNode!.form.toLowerCase()) : undefined) : undefined);
-  return { meaning: b.graph(root), connective: connective("en", tokens, spans, topicIndex), realizes: b.realizes, scopeAttachments: scope };
+  return {
+    meaning: b.graph(root), connective: connective("en", tokens, spans, topicIndex), realizes: b.realizes, scopeAttachments: scope,
+    ...(whyItem && interrogative ? { query: { relation: "explanation", expectedType: "reason" } } : {}),
+  };
 }
 
 /* ================= Chinese ================= */
@@ -1131,5 +1477,12 @@ function parseZh(text: string): ParsedSentence {
 }
 
 export function parse(text: string, language: Language): ParsedSentence {
-  return language === "en" ? parseEn(text) : parseZh(text);
+  if (language === "zh") return parseZh(text);
+  const parsed = parseEn(text);
+  // Sense selection by coherence (stage 4, sense.ts): derived senses
+  // are chosen in isolation at entry derivation; the finished parse
+  // is where the sentence's own evidence exists, so the re-choice
+  // happens here, once, for every consumer of the parse.
+  applySenseSelection(parsed);
+  return parsed;
 }

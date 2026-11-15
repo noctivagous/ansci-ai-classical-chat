@@ -198,7 +198,31 @@ function lemmaFor(surface: string, pos: "n" | "v" | "a"): string | undefined {
   const formCand = (ex.forms.get(key) ?? []).find((c) => c.pos === pos);
   if (formCand) return formCand.lemma;
   const cand = synsetsForSurface(ex, key).candidates.find((c) => c.pos === pos);
-  return cand?.lemma;
+  if (cand) return cand.lemma;
+  // Regular-morphology fallback: the forms index does not list every
+  // regular inflection ("happened" is missing though "baked" is
+  // present). Strip the regular endings and accept a candidate only
+  // if it is an attested lemma of the right POS — the synset check is
+  // the guard against over-stripping.
+  if (pos === "v") {
+    const stems: string[] = [];
+    if (key.endsWith("ied") && key.length > 4) stems.push(key.slice(0, -3) + "y");
+    if (key.endsWith("ing") && key.length > 5) {
+      const base = key.slice(0, -3);
+      stems.push(base, base + "e");
+      if (base.length > 2 && base[base.length - 1] === base[base.length - 2]) stems.push(base.slice(0, -1));
+    }
+    if (key.endsWith("ed") && key.length > 4) {
+      const base = key.slice(0, -2);
+      stems.push(base, base + "e", key.slice(0, -1));
+      if (base.length > 2 && base[base.length - 1] === base[base.length - 2]) stems.push(base.slice(0, -1));
+    }
+    if (key.endsWith("s") && key.length > 3) stems.push(key.slice(0, -1));
+    for (const stem of stems) {
+      if (synsetsForLemma(ex, stem).some((s) => s.pos === "v")) return stem;
+    }
+  }
+  return undefined;
 }
 
 /* ---------------- entry derivation ---------------- */
@@ -405,13 +429,30 @@ interface ClimbCandidate extends ClimbResult {
  *  gate (gated candidates carry gated: true). Exported for tests and
  *  for honest reporting of what the gate turned away. */
 export function climbCandidate(lemma: string): ClimbCandidate | undefined {
-  if (!enabled) return undefined;
-  const ex = extract();
-  if (!ex) return undefined;
-  const key = lemma.toLowerCase();
-  if (lookupClassification(key)) return undefined; // the table owns it
-  const up = hypernymAdjacency(ex);
+  const all = climbCandidates(lemma);
   let best: ClimbCandidate | undefined;
+  for (const candidate of all) {
+    if (!best || candidate.confidence > best.confidence) best = candidate;
+  }
+  return best;
+}
+
+/**
+ * Every anchored sense of a lemma, one candidate per sense (the best
+ * anchor on that sense's shortest climb), in extract sense order.
+ * climbCandidate picks among these by confidence alone — a property
+ * of the word in isolation. Stage 4's sense-by-coherence pass
+ * (sense.ts) chooses among them again with the sentence's other
+ * classifications as evidence; this is the candidate set it sees.
+ */
+export function climbCandidates(lemma: string): ClimbCandidate[] {
+  if (!enabled) return [];
+  const ex = extract();
+  if (!ex) return [];
+  const key = lemma.toLowerCase();
+  if (lookupClassification(key)) return []; // the table owns it
+  const up = hypernymAdjacency(ex);
+  const out: ClimbCandidate[] = [];
   for (const pos of ["n", "a"] as const) {
     const synsets = synsetsForLemma(ex, key).filter((s) => s.pos === pos);
     for (let si = 0; si < synsets.length; si++) {
@@ -431,7 +472,7 @@ export function climbCandidate(lemma: string): ClimbCandidate | undefined {
         if (hit) {
           const anchor = anchorByConcept.get(hit)!;
           const confidence = Math.round(anchor.confidence * Math.pow(HOP_DECAY, cur.hops) * 10000) / 10000;
-          const candidate: ClimbCandidate = {
+          out.push({
             element: anchor.element,
             aspect: anchor.aspect,
             aspectKey: anchor.aspectKey,
@@ -444,8 +485,7 @@ export function climbCandidate(lemma: string): ClimbCandidate | undefined {
               `${cur.hops ? " " : ""}—ANCHOR→ ${hit} (${anchor.element}, ${anchor.provenance} @${anchor.confidence})`,
             provenance: "wordnet-derived",
             gated: confidence < CONFIDENCE_GATE,
-          };
-          if (!best || candidate.confidence > best.confidence) best = candidate;
+          });
           break; // first anchor on this sense's shortest path wins the sense
         }
         if (cur.hops >= MAX_CLIMB_HOPS) continue;
@@ -457,7 +497,7 @@ export function climbCandidate(lemma: string): ClimbCandidate | undefined {
       }
     }
   }
-  return best;
+  return out;
 }
 
 const climbCache = new Map<string, ClimbResult | undefined>();

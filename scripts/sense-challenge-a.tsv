@@ -1,0 +1,16 @@
+# Sense challenge set A (development) — depth programme stage 4.
+# Columns (tab-separated): target <TAB> sentence <TAB> expected element <TAB> required context element (or "none") <TAB> note
+# Expectations authored by Kavi from each sentence's evident reading BEFORE the run.
+# The baseline (isolated climb) element for every target is recorded in the report by the runner.
+# Frozen once written — sha256 in docs/fork/sense-challenge.md. Builder-authored; NOT a C.5 set.
+blow	The blow of spring woke the garden.	Wood	Wood	gust reading; spring (Wood) context
+blow	The blow of snow buried the valley.	Water	Water	supported-baseline control: snow context backs the baseline
+rest	She found rest in the garden.	Earth	Earth	relief/recuperation reading; garden (Earth) context
+rest	She found rest.	Water	none	brake control: no context, baseline must hold
+concern	Her concern grew in the garden.	Earth	Earth	care/worry reading; restraint case (Earth controls the Water baseline)
+passion	His passion became rage.	Wood	Wood	rage reading; tied confidences, context decides
+passion	His passion became joy.	Fire	Fire	supported-baseline control: joy (Fire) context
+thrill	A thrill of joy shook her.	Fire	Fire	excitement reading over the fear baseline
+puff	A puff of garden dust rose.	Metal	Earth	breath reading; Earth generates Metal support
+lettuce	The lemon shaded the lettuce.	Wood	Wood	plant reading over the bread baseline
+outpouring	An outpouring of grief filled the room.	Water	Metal	flood-of-emotion reading; Metal generates Water, grief context

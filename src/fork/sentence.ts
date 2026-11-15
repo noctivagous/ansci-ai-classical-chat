@@ -123,11 +123,15 @@ export type Relation =
   | "degree"     // degree complement: how far the verb's quality runs (R6, ZH 得)
   | "condition"  // clause -> clause condition relation (Metal logical)
   /* Repair tranche additions: */
-  | "predicated-as"; // nominal predication: an Earth topic predicated as an
+  | "predicated-as" // nominal predication: an Earth topic predicated as an
   // Earth nominal （今天星期一， "Today is Monday"). A DECLARED architectural
   // addition — a meaning-graph relation type, NOT a cycle edge: its cycle
   // field computes to "other" (Earth→Earth is in neither cycle), and no
   // reasoning path may treat it as one. See docs/fork/repair-programme.md.
+  /* Stage 3 additions (Part D): */
+  | "contains"   // containment: a container holds a contained entity
+                 // ("What's in it?") — a meaning relation, NOT a cycle edge
+  | "time";      // temporal location of a topic ("When is it?") — as above
 
 export interface MeaningEdge {
   from: string;
@@ -177,6 +181,22 @@ export interface ParsedSentence {
   realizes: Record<string, number[]>;
   /** Clause-scope attachments in surface order (zh particles), for the scope-order check. */
   scopeAttachments: { form: string; kind: "aspect" | "question" | "attitude"; targetId?: string }[];
+  /**
+   * The query record (Part D decision D1, amendment A2): present when
+   * the utterance questions a slot — the relation the questioned node
+   * fills and the expected answer type, held as an expectation, not a
+   * rigid rule. A question is never an assertion with a null filler.
+   */
+  query?: { relation: string; expectedType: string };
+  /**
+   * The discourse act (Part D decision D2, amendment A1), for
+   * utterances that are complete discourse acts without being
+   * propositions: a topic proposal, or a bare reason query whose
+   * target is a discourse antecedent. Absence means the utterance is
+   * propositional (or a bare nominal whose function is
+   * discourse-recovered and deliberately unassigned).
+   */
+  discourseAct?: "topic-proposal" | "reason-query";
 }
 
 /* ---------------- Lexicon ----------------
@@ -317,6 +337,7 @@ en(simple("adverb", "all", "Water"));
 en(simple("adverb", "yet", "Water"));
 en(simple("adverb", "yesterday", "Water"));
 en(simple("adverb", "then", "Water"));
+en(simple("adverb", "first", "Water"));
 
 /* Chinese entries (lemmas are the surface strings; tokenisation is longest-match). */
 zh(v("吃", ["patient"], [], { base: "吃" }));

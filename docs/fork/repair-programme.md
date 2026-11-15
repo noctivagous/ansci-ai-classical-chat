@@ -1149,3 +1149,55 @@ every assertion.
   abstention).
 - The claim demotions of C.5 apply to the demo README and all future
   reports from adoption onward.
+
+## Part D — Stage 3 architecture (v9, adopted 2026-11-15 with amendments)
+
+Brief 6 asked which stage-3 families are the scheme's business and
+which are templates. The answer (v9, desk evaluation at
+~/workspace/ansci-fork/desk-evaluation-v9.md) is adopted with Kavi's
+three amendments. No elemental claims are registered by it; the
+cycles are untouched; contraction tokenisation and inversion word
+order remain engineering.
+
+**The three-way distinction.** An asserted proposition, a queried
+proposition, and a discourse-dependent utterance are different
+semantic states, possibly over the same underlying relation. The
+meaning graph is not required to make every utterance a proposition.
+
+**Decisions, as amended:**
+
+- **D1 — Questions are operators over existing relations.** A
+  question is never an assertion with a null filler. (Amendment A2:
+  implemented by extending the existing question machinery — the
+  questioned slot is the edge the question-word node fills — with an
+  explicit query record carrying the relation and the expected
+  answer type, held as expectations, not rigid rules. No parallel
+  operator layer.)
+- **D2 — Discourse acts are representable independently of
+  propositions.** (Amendment A1: adopted at census size — a
+  discourseAct field on ParsedSentence, at the discourse/turn
+  interface rather than in the meaning graph, carrying
+  topic-proposal and reason-query plus an explicit unresolved
+  state. The wider act taxonomy requires cases before it is built.)
+- **D3 — Ellipsis is licensed, never presumed.** Absence of an overt
+  verb is not evidence of an elliptical verb; C.4's slot states
+  apply only with a recoverable antecedent or a licensed
+  construction. Generalised verbless predication is rejected as the
+  universal fragment account.
+- **D4 — Semantic relations are not collapsed by surface
+  similarity.** Containment ("What's in it?") is not predicated-as;
+  opposition is a distinct relation and is not the controlling
+  cycle; event ordering ("Which happened first?") is not the
+  generating or controlling cycles either — both refusals are
+  recorded verbatim from v9.
+
+**Acceptance for stage 3** (v9 §7's four ledgers): construction
+recognition ≥90% on the frozen set (the 12 census cases, the §7
+adversarial pairs, controls); semantic representation with no
+systematic family misclassification (the adversarial pairs are the
+operational test); feature preservation under the existing
+thresholds; zero regressions. The two generation crashes are
+engineering defects, scored separately from construction parsing.
+(Amendment A3: case 12's measurement constraints are preserved
+parse-side in this stage; their round-trip measurement belongs to
+stage 5's family accounting.)

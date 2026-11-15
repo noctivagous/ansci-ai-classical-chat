@@ -27,12 +27,19 @@ function enNp(p: ParsedSentence, node: MeaningNode): string {
   if (node.det) parts.push(node.det === "i" ? node.det : node.det);
   for (const q of qualifiers(p, node.id)) parts.push(q.form.toLowerCase());
   parts.push(node.form);
-  // Relative clause (R5): a clause graph modifying this head renders
-  // after it — overt with its marker ('that'), reduced without. The
-  // head's own slot inside the clause (the gap) is never rendered.
-  const modEdge = p.meaning.edges.find((e) => e.from === node.id && e.relation === "modifier");
-  if (modEdge) {
-    const clause = nodeById(p, modEdge.to);
+  // Post-head modifiers. A PP modifier (stage 3: the absorbed of-PP,
+  // "the population of Chicago", and preserved trailing PPs) renders
+  // as prep + NP. A clause modifier is the relative clause (R5): a
+  // clause graph modifying this head renders after it — overt with
+  // its marker ('that'), reduced without. The head's own slot inside
+  // the clause (the gap) is never rendered.
+  for (const modEdge of p.meaning.edges.filter((e) => e.from === node.id && e.relation === "modifier")) {
+    const target = nodeById(p, modEdge.to);
+    if (target.prep) {
+      parts.push(target.prep, enNp(p, target));
+      continue;
+    }
+    const clause = target;
     const entry = EN_LEXICON[clause.lemma] as VerbEntry;
     if (entry) {
       const form = clause.states?.tense === "past" ? entry.forms.past : entry.forms.base;
@@ -49,6 +56,14 @@ function enNp(p: ParsedSentence, node: MeaningNode): string {
 const NEG_CONTRACTION: Record<string, string> = {
   had: "hadn't", did: "didn't", have: "haven't", has: "hasn't", do: "don't", does: "doesn't", can: "can't",
 };
+
+/** The copula form for a copula root: tense from copulaTense, person
+ *  from the subjectPerson the parse recorded (defaulting to 3sg). */
+function copulaForm(root: MeaningNode): string {
+  const person = root.states?.subjectPerson ?? "3sg";
+  if (root.states?.copulaTense === "past") return person === "1sg" || person === "3sg" ? "was" : "were";
+  return person === "1sg" ? "am" : person === "3sg" ? "is" : "are";
+}
 
 function enGenerate(p: ParsedSentence): string {
   const root = nodeById(p, p.meaning.rootId);
@@ -78,13 +93,50 @@ function enGenerate(p: ParsedSentence): string {
     return `It ${root.states?.aux ?? "is"} ${ingForm(root.lemma)}.`;
   }
 
-  /* Wh-question (R3): question word fronted, gap left in the clause. */
-  const qNode = p.meaning.nodes.find((n) => n.questionWord);
-  if (root.states?.mood === "interrogative" && qNode) {
+  /* Fragments (stage 3, Part D D2): generation preserves the
+   * fragment as the act it is — a topic proposal is never expanded
+   * into an invented proposition, and a bare nominal stays bare. */
+  if (p.discourseAct === "topic-proposal") {
+    return `What about ${enNp(p, root)}?`;
+  }
+  if (p.discourseAct === "reason-query") {
+    return "Why?";
+  }
+  if (root.syntacticElement === "Earth" && !root.states) {
+    // A bare nominal fragment: its root carries no clause state at
+    // all. (Copular roots always carry copulaTense; existentials a
+    // construction state — neither is a fragment.)
+    return `${cap(enNp(p, root))}.`;
+  }
+
+  /* Copular question (stage 3, Part D D1): the questioned node is the
+   * root and the declarative relation's other end supplies the
+   * subject (or, for containment, the container). The copula agrees
+   * with the subject, whose person the parse recorded on the root. */
+  if (root.questionWord && root.states?.mood === "interrogative") {
+    const inEdge = p.meaning.edges.find((e) => e.to === root.id && (e.relation === "predicated-as" || e.relation === "location" || e.relation === "time" || e.relation === "contains"));
+    if (inEdge) {
+      const other = nodeById(p, inEdge.from);
+      const person = root.states?.subjectPerson ?? "3sg";
+      const copula = root.states?.copulaTense === "past"
+        ? person === "1sg" || person === "3sg" ? "was" : "were"
+        : person === "1sg" ? "am" : person === "3sg" ? "is" : "are";
+      if (inEdge.relation === "contains") return `${cap(root.form)} ${copula} ${other.prep ?? "in"} ${enNp(p, other)}?`;
+      return `${cap(root.form)} ${copula} ${enNp(p, other)}?`;
+    }
+  }
+
+  /* Why-question over a verbal clause (stage 3): the reason adjunct
+   * fronts, the tense carrier follows, then the clause in base form. */
+  if (root.states?.questionKind === "why" && root.states?.mood === "interrogative" && root.states?.voice !== "passive") {
     const entry = EN_LEXICON[root.lemma] as VerbEntry;
-    const agent = targets(p, root.id, "agent")[0];
-    const carrier = root.states?.aux ?? (root.states?.tense === "past" ? "did" : "does");
-    return `${cap(qNode.form)} ${carrier} ${agent ? enNp(p, agent) : ""} ${entry.forms.base}?`;
+    if (entry) {
+      const agent = targets(p, root.id, "agent")[0];
+      const carrier = root.states?.aux ?? (root.states?.tense === "past" ? "did" : "does");
+      const rest = orderedArgs(p, root, entry).filter((n) => n.id !== agent?.id);
+      const restSurface = rest.map((n) => (n.prep ? `${n.prep} ${enNp(p, n)}` : enNp(p, n)));
+      return `Why ${carrier} ${agent ? enNp(p, agent) : ""} ${entry.forms.base}${restSurface.length ? " " + restSurface.join(" ") : ""}?`;
+    }
   }
 
   /* Predicate (verbless-entry) clause: Subject + copula + predicate.
@@ -95,9 +147,40 @@ function enGenerate(p: ParsedSentence): string {
   const predEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === root.id);
   if (predEdge) {
     const subject = nodeById(p, predEdge.from);
-    const copula = root.states?.copulaTense === "past" ? "was" : "is";
+    const copula = copulaForm(root);
     const comp = root.syntacticElement === "Earth" ? enNp(p, root) : root.form.toLowerCase();
     return `${cap(enNp(p, subject))} ${copula} ${comp}${punct}`;
+  }
+
+  /* Locative copula (stage 3): the place is the predicate — the
+   * declarative counterpart of the locative question. Keyed on the
+   * copula state so a verb clause's location argument never lands
+   * here (its root is the verb, not the place). */
+  const locEdge = p.meaning.edges.find((e) => e.relation === "location" && e.to === root.id);
+  if (locEdge && root.states?.copulaTense) {
+    const subject = nodeById(p, locEdge.from);
+    const copula = copulaForm(root);
+    return `${cap(enNp(p, subject))} ${copula} ${root.prep ?? "in"} ${enNp(p, root)}${punct}`;
+  }
+
+  /* Wh-question (R3): question word fronted, gap left in the clause. */
+  const qNode = p.meaning.nodes.find((n) => n.questionWord);
+  if (root.states?.mood === "interrogative" && qNode) {
+    const entry = EN_LEXICON[root.lemma] as VerbEntry;
+    const agent = targets(p, root.id, "agent")[0];
+    if (agent && agent.id === qNode.id) {
+      // Questioned subject ("Who arrived?", "Which happened
+      // first?"): no do-support and no separate subject — the
+      // question word IS the subject, and the verb carries its
+      // ordinary finite form.
+      const form = root.states?.tense === "past" ? entry.forms.past : root.states?.subjectPerson === "3pl" ? entry.forms.base : entry.forms.third;
+      const adverbs = p.meaning.edges.filter((e) => e.relation === "modulates" && e.to === root.id).map((e) => nodeById(p, e.from));
+      const rest = orderedArgs(p, root, entry).filter((n) => n.id !== qNode.id);
+      const restSurface = rest.map((n) => (n.prep ? `${n.prep} ${enNp(p, n)}` : enNp(p, n)));
+      return `${cap(qNode.form)} ${form}${adverbs.length ? " " + adverbs.map((a) => a.form.toLowerCase()).join(" ") : ""}${restSurface.length ? " " + restSurface.join(" ") : ""}?`;
+    }
+    const carrier = root.states?.aux ?? (root.states?.tense === "past" ? "did" : "does");
+    return `${cap(qNode.form)} ${carrier} ${agent ? enNp(p, agent) : ""} ${entry.forms.base}?`;
   }
 
   const entry = EN_LEXICON[root.lemma] as VerbEntry;
@@ -121,7 +204,16 @@ function enGenerate(p: ParsedSentence): string {
       orderedArgs(p, root, entry)
         .filter((n) => Math.min(...(p.realizes[n.id] ?? [Number.POSITIVE_INFINITY])) < verbTok)
         .sort((a, b2) => Math.min(...(p.realizes[a.id] ?? [0])) - Math.min(...(p.realizes[b2.id] ?? [0])))[0] ??
-      patient!;
+      patient ??
+      orderedArgs(p, root, entry)[0]!;
+    if (st.questionKind === "why" && st.mood === "interrogative") {
+      // "Why is the garden flooded?" — the reason adjunct fronts and
+      // the copula carrier follows it (stage 3; the parse-side half
+      // of the F3 fix is the inverted-subject recovery in parse.ts).
+      const rest = orderedArgs(p, root, entry).filter((n) => n.id !== subject.id && n.id !== agent?.id);
+      const restSurface = rest.map((n) => argSurface(n));
+      return `Why ${st.aux ?? "was"} ${enNp(p, subject)} ${entry.forms.participle}${restSurface.length ? " " + restSurface.join(" ") : ""}${agent ? " by " + enNp(p, agent) : ""}?`;
+    }
     words.push(enNp(p, subject));
     words.push(st.aux ?? "was");
     words.push(entry.forms.participle);

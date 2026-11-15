@@ -1,0 +1,33 @@
+# Construction challenge set — depth programme stage 3 (Part C.2 + Part D / v9 adoption).
+# Columns (tab-separated): lang <TAB> class <TAB> sentence <TAB> probes <TAB> note
+# Probes (semicolon-separated): root=<lemma>; edge=<relation>; noedge=<relation>; node=<lemma>;
+#   query=<relation>:<expectedType>; noquery; act=<topic-proposal|reason-query>; noact;
+#   gen=<exact generation>; genok (generation must not throw); rt (reparse the generation and re-check all probes).
+# Classes: census = the 12 holdout failures; adversarial = v9 §7 pairs (both members listed);
+#   control = existing behaviour that must hold; crashfix = the 2 generation crashes (engineering ledger).
+# Authored by Kavi from the v9 design BEFORE the stage-3 build; frozen once written — sha256 in docs/fork/construction-challenge.md.
+en	census	Who is Sarah?	root=who; edge=predicated-as; query=predicated-as:person; rt	copular question, identity
+en	census	When is it?	root=when; edge=time; query=time:time; rt	copular question, temporal (expletive it)
+en	census	What's in it?	root=what; edge=contains; noedge=predicated-as; query=contains:entity; rt	containment, NOT predication (D4)
+en	census	Which happened first?	root=happen; node=first; query=agent:selection; rt	ordinal/event-order (engineering, D4)
+en	census	What is a headache?	root=what; edge=predicated-as; query=predicated-as:kind; rt	definition/kind query
+en	census	What is a cold?	root=what; edge=predicated-as; query=predicated-as:kind; rt	definition/kind query
+en	census	What about the flu?	act=topic-proposal; node=flu; gen=What about the flu?	topic proposal, no predicate (D2)
+en	census	Why?	act=reason-query; gen=Why?	bare reason query, no antecedent (D2)
+en	census	Where are you?	root=where; edge=location; query=location:location; rt	copular question, locative
+en	census	What is the opposite of hot?	edge=predicated-as; node=opposite; node=hot; query=predicated-as:entity; rt	opposition inside the subject NP, not collapsed (D4)
+en	census	What about coffee?	act=topic-proposal; node=coffee; gen=What about coffee?	topic proposal
+en	census	What is the exact population of Chicago at this moment?	edge=predicated-as; node=Chicago; node=moment; query=predicated-as:quantity	measurement query, constraints preserved parse-side (A3)
+en	adversarial	Sarah is a doctor.	edge=predicated-as; noquery; noact	pair: assertion vs Who is Sarah?
+en	adversarial	Who are you?	edge=predicated-as; query=predicated-as:person	pair: identity vs Where are you?
+en	adversarial	What is it?	edge=predicated-as; noedge=contains; query=predicated-as:entity	pair: identity vs What's in it?
+en	adversarial	What is hot?	edge=predicate; noedge=predicated-as; node=hot; query=predicate:entity	pair: questioned subject, adjective predicate vs opposition case
+en	adversarial	Coffee.	root=coffee; noact; gen=Coffee.	pair: bare nominal (no act assigned) vs What about coffee?
+en	adversarial	What about it?	act=topic-proposal; gen=What about it?	pair: topic proposal vs Why?
+en	control	What did she bake?	root=bake; query=theme:entity	verbal wh-question, existing machinery
+en	control	The garden is flooded.	root=flood; noquery	declarative passive
+en	control	She has been baking a cake.	gen=She has been baking a cake.	stage-2 aspect control
+en	control	Winter is coming.	gen=Winter is coming.	stage-2 aspect control
+zh	control	他去了学校。	gen=他去了学校。	ZH bounded control
+en	crashfix	Why is the garden flooded?	root=flood; genok	F3 crash 1: det of undefined in generation
+en	crashfix	Tell me about winter.	genok	F3 crash 2: third of undefined in generation
