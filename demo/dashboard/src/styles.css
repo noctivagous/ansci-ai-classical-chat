@@ -93,4 +93,10 @@ ul.violations { padding-left: 20px; }
 .trace { font-size: 13.5px; color: #37404e; margin: 4px 0 6px; }
 .trace summary { cursor: pointer; color: var(--accent); }
 .live-outcome { background: #faf0ee; border-radius: 6px; padding: 8px 12px; font-size: 14px; }
+.sense-table { margin-top: 16px; }
+.sense-table summary { cursor: pointer; font-weight: 600; }
+.sense-table table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 12px; }
+.sense-table th, .sense-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+.sense-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.sense-table .fail-row { background: #faf0ee; }
 footer { margin-top: 60px; }

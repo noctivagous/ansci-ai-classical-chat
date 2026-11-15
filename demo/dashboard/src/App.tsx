@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CAPABILITIES, EVIDENCE_AS_OF } from "./evidence";
+import { CAPABILITIES, EVIDENCE_AS_OF, SENSE_ROWS } from "./evidence";
 import Lab from "./Lab";
 import Ask from "./Ask";
 import { parse } from "../../../src/fork/parse";
@@ -132,6 +132,44 @@ export default function App() {
             </article>
           ))}
         </div>
+        <details className="panel sense-table">
+          <summary>
+            Inspect the sense decisions item by item — set A (development) and set B (sealed,
+            run once), with the mechanism's support scores
+          </summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Set</th>
+                <th>Target</th>
+                <th>Sentence</th>
+                <th>Expected</th>
+                <th>Climb alone</th>
+                <th>Coherence</th>
+                <th>Support</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {SENSE_ROWS.map((r, i) => (
+                <tr key={i} className={r.verdict === "FAIL" ? "fail-row" : ""}>
+                  <td>{r.set}</td>
+                  <td>{r.target}</td>
+                  <td>{r.sentence}</td>
+                  <td>{r.expected}</td>
+                  <td>{r.baseline}</td>
+                  <td>{r.coherence}</td>
+                  <td className="mono">{r.support}</td>
+                  <td>{r.verdict === "FAIL" ? "✗" : "✓"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="caveat">
+            Transcribed from docs/fork/sense-challenge.md. Support = same element 1.0, generating
+            0.8, controlling 0.4 — corroboration only; restraint never subtracts.
+          </p>
+        </details>
       </section>
 
       <Lab />
@@ -145,15 +183,31 @@ export default function App() {
         </p>
         <div className="cards">
           <article className="card failure">
-            <p className="card-area">Known defect F1 · parse side</p>
+            <p className="card-area">Depth stage 5 — not built · known defect F1</p>
             <h3>Chinese preverbal negation is dropped</h3>
             <p>
               不 and 没 before a verb are not yet carried into the meaning graph, so a negative
               sentence parses — and regenerates — as its affirmative. A silent, meaning-reversing
-              loss: the worst kind, and the reason it leads this wall.
+              loss: the worst kind, and the reason it leads this wall. It belongs to stage 5, the
+              one depth-programme stage not yet built — which also owns the negation family
+              (84.4% preservation at baseline, below the 90% per-family floor) and the thin number
+              family. Until stage 5 lands, the programme's ≥95% aggregate is not claimable, and
+              this page does not claim it.
             </p>
             <LiveF1 />
             <p className="source">fix belongs to depth stage 5 · pinned by a test that names it a known defect</p>
+          </article>
+          <article className="card failure">
+            <p className="card-area">Surface limits</p>
+            <h3>The chat surface is a demonstrator, honestly labelled</h3>
+            <p>
+              The evaluated transcripts are the four scripted scenarios; free conversation has not
+              been through an acceptance pass. Reply wordings are a small hand-written set steered
+              by the mechanism — the generator is not yet the reply surface. By the project's own
+              assessment the system is very far from a usable chat; what exists is a parser and
+              evaluation demonstrator, and this page presents it as exactly that.
+            </p>
+            <p className="source">fork status, 2026-11-15 · the steering probe is in src/fork/turn.ts</p>
           </article>
           <article className="card failure">
             <p className="card-area">Coverage gap · lexicon</p>

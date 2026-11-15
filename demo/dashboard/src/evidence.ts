@@ -37,9 +37,9 @@ export const CAPABILITIES: Capability[] = [
   {
     area: "Sentence layer — depth",
     headline: "Round trips keep the analysis, not just the words",
-    figure: "98.2%",
+    figure: "97.7–98.2%",
     meaning:
-      "Parse → regenerate → reparse, compared as atomic meaning features (roles, negation, aspect, voice…). 98.2% of features survive the round trip on the holdout. Exact string match is far lower (~12–24%) and understates retention: canonicalisation is not loss.",
+      "Parse → regenerate → reparse, compared as atomic meaning features (roles, negation, aspect, voice…). Between 97.7% and 98.2% of features survive the round trip on the holdout — a range, not a point: the measuring instrument is warm-state dependent (derived entries register as sentences are parsed), moving the figure ±0.5pt between runs. Exact string match is far lower (~12–24%) and understates retention: canonicalisation is not loss.",
     caveat: "Feature preservation proves the system retains its own analysis — not that the analysis was correct.",
     source: "docs/fork/depth-baseline.md · construction-challenge.md",
   },
@@ -48,7 +48,7 @@ export const CAPABILITIES: Capability[] = [
     headline: "FrameNet signatures discipline derived verbs",
     figure: "98.2% role precision",
     meaning:
-      "Verbs the hand lexicon doesn't list get argument frames from FrameNet signatures, judged by a three-state assessment (supported / unusual-but-licensed / unsupported). Legitimate-argument acceptance 100%, invalid-argument rejection 91.7% across 12 verbs.",
+      "Verbs the hand lexicon doesn't list get argument frames from FrameNet signatures, judged by a three-state assessment (supported / unusual-but-licensed / unsupported). Legitimate-argument acceptance 100%, invalid-argument rejection 91.7% across 12 verbs. On held-out verbs whose signatures are withheld, the system abstains — every argument unusual-but-licensed, nothing unsupported, nothing invented. Abstention is a designed behaviour, not a gap in the table.",
     caveat: "The elemental domain prior has NOT faced its baseline: verbs carry no semantic classification yet, so its trial is unrunnable and it is adopted nowhere.",
     source: "docs/fork/valency-challenge.md",
   },
@@ -57,7 +57,7 @@ export const CAPABILITIES: Capability[] = [
     headline: "Aspect is a feature bundle, dispatched compositionally",
     figure: "19/19 bundles · 98.6% irregular forms",
     meaning:
-      "English and Chinese aspect were rebuilt as configurations over features (bounded, ongoing, perfect, experiential…) instead of single labels — 了/着/过 map distinctly, the perfect progressive round-trips exactly, and irregular verb forms are selected at 73/74 against a ratified ≥98% bar.",
+      "English and Chinese aspect were rebuilt as configurations over features (bounded, ongoing, perfect, experiential…) instead of single labels — 了/着/过 map distinctly, the perfect progressive round-trips exactly, and irregular verb forms are selected at 73/74 against a ratified ≥98% bar. The one miss is become's participle: identity forms are invisible to the forms index, a documented blindness, not a random error.",
     source: "docs/fork/aspect-challenge.md",
   },
   {
@@ -113,4 +113,41 @@ export const CAPABILITIES: Capability[] = [
     caveat: "A fitted demonstration result, not general parser accuracy.",
     source: "demo/wuxing-parser/RESULTS.md",
   },
+];
+
+/**
+ * The stage-4 sense decisions, item by item — transcribed from
+ * docs/fork/sense-challenge.md. Support scores are the coherence
+ * mechanism's own arithmetic: same element 1.0, generating 0.8,
+ * controlling 0.4 (corroboration only — restraint never subtracts).
+ */
+export interface SenseRow {
+  set: "A" | "B";
+  target: string;
+  sentence: string;
+  expected: string;
+  baseline: string;
+  coherence: string;
+  support: string;
+  verdict: "pass" | "FAIL";
+}
+
+export const SENSE_ROWS: SenseRow[] = [
+  { set: "A", target: "blow", sentence: "The blow of spring woke the garden.", expected: "Wood", baseline: "Water", coherence: "Wood", support: "Water 1.2 · Wood 1.4", verdict: "pass" },
+  { set: "A", target: "blow", sentence: "The blow of snow buried the valley.", expected: "Water", baseline: "Water", coherence: "Water", support: "Water 1.0 · Wood 0.8", verdict: "pass" },
+  { set: "A", target: "rest", sentence: "She found rest in the garden.", expected: "Earth", baseline: "Water", coherence: "Earth", support: "Water 0.4 · Earth 1.0", verdict: "pass" },
+  { set: "A", target: "rest", sentence: "She found rest.", expected: "Water", baseline: "Water", coherence: "Water", support: "Water 0 · Earth 0", verdict: "pass" },
+  { set: "A", target: "concern", sentence: "Her concern grew in the garden.", expected: "Earth", baseline: "Water", coherence: "Earth", support: "Earth 1.0 · Water 0.4", verdict: "pass" },
+  { set: "A", target: "passion", sentence: "His passion became rage.", expected: "Wood", baseline: "Fire", coherence: "Wood", support: "Fire 0.8 · Wood 1.0", verdict: "pass" },
+  { set: "A", target: "passion", sentence: "His passion became joy.", expected: "Fire", baseline: "Fire", coherence: "Fire", support: "Fire 1.0 · Wood 0.8", verdict: "pass" },
+  { set: "A", target: "thrill", sentence: "A thrill of joy shook her.", expected: "Fire", baseline: "Water", coherence: "Fire", support: "Fire 1.0 · Water 0.4", verdict: "pass" },
+  { set: "A", target: "puff", sentence: "A puff of garden dust rose.", expected: "Metal", baseline: "Wood", coherence: "Metal", support: "Metal 0.8 · Wood 0.4", verdict: "pass" },
+  { set: "A", target: "lettuce", sentence: "The lemon shaded the lettuce.", expected: "Wood", baseline: "Earth", coherence: "Wood", support: "Wood 1.0 · Earth 0.4", verdict: "pass" },
+  { set: "A", target: "outpouring", sentence: "An outpouring of grief filled the room.", expected: "Water", baseline: "Wood", coherence: "Water", support: "Water 0.8 · Wood 0.4", verdict: "pass" },
+  { set: "B", target: "vexation", sentence: "His vexation became anger.", expected: "Wood", baseline: "Earth", coherence: "Wood", support: "Wood 1.0 · Earth 0.4", verdict: "pass" },
+  { set: "B", target: "gloominess", sentence: "The gloominess became fear.", expected: "Water", baseline: "Metal", coherence: "Water", support: "Metal 0.8 · Water 1.0", verdict: "pass" },
+  { set: "B", target: "acerbity", sentence: "The acerbity of the lemon startled her.", expected: "Wood", baseline: "Wood", coherence: "Wood", support: "Wood 1.0 · Fire 0.8", verdict: "pass" },
+  { set: "B", target: "beak", sentence: "The beak pecked the grain.", expected: "Earth", baseline: "Earth", coherence: "Earth", support: "Earth 0 · Metal 0", verdict: "pass" },
+  { set: "B", target: "alabaster", sentence: "The alabaster was white.", expected: "Metal", baseline: "Metal", coherence: "Metal", support: "Metal 1.0 · Water 0.8", verdict: "pass" },
+  { set: "B", target: "stock", sentence: "The stock simmered in the pot.", expected: "Water", baseline: "Water", coherence: "Fire", support: "Water 0.4 · Fire 0.8", verdict: "FAIL" },
 ];
