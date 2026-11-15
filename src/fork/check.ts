@@ -40,6 +40,10 @@ export function checkSentence(parsed: ParsedSentence): Violation[] {
     /* Wood→Earth: valency. */
     const requiredSlots = [...frame.required, ...(frame.prepSlot?.required ? [frame.prepSlot.slot] : [])];
     for (const slot of requiredSlots) {
+      /* A suppressed slot (repair H1: agentless passive) is declared
+       * but unrealised — suppressing it is the construction's doing,
+       * not a valency failure, so Wood→Earth does not flag it. */
+      if (node.states?.suppressedRoles?.includes(slot)) continue;
       const filled = args.some((e) => e.relation === slot);
       if (!filled) {
         out.push({

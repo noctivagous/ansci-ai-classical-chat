@@ -40,6 +40,7 @@ import {
 } from "./classify";
 import type { Element, ParsedSentence } from "./sentence";
 import { semanticClassifications } from "./sentence";
+import { climbClassification } from "./wordnet-lex";
 
 /** Below this confidence a classification is recorded but does not
  *  drive derivations (the gate the cycle-probe evaluation demanded). */
@@ -142,7 +143,7 @@ export interface Derivation {
   concept: string;
   aspect?: string;
   nodeId?: string;
-  classification?: { element: Element; confidence: number; provenance: Provenance | "seed-atomic"; aspectKey: AspectKey };
+  classification?: { element: Element; confidence: number; provenance: Provenance | "seed-atomic" | "wordnet-derived"; aspectKey: AspectKey };
   /** True when the classification fell below CONFIDENCE_GATE and no
    *  conclusions were derived from it. */
   gated: boolean;
@@ -298,19 +299,42 @@ export function deriveSentence(graph: Graph, parsed: ParsedSentence): Map<string
     const d = derive(graph, node.lemma);
     if (d.classification) out.set(node.id, d);
   }
-  // Semantic-address nodes with no table entry still join by element name.
+  // Semantic-address nodes with no table entry: if the WordNet climb
+  // (wordnet-lex.ts) classified the lemma, the node joins with the
+  // climb's element and decayed confidence — provenance
+  // "wordnet-derived" — and inherits the anchor's correspondence row
+  // at that confidence. Otherwise it still joins by element name.
   for (const cls of semanticClassifications(parsed)) {
     const node = parsed.meaning.nodes.find((n) => n.lemma === cls.lemma);
-    if (node && !out.has(node.id)) {
+    if (!node || out.has(node.id)) continue;
+    const climb = climbClassification(cls.lemma);
+    if (climb) {
+      const anchorDerivation = derive(graph, climb.anchor);
+      const conclusions = anchorDerivation.conclusions
+        .filter((c) => c.kind === "correspondence")
+        .map((c) => ({
+          ...c,
+          confidence: Math.min(c.confidence, climb.confidence),
+          path: `${climb.path}; ${cls.lemma} inherits the anchor's row: ${c.path}`,
+        }));
       out.set(node.id, {
         concept: cls.lemma,
         gated: false,
-        conclusions: [],
+        conclusions,
         conflicts: [],
         reviewItems: [],
-        classification: { element: cls.semanticElement, confidence: 1, provenance: "seed-atomic", aspectKey: "overall" },
+        classification: { element: climb.element, confidence: climb.confidence, provenance: "wordnet-derived", aspectKey: climb.aspectKey },
       });
+      continue;
     }
+    out.set(node.id, {
+      concept: cls.lemma,
+      gated: false,
+      conclusions: [],
+      conflicts: [],
+      reviewItems: [],
+      classification: { element: cls.semanticElement, confidence: 1, provenance: "seed-atomic", aspectKey: "overall" },
+    });
   }
   return out;
 }

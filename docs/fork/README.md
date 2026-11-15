@@ -19,6 +19,11 @@ the graph with provenance) are designed in DESIGN.md but **not built
 yet**. The design's centre, evidence, and open decisions are in
 DESIGN.md; the evidence base is the three evaluation reports beside
 it (desk evaluation of 30 sentences, cycle probes, prediction run).
+The repair work is governed by `repair-programme.md` beside it —
+the slice programme for the ten known weaknesses, the hypothesis
+registry for every surviving non-cycle claim, and the two standing
+user decisions (Slice 1 classification principle; density/precision
+thresholds).
 
 **What exists on this branch**
 
@@ -59,6 +64,54 @@ it (desk evaluation of 30 sentences, cycle probes, prediction run).
     confidence gate (0.6) on traversal, conflicts surfaced.
   - `scripts/fork-density.mjs` + `density-run.md` — the density /
     overgeneration run at ×1 / ×10 / ×100 staged synthetic load.
+- The WordNet lexicon provider, new in `src/fork/`:
+  - `wordnet-lex.ts` — derives lexicon entries for English words the
+    hand lexicon does not know, from the existing Open English
+    WordNet extract (`src/wordnet.ts`, reused read-only; if the
+    extract is absent the provider silently disables and the parser
+    behaves as before). Verbs get regular-morphology forms and a
+    permissive frame (slots `[patient]`, nothing required — WordNet
+    gives no valency, so the Wood→Earth checker has nothing to check
+    a derived verb against; that limit is stated in the module, not
+    hidden). Nouns and adjectives derive with their lemma normalised
+    through the extract's forms index. Adverbs are NOT derived: the
+    extract trimmed adverb synsets, so there is nothing honest to
+    derive from. Derived entries are marked `source: "wordnet"`,
+    registered into the lexicon only where the hand lexicon has not
+    claimed the key (the hand lexicon always wins), and removed
+    again when the provider is toggled off.
+  - Semantic climbing: a concept the curated table does not know can
+    climb WordNet hypernyms to a classified anchor (gale —IS_A→ wind,
+    Wood @0.855; drizzle —IS_A→ rain, Water), confidence decaying
+    ×0.9 per hop and gated at the join's 0.6 — hurricane's climb
+    finds the storm anchor at 3 hops but decays to 0.51 and is
+    refused. Climbed classifications carry the third provenance tag
+    `wordnet-derived` and join through `deriveSentence` with the
+    anchor's correspondence row inherited. Tabled concepts are never
+    climbed (the table, with its (concept, aspect) discipline, owns
+    them — that is the X1 brake: 'cold' the illness still derives no
+    winter).
+  - `scripts/fork-holdout.mjs` + `holdout-run.md` — the holdout run:
+    80 sentences from the OLD chat's evaluation files (written for a
+    different system, never fitted to this parser), parsed with the
+    provider OFF vs ON. Headline: parse rate 31.3% → 85.0%, 43
+    sentences flipped fail→success, zero parse or round-trip
+    regressions; exact round-trip stays low (8/68) because
+    generation canonicalises. The run's own document carries the
+    full lists and the honest reading, including the classification
+    mean's denominator effect.
+- The CSKG feeder interface, new in `src/fork/`:
+  - `cskg-feed.ts` — the mapping from CSKG triples (the loader's
+    shape, `src/cskg/loader.ts`) to fork link records: Causes →
+    causal, UsedFor → function, AtLocation → location,
+    HasSubevent/HasPrerequisite → ordered procedure-chain links,
+    IsA → classification evidence only (never a direct assertion),
+    RelatedTo → weak association kept only when both ends classify;
+    anything else drops with a named reason, as does any triple
+    whose ends cannot be classified by the table or the WordNet
+    climb. **Interface and mapping only, fixture-tested: CSKG data
+    is NOT installed in this tree (no `data/cskg`), and live
+    ingestion awaits the data install — it is not faked here.**
 - The turn loop, new in `src/fork/` (Slice C):
   - `session.ts` — the light situation record (entities, events,
     states) built only from parsed meaning graphs; pronoun resolution
@@ -70,6 +123,13 @@ it (desk evaluation of 30 sentences, cycle probes, prediction run).
   - `scenarios.ts` + `scripts/fork-transcript.mjs` +
     `transcript-sample.md` — the four scripted scenarios (anger/news,
     worry/sleep, winter questions, soup) with full traces.
+  - `scripts/fork-chat.mjs` — the unscripted line-at-a-time runner
+    (`npm run fork:chat`, alias `npm run chat:fork`): each typed line
+    is one turn through the loop above, reply plus trace printed. It
+    exercises the WordNet-backed parser, so sentences the hand
+    lexicon could not take apart now parse in the runner — and the
+    trace shows it. The reply composition limits in the turn loop
+    itself (below) are unchanged by that.
 
 Mechanisms actually implemented: SVO slot filling (EN/ZH); passive
 as a voice state on the same meaning graph as the active; verbless
@@ -97,14 +157,36 @@ subjunctive mood state (*were* accepted for first person — Fire→Metal,
 mood forcing structure; *was* in that slot is register variation and
 the checker deliberately has no violation for it); ZH wh-in-situ
 （什么 in its ordinary object slot, interrogative as clause mood).
+**(Repair tranche, 2026-11-15)** nominal predication: an Earth topic
+predicated as an Earth nominal takes the declared `predicated-as`
+relation — a meaning-graph relation type, **not a cycle edge** (its
+cycle field computes to `other`) — with the EN copula as its
+connective realisation and ZH zero copula （今天星期一 / *Today is
+Monday.* both parse and round-trip; the outright failure this closes
+was recorded in the parser transcript: 今天星期一 previously
+degenerated to the single node 一）; agentless passives keep the
+suppressed valency slots **declared** on the predicate's
+`suppressedRoles` state (the agent in *The book was given.*, plus
+the recipient the promotion skipped; ZH 饭被吃了 likewise) — the
+checker does not flag a suppressed slot as a missing argument, and
+generation neither demands nor invents a filler, while expressed
+by-agent passives remain edge-identical to their actives.
 
 **Honest limits — read before believing any of this generalises**
 
-- The parser is **lexicon- and template-driven over the evaluated
-  vocabulary** (the words in the lexicon in `sentence.ts`, roughly
-  the 30 evaluation sentences plus the probe/test sentences). It is a
-  mechanism demonstrator, not a general NLP parser. Words outside the
-  lexicon fail or fall back to a proper-noun reading.
+- The parser is **template-driven**, and its English lexicon is now
+  the hand lexicon **plus** the WordNet provider above — the holdout
+  run (`holdout-run.md`) measures what that buys on sentences the
+  parser was never fitted to (parse rate 31.3% → 85.0%). It remains
+  a mechanism demonstrator, not a general NLP parser: the template
+  shapes are still the evaluated ones, and Chinese has no provider
+  (its lexicon is still the hand one). Derived-verb limits, stated
+  plainly: no valency (nothing for the checker to check), regular
+  morphology only (the surface *blew* resolves to *blow* for parsing,
+  but a generated past reads *blowed* — visible in the turn loop's
+  acknowledgements), and progressive aspect in a main clause
+  canonicalises in generation (*Winter is coming* now analyses
+  *come* as the verb and generates *Winter comes.*).
 - **Garden-path reanalysis is a named non-goal.** The reduced-relative
   STRUCTURE of *The horse raced past the barn fell* is supported
   (last verb roots the clause; *raced…* is a modifier clause), but

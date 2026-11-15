@@ -65,6 +65,13 @@ export interface NodeStates {
   questionKind?: string;
   /** ZH result complement seen on the verb (e.g. 走 'away' in 拿走). */
   result?: string;
+  /** Valency slots that remain DECLARED on this predicate but are
+   *  suppressed from realisation (repair H1): the agent of an agentless
+   *  passive ("The book was given"), and any required slot the passive
+   *  promotion skipped over (the recipient there). A suppressed slot is
+   *  not a missing argument — the checker must not flag it, and
+   *  generation must not demand or invent a filler for it. */
+  suppressedRoles?: string[];
   /** Person/number of the subject, for the Metal→Wood agreement check. */
   subjectPerson?: string;
 }
@@ -98,7 +105,13 @@ export type Relation =
   | "modifier"   // a clause graph attached to an Earth head (R5 relative clauses)
   | "result"     // resultative complement: the clause's outcome content (R6)
   | "degree"     // degree complement: how far the verb's quality runs (R6, ZH 得)
-  | "condition"; // clause -> clause condition relation (Metal logical)
+  | "condition"  // clause -> clause condition relation (Metal logical)
+  /* Repair tranche additions: */
+  | "predicated-as"; // nominal predication: an Earth topic predicated as an
+  // Earth nominal （今天星期一， "Today is Monday"). A DECLARED architectural
+  // addition — a meaning-graph relation type, NOT a cycle edge: its cycle
+  // field computes to "other" (Earth→Earth is in neither cycle), and no
+  // reasoning path may treat it as one. See docs/fork/repair-programme.md.
 
 export interface MeaningEdge {
   from: string;
@@ -168,6 +181,9 @@ export interface VerbEntry {
   prepSlot?: { slot: string; preps: string[]; required?: boolean };
   forms: { base: string; third: string; past: string; participle: string };
   semanticElement?: Element;
+  /** Provenance of this entry: set when the WordNet lexicon provider
+   *  (wordnet-lex.ts) derived it at runtime instead of the hand lexicon. */
+  source?: "wordnet";
 }
 
 export interface SimpleEntry {
@@ -175,6 +191,9 @@ export interface SimpleEntry {
   lemma: string;
   element: Element;
   semanticElement?: Element;
+  /** Provenance of this entry: set when the WordNet lexicon provider
+   *  (wordnet-lex.ts) derived it at runtime instead of the hand lexicon. */
+  source?: "wordnet";
   /** Question words （什么）: slot-fillers that carry interrogative force in situ. */
   question?: boolean;
   /** ZH: the classifier this noun generates (Earth→Metal), if it takes one. */
@@ -222,6 +241,7 @@ en(v("chop", ["patient"], ["patient"], { base: "chop", third: "chops", past: "ch
 en(v("put", ["theme"], ["theme"], { base: "put", third: "puts", past: "put", participle: "put" },
   { prepSlot: { slot: "location", preps: ["on", "in"], required: true } }), "put", "puts");
 en(v("lend", ["recipient", "theme"], ["recipient", "theme"], { base: "lend", third: "lends", past: "lent", participle: "lent" }), "lend", "lends", "lent");
+en(v("give", ["recipient", "theme"], ["recipient", "theme"], { base: "give", third: "gives", past: "gave", participle: "given" }), "give", "gives", "gave", "given");
 en(v("bite", ["patient"], ["patient"], { base: "bite", third: "bites", past: "bit", participle: "bitten" }), "bite", "bites", "bit", "bitten");
 en(v("go", [], [], { base: "go", third: "goes", past: "went", participle: "gone" },
   { prepSlot: { slot: "goal", preps: ["to"] } }), "go", "goes", "went", "gone");
@@ -245,7 +265,8 @@ en(v("need", ["theme"], ["theme"], { base: "need", third: "needs", past: "needed
 
 /* English nouns / pronouns / adjectives / adverbs. */
 for (const n of ["cook", "onions", "book", "table", "ladder", "dog", "man", "school", "news",
-  "cat", "roof", "horse", "barn", "king", "bananas", "soup", "salt", "summer", "bread", "cake", "pot"])
+  "cat", "roof", "horse", "barn", "king", "bananas", "soup", "salt", "summer", "bread", "cake", "pot",
+  "today", "monday", "holiday"])
   en(simple("noun", n, "Earth"));
 en(simple("noun", "sister", "Earth"));
 en(simple("noun", "winter", "Earth", { semanticElement: "Water" }));
@@ -288,12 +309,19 @@ zh(simple("noun", "书", "Earth", { classifier: "本" }));
 zh(simple("noun", "桌子", "Earth"));
 zh(simple("noun", "冬天", "Earth", { semanticElement: "Water" }));
 zh(simple("noun", "学校", "Earth"));
+/* Nominal predication vocabulary （今天星期一）: time nominals and the
+ * weekday names as Earth nouns. */
+zh(simple("noun", "今天", "Earth"));
+for (const d of ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日", "星期天"])
+  zh(simple("noun", d, "Earth"));
+zh(simple("noun", "节日", "Earth"));
 zh(simple("pronoun", "我", "Earth", { person: "1sg" }));
 zh(simple("pronoun", "你", "Earth", { person: "2" }));
 zh(simple("pronoun", "他", "Earth", { person: "3sg" }));
 zh(simple("adjective", "冷", "Fire", { semanticElement: "Water" }));
 zh(simple("adjective", "快", "Fire"));
 zh(simple("adjective", "贵", "Fire"));
+zh(simple("adjective", "忙", "Fire"));
 zh(simple("pronoun", "什么", "Earth", { question: true }));
 
 /** ZH function words: not content nodes, but the connective/scope layer needs their kinds. */

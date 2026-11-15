@@ -17,6 +17,14 @@
  *  - classifier generation (Earth→Metal) for counted ZH nouns;
  *  - A-not-A question formation (one interrogative force, realised
  *    by verb repetition under negation).
+ * Repair tranche additions:
+ *  - nominal predication: an Earth topic predicated as an Earth
+ *    nominal takes the declared 'predicated-as' relation (ZH zero
+ *    copula: 今天星期一； EN: the copula is its connective realisation).
+ *    The relation is an architectural addition, not a cycle edge.
+ *  - agentless passives keep the suppressed valency slots DECLARED on
+ *    the predicate's states (suppressedRoles) instead of dropping
+ *    them: the slot exists, unrealised (repair H1's representation).
  * Ungrammatical input is parsed best-effort; check.ts names what the
  * controlling cycle rejects.
  */
@@ -35,6 +43,7 @@ import {
   cycleOf,
   type LexEntry,
 } from "./sentence";
+import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
 
 class Builder {
   nodes: MeaningNode[] = [];
@@ -61,6 +70,13 @@ class Builder {
   graph(root: MeaningNode): MeaningGraph {
     return { nodes: this.nodes, edges: this.edges, rootId: root.id, entryElement: root.syntacticElement };
   }
+}
+
+/** The predication relation for a copula/verbless-entry clause: an
+ *  Earth (nominal) predicate takes the declared 'predicated-as'
+ *  relation; a Fire (adjectival) predicate keeps 'predicate' (R1). */
+function predRelation(root: MeaningNode): Relation {
+  return root.syntacticElement === "Earth" ? "predicated-as" : "predicate";
 }
 
 function connective(
@@ -92,7 +108,7 @@ interface EnItem {
 }
 
 const EN_DET = new Set(["the", "a", "an", "my", "his", "her", "that", "more"]);
-const EN_PREP = new Set(["on", "in", "by", "to", "with", "past", "at"]);
+const EN_PREP = new Set(["on", "in", "by", "to", "with", "past", "at", "from"]);
 const EN_BE: Record<string, "present" | "past"> = { is: "present", are: "present", am: "present", was: "past", were: "past" };
 const EN_AUX = new Set(["had", "did", "does", "do", "has", "have", "can"]);
 const EN_WH = new Set(["what", "who", "where", "when"]);
@@ -144,6 +160,24 @@ function enItems(tokens: string[]): EnItem[] {
           item.formTag =
             lower === ingForm(f.base) ? "ing"
             : lower === f.base ? "base" : lower === f.third ? "third" : lower === f.past && lower === f.participle ? "past/participle" : lower === f.past ? "past" : lower === f.participle ? "participle" : "base";
+        }
+      } else {
+        // WordNet provider (wordnet-lex.ts): the hand lexicon missed,
+        // so derive a noun entry, else an adjective entry. Verbs are
+        // NOT derived here — a surface's POS is positional in this
+        // parser, and the verb slot is resolved in parseEn, after the
+        // subject chunk is known (a subject noun like 'wind' has verb
+        // synsets too and must not be upgraded in place).
+        const noun = wordnetNoun(lower);
+        if (noun) {
+          item.entry = noun;
+          item.kind = "noun";
+        } else {
+          const adj = wordnetAdjective(lower);
+          if (adj) {
+            item.entry = adj;
+            item.kind = "adjective";
+          }
         }
       }
     }
@@ -210,9 +244,51 @@ function parseEn(text: string): ParsedSentence {
   const beItem = items.find((i) => i.kind === "be");
   const auxItem = items.find((i) => i.kind === "aux");
   const negItem = items.find((i) => i.kind === "neg");
-  const verbItem = items.find((i) => i.kind === "verb");
   const whyItem = items.find((i) => i.kind === "why");
   const contentStart = whyItem ? whyItem.index + 1 : 0;
+  let verbItem = items.find((i) => i.kind === "verb");
+  if (!verbItem) {
+    // WordNet fallback (wordnet-lex.ts): no hand-lexicon verb exists,
+    // so try to derive one — but only for a content item AFTER the
+    // subject chunk. Position is the POS evidence here: the subject's
+    // own noun may carry verb synsets ('wind' the noun vs 'wind' the
+    // verb) and must not be upgraded into the verb slot. Two more
+    // positional guards, both learned from regressions:
+    //  - in an inverted predicate question ("Why is winter cold?")
+    //    the subject chunk follows the copula, so the scan starts
+    //    after THAT chunk — 'winter' has verb synsets (to overwinter)
+    //    and is the subject, not the verb;
+    //  - an item immediately after a determiner is a noun phrase's
+    //    head, never the verb ("a cat" — 'cat' has verb synsets and
+    //    must stay the existential's presented noun).
+    const subjChunk =
+      beItem && beItem.index === contentStart
+        ? enChunk(items, beItem.index + 1)
+        : enChunk(items, contentStart);
+    const scanFrom = subjChunk ? subjChunk.next : contentStart + 1;
+    for (let k = scanFrom; k < items.length; k++) {
+      const it = items[k];
+      // Candidates: nouns, proper nouns, and PROVIDER-derived
+      // adjectives. A derived adjective entry is provisional — the
+      // surface may be a verb in this position ("I live in Chicago":
+      // 'live' is an adjective lemma, and the sentence's verb) — while
+      // a HAND adjective entry is a settled classification and is
+      // never upgraded.
+      const derivedAdj = it.kind === "adjective" && it.entry && "source" in it.entry && it.entry.source === "wordnet";
+      if (it.kind !== "noun" && it.kind !== "proper" && !derivedAdj) continue;
+      if (items[k - 1]?.kind === "det") continue;
+      const derived = wordnetVerb(it.lower);
+      if (!derived) continue;
+      it.entry = derived;
+      it.kind = "verb";
+      const f = derived.forms;
+      it.formTag =
+        it.lower === ingForm(f.base) ? "ing"
+        : it.lower === f.base ? "base" : it.lower === f.third ? "third" : it.lower === f.past && it.lower === f.participle ? "past/participle" : it.lower === f.past ? "past" : it.lower === f.participle ? "participle" : "base";
+      verbItem = it;
+      break;
+    }
+  }
   const first = items[contentStart];
 
   /* --- Conditional (H2): if-clause as a condition relation between two
@@ -229,7 +305,7 @@ function parseEn(text: string): ParsedSentence {
     const condSubject = enNodeFromChunk(b, condSubj.chunk, "subject");
     const condRoot = enNodeFromChunk(b, condPred.chunk, "predicate");
     condRoot.states = { mood: "subjunctive", copulaTense: EN_BE[condItems[condBePos].lower] };
-    b.edge(condSubject, condRoot, "predicate");
+    b.edge(condSubject, condRoot, predRelation(condRoot));
     const mainItems = items.slice((comma?.index ?? 0) + 1);
     const mainSubj = enChunk(mainItems, 0);
     const mainVerbItem = mainItems.find((i) => i.kind === "verb");
@@ -350,7 +426,7 @@ function parseEn(text: string): ParsedSentence {
         );
       } else throw new Error(`cannot parse complement of: ${text}`);
       root.states = { copulaTense: EN_BE[mainBe.lower], mood: interrogative ? "interrogative" : "indicative" };
-      b.edge(head, root, "predicate");
+      b.edge(head, root, predRelation(root));
       return { meaning: b.graph(root), connective: connective("en", tokens, spans, headC.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
     }
   }
@@ -426,7 +502,7 @@ function parseEn(text: string): ParsedSentence {
       );
     }
     root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}) };
-    b.edge(subject, root, "predicate");
+    b.edge(subject, root, predRelation(root));
     return { meaning: b.graph(root), connective: connective("en", tokens, spans, subj.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
   }
 
@@ -470,10 +546,14 @@ function parseEn(text: string): ParsedSentence {
   const boundary = Math.min(...[auxItem?.index, beItem?.index, verbItem.index].filter((x): x is number => x !== undefined));
   const subj = enChunk(items, subjStart);
   let subjectNode: MeaningNode | undefined;
+  let subjectEdge: MeaningEdge | undefined;
+  /** Passive bare-NP arguments, slot assignment deferred to finalisation. */
+  const passiveBareArgs: { node: MeaningNode; edge: MeaningEdge }[] = [];
   if (subj && subj.chunk.end < boundary + 1) {
     subjectNode = enNodeFromChunk(b, subj.chunk, isPassive ? "patient" : "agent");
     spans.push({ start: subj.chunk.start, end: subj.chunk.end + 1, label: "subject" });
     b.edge(root, subjectNode, isPassive ? "patient" : "agent");
+    if (isPassive) subjectEdge = b.edges[b.edges.length - 1];
     const person = subj.chunk.head.entry && "person" in subj.chunk.head.entry ? (subj.chunk.head.entry as { person?: string }).person : subj.chunk.head.lower.endsWith("s") ? "3pl" : "3sg";
     root.states.subjectPerson = person;
     // Base/past-ambiguous forms ("put"): with a 3sg subject the bare
@@ -544,16 +624,24 @@ function parseEn(text: string): ParsedSentence {
     }
     const c = enChunk(items, i);
     if (c) {
-      const slot = bareSlots.shift();
-      if (slot) {
-        const node = enNodeFromChunk(b, c.chunk, slot);
-        b.edge(root, node, slot as Relation);
-      } else {
-        // Excess bare NP: keep it as an unslotted object so the valency
-        // checker can name the excess (Wood→Earth control).
-        const node = enNodeFromChunk(b, c.chunk, "excess");
+      if (isPassive) {
+        // Defer: which slot a passive's bare NP fills depends on which
+        // slot the promoted subject took, settled at finalisation.
+        const node = enNodeFromChunk(b, c.chunk, "pending");
         b.edge(root, node, "patient");
-        node.role = "excess";
+        passiveBareArgs.push({ node, edge: b.edges[b.edges.length - 1] });
+      } else {
+        const slot = bareSlots.shift();
+        if (slot) {
+          const node = enNodeFromChunk(b, c.chunk, slot);
+          b.edge(root, node, slot as Relation);
+        } else {
+          // Excess bare NP: keep it as an unslotted object so the valency
+          // checker can name the excess (Wood→Earth control).
+          const node = enNodeFromChunk(b, c.chunk, "excess");
+          b.edge(root, node, "patient");
+          node.role = "excess";
+        }
       }
       spans.push({ start: c.chunk.start, end: c.chunk.end + 1, label: "object" });
       i = c.next;
@@ -577,6 +665,42 @@ function parseEn(text: string): ParsedSentence {
         }
       }
     }
+  }
+
+  /* --- Passive slot finalisation + suppression (repair H1's
+   *     representation): the promoted subject and the surviving bare
+   *     NPs fill the frame's bare slots RIGHT-ALIGNED — the objects
+   *     surface in frame order, so with fewer NPs than slots the
+   *     skipped slots are the early ones ("He was given a book":
+   *     recipient + theme both present; "The book was given": the
+   *     subject is the theme, the recipient skipped). Skipped required
+   *     slots, and the agent when no by-phrase expresses it, stay
+   *     DECLARED on the predicate as suppressedRoles: the valency is
+   *     intact, the realisation is suppressed — not a missing argument
+   *     for the checker, not a filler for generation to invent. --- */
+  if (isPassive) {
+    const slots = verb.slots;
+    const total = (subjectNode ? 1 : 0) + passiveBareArgs.length;
+    const subjectIdx = total <= slots.length ? slots.length - total : 0;
+    if (subjectNode && subjectEdge) {
+      const slot = slots[subjectIdx] ?? "patient";
+      subjectNode.role = slot;
+      subjectEdge.relation = slot as Relation;
+    }
+    passiveBareArgs.forEach(({ node, edge }, j) => {
+      const idx = subjectIdx + (subjectNode ? 1 : 0) + j;
+      if (idx < slots.length) {
+        node.role = slots[idx];
+        edge.relation = slots[idx] as Relation;
+      } else {
+        node.role = "excess";
+        edge.relation = "patient";
+      }
+    });
+    const suppressed: string[] = [];
+    if (!b.edges.some((e) => e.from === root.id && e.relation === "agent")) suppressed.push("agent");
+    for (let s = 0; s < subjectIdx; s++) if (verb.required.includes(slots[s])) suppressed.push(slots[s]);
+    if (suppressed.length && root.states) root.states.suppressedRoles = suppressed;
   }
 
   // Fronted constituent (R3): the displaced chunk fills the clause slot
@@ -687,20 +811,24 @@ function parseZh(text: string): ParsedSentence {
     return { meaning: b.graph(root), connective: connective("zh", tokens, spans, theme ? items[baIdx + 1].index : undefined), realizes: b.realizes, scopeAttachments: scope };
   }
 
-  /* --- 被 passive: theme 被 agent verb (result) (了). Voice state, as in English. --- */
+  /* --- 被 passive: theme 被 agent verb (result) (了). Voice state, as in English.
+   *     Agentless form （饭被吃了）: the verb follows 被 directly; the agent
+   *     slot stays declared as suppressed (repair H1), as in English. --- */
   if (beiIdx > 0) {
     const theme = nounNode(items[0], "patient");
-    const agent = nounNode(items[beiIdx + 1], "agent");
-    const verbItem = items[beiIdx + 2];
+    const agentless = items[beiIdx + 1]?.entry?.kind === "verb";
+    const agent = agentless ? undefined : nounNode(items[beiIdx + 1], "agent");
+    const verbItem = items[agentless ? beiIdx + 1 : beiIdx + 2];
     const verb = verbItem.entry as VerbEntry;
     const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
     root.states = { voice: "passive", construction: "bei", mood: interrogative ? "interrogative" : "indicative" };
-    const resultItem = items[beiIdx + 3];
+    if (agentless) root.states.suppressedRoles = ["agent"];
+    const resultItem = items[(agentless ? beiIdx + 2 : beiIdx + 3)];
     if (resultItem && !resultItem.entry && !resultItem.func) root.states.result = resultItem.text;
     else if (resultItem?.text === "走") root.states.result = "走";
     if (root.states.result) b.realizes[root.id] = [verbItem.index, resultItem!.index];
     b.edge(root, theme, "patient");
-    b.edge(root, agent, "agent");
+    if (agent) b.edge(root, agent, "agent");
     collectParticles(0, items.length, [root]);
     const aspectP = scope.find((s) => s.kind === "aspect");
     if (aspectP) root.states.aspect = "perfect";
@@ -820,6 +948,16 @@ function parseZh(text: string): ParsedSentence {
         const deg = b.node({ lemma: degItem.text, form: degItem.text, syntacticElement: "Water" }, [degItem.index]);
         b.edge(deg, root, "modulates"); // Water→Fire is controlling in the cycle table; degree scope is recorded as modulation
       }
+      return { meaning: b.graph(root), connective: connective("zh", tokens, spans, 0), realizes: b.realizes, scopeAttachments: scope };
+    }
+    /* Nominal predication: topic Earth + predicate Earth, no copula
+     * （今天星期一）. The declared 'predicated-as' relation — an
+     * architectural addition, not a cycle edge (see sentence.ts). */
+    const predItem = items.slice(1).find((i) => i.entry?.kind === "noun" || i.entry?.kind === "pronoun");
+    if (predItem) {
+      const root = nounNode(predItem, "predicate");
+      root.states = { mood: interrogative ? "interrogative" : "indicative" };
+      b.edge(topic, root, "predicated-as");
       return { meaning: b.graph(root), connective: connective("zh", tokens, spans, 0), realizes: b.realizes, scopeAttachments: scope };
     }
     throw new Error(`cannot parse verbless sentence: ${text}`);

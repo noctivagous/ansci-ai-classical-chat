@@ -57,7 +57,7 @@ function enGenerate(p: ParsedSentence): string {
   const condEdge = p.meaning.edges.find((e) => e.from === root.id && e.relation === "condition");
   if (condEdge) {
     const condRoot = nodeById(p, condEdge.to);
-    const condSubjEdge = p.meaning.edges.find((e) => e.relation === "predicate" && e.to === condRoot.id);
+    const condSubjEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === condRoot.id);
     const condSubject = condSubjEdge ? nodeById(p, condSubjEdge.from) : undefined;
     const agent = targets(p, root.id, "agent")[0];
     const entry = EN_LEXICON[root.lemma] as VerbEntry;
@@ -86,8 +86,12 @@ function enGenerate(p: ParsedSentence): string {
     return `${cap(qNode.form)} ${carrier} ${agent ? enNp(p, agent) : ""} ${entry.forms.base}?`;
   }
 
-  /* Predicate (verbless-entry) clause: Subject + copula + predicate. */
-  const predEdge = p.meaning.edges.find((e) => e.relation === "predicate" && e.to === root.id);
+  /* Predicate (verbless-entry) clause: Subject + copula + predicate.
+   * For a nominal predicate the copula is the connective realisation
+   * of the 'predicated-as' relation — English spells out what the
+   * meaning graph holds directly (and what ZH realises with no
+   * copula at all). */
+  const predEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === root.id);
   if (predEdge) {
     const subject = nodeById(p, predEdge.from);
     const copula = root.states?.copulaTense === "past" ? "was" : "is";
@@ -106,11 +110,21 @@ function enGenerate(p: ParsedSentence): string {
 
   let words: string[] = [];
   if (st.voice === "passive") {
-    const subject = patient!;
+    /* The passive subject is whichever argument the promotion put
+     * pre-verbally — patient, recipient, or theme depending on the
+     * frame — identified by connective position via REALIZES. A
+     * suppressed slot (suppressedRoles) is simply absent here:
+     * generation neither demands nor invents a filler for it. */
+    const verbTok = Math.min(...(p.realizes[root.id] ?? [Number.POSITIVE_INFINITY]));
+    const subject =
+      orderedArgs(p, root, entry)
+        .filter((n) => Math.min(...(p.realizes[n.id] ?? [Number.POSITIVE_INFINITY])) < verbTok)
+        .sort((a, b2) => Math.min(...(p.realizes[a.id] ?? [0])) - Math.min(...(p.realizes[b2.id] ?? [0])))[0] ??
+      patient!;
     words.push(enNp(p, subject));
     words.push(st.aux ?? "was");
     words.push(entry.forms.participle);
-    for (const node of orderedArgs(p, root, entry)) if (node.id !== patient?.id && node.id !== agent?.id) words.push(argSurface(node));
+    for (const node of orderedArgs(p, root, entry)) if (node.id !== subject.id && node.id !== agent?.id) words.push(argSurface(node));
     if (agent) words.push("by", enNp(p, agent));
     return cap(words.join(" ")) + punct;
   }
@@ -195,8 +209,9 @@ function zhGenerate(p: ParsedSentence): string {
   const questionTail = p.scopeAttachments.filter((s) => s.kind === "question").map((s) => s.form).join("");
   const attitudeTail = p.scopeAttachments.filter((s) => s.kind === "attitude").map((s) => s.form).join("");
 
-  /* Predicate (verbless-entry) clause. */
-  const predEdge = p.meaning.edges.find((e) => e.relation === "predicate" && e.to === root.id);
+  /* Predicate (verbless-entry) clause — adjectival ('predicate') or
+   * nominal ('predicated-as', realised with no copula). */
+  const predEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === root.id);
   if (predEdge) {
     const topic = nodeById(p, predEdge.from);
     const degree = p.meaning.edges.filter((e) => e.relation === "modulates" && e.to === root.id).map((e) => nodeById(p, e.from))[0];

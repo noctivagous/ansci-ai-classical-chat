@@ -102,7 +102,7 @@ export function processTurn(session: Session, text: string): TurnResult {
     return c;
   };
 
-  const predEdge = parsed.meaning.edges.find((e) => e.relation === "predicate" && e.to === root.id);
+  const predEdge = parsed.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === root.id);
   const isVerbRoot = root.syntacticElement === "Wood" && root.role === "verb";
 
   if (isVerbRoot) {
