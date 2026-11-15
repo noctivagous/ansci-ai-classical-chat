@@ -19,7 +19,11 @@ this programme promotes a claim from one layer to another.
 threshold policy are ratified (Part A, "Ratified policy"), both
 standing decisions are settled, and the H3a/H3b sense experiment is
 preregistered (Part B). The sourced catalogue for Slice 1 is
-`wp1-classification-survey.md`.
+`wp1-classification-survey.md`. Also adopted 2026-11-15, from the
+v6 source-widening survey (`sentencesToWuxing-6.txt`): the revised
+gap register (catalogue §3, with the WP1b scoping addendum in
+catalogue §6) and the two derivation rules registered below as
+H5 and H6.
 
 ---
 
@@ -483,6 +487,351 @@ lemma → aspect selection → **form selection** → agreement →
 affixation → phonological conditioning → surface — and realisation
 is by affix, auxiliary chain, or lexical/particle cue depending on
 the aspect pattern and the language. No edge is drawn.
+
+### H5 — ARTEFACT_MATERIAL_DOMINANCE_V1: artefact-level derivation from component materials
+
+**Statement.** An artefact inherits an elemental classification
+only when a specified, function-independent material aspect is
+sufficiently dominant and structurally constitutive of the
+artefact. The mere presence of a material, or the artefact's use,
+is insufficient. Two-stage procedure: first establish the
+artefact's composition and component structure; then decide
+whether those material assertions support an artefact-level
+assertion. (From the v6 survey, `sentencesToWuxing-6.txt` §2;
+registered for GAP-1, whose revised statement is in
+`wp1-classification-survey.md` §3.)
+**Status. REGISTERED HYPOTHESIS (adopted 2026-11-15).** A proposed
+project rule — `CREATIVE_APPLICATION` / `ANALYSIS`, never
+`ATTESTED_TRADITION`. Not implemented; nothing has been banked
+under it.
+
+**Component record.** Each component is recorded with:
+
+| Attribute | Meaning |
+| --- | --- |
+| `material` | Material identity, with its own evidence and phase assertion if justified |
+| `mass_fraction` | Estimated fraction by mass, if known |
+| `volume_fraction` | Estimated fraction by volume, if known |
+| `structural_role` | Load-bearing, joining, enclosing, supporting, decorative, etc. |
+| `operational_role` | Working edge, striking surface, handle, insulation, control, etc. |
+| `replaceability` | Whether the component is replaceable without changing the artefact's identity |
+| `evidence_quality` | Source and confidence for each component assertion |
+
+These roles describe the artefact; they do not themselves assign
+an element.
+
+**Governance priority** (which component, if any, governs the
+artefact-level assertion):
+
+1. **Constitutive material dominance** — a material making up the
+   artefact's defining body may govern when it is materially
+   dominant and no other component has an equally strong claim.
+2. **Structural dominance** — a component essential to the
+   artefact's structural identity may govern when composition
+   alone would be misleading.
+3. **No automatic operational dominance** — the working part does
+   not govern by performing the work: a metal blade does not make
+   a wooden-handled tool Metal merely because the blade performs
+   the cutting.
+4. **No automatic majority rule** — the largest component by mass
+   or volume does not govern if it is merely ballast, filler, or
+   packaging.
+
+**Proportions.** Proportions are evidence, not a universal voting
+mechanism. One phase-bearing material clearly dominant in the
+defining body, with other components incidental → a derived
+single-phase assertion is permitted. Two or more materials
+substantial and constitutive → component-level classifications
+retained, normally abstain at artefact level. A small component
+essential to identity but not materially dominant does not win by
+importance alone; it requires an independently specified
+structural rule. Composition unknown or disputed → abstain.
+Composition varying across versions of the artefact → classify
+the version or instance, not the generic name. **Candidate
+dominance threshold: at least 70% of the defining body's mass or
+volume**, provided the other materials are not independently
+constitutive — a starting hypothesis, not a classical rule. The
+choice of mass versus volume is fixed by material class and
+measurement availability **before** evaluation; selecting whichever
+denominator produces the desired classification is prohibited.
+
+**Composite abstention.** An artefact remains phase-null at the
+whole-object level when: no material is clearly dominant; the
+dominant material differs depending on whether mass or volume is
+used; a structurally essential component has a different phase and
+no validated rule resolves the conflict; the object is a
+functional assembly of independently substantial materials; or the
+object has multiple materially distinct versions under the same
+name. (A metal-headed, wooden-handled hammer keeps its component
+classifications; it is not forced into Metal because the head is
+the working part, nor into Wood because the handle is large. A
+single artefact-level phase is not required for the ontology to be
+useful.)
+
+**Confidence policy.** A derived artefact assertion never inherits
+its strongest component's confidence as though it were direct
+attestation: C_artefact ≤ min(C_component, 0.80), and a
+single-step derivation applies a further penalty — C_derived =
+min(C_component, 0.80) × 0.80 — so even a component assertion at
+confidence 1.0 yields at most **0.64** for a one-step
+artefact-level inference. Deliberately conservative; the numerical
+penalty is to be calibrated against human judgments later, not
+treated as a metaphysical property of derivation.
+
+**Required provenance tags** on every assertion derived under this
+rule: `provenance_layer: CREATIVE_APPLICATION`,
+`assertion_kind: DERIVED`,
+`derivation_rule: ARTEFACT_MATERIAL_DOMINANCE_V1`,
+`source_assertions: [component assertion IDs]`,
+`derivation_steps`, `confidence` (calculated), `status:
+PROVISIONAL`. The assertion retains links to its component
+evidence and the exact rule version, and is never exported or
+displayed as an attested classical classification.
+
+**Falsification conditions.** The rule earns admission only if its
+classifications predict independent judgments better than simpler
+alternatives; the test set must include counterexamples selected
+by someone other than the system's designers, including objects
+where the largest material, the defining material, and the working
+material differ.
+
+| Prediction | Discriminating test | Failure condition |
+| --- | --- | --- |
+| Defining-body dominance predicts human material-based classification better than majority-by-mass alone | Blindly judge a held-out set of composite artefacts | No improvement over mass-only classification |
+| Structural role can resolve some cases where composition alone cannot | Compare artefacts with similar proportions but different structural arrangements | Structural role adds no predictive value |
+| Composite abstention is better than forced single-phase assignment | Ask independent annotators to classify artefacts and rate certainty | Abstentions are not more accurate or better calibrated than forced assignments |
+| The rule generalises beyond familiar tools | Test unfamiliar artefacts and artefacts from different craft traditions | Performance collapses outside the hand-built seed set |
+
+### H6 — WEATHER_ASPECT_DERIVATION_V1: phenomenon classification through physical aspects
+
+**Statement.** A weather phenomenon is classified only through a
+documented, defining physical aspect that corresponds to a climate
+category — never by name, visual resemblance, associated season,
+or a secondary effect alone. Four things are kept separate in
+every assertion: `phenomenon` (rain, snow, hail, fog, frost,
+thunderstorm), `physical_aspect` (precipitation, suspended
+droplets, ice formation, temperature, air movement, moisture),
+`climate_correspondence` (the relevant five-climate relation, if
+supported), and `derivation_path` (the explicit rule connecting
+the physical aspect to the climate category). (From the v6 survey,
+`sentencesToWuxing-6.txt` §2; registered for GAP-5, whose revised
+statement is in `wp1-classification-survey.md` §3.)
+**Status. REGISTERED HYPOTHESIS (adopted 2026-11-15).** A proposed
+project rule, not classical doctrine. Not implemented.
+
+The five climate categories （风 wind, 热 heat, 湿 damp, 燥
+dryness, 寒 cold — catalogue §1.5) are not interchangeable with
+everyday weather labels. The *Suwen* material and the *Lingshu*
+passage list such conditions as dryness, dampness, cold, heat,
+wind, and rain — notably, the *Lingshu* list itself includes rain
+alongside the other conditions. That is a reason not to silently
+force every listed weather word into one of the five climate
+slots.
+
+**Derivation conditions.** A weather classification may be proposed
+only if **all five** hold: (1) the phenomenon has a defined
+physical aspect; (2) that aspect is directly connected to one of
+the five climate categories by a predeclared mapping; (3) the
+connection is not based solely on season, appearance, metaphor, or
+a secondary consequence; (4) competing climate interpretations are
+recorded; (5) the assertion is scoped to the aspect, not
+automatically to the entire phenomenon. (Rain may produce
+dampness, but precipitation and dampness are not identical — rain
+can fall in a dry climate, and a damp environment can exist
+without rain — so "rain → dampness" is at most a contextual causal
+relation in a particular observation, never a permanent ontology
+edge.)
+
+**Provisional treatment** (initial, under this rule):
+
+| Phenomenon | Candidate physical aspect | Initial treatment |
+| --- | --- | --- |
+| Wind | Moving air | Candidate Wood correspondence, if the project's source-based wind–Wood relation is explicitly in scope |
+| Heatwave | Sustained high temperature | Candidate Fire correspondence |
+| Persistent damp conditions | Moisture saturation or prolonged wetness | Candidate Earth correspondence, if the dampness relation is explicitly sourced |
+| Dry spell | Lack of atmospheric or surface moisture | Candidate Metal correspondence, if the dryness relation is explicitly sourced |
+| Cold spell | Sustained low temperature | Candidate Water correspondence |
+| Rain | Liquid precipitation; may produce wetness or dampness | **Not automatically Earth or Water**; keep precipitation distinct from resulting dampness |
+| Snow | Frozen precipitation; cold and water/ice properties | **Phase-null** unless a specific aspect rule is tested |
+| Hail | Ice precipitation, often produced by convective storm processes | **Phase-null**; neither cold nor ice alone establishes Water |
+| Fog | Suspended liquid droplets near the surface | Candidate moisture aspect, but not automatically dampness or Earth |
+| Frost | Surface ice deposition | **Phase-null** pending a rule that distinguishes cold, freezing, and deposition |
+
+**Confidence decay.** A separate rule from H5's, because weather
+derivations can chain through physical observations: C_n = C_0 ×
+0.75^n, where n is the number of inferred links between the
+observed phenomenon and the climate classification — a **ceiling**,
+not an automatic score:
+
+| Derivation | Maximum confidence |
+| --- | --- |
+| Directly attested climate correspondence | Source-dependent; no project derivation penalty |
+| One inferred physical-aspect link | 0.75 |
+| Two inferred links | 0.56 |
+| Three inferred links | 0.42 |
+| Four inferred links | 0.32 |
+
+Direct source assertions retain their own source confidence; the
+decay applies to project inference, not to the historical text. If
+the phenomenon has multiple plausible physical interpretations,
+confidence should be lower, or the classification should abstain;
+confidence never accumulates merely because several derived
+statements repeat the same original assumption.
+
+**Falsification conditions.**
+
+| Prediction | Discriminating test | Failure condition |
+| --- | --- | --- |
+| Physical-aspect mapping predicts classifications better than word association | Blindly classify a held-out set of weather observations using physical descriptions without phenomenon names | No improvement over name-based classification |
+| Rain and dampness are not equivalent | Compare rainy-but-dry-context cases with damp-but-rainless cases | Annotators consistently treat them as the same aspect |
+| Multi-aspect treatment improves accuracy | Ask independent meteorological and Chinese-medicine domain judges to classify ambiguous phenomena | Multi-aspect representation does not improve agreement or calibration |
+| Confidence decay reflects increasing inferential distance | Compare confidence with blind human accuracy by derivation depth | Confidence is not calibrated, or deeper derivations are no less reliable |
+
+The first test set should include at least 100 observations or
+carefully specified scenarios, with rain, fog, snow, hail, frost,
+wind, heat, and dry conditions represented, deliberately including
+edge cases rather than only textbook examples.
+
+**Follow-on (recorded, NOT done).** Adopting this rule requires
+re-scoping the existing whole-phenomenon weather entries in
+`src/fork/classify.ts` — rain, snow, sleet, and hail currently
+stand as whole-phenomenon Water assignments tagged `fork-creative`
+(see catalogue §2.2, where they are UNCITED in scope) — to
+aspect-level / provisional status under this rule. That re-scope
+is a **separate implementation task**: it interacts with the join
+tests and the density record, and it has **not** been done in this
+adoption. The entries stand as they are until that task is taken
+up.
+
+### H7 — FLAVOR_BRIDGE_V1: bencao flavor assertions composed with Neijing flavor correspondences
+
+**Statement.** A substance's recorded flavor in a *bencao* entry
+may be composed with an attested *Neijing* flavor correspondence
+to yield a correspondence of the substance's **recorded-flavor
+aspect** to a phase — never a classification of the substance as a
+whole. The two legs are distinct assertion kinds sharing a
+controlled five-flavor vocabulary, and the graph keeps them
+distinct: `MATERIA_MEDICA_FLAVOR` (substance —*has_recorded_flavor*→
+flavor; entry-level, level A for that assertion) and the *Neijing*
+correspondence assertions (flavor —*enters_viscus*→ viscus, *Suwen*
+23 / *Lingshu* 56; flavor —*corresponds_with*→ phase, *Suwen* 4).
+The preferred path is *Suwen* 4's direct flavor-to-phase-category
+clause (its flavor and its category stated together, e.g. 其味酸，
+其類草木） — **one** attested correspondence leg. The visceral path
+(flavor → viscus → phase) is the fallback and must preserve both
+relations when used. (From the v7 survey, `sentencesToWuxing-7.txt`
+§1, answering Brief 4; the *Bencao Jing* preface — 藥有酸鹹甘苦辛
+五味，又有寒熱溫涼四氣及有毒無毒 — and *Suwen* 23's five-entry list
+were spot-verified verbatim at evaluation. Registered against the
+mineral survey's negative result, `wp1b-mineral-survey.md`: 0 of 50
+substances carries a phase assertion, but flavor is recorded
+completely.)
+**Status. REGISTERED HYPOTHESIS (adopted 2026-11-15, with
+amendments A1 and A2 below).** Not implemented; **nothing is banked
+under it.** The mineral survey's 50 substances become eligible for
+H7-derived correspondences only under a separately approved
+implementation pass.
+
+**Admission conditions.** A bridged correspondence may be recorded
+only if **all six** hold: (1) the substance has an explicit
+five-flavor value in a named *bencao* entry and recension;
+(2) the flavor is one of the five values used in the relevant
+*Neijing* correspondence passage; (3) the phase mapping is
+explicitly attested in that passage or another named, compatible
+*Neijing* passage; (4) the output is scoped to the recorded-flavor
+aspect, never the whole substance; (5) the output implies no
+therapeutic indication, safety, efficacy, organ action, or
+functional classification; (6) the derivation is recorded in full
+(see Representation) — an unrecorded bridge is not admitted.
+
+**Grade and confidence — the attested-chaining pricing rule.**
+The composed correspondence sits at evidence grade **B** (the
+weakest grade along the path). Its confidence is **not** computed
+by H6's 0.75^n decay. The pricing distinction is general and is
+registered as method, not only for this bridge: **decay prices
+inferred links; compatibility prices attested links whose scopes
+might mismatch.** H6's links are project inferences, so each costs
+confidence. H7's links are independently attested textual
+relations; the risk is whether the two sources use the shared term
+compatibly. Hence:
+
+  C_bridge = min(C_A, C_B) × K
+
+where C_A is confidence in the entry-level flavor assertion, C_B
+confidence in the textual flavor correspondence, and K the
+scope-compatibility factor of the bridge.
+
+**Amendment A1 — K is fixed per bridge (adopted with H7).** K is
+a property of the bridge (this source-pair, this scope), assessed
+**once**, with stated grounds and a predeclared value recorded
+here; it is never re-assessed per substance. Per-entry variation
+enters only through C_A (recension quality, term ambiguity in that
+entry). If compatibility cannot be established for a proposed
+bridge, the bridge abstains — no numerical value may be assigned
+to disguise the uncertainty. For this bridge (*Bencao Jing*
+recorded flavors ↔ *Neijing* five-flavor correspondences), **K =
+0.90**, on these grounds: both traditions use the identical
+five-value vocabulary as formal classification (the *Bencao*
+preface states the five flavors as the medicinal classification
+scheme, not as incidental taste words); the *Neijing* passages in
+scope are dietary/medicinal in frame, the same broad frame as the
+entries; and no systematic sense divergence between the two
+flavor vocabularies was found in the surveyed material. K is a
+registry parameter: it changes only by registry amendment citing
+new evidence, and the falsification test below is its check.
+
+**Amendment A2 — provenance pinned; B-derived ≠ B-direct (adopted
+with H7).** Every H7 output carries `assertion_kind =
+DERIVED_CORRESPONDENCE`, the analysis/derived provenance layer,
+and `evidence_grade = B` understood as **B-derived** — a distinct
+kind from a directly attested B correspondence. Queries for
+attested correspondences must exclude B-derived records unless
+they explicitly request them, and every derived record must be
+reconstructible from its stored derivation path. A B-derived
+correspondence must never be flattened, downstream, into a direct
+attestation.
+
+**Guard case — cinnabar （丹砂）.** Under this rule cinnabar
+receives a sweet-flavor→Earth correspondence **for its recorded
+flavor aspect** (Benjing layer: 味甘，微寒； no toxicity statement in
+that layer). Its material aspect, its thermal nature, and its
+indications are separate assertions, untouched by the bridge.
+Colour or toxicity from a later layer (e.g. the *Baizhong Lu*
+commentary's red-colour/Fire/Heart discussion) **must not veto**
+the flavor assertion: aspects accumulate into a multi-aspect
+profile with separate provenance; they do not compete for one
+element slot. The correspondence licenses no statement about
+cinnabar's safety or suitability — condition (5) and the record's
+`limitations` field carry that, not reader discretion.
+
+**Nature axis.** The four qi （寒熱溫涼） do **not** bridge to
+phases under current evidence. The *Bencao* preface lists five
+flavors and four qi as separate attributes; thermal nature belongs
+to the yin-yang axis and stays phase-null unless a separate source
+explicitly supports a specific correspondence. If a future
+nature-bridge hypothesis conflicts with a flavor-derived
+correspondence, the conflict is recorded as a cross-axis tension
+to test — neither assertion is rewritten to remove it.
+
+**Representation.** Both forms, jointly: explicit mediating flavor
+nodes that reasoning visibly passes through, **and** a derived
+correspondence record per output containing: `assertion_kind`,
+provenance layer, `evidence_grade` (B-derived), subject (exact
+substance and recension), `aspect = recorded_flavor`, mediator
+(exact flavor value), `source_assertion_ids` (the flavor assertion
+and the correspondence assertion), `source_texts` (text, chapter,
+passage, recension), `rule_id` (H7, with version), `scope`,
+`confidence` (computed as above), `limitations`, and `status`
+(proposed / admitted / challenged / suspended / retracted).
+
+**Falsification conditions.**
+
+| Prediction | Discriminating test | Failure condition |
+| --- | --- | --- |
+| The bencao five-flavor field is compatible with the *Neijing* five-flavor correspondence in the stated scope (the K = 0.90 assessment) | Independently compare entry-level flavor descriptions and contemporary or near-contemporary explanations of the five flavors | Evidence that bencao flavor labels systematically denote a different classification, incompatible with the *Neijing* categories |
+| The bridge predicts a correspondence of the flavor aspect, not the whole substance *(representation test)* | Blind judges classify flavor aspects separately from material, nature, and therapeutic indication | Judges cannot reliably distinguish the flavor correspondence from whole-substance elemental classification |
+| The bridge does not license clinical conclusions | Test downstream inferences with explicit counterexamples and safety-sensitive cases (cinnabar first) | The system produces clinical or safety claims from the correspondence alone |
+| The bridge is better than an unqualified vocabulary lookup | Compare qualified H7 against a simple flavor-to-element lookup on held-out entries and adversarial cases | H7 does not reduce scope errors or unsupported conclusions |
 
 ### Settled corrections carried forward
 
