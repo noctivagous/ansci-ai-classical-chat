@@ -15,6 +15,12 @@ The three layers stay distinct throughout: **attested tradition**,
 precisely because it is not canonical), and **analysis**. Nothing in
 this programme promotes a claim from one layer to another.
 
+**Update, 2026-11-15:** the classification protocol and the
+threshold policy are ratified (Part A, "Ratified policy"), both
+standing decisions are settled, and the H3a/H3b sense experiment is
+preregistered (Part B). The sourced catalogue for Slice 1 is
+`wp1-classification-survey.md`.
+
 ---
 
 ## Part A — The repair programme
@@ -52,9 +58,11 @@ sense-selection accuracy) improve against the pre-slice baseline on
 held-out sentences. Density growth without downstream improvement
 fails the slice — the added classifications must do work.
 
-**Blocked on a user decision** (see Standing decisions): the
-classification principle — by what ordinary things are classified —
-must be ruled before coverage thresholds mean anything.
+**Classification principle: settled** (see Ratified policy). The
+ratified three-axis protocol governs this slice, and the
+ordinary-object sample is piloted at 100 objects (20 per domain) to
+validate the procedure before scaling to 500. The sourced catalogue
+for the pilot is `wp1-classification-survey.md`.
 
 ### Slice 2 — Valency discipline (weakness 4)
 
@@ -89,7 +97,11 @@ dictionary-order selection and matches or beats the rival hypothesis
 not change any outcome. If discourse overrides demonstrably
 incompatible collocations without a defensible explanation, H3a
 fails; if local grounding blocks discourse corrections that human
-judges accept, H3b fails.
+judges accept, H3b fails. The full preregistration of this test —
+predictions, falsification conditions, three-party separation,
+judging protocol, acceptance criteria — is recorded under H3a vs
+H3b in Part B; it was frozen on 2026-11-15, before any test
+materials exist.
 
 ### Slice 4 — Construction completeness (weakness 6)
 
@@ -150,19 +162,148 @@ is where it becomes independent.
 
 **Acceptance test:** judged precision and role accuracy are reported
 against the declared thresholds on the untouched set; a result the
-development side can reproduce only on its own sentences fails.
+development side can reproduce only on its own sentences fails. The
+declared thresholds are the ratified threshold policy below — until
+they were ratified this slice could not pass or fail; it now can.
 
-### Standing decisions owed by the user
+### Ratified policy (user ruling, 2026-11-15)
 
-1. **Slice 1 classification principle.** Are ordinary things
-   classified by the attested material/nature scheme first (the
-   five-materials tradition), with creative extensions tagged as
-   creative — or on another basis (function, use, modern taxonomy)?
-   Coverage thresholds are meaningless until this is ruled.
-2. **Density / precision thresholds.** The density run's §5.2 pass
-   bar was never set, and no precision threshold exists for Slices 1,
-   4, or 7. Numbers proposed by the development side require the
-   user's ruling before any slice can pass or fail against them.
+The two standing decisions below are **settled**. Both were proposed
+in the v5 design review (`sentencesToWuxing-5.txt` §1–§2) and
+ratified by the user on 2026-11-15, with one amendment (the pilot
+size in §A.5, from the development side's review, accepted as part
+of the ratification). They are policy now, not proposals: slices
+pass or fail against them, and changing them requires a new ruling,
+recorded here with its date.
+
+#### A. The classification protocol (ratified)
+
+**Classify aspects of an entity, never the entity wholesale.** Every
+classification is an assertion about one aspect of a thing, on one of
+three axes, recorded separately:
+
+1. **Material** — what the thing is made of. The strongest axis:
+   material categories are directly attested (the five materials,
+   §B of `wp1-classification-survey.md`). A composite object is
+   classified **by its components** (timber handle, metal blade),
+   never forced into a single element; derived whole-object material
+   assertions must not overwrite the component assertions.
+2. **Nature** — the thing's characteristic properties. A nature
+   classification is legitimate only through a **recorded property**
+   (rigidity, flowing, taking an edge…), and the source wording is
+   retained alongside any normalised property. "Feels Metal-like" is
+   not a basis.
+3. **Function** — what the thing does or is used for. Function
+   carries **no automatic elemental assignment — phase null**. A
+   functional correspondence may be proposed later only as a
+   creative application that passes the prediction-admission test
+   (Part B). That a knife cuts does not make its material Metal.
+
+**Evidence levels** (recorded on every assertion):
+
+- **Level A** — directly attested material classification: a source
+  explicitly identifies the material as one of the five materials.
+- **Level B** — attested characteristic correspondence: a source
+  associates the thing with a phase through a stated property,
+  nature, flavor, color, process, or other correspondence.
+- **Level C** — project-derived: the project applies a documented
+  characteristic to a new object. Tagged creative, always — a
+  level-C assignment that happens to look obvious is still level C.
+
+**Two standing cautions.** (i) A source's association of a thing via
+one correspondence is **not** a classification of the whole entity:
+that the Lingshu lists an animal in a flavor set classifies that
+animal *by flavor*, and says nothing by itself about its substance,
+behaviour, or function. (ii) **Abstention is legitimate**: an
+unclassified object is better than an unsupported classification,
+and abstentions are recorded as abstentions, not errors — subject to
+the coverage bar in §B, which prevents passing by abstaining on
+everything.
+
+**Graph mapping.** The axes map onto the graph's existing
+(concept, aspect) keying with aspect values **material / nature /
+function**. Provenance (attested / creative / analysis) and evidence
+level are carried per assertion, separately: a source's general
+classification of a material does not attest every property of every
+manufactured object containing it.
+
+**Pilot amendment (ratified).** The ordinary-object sample is
+piloted at **100 objects — 20 each of tools, substances, materials,
+plants, animals** — to validate the procedure before scaling to the
+500-object sample v5 proposed. The pilot's success criterion is a
+reproducible procedure, not full assignment (protocol in
+`wp1-classification-survey.md` §5).
+
+#### B. The threshold policy (ratified)
+
+Frozen as of ratification; thresholds are met on held-out samples,
+never on development material, and confidence intervals are reported
+with every rate.
+
+*Derived conclusions (Slice 7, density runs):*
+
+- Human-judged derived-conclusion **precision ≥ 90%**, with the
+  lower bound of the 95% confidence interval **≥ 85%**; benchmark of
+  ~400 independently sampled derivations, **3 independent judgments
+  each**, with an adjudication procedure for disagreements and
+  breakdowns by derivation depth and relation type.
+- **Unsupported-inference rate ≤ 5%** (plausible-but-unestablished
+  counts as unsupported, separately from incorrect).
+- **Unresolved contradictions ≤ 1%** — an explicitly flagged conflict
+  is a successful detection, not a failure — **and** contradiction
+  **detection ≥ 95%** at baseline, rising to **≥ 97%** at ×10 density
+  and **≥ 99%** at ×100 (measured on deliberately injected
+  contradictions).
+
+*Classification (Slice 1):*
+
+- **Coverage ≥ 90%** at baseline, rising to **≥ 95%** (×10) and
+  **≥ 97%** (×100).
+- **Accuracy ≥ 90%** among classified assertions, with a
+  **per-domain floor of 85%** and **unsupported assignments ≤ 5%**.
+  Material, nature, and function results are reported separately.
+
+*Valency (Slice 2):*
+
+- Argument-role **precision ≥ 90%**; **invalid-argument rejection
+  ≥ 85%**; **legitimate-argument acceptance ≥ 90%** (the rejection
+  bar may not be met by refusing everything); **calibration error
+  ≤ 0.10**.
+
+*Aspect dispatcher (Slice 5):*
+
+- **Irregular-form selection ≥ 98%** (the inventory is finite and
+  the forms directly verifiable); **semantic preservation ≥ 95%**;
+  **aspectual feature preservation in round-trip ≥ 95%**;
+  five-pattern realisation at 100% of the supported pilot inventory.
+
+*The density rule.* **Correctness bars never drop with density.**
+As the ontology scales (×10, ×100), what rises is the evidence
+burden: contradiction detection and classification coverage rise as
+tabulated above, and two floor conditions apply at every density —
+**no derivation-depth category below 85% precision** and **no active
+relation type below 85% precision** — and **unsupported-conclusion
+growth must not outgrow accepted-conclusion growth**.
+
+*The proxy-validity test.* The density run's precision proxy
+(path ≤ 3 ∧ confidence ≥ 0.6) fell 0.917 → 0.751 across ×100 scaling.
+That proxy measures derivation characteristics, not judged truth.
+When the first human-judged benchmark runs: if judged precision
+holds at ≥ 90% while the proxy says otherwise, **the proxy is
+invalid as a correctness measure** and is retired to a diagnostic;
+if judged precision falls below 90%, the scaling problem is real
+and the brakes, not the ruler, are what get repaired.
+
+### Standing decisions — settled (2026-11-15)
+
+1. **Slice 1 classification principle — SETTLED.** Ordinary things
+   are classified under the ratified three-axis protocol above
+   (attested material/nature scheme first, creative extensions
+   tagged creative, function unassigned by default). This was the
+   decision Slice 1 was blocked on; it is blocked no longer.
+2. **Density / precision thresholds — SETTLED.** The ratified
+   threshold policy above is the pass bar for Slices 1, 2, 5, and 7
+   and for the density runs. DESIGN §5.2's open bar is closed by it.
 
 ---
 
@@ -218,19 +359,119 @@ outranks the adjective.
 cycle, so a demonstrably incompatible local grounding blocks a
 discourse override. The same example may resolve as genuinely
 ambiguous, or river-side, when the local evidence is strong.
-**Status.** Rivals; neither established. H3a is an axiom — nothing in
-either cycle entails it — whose only exercise so far is its own
-constructed example, on which human judgment is split. H3b has a
-true controlling relation behind it but has never been run.
+**Status. PREREGISTERED (2026-11-15)** — predictions frozen below,
+before any test materials exist; see the preregistration. Neither
+hypothesis is established. H3a is an axiom — nothing in either cycle
+entails it — whose only exercise so far is its own constructed
+example, on which human judgment is split. H3b has a true
+controlling relation behind it but has never been run.
 **Interim implementation stance.** Earth as base reading: collocation
 sets the default sense; other layers act as pressures that can
 overturn it; balanced pressures record an undecided state. This is a
-stance for building, not a verdict.
-**Discriminating test.** A paragraph-level set where topic and
-collocation conflict, human-judged (Slice 3's acceptance test): H3a
-predicts discourse wins; H3b predicts local incompatibility blocks
-or undecides. Whichever pattern the judgments follow is the one that
-earns implementation as mechanism.
+stance for building, not a verdict — and it is the implementation
+that gets frozen under the preregistration before any materials are
+seen.
+
+#### Preregistration — the sense-selection experiment (frozen 2026-11-15)
+
+Design per the v5 design review (`sentencesToWuxing-5.txt` §3),
+entered into this registry before materials exist, so that the two
+hypotheses can lose.
+
+**Materials do not yet exist.** They must be constructed by parties
+independent of both hypotheses' authors (see three-party separation
+below). No item in any earlier evaluation — including "the muddy
+bank of the Federal Reserve," which was constructed by H3a's own
+side — counts as test material for this experiment. **The
+implementation is frozen before the materials are seen**: the model
+team receives the test only after this protocol and the predictions
+below are locked, and may not modify the model after seeing the
+items.
+
+**Design.** A 2 × 2 factorial: **discourse topic** (financial /
+river-geographical) × **local collocation** (financial / river), over
+ambiguous target words (the *bank* family is the illustrative case,
+not the item set). The two congruent cells (financial+financial,
+river+river) are **controls**; the two conflict cells are the
+**decisive observations**, because the hypotheses agree on the
+controls and disagree only under conflict.
+
+**Predictions, fixed in advance.**
+
+| Critical condition | H3a (discourse priority) | H3b (Earth→Water restraint) |
+| --- | --- | --- |
+| Financial discourse + river collocation | Financial sense | River sense, or substantial resistance to financial override |
+| River discourse + financial collocation | River sense | Financial sense, or substantial resistance to river override |
+
+**Falsification conditions.** H3a is falsified as a general priority
+rule if strong local collocations systematically determine
+interpretation despite conflicting discourse, particularly across
+multiple lexical items and constructions. H3b is falsified as a
+general controlling rule if discourse consistently overrides strong
+local collocations, including cases where the local grounding is
+unambiguous. A mixed result indicates that neither universal rule is
+sufficient; the follow-up question is then whether the interaction
+depends on collocation strength, discourse coherence, lexical
+ambiguity, or construction type — and no new cycle relationship is
+to be created automatically to explain such a result.
+
+**Three-party separation.** (i) **Materials team** — linguists or
+trained language researchers who are not members of the project:
+mine candidate ambiguous words from independently selected corpora,
+identify naturally occurring collocation patterns, construct
+controlled paragraphs, obtain separate review, then freeze the item
+set and publish its hash or equivalent version identifier. They must
+not know which hypothesis the developer favours. (ii) **Model team**
+— registers the predictions (this entry) and freezes the
+implementation; must not modify the model after seeing the test
+items. (iii) **Judgment team** — interprets and annotates the
+paragraphs; must never be shown the elemental classifications or the
+rival hypotheses.
+
+**Judging protocol.** At least **40 ambiguous lexical items** (noun
+and verb senses; varied collocation strengths, discourse domains,
+and sense frequencies), each in **4 conditions** (160 paragraph
+instances); ~100 independent readers giving **~25 judgments per
+instance** (~4,000 judgments). Presentation randomised; near-identical
+versions of one item never in immediate succession. Per paragraph,
+collect: the interpreted sense, a short paraphrase, confidence
+(5-point), a coherence judgment, and whether the target remains
+ambiguous. **Free interpretations are collected before any
+forced-choice alternatives are shown**, and an **ambiguity response
+is allowed**; the answer key is independently established from the
+intended manipulation. Analysis: mixed-effects logistic or
+multinomial model with participant and lexical item as varying
+effects; the primary test is the discourse × collocation interaction.
+
+**Acceptance criteria.** A hypothesis is supported only with: the
+full item and judgment minimums above; a **statistically reliable
+effect in the predicted direction**; a **practically meaningful
+difference of at least 10 percentage points** on the critical
+conditions; and **replication on a second, independently constructed
+item set**. If both hypotheses explain the data, or neither reaches
+the declared effect threshold, **the registry retains the rivalry as
+unresolved** — no verdict is recorded, and the interim stance stays
+a stance.
+
+**The Chinese programme (separate).** The Chinese evaluation is
+designed independently, **not** produced by translating the English
+experiment. Native speakers (v5 proposes 60 for the initial study);
+**original Chinese texts and sentences**; grammaticality,
+naturalness, and intended-meaning judgments on a **7-point
+acceptability scale**; grammatical, ungrammatical, and semantically
+anomalous fillers; randomised, counterbalanced presentation;
+mixed-effects ordinal analysis; independent native-speaker
+adjudication. Three tests: **A — parsing** (is the sentence
+grammatical, what does it mean, which roles are expressed, is the
+parser's interpretation correct), **B — generation** (grammaticality,
+naturalness, semantic fidelity of generated Chinese), **C — elemental
+prediction** (derivations on phenomena not used in development,
+judged on the linguistic and semantic result — never on agreement
+with Five-Element theory). Standing control: the Chinese aspect
+particles 了 (le) / 着 (zhe) / 过 (guò) are **not collapsed** into one
+English-style aspect category; the shared representation must produce
+appropriate Chinese constructions without assuming a one-to-one
+mapping from English auxiliary forms.
 
 ### H4 — Wood→Metal (aspect→affix): REJECTED
 
