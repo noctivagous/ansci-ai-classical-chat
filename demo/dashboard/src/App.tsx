@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { CAPABILITIES, EVIDENCE_AS_OF, SENSE_ROWS } from "./evidence";
 import Lab from "./Lab";
 import Ask from "./Ask";
+import Roadmap from "./Roadmap";
 import { parse } from "../../../src/fork/parse";
 import { generate } from "../../../src/fork/generate";
 
@@ -128,6 +129,18 @@ export default function App() {
         </p>
         <p className="asof">Evidence as of {EVIDENCE_AS_OF}. The reports in docs/fork/ are the record; this page is a view of them.</p>
       </header>
+
+      <section id="path">
+        <h2>Path to a working chatbot</h2>
+        <p className="lede">
+          Everything below this section is built and measured: the parser, the ontology, their
+          evaluations. A working chatbot is a further system on top of them, and it has parts —
+          each with its own remaining steps and its own requirements. The tabs give each part
+          separately, with its status stated plainly; the statuses are never averaged into a
+          single readiness number, for the same reason this page has no percentage.
+        </p>
+        <Roadmap />
+      </section>
 
       <section id="capabilities">
         <h2>The capability ledger</h2>
