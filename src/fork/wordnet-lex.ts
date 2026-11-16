@@ -64,6 +64,25 @@
  * Adjectives have no hypernym tree in WordNet, so an adjective's
  * climb is its own synsets' lemmas only (hop 0).
  *
+ * ANCHOR SENSE PINNING (2026-11-15, anchor-quality repair; the full
+ * audit is docs/fork/anchor-audit.md): the climb's anchor test used
+ * to be a lemma-STRING match — a synset counted as carrying an
+ * anchor concept if any of its lemmas spelled the concept. But the
+ * string denotes the classified sense in only some of its synsets:
+ * "beef" the complaint, "wind" the instrument class, "ice" the drug
+ * slang all fired their anchors. The repair: an anchor fires only
+ * on synsets that carry its classified sense. The sense-carrying
+ * synsets are selected mechanically per anchor — by explicit
+ * override data where the aspect names no gloss domain (the
+ * trigram anchors), else by scoring the anchor lemma's synsets'
+ * glosses against a cue lexicon for the aspect's domain and
+ * pinning every synset that scores — plus the small explicit
+ * exception list in classify.ts. An anchor no synset scores for
+ * stays UNPINNED (legacy string match) and is named in the audit
+ * report; a pinned anchor never falls back to string match.
+ * CLIMB_ANCHORS keep string match by design: they are hand-curated
+ * climb infrastructure, not classifications (assertion ≠ anchor).
+ *
  * The provider is toggleable (enableWordnetLexicon) so the holdout
  * run can measure the parser with and without it. If the extract is
  * absent or unloadable, the provider silently disables and the
@@ -84,7 +103,14 @@ import {
   type SimpleEntry,
   type VerbEntry,
 } from "./sentence";
-import { CLASSIFICATIONS, CLIMB_ANCHORS, lookupClassification, type ClassificationEntry } from "./classify";
+import {
+  ANCHOR_SYNSET_EXCEPTIONS,
+  ANCHOR_SYNSET_OVERRIDES,
+  CLASSIFICATIONS,
+  CLIMB_ANCHORS,
+  lookupClassification,
+  type ClassificationEntry,
+} from "./classify";
 import { CONFIDENCE_GATE } from "./join";
 import { ingForm } from "./parse";
 
@@ -440,6 +466,189 @@ for (const e of CLIMB_ANCHORS) {
   if (!anchorByConcept.has(e.concept)) anchorByConcept.set(e.concept, e);
 }
 
+/* ---------------- anchor sense pinning ----------------
+ * The rule (falsifiable): a classification anchor fires on a
+ * synset only if that synset is in the anchor's pin set — the
+ * synsets of the anchor lemma whose glosses carry the classified
+ * sense, selected as described in the module header. Selection is
+ * mechanical and inspectable via anchorPinReport(): overrides
+ * (classify.ts data) for the trigram anchors; otherwise every
+ * noun/adjective synset of the lemma whose gloss shares at least
+ * one token with the aspect domain's cue lexicon is pinned, when
+ * at least one synset scores; the exception list then re-admits
+ * named synsets. If no synset scores, the anchor is unpinned and
+ * keeps the legacy string match — the audit names those anchors,
+ * so the un-repaired residue is a list, not a silent behaviour. */
+
+const CUE_DOMAINS: Record<string, string[]> = {
+  taste: ["taste", "tasting", "flavor", "flavour", "acid", "acidic"],
+  color: ["color", "colour", "chromatic", "hue", "shade", "tint", "pigment"],
+  emotion: ["feeling", "emotion", "emotional", "anger", "angry", "fear", "fearful", "afraid", "joy", "sorrow", "grief", "mourn", "mournful", "mournfulness", "anxiety", "anxious", "worry", "worried", "sadness", "sad", "happiness", "happy", "arouse", "aroused", "arouses", "arousal", "desire", "mental", "state", "intense", "extreme", "passion", "relax", "relaxation"],
+  food: ["food", "meat", "flesh", "edible", "dish", "cooked", "cooking", "cuisine", "grain", "cereal", "seed", "fruit", "vegetable", "baked", "soup", "beverage", "meal", "sweet"],
+  body: ["head", "person", "animal", "body", "skin", "eye", "mouth", "nose", "ear", "hand", "organ", "tissue", "hair"],
+  organ: ["organ", "gland", "glandular", "body", "anatomical", "anatomy"],
+  temperature: ["temperature", "hot", "cold", "warm", "heat", "thermal", "freezing", "frozen"],
+  weather: ["water", "falling", "drops", "vapor", "vapour", "cloud", "atmosphere", "atmospheric", "wind", "rain", "snow", "hail", "sleet", "thunder", "lightning", "storm", "air", "weather", "frozen", "temperature", "energy", "moisture", "flow"],
+  temporal: ["season", "growth", "time", "day", "night", "morning", "evening", "dawn", "dusk", "light", "hour", "period", "year"],
+  direction: ["direction", "compass", "point"],
+  celestial: ["sun", "moon", "star", "planet", "celestial", "satellite", "solar", "orbit"],
+  substance: ["substance", "solid", "liquid", "frozen", "freezing", "material", "matter", "chemical", "compound", "mineral"],
+  state: ["state", "rest", "sleep", "consciousness", "unconscious", "feeling", "sensation", "pain", "physical", "process", "breathing", "respiration", "air", "symptom", "hurt", "body", "energy", "strength"],
+  animal: ["animal", "mammal", "bird", "fowl", "domestic", "domesticated", "bred", "species", "genus", "wild", "creature", "livestock", "ruminant"],
+  place: ["water", "land", "area", "region", "body", "flowing", "stream", "lake", "sea", "ocean", "forest", "trees", "cultivated"],
+};
+
+/** Aspect label → cue domain. Aspects absent here (and anchors
+ *  with an override) take the override/unpinned paths. "trigram"
+ *  is absent deliberately: a trigram aspect names a correspondence
+ *  row, not a gloss domain — those anchors pin by override only. */
+const ASPECT_DOMAIN: Record<string, string> = {
+  taste: "taste", color: "color", emotion: "emotion",
+  food: "food", grain: "food", body: "body", organ: "organ",
+  temperature: "temperature", weather: "weather", precipitation: "weather",
+  "air movement": "weather", season: "temporal", time: "temporal",
+  direction: "direction", sky: "celestial", planet: "celestial",
+  substance: "substance", state: "state", animal: "animal", place: "place",
+};
+
+function glossTokens(gloss: string): Set<string> {
+  const out = new Set<string>();
+  for (const raw of gloss.toLowerCase().split(/[^a-z]+/)) {
+    if (!raw) continue;
+    out.add(raw);
+    if (raw.length > 3 && raw.endsWith("s")) out.add(raw.slice(0, -1));
+  }
+  return out;
+}
+
+export interface AnchorPinSynset {
+  id: string;
+  lemmas: string[];
+  gloss: string;
+  via: "override" | "cue" | "exception";
+  score?: number;
+}
+export interface AnchorPinInfo {
+  concept: string;
+  element: Element;
+  aspect: string;
+  mode: "override" | "cue" | "cue+exception" | "override+exception" | "exception-only" | "unpinned" | "climb-anchor";
+  pinned: AnchorPinSynset[];
+  /** Every noun/adjective synset of the lemma, with its cue score
+   *  (cue modes only) — the selection, inspectable. */
+  synsets: (AnchorPinSynset & { score: number })[];
+  /** Synsets another anchor pinned first (shared-synset rivals). */
+  collisions: string[];
+}
+
+interface AnchorPin {
+  concept: string;
+  entry: ClassificationEntry;
+  via: "override" | "cue" | "exception";
+}
+interface PinState {
+  bySynset: Map<number, AnchorPin>;
+  unpinned: Set<string>;
+  climbOnly: Set<string>;
+  report: AnchorPinInfo[];
+}
+
+let pinState: PinState | null = null;
+
+function ensurePins(ex: WordNetExtract): PinState {
+  if (pinState) return pinState;
+  const bySynset = new Map<number, AnchorPin>();
+  const unpinned = new Set<string>();
+  const climbOnly = new Set<string>();
+  const report: AnchorPinInfo[] = [];
+  const classificationConcepts = new Set(CLASSIFICATIONS.map((e) => e.concept));
+  const idToIndex = new Map<string, number>();
+  ex.synsets.forEach((s, i) => idToIndex.set(s.id, i));
+  const exceptionsByConcept = new Map<string, { synset: string }[]>();
+  for (const x of ANCHOR_SYNSET_EXCEPTIONS) {
+    const list = exceptionsByConcept.get(x.concept) ?? [];
+    list.push(x);
+    exceptionsByConcept.set(x.concept, list);
+  }
+
+  for (const [concept, entry] of anchorByConcept) {
+    if (!classificationConcepts.has(concept)) {
+      // CLIMB_ANCHORS-only record: string match by design (the
+      // carve-out — these are climb infrastructure, not assertions).
+      climbOnly.add(concept);
+      report.push({ concept, element: entry.element, aspect: entry.aspect, mode: "climb-anchor", pinned: [], synsets: [], collisions: [] });
+      continue;
+    }
+    const synsets = synsetsForLemma(ex, concept).filter((s) => s.pos === "n" || s.pos === "a");
+    const pinned: AnchorPinSynset[] = [];
+    const collisions: string[] = [];
+    const pin = (index: number, via: AnchorPin["via"], score?: number) => {
+      const existing = bySynset.get(index);
+      if (existing) {
+        if (existing.concept !== concept) collisions.push(`${ex.synsets[index].id} (pinned for ${existing.concept} first)`);
+        return;
+      }
+      bySynset.set(index, { concept, entry, via });
+      const s = ex.synsets[index];
+      pinned.push({ id: s.id, lemmas: [...s.lemmas], gloss: s.gloss, via, ...(score !== undefined ? { score } : {}) });
+    };
+    let mode: AnchorPinInfo["mode"];
+    let scored: (AnchorPinSynset & { score: number })[] = [];
+    const override = ANCHOR_SYNSET_OVERRIDES[concept];
+    if (override) {
+      mode = "override";
+      for (const id of override) {
+        const index = idToIndex.get(id);
+        if (index !== undefined) pin(index, "override");
+      }
+    } else {
+      const domain = ASPECT_DOMAIN[entry.aspect];
+      const cues = domain ? (CUE_DOMAINS[domain] ?? []).filter((c) => c !== concept) : [];
+      scored = synsets.map((s) => {
+        const tokens = glossTokens(s.gloss);
+        const score = cues.reduce((n, c) => n + (tokens.has(c) ? 1 : 0), 0);
+        return { id: s.id, lemmas: [...s.lemmas], gloss: s.gloss, via: "cue" as const, score };
+      });
+      const max = scored.reduce((m, s) => Math.max(m, s.score), 0);
+      if (domain && max >= 1) {
+        mode = "cue";
+        scored.forEach((s, i) => {
+          if (s.score >= 1) pin(synsets[i].index, "cue", s.score);
+        });
+      } else {
+        mode = "unpinned";
+        unpinned.add(concept);
+      }
+    }
+    const exceptions = exceptionsByConcept.get(concept) ?? [];
+    for (const x of exceptions) {
+      const index = idToIndex.get(x.synset);
+      if (index === undefined) continue;
+      const before = pinned.length;
+      pin(index, "exception");
+      if (pinned.length > before) {
+        if (mode === "cue") mode = "cue+exception";
+        else if (mode === "override") mode = "override+exception";
+        else if (mode === "unpinned") {
+          mode = "exception-only";
+          unpinned.delete(concept);
+        }
+      }
+    }
+    report.push({ concept, element: entry.element, aspect: entry.aspect, mode, pinned, synsets: scored, collisions });
+  }
+  pinState = { bySynset, unpinned, climbOnly, report };
+  return pinState;
+}
+
+/** The pin selection for every anchor, as computed — the audit's
+ *  inspectable record of which synsets each anchor may fire on. */
+export function anchorPinReport(): AnchorPinInfo[] {
+  const ex = extract();
+  if (!ex) return [];
+  return ensurePins(ex).report;
+}
+
 let hypernymUp: Map<number, number[]> | null = null;
 function hypernymAdjacency(ex: WordNetExtract): Map<number, number[]> {
   if (hypernymUp) return hypernymUp;
@@ -489,6 +698,7 @@ export function climbCandidates(lemma: string): ClimbCandidate[] {
   const key = lemma.toLowerCase();
   if (lookupClassification(key)) return []; // the table owns it
   const up = hypernymAdjacency(ex);
+  const pins = ensurePins(ex);
   const out: ClimbCandidate[] = [];
   for (const pos of ["n", "a"] as const) {
     const synsets = synsetsForLemma(ex, key).filter((s) => s.pos === pos);
@@ -503,9 +713,18 @@ export function climbCandidates(lemma: string): ClimbCandidate[] {
       while (queue.length) {
         const cur = queue.shift()!;
         const synset = ex.synsets[cur.index];
-        const hit = synset.lemmas
-          .map((l) => l.toLowerCase())
-          .find((l) => l !== key && anchorByConcept.has(l));
+        // Anchor test, post-repair: a pin on this synset wins; else
+        // the legacy string match applies ONLY to anchors that are
+        // unpinned or climb-only records. A pinned anchor's other
+        // synsets no longer fire — that is the repair.
+        let hit: string | undefined;
+        const pin = pins.bySynset.get(cur.index);
+        if (pin && pin.concept !== key) hit = pin.concept;
+        if (!hit) {
+          hit = synset.lemmas
+            .map((l) => l.toLowerCase())
+            .find((l) => l !== key && (pins.unpinned.has(l) || pins.climbOnly.has(l)));
+        }
         if (hit) {
           const anchor = anchorByConcept.get(hit)!;
           const confidence = Math.round(anchor.confidence * Math.pow(HOP_DECAY, cur.hops) * 10000) / 10000;
@@ -532,6 +751,102 @@ export function climbCandidates(lemma: string): ClimbCandidate[] {
           queue.push({ index: next, hops: cur.hops + 1, trail: [...cur.trail, ex.synsets[next].lemmas.join("/")] });
         }
       }
+    }
+  }
+  return out;
+}
+
+/* ---------------- climb audit ----------------
+ * The audit tool's window into the REAL climb (not a replica):
+ * for each noun/adjective sense of a lemma, the full hypernym
+ * trail of synset records walked and, where the climb anchored,
+ * which anchor fired, by which route (pin / exception / override /
+ * legacy string match on an unpinned anchor / climb-only anchor),
+ * at what confidence. Waywardness is inspectable from this output. */
+
+export interface AuditSynset {
+  id: string;
+  lemmas: string[];
+  gloss: string;
+}
+export interface SenseAudit {
+  pos: "n" | "a";
+  sense: number;
+  start: AuditSynset;
+  hit?: {
+    anchor: string;
+    element: Element;
+    confidence: number;
+    hops: number;
+    gated: boolean;
+    via: "cue" | "exception" | "override" | "legacy" | "climb-anchor";
+    trail: AuditSynset[];
+  };
+}
+
+export function climbAudit(lemma: string): SenseAudit[] {
+  if (!enabled) return [];
+  const ex = extract();
+  if (!ex) return [];
+  const key = lemma.toLowerCase();
+  if (lookupClassification(key)) return []; // the table owns it — no climb
+  const up = hypernymAdjacency(ex);
+  const pins = ensurePins(ex);
+  const rec = (index: number): AuditSynset => {
+    const s = ex.synsets[index];
+    return { id: s.id, lemmas: [...s.lemmas], gloss: s.gloss };
+  };
+  const out: SenseAudit[] = [];
+  for (const pos of ["n", "a"] as const) {
+    const synsets = synsetsForLemma(ex, key).filter((s) => s.pos === pos);
+    for (let si = 0; si < synsets.length; si++) {
+      const start = synsets[si];
+      const entry: SenseAudit = { pos, sense: si + 1, start: rec(start.index) };
+      const queue: { index: number; hops: number; trail: number[] }[] = [
+        { index: start.index, hops: 0, trail: [start.index] },
+      ];
+      const seen = new Set<number>([start.index]);
+      while (queue.length) {
+        const cur = queue.shift()!;
+        const synset = ex.synsets[cur.index];
+        let hit: string | undefined;
+        let via: "cue" | "exception" | "override" | "legacy" | "climb-anchor" = "legacy";
+        const pin = pins.bySynset.get(cur.index);
+        if (pin && pin.concept !== key) {
+          hit = pin.concept;
+          via = pin.via;
+        }
+        if (!hit) {
+          const legacy = synset.lemmas
+            .map((l) => l.toLowerCase())
+            .find((l) => l !== key && (pins.unpinned.has(l) || pins.climbOnly.has(l)));
+          if (legacy) {
+            hit = legacy;
+            via = pins.climbOnly.has(legacy) ? "climb-anchor" : "legacy";
+          }
+        }
+        if (hit) {
+          const anchor = anchorByConcept.get(hit)!;
+          const confidence = Math.round(anchor.confidence * Math.pow(HOP_DECAY, cur.hops) * 10000) / 10000;
+          entry.hit = {
+            anchor: hit,
+            element: anchor.element,
+            confidence,
+            hops: cur.hops,
+            gated: confidence < CONFIDENCE_GATE,
+            via,
+            trail: cur.trail.map(rec),
+          };
+          break;
+        }
+        if (cur.hops >= MAX_CLIMB_HOPS) continue;
+        for (const next of up.get(cur.index) ?? []) {
+          if (seen.has(next)) continue;
+          seen.add(next);
+          queue.push({ index: next, hops: cur.hops + 1, trail: [...cur.trail, next] });
+        }
+      }
+      out.push(entry);
     }
   }
   return out;
