@@ -67,6 +67,51 @@ function LiveF1() {
   );
 }
 
+const FIRST_STEPS: { priority: string; task: string; requirements: string }[] = [
+  {
+    priority: "1 · Dialogue core",
+    task: "Grow the steering probe (src/fork/turn.ts) into a session: state that persists across turns, an intent arc, and a situation model maintained by the directing layer.",
+    requirements:
+      "Transcripts are the acceptance test — every turn checkable in its trace, with the mechanism named. Questions arise only from a genuine gap in the combined conclusions, never from a template. What a conversation establishes reaches the durable graph only through the gated banking pipeline.",
+  },
+  {
+    priority: "2 · Reply generation",
+    task: "Make the generator the reply surface: plan a meaning graph from the turn's conclusions, situation and intent, and generate the reply sentence from that graph.",
+    requirements:
+      "No canned sentence whose content is not in the reply's own meaning graph. Every claim inspectable back to the derivation that produced it. Confidence carried through — weak derivations surface hedged — and abstention is a legitimate reply, produced by the mechanism, not by a deflection template.",
+  },
+  {
+    priority: "3 · Coverage growth",
+    task: "The three items at the head of the Coverage tab's list: the H7 banking pass over the mineral survey, the anchor-quality audit and repair, and the ingestion pipeline over the classical texts as its own slice.",
+    requirements:
+      "Every classification is an (concept, aspect) assertion with provenance and confidence — never an entity classified wholesale. Inference is priced always: a heuristic output names its registered rule and version, or it stands as an unresolved case. Attested tradition, creative application and analysis stay in distinct labelled layers; ingested text enters only with a citation.",
+  },
+  {
+    priority: "4 · Independent evaluation",
+    task: "WP2, the judged benchmark; the first sealed set under the full C.5 protocol; and the H3 sense experiment, including its Chinese arm.",
+    requirements:
+      "The tooling landed on 2026-11-15 — the sealed-set machinery and the review-triage queue are built and in the repo. What this needs now is people: an item author independent of the builders, a custodian distinct from the author, and judges who are never the builder. Bars are ratified before the run (precision ≥90% with the lower bound ≥85%; unsupported inferences ≤5%). H3 additionally needs 60 native Chinese speakers.",
+  },
+  {
+    priority: "5 · Feeders & banking",
+    task: "The tiers beyond CSKG, behind the same provider interface: Wikidata for facts, the web for procedures, a small model last — and the banking pipeline that distils successful retrievals into the overlay graph.",
+    requirements:
+      "CSKG ingestion is built (2026-11-15) and its extract installs locally as a feeder; the data is a local artifact, never shipped in the repo. Routing order is fixed — local graph, Wikidata, web, model — and a later tier is reached only when the earlier ones genuinely come back empty. Every answer carries its provenance visibly; banked edges live only in the overlay graph and enter at derived confidence.",
+  },
+  {
+    priority: "6 · The gardener",
+    task: "Two decisions before any build: the scope (development loop first, or live runtime as well) and the model (a hosted fast model, or a local 3–4B-class model behind the same provider interface).",
+    requirements:
+      "Both decisions are the owner's and both are open; until they are taken, the gardener stays a design record. When it is built: code changes are proposals with diffs and reasons, graph adjustments are gated and logged, and every fix is judged on a fresh holdout, never on the material that produced the failure.",
+  },
+  {
+    priority: "7 · Runtime & access",
+    task: "Session persistence, an asset strategy for the lexical providers, and a first served surface — the simplest real one — over the same engine.",
+    requirements:
+      "The core conversation loop runs fully offline against the local graph; connectivity buys reach, never basic function. A conversation survives restarts, with its memory boundary enforced by storage, not convention. Degraded configurations label themselves in the interface before they are asked a question they cannot answer.",
+  },
+];
+
 const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   {
     title: "Sense selection can be talked out of the right answer (X1)",
@@ -143,6 +188,37 @@ export default function App() {
           before that part may be called done.
         </p>
         <Roadmap />
+      </section>
+
+      <section id="first">
+        <h2>What comes first</h2>
+        <p className="lede">
+          The tabs above are the whole map, part by part. This is the order to work them in.
+          The first two rows are the path to anything that can be called a chat at all; the
+          rest are ordered by when work on them has to start — the evaluation row stands high
+          because its missing ingredient is people, and people take the longest to arrange.
+          Each row states what the task requires before it can be called done; the fuller
+          acceptance checklists stay in the tabs.
+        </p>
+        <table className="first-table">
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>Task requirements</th>
+            </tr>
+          </thead>
+          <tbody>
+            {FIRST_STEPS.map((s) => (
+              <tr key={s.priority}>
+                <td className="pri">
+                  <strong>{s.priority}</strong>
+                  <span className="pri-task">{s.task}</span>
+                </td>
+                <td>{s.requirements}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
 
       <section id="capabilities">

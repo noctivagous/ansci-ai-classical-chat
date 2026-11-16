@@ -99,6 +99,11 @@ ul.violations { padding-left: 20px; }
 .sense-table th, .sense-table td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
 .sense-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .sense-table .fail-row { background: #faf0ee; }
+.first-table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin-top: 12px; }
+.first-table th, .first-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.first-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.first-table td.pri { width: 34%; }
+.first-table .pri-task { display: block; margin-top: 4px; }
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 14px; }
 .tab {
   font: inherit; font-size: 14.5px; padding: 7px 16px; border-radius: 999px;

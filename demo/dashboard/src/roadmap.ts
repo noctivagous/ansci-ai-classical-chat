@@ -95,12 +95,12 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     id: "feeders",
     tab: "Feeders & banking",
     title: "Live knowledge, banked with provenance",
-    status: "interface only · data not installed",
+    status: "CSKG ingestion built · the tiers beyond it are designed, not built",
     stands:
-      "The fork's answer to “the graph can't contain everything” is routing: local graph first, then Wikidata for facts, then web search for procedures, then a small model last — with successful retrievals distilled back into the graph (“bank what works”). Of this, only the CSKG feeder's interface and relation mapping exist in code; its data is not installed, and the Wikidata and web tiers are designed, not built.",
+      "The fork's answer to “the graph can't contain everything” is routing: local graph first, then Wikidata for facts, then web search for procedures, then a small model last — with successful retrievals distilled back into the graph (“bank what works”). The CSKG feeder's interface, relation mapping and ingestion exist in code, and the extract installs on a working machine as a local feeder (data/raw — a local artifact, never shipped in the repo). The Wikidata and web tiers are designed, not built, and the banking pipeline with them.",
     roadmap: [
       { done: true, text: "The CSKG feeder's interface and relation mapping exist in code." },
-      { done: false, text: "Install CSKG data as a feeder: relational commonsense (causes, uses, locations, subevents) that WordNet does not carry, its concepts classified onto the spine through the WordNet join." },
+      { done: true, text: "CSKG ingestion is built (2026-11-15): the extract streams through the feeder's relation mapping with kept/dropped accounting, so relational commonsense (causes, uses, locations, subevents) that WordNet does not carry reaches the graph, its concepts classified onto the spine through the WordNet join. The data itself installs locally; it is not in the repo." },
       { done: false, text: "The Wikidata tier for facts — dishes, ingredients, origins, dates — explicitly not procedures." },
       { done: false, text: "The web tier for how-to and procedural knowledge, behind the same provider interface, optional over the offline graph." },
       { done: false, text: "The banking pipeline: a successful retrieval is distilled into the overlay graph as structure with its source attached, gated on arrival, individually reversible thereafter." },
