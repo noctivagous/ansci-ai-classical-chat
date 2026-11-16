@@ -34,6 +34,26 @@ ontology first; an engineering fallback is reported as an
 ontology failure). So the planning step itself has to be made
 out of the ontology. This note is how.
 
+**Scope of this stage.** The planner's inputs are the turn's
+derivations and the session's situation record — and the
+record's limits are the planner's limits. Prior conversation
+enters only as that record: the entities, events and states the
+session has retained, in distilled form. There is no intent arc
+yet — the accumulating picture of what the conversation is
+about, named as outstanding work in Path part 1 — and no use of
+raw transcript history beyond what the record kept. Knowledge
+of the situation is the same record: what has been
+established, what the current states are, who is speaking. It
+carries nothing wider — no time, place or circumstance; the
+fork's session has none. Knowledge of the person does not
+enter at all: the fork models no person. The speaker is
+recorded as "you", addressed in the second person, and nothing
+about them — history, preferences, what they are like — is
+retained or used. Disposition (§7.4) is not person knowledge;
+it is setup, the same for whoever is speaking. Widening any of
+these inputs is later work, and the planner's interface should
+not be built so as to preclude it.
+
 ## 2. Three operations, all already prototyped somewhere
 
 ### 2.1 What to say: the move is a cycle relation
