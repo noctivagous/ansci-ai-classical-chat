@@ -33,6 +33,19 @@
  * then frame name. Polysemy is real (bake evokes three frames); the
  * chosen frame is recorded on the entry as provenance, and every
  * candidate is available via frameCandidates() for evaluation.
+ *
+ * Selector experiments (2026-11-15, tried and REJECTED on
+ * measurement): gloss-overlap scoring — WordNet gloss words matched
+ * against frame definitions, position-weighted and count-weighted,
+ * with and without IDF — fixed the recorded bad names (blow →
+ * Motion/Breathing, wash → Grooming) but shuffled other signatures
+ * (send → Causation with empty slots before a usability guard;
+ * carry/push lost their motion frames) and regressed the valency
+ * challenge's seen-verb legitimate acceptance 100% → 87.5%. The
+ * mapped-count selector above is the evidence-backed state; frame
+ * NAME correctness (wash/paint → Filling) remains a recorded
+ * weakness whose fix needs a signal this bundle doesn't carry
+ * (annotated valence or frequency), not a cleverer weighting.
  */
 
 import { getDefaultFrameNetBundle, type FrameRecord } from "../framenet";

@@ -45,6 +45,7 @@ import {
   type LexEntry,
 } from "./sentence";
 import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
 import { zhAspectFor } from "./aspect";
 
@@ -227,6 +228,31 @@ function enItems(tokens: string[]): EnItem[] {
       if (entry) { it.entry = entry; it.kind = "pronoun"; }
     }
   }
+  // "has/have/had" is classified as an auxiliary by EN_AUX, but it is
+  // the main verb (possession) when nothing after it can be the
+  // perfect's participle — "She has a cold" failed outright because
+  // the sentence then had no verb at all. The test is the same one
+  // the verb scan will apply: a later item that is a verb form (hand
+  // entry, be-carrier, or WordNet-derivable) keeps the auxiliary
+  // reading; otherwise the token is reclassified as the verb "have".
+  for (let k = 0; k < items.length; k++) {
+    const it = items[k];
+    if (it.kind !== "aux" || !["has", "have", "had"].includes(it.lower)) continue;
+    const laterVerbish = items.slice(k + 1).some((x, xi) =>
+      x.kind === "verb" || x.kind === "be" || x.entry?.kind === "verb" ||
+      // A WordNet verb reading counts only outside a noun chunk: a
+      // noun after a determiner ("had a garden" — garden has verb
+      // synsets) is the object, not the perfect's participle.
+      (items[k + xi]?.kind !== "det" && wordnetVerb(x.lower) !== undefined));
+    if (laterVerbish) continue;
+    const entry = EN_LEXICON["have"];
+    if (entry && entry.kind === "verb") {
+      it.kind = "verb";
+      it.entry = entry;
+      const f = (entry as VerbEntry).forms;
+      it.formTag = it.lower === f.third ? "third" : it.lower === f.past ? "past" : "base";
+    }
+  }
   return items;
 }
 
@@ -283,10 +309,40 @@ interface EnChunk {
   end: number;
   /** An absorbed of-PP ("the population of Chicago"): NP-internal. */
   ofChunk?: EnChunk;
+  /** Absorbed PP modifiers ("the man in the garden"): NP-internal,
+   *  present only when the caller asked for PP absorption (subject
+   *  chunks — a PP between subject and verb was silently dropped
+   *  before this existed). */
+  ppMods?: { prep: string; chunk: EnChunk }[];
 }
 
-/** Parse an NP chunk starting at items[i]; returns chunk + next index. */
-function enChunk(items: EnItem[], i: number): { chunk: EnChunk; next: number } | null {
+/** Prepositions whose PP, sitting between a subject chunk and its
+ *  verb, is a modifier of the subject rather than an argument of
+ *  the verb. Deliberately closed: "to" (goals), "by" (passive
+ *  agents) and "of" (handled inside the chunk) are excluded. */
+const SUBJECT_PP_MODS = new Set(["in", "on", "at", "near", "from", "with"]);
+
+/** Parse an NP chunk starting at items[i]; returns chunk + next index.
+ *  With absorbPP, trailing PP modifiers are absorbed into the chunk
+ *  (subject call sites only — object chunks must leave their PPs to
+ *  the verb's argument filling). */
+function enChunk(items: EnItem[], i: number, absorbPP = false): { chunk: EnChunk; next: number } | null {
+  const base = enChunkCore(items, i);
+  if (!base || !absorbPP) return base;
+  let { chunk, next } = base;
+  for (;;) {
+    const prep = items[next];
+    if (!prep || prep.kind !== "prep" || !SUBJECT_PP_MODS.has(prep.lower)) break;
+    const sub = enChunkCore(items, next + 1);
+    if (!sub) break;
+    (chunk.ppMods ??= []).push({ prep: prep.lower, chunk: sub.chunk });
+    chunk = { ...chunk, end: sub.chunk.end };
+    next = sub.next;
+  }
+  return { chunk, next };
+}
+
+function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number } | null {
   let det: string | undefined;
   const adjectives: EnItem[] = [];
   let j = i;
@@ -362,6 +418,11 @@ function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode
     const ofNode = enNodeFromChunk(b, chunk.ofChunk);
     ofNode.prep = "of";
     b.edge(node, ofNode, "modifier");
+  }
+  for (const pp of chunk.ppMods ?? []) {
+    const ppNode = enNodeFromChunk(b, pp.chunk);
+    ppNode.prep = pp.prep;
+    b.edge(node, ppNode, "modifier");
   }
   return node;
 }
@@ -454,7 +515,7 @@ function parseEn(text: string): ParsedSentence {
     const subjChunk =
       beItem && beItem.index === contentStart
         ? enChunk(items, beItem.index + 1)
-        : enChunk(items, contentStart);
+        : enChunk(items, contentStart, true);
     const scanFrom = subjChunk ? subjChunk.next : contentStart + 1;
     for (let k = scanFrom; k < items.length; k++) {
       const it = items[k];
@@ -842,7 +903,7 @@ function parseEn(text: string): ParsedSentence {
     // Inverted order (questions: "Is summer hot?", "Why is winter cold?")
     // puts the copula first; the subject chunk follows it.
     const inverted = beItem.index === contentStart;
-    const subj = enChunk(items, inverted ? beItem.index + 1 : contentStart);
+    const subj = enChunk(items, inverted ? beItem.index + 1 : contentStart, !inverted);
     if (!subj) throw new Error(`cannot parse subject of: ${text}`);
     const subject = enNodeFromChunk(b, subj.chunk, "subject");
     spans.push({ start: subj.chunk.start, end: subj.chunk.end + 1, label: "subject" });
@@ -860,10 +921,13 @@ function parseEn(text: string): ParsedSentence {
       b.edge(subject, root, "location");
       return { meaning: b.graph(root), connective: connective("en", tokens, spans, subj.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
     }
-    const compChunk = enChunk(rest.map((r, k) => ({ ...r, index: r.index })), 0);
-    if (compChunk && rest[0] && (rest[0].kind === "det" || rest[0].kind === "noun" || rest[0].kind === "proper" || rest[0].kind === "pronoun")) {
-      // re-index chunk onto the rest slice
-      const c = enChunk(items, compStart);
+    // A neg item before the complement ("She is not a doctor") is
+    // the clause's negation, not part of the complement chunk.
+    const compAt = rest[0]?.kind === "neg" ? compStart + 1 : compStart;
+    const compFirst = items[compAt];
+    const compChunk = enChunk(items, compAt);
+    if (compChunk && compFirst && (compFirst.kind === "det" || compFirst.kind === "noun" || compFirst.kind === "proper" || compFirst.kind === "pronoun")) {
+      const c = compChunk;
       root = enNodeFromChunk(b, c!.chunk, "predicate");
     } else {
       const adj = rest.find((r) => r.kind === "adjective");
@@ -880,7 +944,12 @@ function parseEn(text: string): ParsedSentence {
         [adj.index],
       );
     }
-    root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}), subjectPerson: subj.chunk.head.entry && "person" in subj.chunk.head.entry ? (subj.chunk.head.entry as { person?: string }).person : subj.chunk.head.lower.endsWith("s") ? "3pl" : "3sg" };
+    root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}), subjectPerson: subj.chunk.head.entry && "person" in subj.chunk.head.entry ? (subj.chunk.head.entry as { person?: string }).person : subj.chunk.head.lower.endsWith("s") ? "3pl" : "3sg",
+      // Copula negation ("She is not happy"): the copula is the
+      // carrier (Metal), as with the auxiliary in a verbal clause.
+      // Until stage 5 this branch never consumed the neg item and
+      // the sentence regenerated affirmative — F1's English twin.
+      ...(negItem ? { negated: true, negation: { negator: "not", carrier: beItem.lower } } : {}) };
     b.edge(subject, root, predRelation(root));
     return { meaning: b.graph(root), connective: connective("en", tokens, spans, subj.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
   }
@@ -912,6 +981,12 @@ function parseEn(text: string): ParsedSentence {
     verbForm: verbItem.formTag,
     mood: interrogative ? "interrogative" : "indicative",
     ...(negItem ? { negated: true } : {}),
+    // The structured negation record (Part F.2): the carrier is the
+    // same auxiliary the aux spread below resolves — generation
+    // emits the carrier the record specifies, and the feature
+    // atoms read it back, so the carrier configuration survives
+    // the round trip instead of being re-guessed from the surface.
+    ...(negItem ? { negation: { negator: "not", carrier: auxItem?.lower ?? (beItem && (isPassive || verbItem.formTag === "ing") ? beItem.lower : undefined) } } : {}),
     ...(whyItem ? { questionKind: "why" as const } : {}),
     ...(auxItem ? { aux: auxItem.lower } : {}),
     ...(beItem && (isPassive || verbItem.formTag === "ing") && !auxItem ? { aux: beItem.lower } : {}),
@@ -935,7 +1010,7 @@ function parseEn(text: string): ParsedSentence {
 
   // Subject chunk: everything before the first of aux/be/verb.
   const boundary = Math.min(...[auxItem?.index, beItem?.index, verbItem.index].filter((x): x is number => x !== undefined));
-  let subj = enChunk(items, subjStart);
+  let subj = enChunk(items, subjStart, true);
   let invertedSubject = false;
   if ((!subj || subj.chunk.end >= boundary + 1) && interrogative && boundary < verbItem.index) {
     // Inverted question order ("Why did she leave?", "Why is the
@@ -1017,7 +1092,17 @@ function parseEn(text: string): ParsedSentence {
         agent.prep = "by";
         b.edge(root, agent, "agent");
       } else {
-        const slot = verb.prepSlot && verb.prepSlot.preps.includes(prep) ? verb.prepSlot.slot : prep === "to" ? "goal" : "location";
+        let slot = verb.prepSlot && verb.prepSlot.preps.includes(prep) ? verb.prepSlot.slot : prep === "to" ? "goal" : "location";
+        // Temporal resolution (Part F.4): a PP whose head is one of
+        // the ontology's classified time concepts (aspect season /
+        // time — spring, dawn, night…) is a TIME attachment into
+        // the ontology, not a location. "He sleeps in winter" was
+        // parsed as sleeping in a place called winter.
+        if (slot === "location") {
+          const headLemma = c.chunk.head.entry?.lemma ?? c.chunk.head.lower;
+          const cls = lookupClassification(headLemma);
+          if (cls && (cls.aspect === "season" || cls.aspect === "time")) slot = "time";
+        }
         const node = enNodeFromChunk(b, c.chunk, slot);
         node.prep = prep;
         b.edge(root, node, slot as Relation);
@@ -1180,12 +1265,19 @@ function zhTokenize(text: string): { tokens: string[]; interrogative: boolean } 
 }
 
 function zhItems(tokens: string[]): ZhItem[] {
-  return tokens.map((text, index) => ({
-    text,
-    index,
-    entry: ZH_LEXICON[text],
-    func: ZH_FUNCTION[text],
-  }));
+  return tokens.flatMap((text, index) => {
+    // 没有 is one token but two morphemes for this parser: the
+    // negator 没 and the verb 有 it negates (categorically — 有
+    // never takes 不）. Expand it here so the main loop's negation
+    // handling sees the ordinary preverbal shape.
+    if (text === "没有") {
+      return [
+        { text: "没", index, func: "negation" },
+        { text: "有", index, entry: ZH_LEXICON["有"] },
+      ] as ZhItem[];
+    }
+    return [{ text, index, entry: ZH_LEXICON[text], func: ZH_FUNCTION[text] }];
+  });
 }
 
 function parseZh(text: string): ParsedSentence {
@@ -1226,7 +1318,11 @@ function parseZh(text: string): ParsedSentence {
   const beiIdx = items.findIndex((i) => i.func === "bei-marker");
 
   /* --- 把 construction: agent 把 theme verb 在 location 上 (theme topicalised). --- */
-  if (baIdx > 0) {
+  // The guard matters beyond tidiness: 把 is also a classifier
+  // （三把刀）, where it follows a numeral and no verb follows IT —
+  // without the verb check the counted phrase was dragged into
+  // this branch and crashed on the missing verb.
+  if (baIdx > 0 && items[baIdx + 2]?.entry?.kind === "verb") {
     const agent = nounNode(items[0], "agent");
     const theme = nounNode(items[baIdx + 1], "theme");
     const verbItem = items[baIdx + 2];
@@ -1347,19 +1443,30 @@ function parseZh(text: string): ParsedSentence {
     return { meaning: b.graph(root), connective: connective("zh", tokens, spans), realizes: b.realizes, scopeAttachments: scope };
   }
 
-  /* --- A-not-A: verb 不 verb (one interrogative force, two realisations would clash). --- */
+  /* --- A-not-A: verb 不/没 verb (one interrogative force, two realisations would clash). --- */
   const aNotA = items.findIndex((i, k) => i.func === "negation" && k > 0 && items[k - 1].entry?.kind === "verb" && items[k + 1]?.text === items[k - 1].text);
   if (aNotA > 0) {
     const verbItem = items[aNotA - 1];
     const verb = verbItem.entry as VerbEntry;
     const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" },
       [verbItem.index, items[aNotA].index, items[aNotA + 1].index]);
-    root.states = { mood: "interrogative", construction: "a-not-a", voice: "active" };
+    // The embedded negator is recorded, not assumed: with a bounded
+    // reading the A-not-A negator is 没 （他去没去）, elsewhere 不 —
+    // the bundle rule of Part F.2 predicts which, and the record is
+    // what generation re-emits.
+    root.states = { mood: "interrogative", construction: "a-not-a", voice: "active", negation: { negator: items[aNotA].text, carrier: items[aNotA].text } };
     if (aNotA >= 2) {
       const subj = nounNode(items[0], "agent");
       b.edge(root, subj, "agent");
     }
-    // Objects after the repeated verb, if any.
+    // Objects after the repeated verb, if any （他去不去学校）.
+    for (let k = aNotA + 2; k < items.length; k++) {
+      const it = items[k];
+      if (it.entry?.kind === "noun" || it.entry?.kind === "pronoun") {
+        const node = nounNode(it, verb.slots[0] ?? "patient");
+        b.edge(root, node, node.role as Relation);
+      }
+    }
     collectParticles(0, items.length, [root]);
     return { meaning: b.graph(root), connective: connective("zh", tokens, spans), realizes: b.realizes, scopeAttachments: scope };
   }
@@ -1378,6 +1485,11 @@ function parseZh(text: string): ParsedSentence {
         [adjItem.index],
       );
       root.states = { mood: interrogative ? "interrogative" : "indicative" };
+      // Preverbal negation on a verbless predicate （他不忙）: the
+      // negator was silently dropped here too (the F1 defect's
+      // adjectival branch). States are states, copula or not.
+      const negItemV = items.find((i) => i.func === "negation");
+      if (negItemV) root.states = { ...root.states, negated: true, negation: { negator: negItemV.text, carrier: negItemV.text } };
       b.edge(topic, root, "predicate");
       const degItem = items.find((i) => i.func === "degree");
       if (degItem) {
@@ -1404,6 +1516,11 @@ function parseZh(text: string): ParsedSentence {
   const subject = subjectItem ? nounNode(subjectItem, "agent") : undefined;
   const verbNodes: MeaningNode[] = [];
   let pendingChainMarker: string | undefined;
+  // Preverbal negation （不/没）: held until the verb it scopes over
+  // is built. Until stage 5 the loop had no branch for the negation
+  // item at all and it fell through every case — the F1 defect:
+  // 他不去学校。 parsed affirmative, checker silent.
+  let pendingNegation: string | undefined;
   let current: MeaningNode | undefined;
   for (let k = 0; k < items.length; k++) {
     const it = items[k];
@@ -1433,6 +1550,7 @@ function parseZh(text: string): ParsedSentence {
       continue;
     }
     if (it.func === "chain-marker") { pendingChainMarker = it.text; continue; }
+    if (it.func === "negation") { pendingNegation = it.text; continue; }
     if (it.func === "aspect-particle" || it.func === "question-particle" || it.func === "attitude-particle") {
       scope.push({
         form: it.text,
@@ -1446,6 +1564,11 @@ function parseZh(text: string): ParsedSentence {
       const verb = it.entry as VerbEntry;
       const node = b.node({ lemma: verb.lemma, form: it.text, syntacticElement: "Wood", role: "verb" }, [it.index]);
       node.states = { voice: "active", mood: interrogative ? "interrogative" : "indicative" };
+      if (pendingNegation) {
+        node.states.negated = true;
+        node.states.negation = { negator: pendingNegation, carrier: pendingNegation };
+        pendingNegation = undefined;
+      }
       if (subject) b.edge(node, subject, "agent");
       if (current) {
         b.edge(current, node, "chains-to", pendingChainMarker);
@@ -1460,7 +1583,8 @@ function parseZh(text: string): ParsedSentence {
       // Counted object: numeral + classifier + noun.
       const prev = items[k - 1];
       const node = nounNode(it, (current ? (ZH_LEXICON[current.lemma] as VerbEntry).slots[0] : undefined) ?? "patient");
-      if (prev?.func === "classifier") {
+      // 把 after a numeral is the classifier, not the ba-marker.
+      if (prev?.func === "classifier" || (prev?.text === "把" && items[k - 2]?.func === "numeral")) {
         const clf = b.node({ lemma: prev.text, form: (items[k - 2]?.func === "numeral" ? items[k - 2].text : "") + prev.text, syntacticElement: "Metal" }, [prev.index]);
         b.edge(node, clf, "has-classifier");
       }

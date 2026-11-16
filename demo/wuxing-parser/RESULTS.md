@@ -1,6 +1,6 @@
 # Results — the Wuxing sentence layer, scored (generated)
 
-Generated 2026-11-15 by `npm run fork:demo`. **26/26 expectations met · 26 parsed · 24 exact round-trips.**
+Generated 2026-11-16 by `npm run fork:demo`. **29/29 expectations met · 29 parsed · 27 exact round-trips.**
 
 Scored against the expectations in `sentences.tsv`: a sentence
 passes when the parser does what the corpus says it should —
@@ -36,6 +36,9 @@ real result and stays in the table until the parser improves.
 | 24 | 你去不去？ | A-not-A question form | `exact` | pass |
 | 25 | 他走了吗？ | sentence-final particles in scope order （了 before 吗） | `exact` | pass |
 | 26 | 饭被吃了。 | agentless 被 passive: the agent slot is suppressed, not filled | `exact` | pass |
+| 27 | 他不去学校。 | preverbal negation 不 — dropped at parse until stage 5 (defect F1) | `exact` | pass |
+| 28 | 他没去学校。 | preverbal negation 没， selected by the aspect bundle (Part F.2) | `exact` | pass |
+| 29 | 他去没去学校？ | A-not-A with the bounded-reading negator 没 | `exact` | pass |
 
 ## Scoreboard history
 
@@ -43,3 +46,4 @@ real result and stays in the table until the parser improves.
 | --- | --- | --- | --- | --- | --- |
 | 2026-11-15 | 26/26 | 26 | 24 | 23 | 2 |
 | 2026-11-15 | 26/26 | 26 | 24 | 24 | 2 |
+| 2026-11-16 | 29/29 | 29 | 27 | 27 | 2 |

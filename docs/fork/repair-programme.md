@@ -747,6 +747,26 @@ as its own slice).** Done in `src/fork/classify.ts`:
   frost is even named phase-null in the provisional table above.
   Their re-scope is a follow-on decision.
 
+**Follow-on record (2026-11-15, commissioned with the pre-stage-5
+batch).** The four flagged entries are now re-scoped:
+- **Frost — withdrawn, phase-null**, as this entry's own
+  provisional table already required (surface ice deposition; no
+  aspect rule distinguishes cold, freezing and deposition).
+- **Fog — withdrawn, phase-null.** Its candidacy runs through
+  moisture, whose Earth correspondence this rule refuses to
+  automate; the candidacy is recorded here, not asserted.
+- **Ice — re-scoped to the substance aspect** (Water, 0.75):
+  frozen water as a stuff, on the rainwater precedent — the
+  phenomenon reading is not asserted.
+- **Storm — re-scoped to its wind aspect only** (Wood, 0.71 =
+  0.95 × 0.75): wind–Wood is attested; storm's precipitation
+  aspect is explicitly not asserted.
+No climb regressions followed (suite 308/308, sense sets
+unchanged, demo 26/26), so no new CLIMB_ANCHORS were needed.
+Density re-run: conclusions 414 / 455 / 504 at ×1/×10/×100,
+proxy 0.913 / 0.833 / 0.752. The table now carries 153
+classifications (41 curated / 112 creative).
+
 ### H7 — FLAVOR_BRIDGE_V1: bencao flavor assertions composed with Neijing flavor correspondences
 
 **Statement.** A substance's recorded flavor in a *bencao* entry
@@ -1245,3 +1265,335 @@ engineering defects, scored separately from construction parsing.
 (Amendment A3: case 12's measurement constraints are preserved
 parse-side in this stage; their round-trip measurement belongs to
 stage 5's family accounting.)
+
+## Part E — The productive-heuristic principle (v10, adopted 2026-11-15 with the brakes amendment)
+
+**Origin.** The v10 document (`sentencesToWuxing-10.txt`) is the
+outside AI's self-correction, written after the user's challenge —
+"how would it be an ontology with implications if no heuristic?" —
+and relayed by the user with the judgment that the briefs had led
+the project toward a *catalogue* rather than what it is for: a
+*productive heuristic*. Adopted by the user 2026-11-15 with Kavi's
+brakes amendment (E.2).
+
+### E.1 The correction, stated plainly
+
+The fork's founding thesis is that classifying a thing in the
+ontology yields information by correspondence — a knowledge-
+generating system, not a correspondence catalogue. The derived
+layer never drifted from that thesis: the join generates
+implications, and the density run measures the generation. The
+drift was on the **acquisition side** — the WP1/WP1b surveys and
+the Slice 1 pilot progressively treated inference as suspect until
+attested, and scored abstention as the safe outcome. The pilot's
+coverage verdict (§7 of its report) is the symptom: a bar that a
+protocol-faithful run cannot meet is measuring the wrong thing.
+
+### E.2 Governing principle (adopted)
+
+> **The ontology must generalize beyond attested correspondences
+> through explicit, composable, testable heuristics. Evidence
+> determines the epistemic status and confidence of an inference,
+> not whether inference is permitted to occur.**
+
+**Brakes amendment (Kavi's, adopted with it).** The brakes are
+constitutive of "registered heuristic", not caution to be relaxed
+when the principle chafes. They exist because of measured
+failures: the X1 pattern (cycles amplify wrong classifications —
+the stock overturn in sense set B), the density proxy degrading
+as classifications scale, the wayward-anchor census. A rule earns
+the name *registered heuristic* only with (1) stated scope,
+(2) priced confidence (decay, band, gate as applicable), and
+(3) a falsification condition. Inference by default; **unpriced
+inference, never.** Tier membership below is mechanical: an
+output that cannot name its rule and version is not a prediction
+— it is an unresolved case.
+
+### E.3 The epistemic ladder (five tiers)
+
+Every classification-shaped output of the system carries exactly
+one tier:
+
+| Tier | Meaning | Existing machinery it maps to |
+| --- | --- | --- |
+| T1 | Directly attested | evidence grade A; `fork-curated` restatements |
+| T2 | Established correspondence | grade B-direct (attested correspondence legs) |
+| T3 | Registered-heuristic inference | H5/H6/H7 outputs (B-derived, C-tier derived records); `wordnet-derived` climbs |
+| T4 | Novel prediction awaiting validation | a registered rule applied beyond its validated range; competing predictions preserved, not merged |
+| T5 | Unresolved | no registered rule reaches the case — a scored outcome, not a failure |
+
+The ladder replaces the binary classified/abstained accounting.
+Abstention at T5 is correct exactly when no registered rule
+reaches; silence where a rule *does* reach is a coverage failure
+of the heuristic layer, and a forced classification with no rule
+behind it is a discipline failure. Neither is hidden by the
+ladder: each tier is counted separately in every report.
+
+### E.4 The pilot re-read
+
+The Slice 1 pilot tested the **assertion layer only** (T1–T3
+under assertion discipline). Its accuracy and unsupported figures
+stand. Its coverage verdict is **superseded**: the ≥90% coverage
+bar it was measured against is replaced by E.5's three
+evaluations, and several of its abstentions are reclassified
+below as T4 predictions the assertion layer was right to refuse
+and the heuristic layer is right to make.
+
+### E.5 The 500-object run, reframed
+
+**Sample.** The pilot's 100 objects serve as the calibration
+subset (their assertion-layer record exists); 400 fresh objects,
+sampled under the same domain discipline, are the test subset.
+Primary classifications are committed to file before any blind
+output is opened (the pilot's §8 caveat, applied as protocol).
+
+**Three evaluations replace the single coverage bar:**
+
+1. **Heuristic coverage** — of all in-scope (object, axis)
+   positions, how many reach T1–T4 under a named rule? Reported
+   per tier, per domain. No single pass mark is set in advance;
+   the per-tier distribution IS the result.
+2. **Validated accuracy** — among T1–T3 outputs, the fraction
+   surviving independent evaluation (the ratified accuracy bars
+   apply at this layer); T4 outputs are scored separately as a
+   prediction hit-rate when validation reaches them.
+3. **Abstention discipline** — T5 positions are audited in both
+   directions: a T5 where a registered rule reaches is a
+   heuristic-coverage failure; any classification lacking a rule
+   is a discipline failure (target: zero, by construction).
+
+Judging caveat unchanged: validated accuracy needs independent
+human judges; the run can be executed and mechanically scored in
+this loop, and its accuracy ledger stays open until judged.
+
+### E.6 R1–R8 split: assertion rules vs prediction rules
+
+The pilot's adjudication rulings split into the assertion rule
+(unchanged) and, where one exists, the prediction rule that
+operates beneath it:
+
+- **R1 (plants).** Assertion: abstain. **Prediction P1:** a living
+  plant's material aspect predicts **Wood** under the 木 class
+  reading, T4, confidence ≤0.5 — the reading R1 rejected as an
+  assertion is exactly the kind of claim the prediction tier
+  exists to hold testably.
+- **R2 (animals).** Assertion: the five-livestock row only.
+  **Prediction P2 — CREATURE_CLASS_YUELING_V1 (scheme fixed
+  2026-11-15; the open parameter is closed).** Non-livestock
+  animals predict via the five-creature scheme of the *Liji*,
+  *Yueling* （禮記·月令）, verified against the transmitted text
+  and its commentary tradition: the *Yueling* assigns a creature
+  class to each season — spring 其蟲鱗 (scaled), summer 其蟲羽
+  (feathered), centre 其蟲倮 (naked), autumn 其蟲毛 (furred),
+  winter 其蟲介 (shelled) — and the commentary states the phase
+  membership outright （鱗蟲木之屬；朱鳥火屬，其類為羽；人土屬，
+  其類為倮；白虎金屬，其類為毛；玄武水屬，其類為介）. The rule:
+  **鱗 scaled → Wood · 羽 feathered → Fire · 倮 naked → Earth ·
+  毛 furred → Metal · 介 shelled → Water.** Two attested legs
+  inside one text's own system (class → season in the text;
+  season → phase in the same correspondence complex), so outputs
+  grade **B-derived, confidence capped at 0.80** — the H7
+  pricing shape, not a fresh invention. Boundary discipline:
+  clear class members only (birds → 羽； fish and snakes → 鱗；
+  furred mammals → 毛； turtles and crabs → 介）. Boundary cases
+  the commentators themselves argue by resemblance (Zheng Xuan
+  places tigers and leopards under 倮， shallow-furred) are T4,
+  flagged commentarial; creatures no class reaches stay T5.
+  Consistency check against the assertion layer: the five
+  livestock agree where both speak （雞 feathered → Wood ✓;
+  牛/羊/犬 furred — the assertion layer gives Earth/Fire/Metal
+  respectively, so P2 would predict Metal for all three: the
+  livestock row is attested per-animal and OUTRANKS the class
+  rule wherever both apply; the disagreements are recorded here
+  as the known limit of class-level prediction, and they are
+  exactly what the 500 run's validated-accuracy ledger is for.)
+- **R3 (animal products, preparations).** Assertion: abstain.
+  **No prediction rule registered.** Silk, leather, horn, bone
+  are expected T5s; the abstention-discipline evaluation rewards
+  leaving them unresolved over forcing a class. A future rule
+  (e.g. via the source animal, where attested) may be proposed
+  through prediction-admission.
+- **R4 (artefacts / H5).** Already a registered heuristic; its
+  outputs are T3, its abstentions T5 by the dominance conditions.
+  Unchanged.
+- **R5 (flavor bridge / H7).** Already a registered heuristic;
+  outputs T3 (B-derived). Multi-flavor records stay recorded, not
+  forced. Unchanged.
+- **R6 (animal nature).** Assertion: Benjing-grade records only.
+  **Prediction P6:** later-layer bencao meat records (deer and
+  its kin) predict at T4 under a named-layer extension of the
+  bridge, each carrying its layer; the Benjing-grade rule is not
+  loosened, the later layer is priced instead of excluded.
+- **R7 (glass family).** Assertion: abstain. **Prediction P7:**
+  two competing T4 predictions are registered and preserved in
+  conflict — composition (silica → stone class → Earth) vs
+  transformation (fire-fused → Fire). The conflict is the
+  prediction tier working as designed; validation, not
+  adjudication taste, is what may close it.
+- **R8 (cross-domain consistency).** Applies at every tier: the
+  same stuff receives the same call at the same tier in every
+  domain. Unchanged.
+
+### E.7 What this part does not change
+
+The cycles; H5/H6/H7 as registered; the parser and the depth
+programme (stage 5 remains its last stage); the brakes; the
+layer separation of attested tradition, creative application and
+analysis — the ladder *extends* that separation to inference, it
+does not blur it. The dashboard's coverage failure card describes
+the superseded bar and is stale from this adoption; updating it
+is a follow-on at the user's word.
+
+## Part F — Stage 5 amendment: the ontology does the work (adopted 2026-11-15)
+
+### F.0 The standing rule (user, 2026-11-15)
+
+> **Try to use the ontology instead of fixes like that. If you
+> can't do it, tell me.**
+
+Stated by the user as a rule of this project, not of this stage
+only: when the fork hits a problem, the first attempt is a
+solution *through* the ontology — a correspondence, a cycle
+mechanism, a registered heuristic. An engineering fix is the
+fallback, and taking it is **reported as an ontology failure**,
+never silently shipped as if nothing were missing. This part is
+the rule's first application: Part C.3 fenced stage 5's families
+off as "not elemental — engineering", and that fence is what the
+user has now removed. C.3's split stands for stages 1–4, which
+are built; for stage 5 it is amended as follows.
+
+### F.1 What changes
+
+Stage 5's bars are unchanged (aggregate feature preservation
+≥95%, per-family floors ≥90%, non-regression on the holdout).
+What changes is *what may carry a family to its bar*: each family
+below gets an ontology mechanism, stated as a hypothesis that
+must pass the four-field prediction-admission test (Part A)
+**before** it is built. A mechanism that fails admission does not
+get built; the family's engineering fix then proceeds, and the
+stage report records the family as *bar met / not met* and,
+separately, *ontology carried it / ontology failed here* — both
+figures, always.
+
+### F.2 Negation — a Water state with a carrier, not a boolean
+
+**The defect, restated.** The meaning graph stores negation as a
+boolean (`states.negated`). Two measured consequences: the
+negation family preserves at 84.4% (the auxiliary-carrier
+configuration is not in the record, so the canonical reparse
+cannot restore it), and Chinese preverbal negation is dropped at
+parse entirely (defect F1: 他不去学校。 regenerates affirmative,
+checker silent).
+
+**The mechanism.** Negation is a state of the predicate with two
+parts, both already latent in the scheme:
+
+1. **The state itself is Water** (the original mapping:
+   Negation/Modality = Water), recorded as a structured state,
+   not a flag — with its scope and its carrier as fields.
+2. **Its realisation requires a carrier, and the carrier is
+   Metal.** This is K6, the cycle-probe's strongest result,
+   generalised from a checker rule into the representation:
+   English negation rides an auxiliary (Metal → Wood: the carrier
+   takes the tense, the verb stays in base form); Chinese
+   negation rides a preverbal negator. Generation emits the
+   carrier the record specifies; reparse recovers it because the
+   record, not surface guessing, drives both directions. The
+   negation family's atoms are redefined over this record.
+
+**Chinese form selection.** The negator is chosen by the
+aspectual configuration of the predicate it scopes over:
+没 (méi) where the bundle is bounded/perfected or the predicate
+is 有 (yǒu, existence/possession); 不 (bù) elsewhere (states,
+habituals, volition, adjectives). In the scheme's terms: the
+Water state takes its surface form from the Wood predicate's
+aspect bundle — the same bundle stage 2 built, so the rule is
+stated once, over machinery that exists.
+
+**Admission entry (to be run as a probe before building).**
+Conventional account: aspect-conditioned negator allomorphy, a
+descriptive rule of Chinese grammar. Elemental account: the
+negation state's form is a function of the negated predicate's
+aspect configuration, and its carrier relation is the Metal →
+Wood control already verified for English. Novel prediction: the
+single bundle-based rule predicts negator choice in
+configurations the parser has never handled — A-not-A questions,
+negation over experiential （过） bundles, negated serial verbs —
+without per-construction patches. Discriminating test: a
+held-out Chinese negation set; negator-selection accuracy of the
+bundle rule vs a most-frequent default and vs a surface-position
+rule; plus the English negation family's preservation reaching
+its ≥90% floor on the carrier record.
+
+### F.3 Number — the classifier is the Metal the noun generates
+
+**The defect, restated.** The number family is thin by
+construction: subject person only, numerals riding as bare
+entity atoms. Nothing about a numeral in the current record
+connects it to the noun it counts.
+
+**The mechanism.** In Chinese a numeral cannot attach to a noun
+directly; a classifier mediates （三本书， never *三书 — the demo
+corpus's flagged sentence). Read through the cycles, the measure
+is **the Metal the Earth noun generates** (Earth → Metal,
+generating): the noun gives rise to its measure. So a numeral
+phrase in the meaning graph is a mediated structure — numeral
+(Metal state) + classifier + noun — and the classifier is
+*selected by the noun's place in the ontology*: its
+(concept, aspect) classification, substance aspects first (the
+pilot's material rulings are exactly the input this needs).
+Generation requires the mediated form; the checker gains
+classifier agreement (a wrong classifier is a violation, not
+only a missing one); number atoms record the mediation, so
+preservation measures the structure, not the digit.
+
+**Admission entry.** Conventional account: classifier choice is
+lexical, by semantic class (shape, animacy, function).
+Elemental account: those classes are substantially substance
+classes, and the ontology's substance classification of the noun
+predicts the classifier family. Novel prediction: on held-out
+nouns, classification-predicted classifiers beat the 个 (gè)
+default — probabilistically, not perfectly; function-classifiers
+（本 for books) are the predicted hard residue. Discriminating
+test: a held-out Chinese noun set with known classifiers;
+accuracy of the ontology route vs the 个 baseline and vs a
+WordNet-gloss shape baseline.
+
+### F.4 Temporal modification — through the ontology's time nodes
+
+Case 12's "at this moment" and its kin resolve, where a
+classified node exists, into the ontology's own temporal nodes
+(dawn/midday/dusk/night and the seasons are already in the net)
+through the `time` relation stage 3 built. Preservation then
+measures a graph link, not a string. This satisfies the standing
+rule in its weakest honest form: the mechanism routes through
+the ontology's nodes rather than a side table, and no elemental
+claim beyond that is made.
+
+**Declared ontology failure (per F.0): precision.** Case 12's
+"exact" (the exact population) — no ontology mechanism for
+precision/degree modification has been found. It stays a
+representation atom, recorded here as a failure of the ontology
+to reach this family, not relabelled as a success of
+engineering.
+
+### F.5 Suppressed roles — declared ontology failure
+
+The suppressed family is under-tested (2 atoms at baseline). No
+ontology mechanism for suppression coverage is proposed: the
+deficit is in the evaluation material, not the representation.
+The remedy is more sealed items — engineering of the evaluation.
+Recorded as an ontology failure under the standing rule: the
+scheme, as it stands, has nothing to say here, and stage 5 will
+say so in its report rather than imply otherwise.
+
+### F.6 Stage 5 acceptance, amended
+
+The C.2 stage-5 line is replaced by: aggregate ≥95% with no
+critical family below 90%, **reported per family with its
+carrier** — *ontology mechanism (with its admission result)* or
+*engineering (with the ontology failure declared)*. The F2/F3
+admission probes run first and are reported whatever they find;
+a failed probe is a result, not an embarrassment to be routed
+around. The demo exhibit and all prior-stage runners remain
+non-regression gates.

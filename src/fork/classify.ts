@@ -155,12 +155,18 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("hot", "Fire", "temperature", "temperature", 0.85, "heat is summer's quality"),
   cre("warm", "Fire", "temperature", "temperature", 0.8),
   cre("cool", "Water", "temperature", "temperature", 0.8, "a seed synonym of cold"),
-  cre("ice", "Water", "weather", "overall", 0.85),
-  cre("frost", "Water", "weather", "overall", 0.8),
-  cre("fog", "Water", "weather", "overall", 0.7),
+  cre("ice", "Water", "substance", "overall", 0.75, "H6 follow-on re-scope: ice as a SUBSTANCE (frozen water, the stuff itself, cf. the rainwater distinction) — no phenomenon reading is asserted"),
+  // H6 follow-on (2026-11-15): frost and fog are WITHDRAWN to
+  // phase-null. Frost is named phase-null in H6's own provisional
+  // table (surface ice deposition; no aspect rule distinguishes
+  // cold, freezing and deposition). Fog's candidacy runs through
+  // moisture, whose Earth correspondence H6 explicitly refuses to
+  // automate — a candidacy is recorded in the registry, not asserted
+  // here. (Their climb-anchor roles, if any surface, are handled
+  // through CLIMB_ANCHORS like snow's, never by re-asserting.)
   cre("precipitation", "Water", "weather", "overall", 0.85, "the IS_A parent the seed's winter derivations climb through"),
   cre("rain", "Water", "precipitation", "overall", 0.71, "H6-derived, provisional: defining aspect = liquid aqueous precipitation; C = 0.95 × 0.75, one derivation step under WEATHER_ASPECT_DERIVATION_V1; the moisture/effect route (rain → dampness → Earth) is a deliberate non-assignment under H6"),
-  cre("storm", "Wood", "weather", "overall", 0.7, "wind-driven"),
+  cre("storm", "Wood", "air movement", "overall", 0.71, "H6 follow-on re-scope: storm through its defining wind aspect only (wind–Wood is attested); its precipitation aspect is NOT asserted; C = 0.95 × 0.75, one derivation step under H6"),
   cre("breeze", "Wood", "weather", "overall", 0.75),
   cre("lightning", "Fire", "weather", "overall", 0.7),
   cre("heat", "Fire", "weather", "overall", 0.85),

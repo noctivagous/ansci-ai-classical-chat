@@ -14,6 +14,21 @@
 import type { AspectBundle } from "./sentence";
 
 /** ZH aspect particle -> the bundle it realises. */
+/**
+ * The Chinese negator selected by the negated predicate's aspect
+ * bundle (Part F.2; admission probe: stage5-admission-probes.md,
+ * 15/15 including both A-not-A configurations). 没 for bounded,
+ * perfected or experiential predicates and for 有 (possession is
+ * categorical); 不 elsewhere — states, habituals, volition,
+ * adjectives. This is the generation-side form-selection rule:
+ * at generation time there is no surface string to inspect, so
+ * the choice is made from the bundle, the same machinery the
+ * parser records.
+ */
+export function zhNegatorFor(lemma: string, aspect?: AspectBundle): "不" | "没" {
+  return aspect?.bounded || aspect?.perfect || aspect?.experiential || lemma === "有" ? "没" : "不";
+}
+
 export function zhAspectFor(particle: string): AspectBundle | undefined {
   switch (particle) {
     case "了": return { bounded: true };

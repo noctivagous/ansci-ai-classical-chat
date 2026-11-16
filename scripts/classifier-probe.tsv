@@ -1,0 +1,46 @@
+# Stage-5 admission probe 2 (Part F.3): classifier prediction.
+# Columns: concept (EN, for the ontology climb) <TAB> noun (ZH) <TAB> attested classifier <TAB> classifier family
+# Prediction under test: the classifier family follows from the noun's
+# place in the ontology (table classification + WordNet climb trail).
+# Baselines: always 个; a WordNet-gloss shape rule (long→条, flat→张).
+fish	鱼	条	long-flexible
+snake	蛇	条	long-flexible
+river	河	条	long-flexible
+trousers	裤子	条	long-flexible
+towel	毛巾	条	long-flexible
+paper	纸	张	flat
+table	桌子	张	flat
+bed	床	张	flat
+photo	照片	张	flat
+ticket	票	张	flat
+book	书	本	bound-volume
+magazine	杂志	本	bound-volume
+dictionary	字典	本	bound-volume
+cat	猫	只	animal
+bird	鸟	只	animal
+dog	狗	只	animal
+chicken	鸡	只	animal
+shoe	鞋	只	one-of-pair
+horse	马	匹	animal-special
+cow	牛	头	animal-special
+pig	猪	头	animal-special
+clothes	衣服	件	item
+matter	事情	件	item
+person	人	个	general
+apple	苹果	个	general
+question	问题	个	general
+orange	橘子	个	general
+chair	椅子	把	handled
+knife	刀	把	handled
+key	钥匙	把	handled
+umbrella	雨伞	把	handled
+scissors	剪刀	把	handled
+tree	树	棵	plant
+grass	草	棵	plant
+flower	花	朵	plant
+car	车	辆	vehicle
+bicycle	自行车	辆	vehicle
+room	房间	间	room
+letter	信	封	document
+song	歌	首	work
+poem	诗	首	work

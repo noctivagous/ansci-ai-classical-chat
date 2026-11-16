@@ -56,8 +56,10 @@ function LiveF1() {
       {outcome.regenerated && (
         <>
           {" "}
-          — negation present in the parse: <strong>{outcome.negated ? "yes" : "no"}</strong>. The
-          sentence comes back affirmative and the checker says nothing.
+          — negation present in the parse: <strong>{outcome.negated ? "yes" : "no"}</strong>.
+          {outcome.negated
+            ? " The negation survives the round trip: closed at stage 5."
+            : " The sentence comes back affirmative and the checker says nothing."}
         </>
       )}
     </p>
@@ -83,22 +85,22 @@ const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   {
     title: "Anchor coverage is the binding constraint",
     body: "Of 8,099 polysemous words, only 28 have anchored senses in more than one element — and several anchors are reached by wayward paths (rock arrives at Earth via “sweet”; snap via “cake”). Better disambiguation cannot fix thin, noisy anchors; classification coverage and path quality are the long pole.",
-    status: "measured in the stage-4 census · the 100-object pilot has run; scale-up awaits a coverage ruling",
+    status: "measured in the stage-4 census · the 500-object run is reframed under Part E (sample ready, P2 registered)",
   },
   {
     title: "Review does not scale yet",
-    body: "At ×100 classification density the review queue is 1,047 items — beyond hand review — and the automatic precision proxy degrades (0.917 → 0.751 on the first run; 0.913 → 0.763 after the H6 re-scope). Whether the proxy or the derivations are wrong is undecided until the judged benchmark (WP2) gets independent human judges.",
+    body: "At ×100 classification density the review queue is 1,047 items — beyond hand review — and the automatic precision proxy degrades (0.917 → 0.751 on the first run; 0.913 → 0.752 after the H6 re-scope and follow-on). Whether the proxy or the derivations are wrong is undecided until the judged benchmark (WP2) gets independent human judges.",
     status: "open · triage protocol ratified, judges not yet available",
   },
   {
-    title: "The coverage bar is unmet — and meeting it would require inventing anchors",
-    body: "The Slice 1 pilot classified 100 ordinary objects under the ratified protocol and fell short of its own ≥90% coverage bar: 80 objects carry any assertion, 47.5% of axes are filled. The sample was deliberately loaded with cases the protocol requires abstention on — animals outside the attested five-livestock row, animal-derived materials, living plants on the material axis, the glass family. A run that hit 90% could only do so by inventing correspondences the tradition doesn't offer. Either the bar was meant for a classifiable inventory rather than a trap-loaded sample, or its denominator needs redefining; the pilot hands over the numbers and the question rather than choosing quietly.",
-    status: "pilot run 2026-11-15 · the denominator ruling is the user's, before the 500-object scale-up",
+    title: "The coverage bar was measuring the wrong thing — reframed by Part E",
+    body: "The Slice 1 pilot fell short of its ≥90% coverage bar (80 of 100 objects carrying any assertion) on a sample deliberately loaded with cases the protocol requires abstention on. The project's own review concluded the bar itself was the catalogue mindset in disguise: an ontology whose purpose is to generate knowledge by correspondence was being scored on how little it dared to infer. Part E (adopted 2026-11-15) re-reads the pilot as an assertion-layer test, keeps its accuracy figures, supersedes the bar, and scores the 500-object run on three separate evaluations — heuristic coverage per epistemic tier, validated accuracy, and abstention discipline — with a brakes amendment: an inference counts only when it names a registered rule with stated scope, priced confidence and a falsification condition.",
+    status: "resolved as policy in repair-programme.md Part E · the 400-object test sample is ready",
   },
   {
-    title: "Four weather entries still predate the H6 discipline",
-    body: "The H6 re-scope withdrew the table's whole-phenomenon entries for rain, snow, sleet and hail. Frost, ice, fog and storm still stand in the table in the same older shape — frost is even named phase-null in H6's own provisional table. They were noticed during the re-scope and deliberately left untouched: same-shape is a reason to schedule the work, not to expand a commissioned slice silently.",
-    status: "flagged in the H6 implementation record · follow-on decision",
+    title: "Weather entries predating the H6 discipline — follow-on closed",
+    body: "The H6 re-scope withdrew the table's whole-phenomenon entries for rain, snow, sleet and hail, and flagged four more of the same shape. The follow-on has run: frost and fog are withdrawn to phase-null (fog's candidacy runs through moisture, whose correspondence the rule refuses to automate), ice is re-scoped to the substance aspect — frozen water as a stuff, on the rainwater precedent — and storm to its wind aspect only, its precipitation aspect explicitly not asserted. No climb regressions followed; the density figures moved exactly by the withdrawn assertions' derivations.",
+    status: "closed 2026-11-15 · recorded in the H6 registry entry",
   },
 ];
 
@@ -193,19 +195,21 @@ export default function App() {
         </p>
         <div className="cards">
           <article className="card failure">
-            <p className="card-area">Depth stage 5 — not built · known defect F1</p>
-            <h3>Chinese preverbal negation is dropped</h3>
+            <p className="card-area">Depth stage 5 — built · known defect F1, closed</p>
+            <h3>Chinese preverbal negation was dropped — fixed through the ontology</h3>
             <p>
-              不 and 没 before a verb are not yet carried into the meaning graph, so a negative
-              sentence parses — and regenerates — as its affirmative. A silent, meaning-reversing
-              loss: the worst kind, and the reason it leads this wall. It belongs to stage 5, the
-              one depth-programme stage not yet built — which also owns the negation family
-              (84.4% preservation at baseline, below the 90% per-family floor) and the thin number
-              family. Until stage 5 lands, the programme's ≥95% aggregate is not claimable, and
-              this page does not claim it.
+              不 and 没 before a verb used to fall through every branch of the parser, so a
+              negative sentence parsed — and regenerated — as its affirmative: a silent,
+              meaning-reversing loss, and the reason this card led the wall. Stage 5 closed it
+              the way Part F requires — not with a patch but with the mechanism: negation is a
+              structured state (a Water state with a Metal carrier), the Chinese negator's form
+              is selected by the negated verb's aspect bundle, and the negation family rose from
+              84.4% to 91.2%, over its floor. The programme's ≥95% aggregate is now claimed —
+              97.7–98.2% — with two families (precision, suppressed roles) declared ontology
+              failures in the stage report rather than quietly engineered around.
             </p>
             <LiveF1 />
-            <p className="source">fix belongs to depth stage 5 · pinned by a test that names it a known defect</p>
+            <p className="source">docs/fork/stage-5-report.md · the pinning test was flipped deliberately, as the baseline prescribed</p>
           </article>
           <article className="card failure">
             <p className="card-area">Surface limits</p>
@@ -220,15 +224,17 @@ export default function App() {
             <p className="source">fork status, 2026-11-15 · the steering probe is in src/fork/turn.ts</p>
           </article>
           <article className="card failure">
-            <p className="card-area">Coverage gap · lexicon</p>
-            <h3>Possessive “has” is not a verb yet</h3>
+            <p className="card-area">Coverage gap · lexicon — closed</p>
+            <h3>Possessive “has” was not a verb</h3>
             <p>
-              “Has” is classified only as an auxiliary, so as a main verb of possession the sentence
-              has no predicate to build on and the parse abstains. Recorded during the stage-3
-              construction work; not a census case, so it waits its turn rather than jumping the queue.
+              “Has” was classified only as an auxiliary, so as a main verb of possession the
+              sentence had no predicate to build on and the parse abstained. Fixed in the
+              pre-stage-5 batch: when no participle follows for the auxiliary to carry, the
+              token is reclassified as the verb “have” — and the perfect reading (“She has
+              eaten…”) is untouched, as the live check's sibling cases in the test suite show.
             </p>
             <LiveHasCold />
-            <p className="source">recorded in docs/fork/construction-challenge.md</p>
+            <p className="source">recorded in docs/fork/construction-challenge.md · fixed 2026-11-15</p>
           </article>
           {RECORDED_FAILURES.map((f) => (
             <article key={f.title} className="card failure">

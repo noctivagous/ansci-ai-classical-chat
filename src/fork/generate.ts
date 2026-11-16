@@ -10,7 +10,7 @@
  */
 import { EN_LEXICON, MeaningNode, ParsedSentence, VerbEntry } from "./sentence";
 import { ingForm } from "./parse";
-import { enBeForm, zhParticleFor } from "./aspect";
+import { enBeForm, zhNegatorFor, zhParticleFor } from "./aspect";
 
 function nodeById(p: ParsedSentence, id: string): MeaningNode {
   return p.meaning.nodes.find((n) => n.id === id)!;
@@ -149,7 +149,7 @@ function enGenerate(p: ParsedSentence): string {
     const subject = nodeById(p, predEdge.from);
     const copula = copulaForm(root);
     const comp = root.syntacticElement === "Earth" ? enNp(p, root) : root.form.toLowerCase();
-    return `${cap(enNp(p, subject))} ${copula} ${comp}${punct}`;
+    return `${cap(enNp(p, subject))} ${copula}${root.states?.negated ? " not" : ""} ${comp}${punct}`;
   }
 
   /* Locative copula (stage 3): the place is the predicate — the
@@ -278,7 +278,7 @@ function orderedArgs(p: ParsedSentence, root: MeaningNode, entry: VerbEntry): Me
   for (const rel of rels) out.push(...targets(p, root.id, rel));
   // Any other argument relations, in graph order.
   for (const e of p.meaning.edges) {
-    if (e.from === root.id && ["patient", "theme", "recipient", "location", "goal"].includes(e.relation)) {
+    if (e.from === root.id && ["patient", "theme", "recipient", "location", "goal", "time"].includes(e.relation)) {
       const n = nodeById(p, e.to);
       if (!out.includes(n)) out.push(n);
     }
@@ -323,7 +323,8 @@ function zhGenerate(p: ParsedSentence): string {
   if (predEdge) {
     const topic = nodeById(p, predEdge.from);
     const degree = p.meaning.edges.filter((e) => e.relation === "modulates" && e.to === root.id).map((e) => nodeById(p, e.from))[0];
-    return `${zhNp(p, topic)}${degree ? degree.form : ""}${root.form}。`;
+    const neg = root.states?.negation?.negator ?? (root.states?.negated ? zhNegatorFor(root.lemma, root.states?.aspect) : "");
+    return `${zhNp(p, topic)}${degree ? degree.form : ""}${neg}${root.form}。`;
   }
 
   /* Counted noun phrase standing alone. */
@@ -342,7 +343,9 @@ function zhGenerate(p: ParsedSentence): string {
     return `${patient ? zhNp(p, patient) : ""}被${agent ? zhNp(p, agent) : ""}${root.form}${st.result ?? ""}${zhClauseTail(p, root)}。`;
   }
   if (st.construction === "a-not-a") {
-    return `${agent ? zhNp(p, agent) : ""}${root.form}不${root.form}？`;
+    const neg = st.negation?.negator ?? "不";
+    const objs = p.meaning.edges.filter((e) => e.from === root.id && ["patient", "theme", "recipient"].includes(e.relation)).map((e) => zhNp(p, nodeById(p, e.to))).join("");
+    return `${agent ? zhNp(p, agent) : ""}${root.form}${neg}${root.form}${objs}？`;
   }
   if (st.construction === "correlative") {
     // R8: the one Metal relation is re-emitted as its two discontinuous tokens.
@@ -358,9 +361,20 @@ function zhGenerate(p: ParsedSentence): string {
   const seen = new Set<string>();
   while (current && !seen.has(current.id)) {
     seen.add(current.id);
+    // Negation rides immediately BEFORE its verb （他没去过北京）:
+    // the recorded negator if parse supplied one, else the bundle
+    // rule's selection (Part F.2) — never a surface guess.
+    const negator = current.states?.negated ? current.states?.negation?.negator ?? zhNegatorFor(current.lemma, current.states?.aspect) : undefined;
+    if (negator) out += negator;
     // The aspect particle rides immediately after its own verb
-    // (吃了饭), before the verb's arguments.
-    out += current.form + zhClauseTail(p, current);
+    // (吃了饭), before the verb's arguments. One interaction the
+    // stage-5 generation probe exposed: 没 absorbs the bounded
+    // particle — the negated form is 他没去学校， never 他没去了学校；
+    // the bounded feature is realised BY the choice of 没. （过 and
+    // 着 are not absorbed: 他没去过北京 keeps its experiential.)
+    let tail = zhClauseTail(p, current);
+    if (negator === "没" && tail === "了") tail = "";
+    out += current.form + tail;
     // Degree complement (R6): 得 + degree content follows its verb.
     const deg = targets(p, current.id, "degree")[0];
     if (deg) {

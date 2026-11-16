@@ -61,9 +61,27 @@ export interface AspectBundle {
   resultative?: boolean;
 }
 
+/**
+ * Negation as a structured state of the predicate (Part F.2),
+ * replacing the bare boolean as the record of record: the Water
+ * state itself, its surface negator, and its carrier — the Metal
+ * bearer of the clause's tense/agreement. EN: the carrier is the
+ * auxiliary lemma (K6: "didn't arrive", never *"didn't arrived").
+ * ZH: the preverbal negator carries itself, and its FORM （不/没）
+ * is selected by the negated predicate's aspect bundle
+ * (zhNegatorFor in aspect.ts). `negated` remains as the presence
+ * flag every existing reader keys on; this record is what parse
+ * writes and generation reads first.
+ */
+export interface NegationState {
+  negator: string;
+  carrier?: string;
+}
+
 export interface NodeStates {
   voice?: "active" | "passive";
   negated?: boolean;
+  negation?: NegationState;
   mood?: "indicative" | "interrogative" | "imperative" | "subjunctive";
   aspect?: AspectBundle;
   tense?: "present" | "past";
@@ -287,6 +305,7 @@ en(v("give", ["recipient", "theme"], ["recipient", "theme"], { base: "give", thi
 en(v("bite", ["patient"], ["patient"], { base: "bite", third: "bites", past: "bit", participle: "bitten" }), "bite", "bites", "bit", "bitten");
 en(v("go", [], [], { base: "go", third: "goes", past: "went", participle: "gone" },
   { prepSlot: { slot: "goal", preps: ["to"] } }), "go", "goes", "went", "gone");
+en(v("have", ["theme"], ["theme"], { base: "have", third: "has", past: "had", participle: "had" }), "have", "has", "had");
 en(v("arrive", [], [], { base: "arrive", third: "arrives", past: "arrived", participle: "arrived" }), "arrive", "arrives", "arrived");
 en(v("make", ["patient"], ["patient"], { base: "make", third: "makes", past: "made", participle: "made" }), "make", "makes", "made");
 en(v("sleep", [], [], { base: "sleep", third: "sleeps", past: "slept", participle: "slept" }), "sleep", "sleeps", "slept");
@@ -350,9 +369,15 @@ zh(v("走", [], [], { base: "走" }));
 zh(v("唱歌", [], [], { base: "唱歌" }));
 zh(v("买", ["patient"], ["patient"], { base: "买" }));
 zh(v("跑", [], [], { base: "跑" }));
+zh(v("有", ["theme"], ["theme"], { base: "有" }));
+zh(v("看", ["patient"], [], { base: "看" }));
+zh(v("喝", ["patient"], [], { base: "喝" }));
+zh(v("喜欢", ["patient"], [], { base: "喜欢" }));
 zh(simple("noun", "饭", "Earth"));
+zh(simple("noun", "茶", "Earth"));
+zh(simple("noun", "猫", "Earth", { classifier: "只" }));
 zh(simple("noun", "书", "Earth", { classifier: "本" }));
-zh(simple("noun", "桌子", "Earth"));
+zh(simple("noun", "桌子", "Earth", { classifier: "张" }));
 zh(simple("noun", "冬天", "Earth", { semanticElement: "Water" }));
 zh(simple("noun", "学校", "Earth"));
 zh(simple("noun", "北京", "Earth"));
@@ -366,6 +391,7 @@ zh(simple("pronoun", "我", "Earth", { person: "1sg" }));
 zh(simple("pronoun", "你", "Earth", { person: "2" }));
 zh(simple("pronoun", "他", "Earth", { person: "3sg" }));
 zh(simple("adjective", "冷", "Fire", { semanticElement: "Water" }));
+zh(simple("adjective", "高", "Fire"));
 zh(simple("adjective", "快", "Fire"));
 zh(simple("adjective", "贵", "Fire"));
 zh(simple("adjective", "忙", "Fire"));
@@ -379,6 +405,8 @@ export const ZH_FUNCTION: Record<string, string> = {
   "吗": "question-particle",
   "吧": "attitude-particle",
   "不": "negation",
+  "没": "negation",
+  "没有": "negation",
   "把": "ba-marker",
   "被": "bei-marker",
   "在": "preposition",
@@ -386,10 +414,30 @@ export const ZH_FUNCTION: Record<string, string> = {
   "很": "degree",
   "就": "chain-marker",
   "本": "classifier",
+  "只": "classifier",
+  "条": "classifier",
+  "张": "classifier",
+  "匹": "classifier",
+  "头": "classifier",
+  "件": "classifier",
+  "个": "classifier",
+  "棵": "classifier",
+  "朵": "classifier",
+  "辆": "classifier",
+  "间": "classifier",
+  "封": "classifier",
+  "首": "classifier",
   "三": "numeral",
   "一": "numeral",
   "二": "numeral",
   "两": "numeral",
+  "四": "numeral",
+  "五": "numeral",
+  "六": "numeral",
+  "七": "numeral",
+  "八": "numeral",
+  "九": "numeral",
+  "十": "numeral",
   "的": "relative-marker",
   "得": "degree-marker",
   "一边": "correlative",

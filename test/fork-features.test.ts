@@ -65,12 +65,18 @@ test("round trip: zh classifier and particle atoms are extracted and preserved",
   assert.equal(c.micro, 1, JSON.stringify(c.records.filter((r) => r.outcome !== "preserved")));
 });
 
-test("known defect F1: zh preverbal negation produces no negation atom (baseline finding)", () => {
-  // Recorded in docs/fork/depth-baseline.md as finding F1: the loss
-  // happens before G0, so preservation cannot see it. This test pins
-  // the current behaviour so a fix shows up as a test change, not a
-  // silent drift.
-  const atoms = extractFeatures(parse("他不去学校。", "zh"));
+test("F1 FIXED (stage 5): zh preverbal negation produces its negation atoms", () => {
+  // Was "known defect F1" in the stage-0 baseline: preverbal 不/没
+  // fell through every branch of the zh main loop and the sentence
+  // parsed affirmative. The pin is flipped deliberately, as the
+  // baseline report prescribed: the negation state, its negator
+  // atom and its carrier atom are all in the record now, and the
+  // round trip preserves them.
+  const p = parse("他不去学校。", "zh");
+  const atoms = extractFeatures(p);
   const neg = atoms.find((a) => a.family === "negation" && a.key.endsWith("|negated"));
-  assert.equal(neg?.value, "false");
+  assert.equal(neg?.value, "true");
+  assert.ok(atoms.some((a) => a.family === "negation" && a.key.endsWith("|negator") && a.value === "不"));
+  const c = compareFeatures(atoms, extractFeatures(parse(generate(p), "zh")));
+  assert.equal(c.micro, 1, JSON.stringify(c.records.filter((r) => r.outcome !== "preserved")));
 });

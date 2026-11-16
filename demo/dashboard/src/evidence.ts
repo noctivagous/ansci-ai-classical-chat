@@ -7,7 +7,7 @@
  * is not a correct-meaning rate, and builder-authored sets are internal
  * evidence until independently authored sets reproduce them.
  */
-export const EVIDENCE_AS_OF = "depth programme stages 0–4 · H6 weather re-scope + Slice 1 classification pilot (2026-11-15) · suite 308/308";
+export const EVIDENCE_AS_OF = "depth programme stages 0–5 complete · Part E heuristic principle + Part F ontology-first stage 5 · H6 re-scope and follow-on (2026-11-15) · suite 320/320";
 
 export interface Capability {
   area: string;
@@ -82,11 +82,20 @@ export const CAPABILITIES: Capability[] = [
     ],
   },
   {
-    area: "Knowledge graph",
-    headline: "155 classifications drive derivations by correspondence",
-    figure: "41 curated · 114 creative",
+    area: "Generation depth — stage 5",
+    headline: "Negation is a state with a carrier — and the weak family clears its floor",
+    figure: "negation 91.2% · F1 closed",
     meaning:
-      "Concepts classified onto the Five-Element spine (as (concept, aspect) pairs with confidence and provenance) yield correspondence conclusions through the ontology: anger → Wood → liver, spring, east, sour… Classifications from attested sources and the project's creative extensions are labelled as what they are, never blended. The weather entries were re-scoped under hypothesis H6: rain now classifies only through its precipitation aspect, provisionally (0.71), and sleet, snow and hail assert nothing — the table is phase-null for frozen precipitation. The hypernym climb keeps its own anchors: an assertion and an anchor are different jobs.",
+      "Stage 5 was amended (Part F) to forbid silent engineering fixes: each remaining family had to be carried by the ontology or declared an ontology failure. Negation is now a structured state — a Water state with its Metal carrier recorded (the auxiliary in English; in Chinese the negator itself, its form 不/没 selected by the negated verb's aspect bundle, a rule that scored 15/15 on its admission probe including configurations the parser had never handled). Chinese preverbal negation, dropped at parse for the whole programme (defect F1), round-trips exactly; the negation family rose from 84.4% to 91.2%, over its 90% floor. Number gained counted-quantity atoms through the classifier — the Metal the noun generates — and temporal phrases resolve into the ontology's own time nodes. Two families are declared ontology failures in the report, in those words: precision (“the exact population”) and suppressed-role coverage.",
+    caveat: "Admission probes and challenge sets are builder-authored — internal evidence until independently authored sets reproduce them (Part C.5).",
+    source: "docs/fork/stage-5-report.md · docs/fork/stage5-admission-probes.md",
+  },
+  {
+    area: "Knowledge graph",
+    headline: "153 classifications drive derivations by correspondence",
+    figure: "41 curated · 112 creative",
+    meaning:
+      "Concepts classified onto the Five-Element spine (as (concept, aspect) pairs with confidence and provenance) yield correspondence conclusions through the ontology: anger → Wood → liver, spring, east, sour… Classifications from attested sources and the project's creative extensions are labelled as what they are, never blended. The weather entries were re-scoped under hypothesis H6 and its follow-on: rain classifies only through its precipitation aspect, provisionally (0.71); sleet, snow, hail, frost and fog assert nothing — the table is phase-null for them; ice classifies as a substance, storm through its wind aspect only. The hypernym climb keeps its own anchors: an assertion and an anchor are different jobs.",
     caveat: "Coverage is small and hand-built — see the pilot card below for what happens when the protocol meets 100 ordinary objects.",
     source: "src/fork/classify.ts · docs/fork/wp1-classification-survey.md · repair-programme.md (H6 record)",
   },
@@ -96,27 +105,27 @@ export const CAPABILITIES: Capability[] = [
     figure: "100 objects · 94/95 assertions supported",
     meaning:
       "Slice 1 of the repair programme: 100 ordinary objects (tools, substances, materials, plants, animals) classified under the ratified protocol — aspects, never the entity wholesale; composites by components; flavors bridge only to the flavor aspect. The run produced eight adjudication rulings (a living plant is not a material; animal material is the attested five-livestock row only; the glass family abstains) and one unsupported assertion in 95 (a flavor transferred from a rhizome to its juice). A blind second classification of a 20-object subsample agreed on every axis.",
-    caveat: "Coverage is the open problem: 80 of 100 objects carry any assertion, and the ratified ≥90% coverage bar is unmet — meeting it on this deliberately trap-loaded sample would require inventing anchors the tradition doesn't offer. What the bar's denominator should be is the user's ruling to make before the 500-object scale-up. The blind agreement is an upper bound (the primary classifier had seen the blind output before finalising). Nothing from the pilot is banked into the table yet.",
+    caveat: "Coverage, reframed: the pilot's ≥90% coverage bar was superseded by Part E (2026-11-15), which re-reads the pilot as an assertion-layer test and replaces the single bar with three evaluations for the 500-object run — heuristic coverage per epistemic tier, validated accuracy, abstention discipline. The 400-object test sample is ready and the creature-class prediction rule (P2) is registered from the Liji, Yueling. The blind agreement remains an upper bound (the primary classifier had seen the blind output before finalising). Nothing from the pilot is banked into the table yet.",
     source: "docs/fork/wp1-pilot-results.md",
   },
   {
     area: "Density behaviour",
     headline: "The brakes hold as classifications scale ×100",
-    figure: "414 → 456 → 497 conclusions",
+    figure: "414 → 455 → 504 conclusions",
     meaning:
-      "Multiplying classifications ×1/×10/×100 grows derived conclusions strongly sublinearly — per-relation decay, restraint arbitration and confidence gating keep the net from exploding into noise. These are the figures after the H6 weather re-scope withdrew three classifications and discounted a fourth; the frozen first-run record (447 → 488 → 546) stands in docs/fork/density-run.md, and the delta is the withdrawn assertions' derivations, exactly as expected.",
-    caveat: "The automatic precision proxy degrades (0.913 → 0.763 on the re-run) and the first run's ×100 review queue was 1,047 items — beyond hand review. Whether the proxy or the system is wrong awaits the judged benchmark.",
+      "Multiplying classifications ×1/×10/×100 grows derived conclusions strongly sublinearly — per-relation decay, restraint arbitration and confidence gating keep the net from exploding into noise. These are the figures after the H6 weather re-scope and its follow-on withdrew or re-scoped the whole-phenomenon weather entries; the frozen first-run record (447 → 488 → 546) stands in docs/fork/density-run.md, and the deltas are the withdrawn assertions' derivations, exactly as expected.",
+    caveat: "The automatic precision proxy degrades (0.913 → 0.752 on the latest re-run) and the first run's ×100 review queue was 1,047 items — beyond hand review. Whether the proxy or the system is wrong awaits the judged benchmark.",
     source: "docs/fork/density-run.md · repair-programme.md (H6 record)",
     bars: [
-      { label: "×1 classifications", value: 414, max: 497 },
-      { label: "×10", value: 456, max: 497 },
-      { label: "×100", value: 497, max: 497 },
+      { label: "×1 classifications", value: 414, max: 504 },
+      { label: "×10", value: 455, max: 504 },
+      { label: "×100", value: 504, max: 504 },
     ],
   },
   {
     area: "Demonstration corpus",
-    headline: "The standing exhibit: 26 sentences, expectations met",
-    figure: "26/26 · 24 exact",
+    headline: "The standing exhibit: 29 sentences, expectations met",
+    figure: "29/29 · 27 exact",
     meaning:
       "A fixed English+Chinese corpus in demo/wuxing-parser/ is regenerated on every run — including two sentences that must be FLAGGED (a tense-carrier violation, a missing classifier). Weakening an expectation to fake progress would be visible in the file's own history.",
     caveat: "A fitted demonstration result, not general parser accuracy.",

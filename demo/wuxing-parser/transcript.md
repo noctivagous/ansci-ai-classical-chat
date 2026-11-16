@@ -245,3 +245,30 @@ scoreboard and `README.md` for how to read this.
 - relations: 吃 -patient-> 饭
 - checker: no violations
 - round-trip: 饭被吃了。  *(exact)*
+
+### 他不去学校。
+
+*Demonstrates: preverbal negation 不 — dropped at parse until stage 5 (defect F1). Expectation: `exact`.*
+
+- classified: 他:Earth(agent)  去:Wood(verb)  学校:Earth(patient)
+- relations: 去 -agent-> 他; 去 -patient-> 学校
+- checker: no violations
+- round-trip: 他不去学校。  *(exact)*
+
+### 他没去学校。
+
+*Demonstrates: preverbal negation 没， selected by the aspect bundle (Part F.2). Expectation: `exact`.*
+
+- classified: 他:Earth(agent)  去:Wood(verb)  学校:Earth(patient)
+- relations: 去 -agent-> 他; 去 -patient-> 学校
+- checker: no violations
+- round-trip: 他没去学校。  *(exact)*
+
+### 他去没去学校？
+
+*Demonstrates: A-not-A with the bounded-reading negator 没. Expectation: `exact`.*
+
+- classified: 去:Wood(verb)  他:Earth(agent)  学校:Earth(patient)
+- relations: 去 -agent-> 他; 去 -patient-> 学校
+- checker: no violations
+- round-trip: 他去没去学校？  *(exact)*

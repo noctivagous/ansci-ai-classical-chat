@@ -201,3 +201,21 @@ test("P2 contrast: EN fronts its question word, ZH leaves it in place — same m
   assert.ok(en.realizes[enQ.id][0] < en.realizes[en.meaning.rootId][0], "EN: question word before the verb (fronted)");
   assert.ok(zh.realizes[zhQ.id][0] > zh.realizes[zh.meaning.rootId][0], "ZH: question word after the verb (in situ)");
 });
+
+test("possessive have: 'has' is a main verb when no participle follows", () => {
+  // The stage-3 recorded gap: "has" was classified as an auxiliary
+  // only, so the sentence had no verb and failed outright.
+  assert.equal(generate(parse("She has a cold.", "en")), "She has a cold.");
+  assert.equal(generate(parse("She had a garden.", "en")), "She had a garden.");
+  // The perfect reading is untouched when a participle does follow.
+  assert.equal(generate(parse("She has eaten the cake.", "en")), "She has eaten the cake.");
+});
+
+test("subject PP modifiers are kept, not dropped (pre-verbal PP fix)", () => {
+  // Recorded stage-4 weakness: a PP between subject and verb was
+  // silently dropped ("The man in the garden sleeps" lost the garden).
+  assert.equal(generate(parse("The man in the garden sleeps.", "en")), "The man in the garden sleeps.");
+  assert.equal(generate(parse("The book on the table is red.", "en")), "The book on the table is red.");
+  // Object PPs still belong to the verb, not the object noun.
+  assert.equal(generate(parse("She baked a cake in the kitchen.", "en")), "She baked a cake in the kitchen.");
+});

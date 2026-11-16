@@ -1,0 +1,29 @@
+# Stage-5 admission probe 1 (Part F.2): ZH negator selection.
+# Columns: affirmative <TAB> attested-negative <TAB> expected negator <TAB> configuration
+# The bundle rule under test: 没 iff the affirmative's aspect bundle is
+# bounded/perfect/experiential, or the predicate is 有; 不 elsewhere.
+# Novel rows: the "negative" column holds an A-not-A question and the
+# expected column the negator embedded in it — configurations the
+# parser has never handled, predicted by the same rule.
+# Instrument corrections during the first run (configurations kept,
+# items moved inside the parser's vocabulary): the 是+NP copula item
+# was replaced by an adjective-state item (ZH nominal copula is
+# unbuilt — a separate gap; 不 with 是 is categorical anyway), and
+# the 会-modal item was dropped (modal 会 unbuilt; 想 covers the
+# volitional configuration). Lexicon additions the probe required
+# （有/看/喝/喜欢 verbs, 茶/猫 nouns, 高 adjective) are in sentence.ts.
+他去学校。	他不去学校。	不	plain activity, unmarked aspect
+他去了学校。	他没去学校。	没	了 bounded
+他去过北京。	他没去过北京。	没	过 experiential
+他有书。	他没有书。	没	有 possession (categorical)
+他很忙。	他不忙。	不	adjective state (degree 很 in the affirmative only)
+他很高。	他不高。	不	adjective state
+他想去学校。	他不想去学校。	不	volitional 想
+他喝了茶。	他没喝茶。	没	了 bounded, transitive
+他看过书。	他没看过书。	没	过 experiential, transitive
+他在睡觉。	他不在睡觉。	不	ongoing 在
+他喜欢猫。	他不喜欢猫。	不	stative verb 喜欢
+他买了书。	他没买书。	没	了 bounded, transitive
+他去了北京。	他没去北京。	没	了 bounded, goal
+他去学校。	他去不去学校？	不	NOVEL A-not-A from unmarked bundle
+他去了学校。	他去没去学校？	没	NOVEL A-not-A from bounded bundle

@@ -26,7 +26,9 @@
     "fork:aspect": "npm run build --silent && node scripts/fork-aspect-challenge.mjs",
     "fork:construction": "npm run build --silent && node scripts/fork-construction-challenge.mjs",
     "fork:sense": "npm run build --silent && node scripts/fork-sense-challenge.mjs",
-    "fork:dashboard": "npm --prefix demo/dashboard run build"
+    "fork:dashboard": "npm --prefix demo/dashboard run build",
+    "fork:stage5-probes": "node scripts/fork-stage5-probes.mjs",
+    "fork:stage5": "node scripts/fork-stage5.mjs"
   },
   "type": "commonjs",
   "version": "0.1.0"

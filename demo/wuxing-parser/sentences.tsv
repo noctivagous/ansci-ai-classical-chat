@@ -32,3 +32,6 @@ zh	他买三书。	missing classifier — must be flagged	flagged:missing-classi
 zh	你去不去？	A-not-A question form	exact
 zh	他走了吗？	sentence-final particles in scope order （了 before 吗）	exact
 zh	饭被吃了。	agentless 被 passive: the agent slot is suppressed, not filled	exact
+zh	他不去学校。	preverbal negation 不 — dropped at parse until stage 5 (defect F1)	exact
+zh	他没去学校。	preverbal negation 没， selected by the aspect bundle (Part F.2)	exact
+zh	他去没去学校？	A-not-A with the bounded-reading negator 没	exact

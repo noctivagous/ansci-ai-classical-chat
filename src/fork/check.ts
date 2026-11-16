@@ -123,6 +123,25 @@ export function checkSentence(parsed: ParsedSentence): Violation[] {
         }
       }
     }
+    /* Earth→Metal: counted noun with the WRONG classifier (Part
+     * F.3's checker agreement). Applies only where the noun's
+     * classifier is tabled — the admitted prediction mechanism's
+     * scope; untabled nouns are the heuristic's abstention zone
+     * and are not policed. */
+    for (let i = 0; i + 2 < tokens.length; i++) {
+      if (ZH_FUNCTION[tokens[i]] !== "numeral") continue;
+      const clf = tokens[i + 1];
+      const noun = tokens[i + 2];
+      const isClf = ZH_FUNCTION[clf] === "classifier" || clf === "把";
+      const tabled = ZH_LEXICON[noun] && "classifier" in ZH_LEXICON[noun] ? (ZH_LEXICON[noun] as { classifier?: string }).classifier : undefined;
+      if (isClf && tabled && clf !== tabled) {
+        out.push({
+          name: "classifier-mismatch",
+          cycle: "Earth→Metal",
+          message: `counted noun '${noun}' generates classifier '${tabled}', not '${clf}'`,
+        });
+      }
+    }
     /* Earth→Metal: particle scope order (aspect < question < attitude). */
     const rank = { aspect: 1, question: 2, attitude: 3 } as const;
     const kinds = parsed.scopeAttachments.map((s) => s.kind);
