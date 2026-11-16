@@ -168,12 +168,14 @@ export default function App() {
           <strong>not a percentage</strong>. A single number would pretend the remaining work is
           uniform and that every score measures the same thing. Instead there are three ledgers —
           mechanical feature preservation, externally judged correctness, and evidence-qualified
-          coverage — and a gain in one is never presented as a gain in another. Below: the measured
-          capabilities with their caveats attached, the engine itself to try, the traces behind its
+          coverage — and a gain in one is never presented as a gain in another. Below: the engine
+          itself to try, the measured capabilities with their caveats attached, the traces behind its
           answers, and a wall of named failures.
         </p>
         <p className="asof">Evidence as of {EVIDENCE_AS_OF}. The reports in docs/fork/ are the record; this page is a view of them.</p>
       </header>
+
+      <Ask />
 
       <section id="path">
         <h2>Path to a working chatbot</h2>
@@ -277,7 +279,6 @@ export default function App() {
       </section>
 
       <Lab />
-      <Ask />
 
       <section id="failures">
         <h2>Where it currently fails</h2>
