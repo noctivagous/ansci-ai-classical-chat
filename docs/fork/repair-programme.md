@@ -1424,12 +1424,26 @@ operates beneath it:
   its kin) predict at T4 under a named-layer extension of the
   bridge, each carrying its layer; the Benjing-grade rule is not
   loosened, the later layer is priced instead of excluded.
+  **Filing clarification (2026-11-15):** a later-layer record
+  *for the whole animal itself* — not a meat record, not a
+  part — files as a flagged, discounted assertion at T3 (the
+  pilot's well-water pattern: the record is real, its layer is
+  named, the flag is its price). P6/T4 is reserved for extending
+  a record beyond its subject — a meat record generalised to
+  the animal, a part's record to the whole. What decides the
+  filing is the record's subject, not its layer.
 - **R7 (glass family).** Assertion: abstain. **Prediction P7:**
   two competing T4 predictions are registered and preserved in
   conflict — composition (silica → stone class → Earth) vs
   transformation (fire-fused → Fire). The conflict is the
   prediction tier working as designed; validation, not
   adjudication taste, is what may close it.
+  **Closed by the user's ruling (2026-11-15):** composition
+  governs. Glass is stone-stuff → **Earth**; the fire in its
+  making changed its shape, not its stuff — as a forged knife is
+  steel, not fire. The transformation prediction is retired.
+  The glass family's prediction is Earth · T4 from this date;
+  the assertion layer still abstains (R7 unchanged).
 - **R8 (cross-domain consistency).** Applies at every tier: the
   same stuff receives the same call at the same tier in every
   domain. Unchanged.
