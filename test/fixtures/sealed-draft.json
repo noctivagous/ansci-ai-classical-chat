@@ -1,0 +1,653 @@
+{
+  "manifest_id": "wp2-tooling-fixture-1",
+  "created": "2026-11-15T00:00:00Z",
+  "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+  "roles": {
+    "author": "tooling fixture (builders)",
+    "operator": "operator",
+    "custodian": "custodian"
+  },
+  "items": [
+    {
+      "item_id": "F-001",
+      "item_text": "He sleeps in winter.",
+      "language": "en",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "target_claim_id": "tooling-fixture",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "sleep#0",
+            "value": "sleep"
+          },
+          {
+            "family": "voice",
+            "key": "sleep#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "sleep#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "sleep#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "sleep#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "sleep#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "sleep#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "he#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "winter#0",
+            "value": "Water"
+          },
+          {
+            "family": "entity",
+            "key": "winter#0|prep",
+            "value": "in"
+          },
+          {
+            "family": "roles",
+            "key": "sleep#0|agent",
+            "value": "he"
+          },
+          {
+            "family": "attachment",
+            "key": "winter|time",
+            "value": "sleep"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    },
+    {
+      "item_id": "F-002",
+      "item_text": "She found rest in the garden.",
+      "language": "en",
+      "item_class": "discriminating",
+      "item_status": "determinate",
+      "target_claim_id": "sense-selection-by-coherence",
+      "conventional_prediction": "dictionary order selects rest's Water reading regardless of context",
+      "elemental_prediction": "the garden's Earth support selects rest's Earth reading",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "find#0",
+            "value": "find"
+          },
+          {
+            "family": "voice",
+            "key": "find#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "find#0|aspect:bounded",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "find#0|tense",
+            "value": "past"
+          },
+          {
+            "family": "mood",
+            "key": "find#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "find#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "find#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "she#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "rest#0",
+            "value": "Earth"
+          },
+          {
+            "family": "entity",
+            "key": "garden#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "garden#0|det",
+            "value": "the"
+          },
+          {
+            "family": "entity",
+            "key": "garden#0|prep",
+            "value": "in"
+          },
+          {
+            "family": "roles",
+            "key": "find#0|agent",
+            "value": "she"
+          },
+          {
+            "family": "roles",
+            "key": "find#0|theme",
+            "value": "rest"
+          },
+          {
+            "family": "roles",
+            "key": "find#0|location",
+            "value": "garden@in"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    },
+    {
+      "item_id": "F-003",
+      "item_text": "She found rest.",
+      "language": "en",
+      "item_class": "near-miss",
+      "item_status": "finite-ambiguity",
+      "target_claim_id": "sense-selection-by-coherence",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "find#0",
+            "value": "find"
+          },
+          {
+            "family": "voice",
+            "key": "find#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "find#0|aspect:bounded",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "find#0|tense",
+            "value": "past"
+          },
+          {
+            "family": "mood",
+            "key": "find#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "find#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "find#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "she#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "rest#0",
+            "value": "Water"
+          },
+          {
+            "family": "roles",
+            "key": "find#0|agent",
+            "value": "she"
+          },
+          {
+            "family": "roles",
+            "key": "find#0|theme",
+            "value": "rest"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [
+        {
+          "atoms": [
+            {
+              "family": "predicate",
+              "key": "find#0",
+              "value": "find"
+            },
+            {
+              "family": "voice",
+              "key": "find#0|voice",
+              "value": "active"
+            },
+            {
+              "family": "aspect",
+              "key": "find#0|aspect:bounded",
+              "value": "true"
+            },
+            {
+              "family": "tense",
+              "key": "find#0|tense",
+              "value": "past"
+            },
+            {
+              "family": "mood",
+              "key": "find#0|mood",
+              "value": "indicative"
+            },
+            {
+              "family": "negation",
+              "key": "find#0|negated",
+              "value": "false"
+            },
+            {
+              "family": "number",
+              "key": "find#0|subjectPerson",
+              "value": "3sg"
+            },
+            {
+              "family": "entity",
+              "key": "she#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "rest#0",
+              "value": "Earth"
+            },
+            {
+              "family": "roles",
+              "key": "find#0|agent",
+              "value": "she"
+            },
+            {
+              "family": "roles",
+              "key": "find#0|theme",
+              "value": "rest"
+            },
+            {
+              "family": "connective",
+              "key": "entry",
+              "value": "Wood"
+            }
+          ]
+        }
+      ],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    },
+    {
+      "item_id": "F-004",
+      "item_text": "What did Napoleon eat for breakfast on his tenth birthday?",
+      "language": "en",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "target_claim_id": "tooling-fixture",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    },
+    {
+      "item_id": "F-005",
+      "item_text": "他是老师。",
+      "language": "zh",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "target_claim_id": "tooling-fixture",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "老师#0",
+            "value": "老师"
+          },
+          {
+            "family": "voice",
+            "key": "老师#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "老师#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "老师#0|tense",
+            "value": "unmarked"
+          },
+          {
+            "family": "mood",
+            "key": "老师#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "老师#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "老师#0|subjectPerson",
+            "value": "unmarked"
+          },
+          {
+            "family": "entity",
+            "key": "他#0",
+            "value": "none"
+          },
+          {
+            "family": "connective",
+            "key": "他|predicated-as|老师",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    },
+    {
+      "item_id": "F-006",
+      "item_text": "他在游泳。",
+      "language": "zh",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "target_claim_id": "tooling-fixture",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "游泳#0",
+            "value": "游泳"
+          },
+          {
+            "family": "voice",
+            "key": "游泳#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "游泳#0|aspect:ongoing",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "游泳#0|tense",
+            "value": "unmarked"
+          },
+          {
+            "family": "mood",
+            "key": "游泳#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "游泳#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "游泳#0|subjectPerson",
+            "value": "unmarked"
+          },
+          {
+            "family": "entity",
+            "key": "他#0",
+            "value": "none"
+          },
+          {
+            "family": "roles",
+            "key": "游泳#0|agent",
+            "value": "他"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    },
+    {
+      "item_id": "F-007",
+      "item_text": "他不想去学校。",
+      "language": "zh",
+      "item_class": "near-miss",
+      "item_status": "determinate",
+      "target_claim_id": "negation-scope-serial",
+      "conventional_prediction": "negation attaches to the chain's root verb (去)",
+      "elemental_prediction": "negation attaches to the verb it precedes (想)",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "想#0",
+            "value": "想"
+          },
+          {
+            "family": "voice",
+            "key": "想#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "想#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "想#0|tense",
+            "value": "unmarked"
+          },
+          {
+            "family": "mood",
+            "key": "想#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "想#0|negated",
+            "value": "true"
+          },
+          {
+            "family": "negation",
+            "key": "想#0|negator",
+            "value": "不"
+          },
+          {
+            "family": "negation",
+            "key": "想#0|carrier",
+            "value": "不"
+          },
+          {
+            "family": "number",
+            "key": "想#0|subjectPerson",
+            "value": "unmarked"
+          },
+          {
+            "family": "predicate",
+            "key": "去#0",
+            "value": "去"
+          },
+          {
+            "family": "voice",
+            "key": "去#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "去#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "去#0|tense",
+            "value": "unmarked"
+          },
+          {
+            "family": "mood",
+            "key": "去#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "去#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "construction",
+            "key": "去#0|construction",
+            "value": "serial"
+          },
+          {
+            "family": "number",
+            "key": "去#0|subjectPerson",
+            "value": "unmarked"
+          },
+          {
+            "family": "entity",
+            "key": "他#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "学校#0",
+            "value": "none"
+          },
+          {
+            "family": "roles",
+            "key": "想#0|agent",
+            "value": "他"
+          },
+          {
+            "family": "roles",
+            "key": "去#0|agent",
+            "value": "他"
+          },
+          {
+            "family": "connective",
+            "key": "想|chains-to|去",
+            "value": "present"
+          },
+          {
+            "family": "roles",
+            "key": "去#0|patient",
+            "value": "学校"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "source_id": "tooling-fixture (authored by the builders to exercise the machinery — NOT a WP2 benchmark set)",
+      "sampling_frame": "hand-picked machinery checks",
+      "selection_seed": "fixture-1",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-15T00:00:00Z",
+      "excluded_decisions": "none"
+    }
+  ]
+}

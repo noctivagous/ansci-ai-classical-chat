@@ -25,6 +25,13 @@ registry for every surviving non-cycle claim, and the two standing
 user decisions (Slice 1 classification principle; density/precision
 thresholds).
 
+The WP2 benchmark infrastructure the programme specifies is built
+and described in `wp2-tooling.md`: the sealed-materials machinery
+(C.5 — manifest, hashing, author/operator/custodian operations,
+G0-accuracy scoring per amendment A1) and the review-triage queue
+machinery (C.6). The judging itself awaits independent humans, as
+specified; nothing in the tooling simulates it.
+
 **What exists on this branch**
 
 - The foundation, carried over **unchanged**: the seed ontology graph
@@ -109,9 +116,14 @@ thresholds).
     RelatedTo → weak association kept only when both ends classify;
     anything else drops with a named reason, as does any triple
     whose ends cannot be classified by the table or the WordNet
-    climb. **Interface and mapping only, fixture-tested: CSKG data
-    is NOT installed in this tree (no `data/cskg`), and live
-    ingestion awaits the data install — it is not faked here.**
+    climb. The mapping is fixture-tested; live ingestion lives in
+    `cskg-ingest.ts`, which streams the CSKG extract
+    (`data/raw/cskg/cskg.tsv.gz`, a local install artifact —
+    `data/raw/` is gitignored, so a fresh checkout has no data)
+    through the mapper with drop accounting. Availability is a
+    reported state: with no extract installed, ingestion returns
+    status "absent" and banks nothing; it is not faked either way,
+    and the test suite passes in both states.
 - The turn loop, new in `src/fork/` (Slice C):
   - `session.ts` — the light situation record (entities, events,
     states) built only from parsed meaning graphs; pronoun resolution

@@ -14,7 +14,11 @@
  *    consonant doubling). Irregular pasts (blow→blew) are NOT
  *    generated; the surface still RESOLVES to the lemma through the
  *    extract's forms index for parsing, but its tense reads as the
- *    parser's default. Derived verbs carry NO valency: slots is
+ *    parser's default. One resolution preference is deliberate: a
+ *    surface that is another lemma's selected irregular past or
+ *    participle resolves to THAT lemma even when the surface is
+ *    itself a lemma (found → find, not the homonymous 'found' =
+ *    establish) — see irregularFormLemma. Derived verbs carry NO valency: slots is
  *    ["patient"] and required is [] — permissive by design, because
  *    WordNet gives no valency frames. The Wood→Earth checker therefore
  *    has nothing to check a derived verb against; that is a real
@@ -291,9 +295,35 @@ export function irregularForms(lemma: string): { past?: string; participle?: str
   return { past, participle: participle ?? past };
 }
 
+/** A surface that is another verb lemma's SELECTED irregular past
+ *  or participle resolves to that lemma: found → find, saw → see.
+ *  lemmaFor checks lemma-identity first, so without this the
+ *  surface 'found' derived the homonymous lemma 'found' (establish,
+ *  regular paradigm) and "She found rest in the garden" regenerated
+ *  as "She founds rest…" — the derived entry's paradigm, not the
+ *  surface's tense, drove generation and the agreement check.
+ *  Selection is by irregularForms' own verdict (the forms index
+ *  also attests regularised strong forms — "beginned" — which prove
+ *  nothing), candidates in extract order. The recorded limit: the
+ *  homonymous lemma's bare present ("they found schools" =
+ *  establish) becomes unreachable through this provider; position
+ *  and frequency favour the strong-verb reading, and the -ed/-s
+ *  surfaces of the homonymous lemma still resolve to it. */
+function irregularFormLemma(surface: string): string | undefined {
+  const ex = extract();
+  if (!ex) return undefined;
+  const key = surface.toLowerCase();
+  const cands = (ex.forms.get(key) ?? []).filter((c) => c.pos === "v" && c.lemma !== key);
+  for (const c of cands) {
+    const irr = irregularForms(c.lemma);
+    if (irr.past === key || irr.participle === key) return c.lemma;
+  }
+  return undefined;
+}
+
 export function wordnetVerb(surface: string): VerbEntry | undefined {
   if (!enabled) return undefined;
-  const lemma = lemmaFor(surface, "v");
+  const lemma = irregularFormLemma(surface) ?? lemmaFor(surface, "v");
   if (!lemma) return undefined;
   const cacheKey = "v:" + lemma;
   let entry = entryCache.get(cacheKey) as VerbEntry | undefined;

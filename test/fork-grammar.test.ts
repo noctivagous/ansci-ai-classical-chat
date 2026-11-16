@@ -219,3 +219,49 @@ test("subject PP modifiers are kept, not dropped (pre-verbal PP fix)", () => {
   // Object PPs still belong to the verb, not the object noun.
   assert.equal(generate(parse("She baked a cake in the kitchen.", "en")), "She baked a cake in the kitchen.");
 });
+
+/* ---- Conventional tranche 1: ZH copula, modal, serial scope,
+ *      progressive — recorded engineering debts, closed. ---- */
+
+test("ZH nominal copula: 他是老师 parses on predicated-as with the copula recorded, and round-trips", () => {
+  const p = roundTrip("他是老师。", "zh");
+  assert.ok(p.meaning.edges.some((e) => e.relation === "predicated-as"));
+  assert.equal(root(p).states?.copulaForm, "是");
+  // The copula-less realisation of the same relation stays copula-less.
+  const bare = roundTrip("今天星期一。", "zh");
+  assert.equal(root(bare).states?.copulaForm, undefined);
+  // Negated copula: the negator precedes 是.
+  const neg = roundTrip("他不是老师。", "zh");
+  assert.equal(root(neg).states?.negation?.negator, "不");
+  roundTrip("她是医生。", "zh");
+  assert.deepEqual(violations("他是老师。", "zh"), []);
+});
+
+test("ZH modal 会: rides on the verb's state and round-trips, negated and not", () => {
+  const p = roundTrip("他会游泳。", "zh");
+  assert.equal(root(p).states?.modal, "会");
+  roundTrip("他会来。", "zh");
+  roundTrip("他不会游泳。", "zh");
+  assert.deepEqual(violations("他会游泳。", "zh"), []);
+});
+
+test("ZH serial scope: 他不想去学校 negates 想, and the chain regenerates whole", () => {
+  const p = roundTrip("他不想去学校。", "zh");
+  const r = root(p);
+  assert.equal(r.lemma, "想");
+  assert.equal(r.states?.negation?.negator, "不");
+  const chain = p.meaning.edges.find((e) => e.from === r.id && e.relation === "chains-to");
+  assert.ok(chain, "想 chains to the following verb");
+  const second = p.meaning.nodes.find((n) => n.id === chain.to)!;
+  assert.equal(second.lemma, "去");
+  assert.notEqual(second.states?.negated, true);
+  roundTrip("他想去学校。", "zh");
+});
+
+test("ZH progressive 在: preverbal marker, {ongoing} bundle, survives negation", () => {
+  const p = roundTrip("他在游泳。", "zh");
+  assert.deepEqual(root(p).states?.aspect, { ongoing: true });
+  assert.equal(root(p).states?.aspectMarker, "在");
+  roundTrip("他不在游泳。", "zh");
+  assert.deepEqual(violations("他在游泳。", "zh"), []);
+});

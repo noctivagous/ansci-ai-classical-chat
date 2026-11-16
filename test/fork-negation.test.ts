@@ -64,3 +64,19 @@ test("temporal PPs resolve into the ontology's time nodes (Part F.4)", () => {
   const p = parse("He sleeps in the garden.", "en");
   assert.ok(p.meaning.edges.some((e) => e.relation === "location"));
 });
+
+test("synthetic negation: unmarked 很 drops, the progressive marker and the modal stay", () => {
+  // The stage-5 generation direction: negate a parsed affirmative
+  // graph (no recorded negator — the bundle rule selects it) and
+  // regenerate. Three of its named leftovers close here.
+  const negate = (s: string): string => {
+    const p = parse(s, "zh");
+    const r = p.meaning.nodes.find((n) => n.id === p.meaning.rootId)!;
+    r.states = { ...r.states, negated: true, negation: undefined };
+    return generate(p);
+  };
+  assert.equal(negate("他很忙。"), "他不忙。", "很 is dropped under negation, not retained");
+  assert.equal(negate("他在游泳。"), "他不在游泳。", "progressive 在 is not dropped under negation");
+  assert.equal(negate("他会游泳。"), "他不会游泳。", "the negator scopes over the modal");
+  assert.equal(negate("他是老师。"), "他不是老师。", "copula negation precedes 是");
+});

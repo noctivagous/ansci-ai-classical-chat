@@ -91,6 +91,15 @@ export interface NodeStates {
   verbForm?: string;
   /** Copula tense for predicate (verbless-entry) clauses. */
   copulaTense?: "present" | "past";
+  /** ZH copula surface the parse saw （是）, recorded on a nominal
+   *  predication so generation re-emits it: ZH realises the
+   *  'predicated-as' relation with no copula at all （今天星期一） or
+   *  with 是 （他是老师）, and the graph must say which. */
+  copulaForm?: string;
+  /** ZH preverbal aspect marker the parse saw （在, progressive):
+   *  generation re-emits it BEFORE its verb, where the post-verbal
+   *  particle the bundle would otherwise select （着） does not go. */
+  aspectMarker?: string;
   /** Construction template used, where the language has one (zh: ba/bei/serial/a-not-a). */
   construction?: string;
   /** Modal auxiliary riding on the clause (en would/can), for conditionals. */
@@ -373,6 +382,13 @@ zh(v("有", ["theme"], ["theme"], { base: "有" }));
 zh(v("看", ["patient"], [], { base: "看" }));
 zh(v("喝", ["patient"], [], { base: "喝" }));
 zh(v("喜欢", ["patient"], [], { base: "喜欢" }));
+zh(v("来", [], [], { base: "来" }));
+zh(v("游泳", [], [], { base: "游泳" }));
+/* 想 heads a serial chain: its complement is the following verb,
+ * chained by the ordinary serial machinery — which is also what
+ * gives preverbal negation its scope （他不想去学校 negates 想，
+ * not 去）. */
+zh(v("想", [], [], { base: "想" }));
 zh(simple("noun", "饭", "Earth"));
 zh(simple("noun", "茶", "Earth"));
 zh(simple("noun", "猫", "Earth", { classifier: "只" }));
@@ -381,6 +397,10 @@ zh(simple("noun", "桌子", "Earth", { classifier: "张" }));
 zh(simple("noun", "冬天", "Earth", { semanticElement: "Water" }));
 zh(simple("noun", "学校", "Earth"));
 zh(simple("noun", "北京", "Earth"));
+/* Copula-complement professions （他是老师）: Earth nouns like any
+ * other nominal predicate. */
+zh(simple("noun", "老师", "Earth"));
+zh(simple("noun", "医生", "Earth"));
 /* Nominal predication vocabulary （今天星期一）: time nominals and the
  * weekday names as Earth nouns. */
 zh(simple("noun", "今天", "Earth"));
@@ -390,6 +410,7 @@ zh(simple("noun", "节日", "Earth"));
 zh(simple("pronoun", "我", "Earth", { person: "1sg" }));
 zh(simple("pronoun", "你", "Earth", { person: "2" }));
 zh(simple("pronoun", "他", "Earth", { person: "3sg" }));
+zh(simple("pronoun", "她", "Earth", { person: "3sg" }));
 zh(simple("adjective", "冷", "Fire", { semanticElement: "Water" }));
 zh(simple("adjective", "高", "Fire"));
 zh(simple("adjective", "快", "Fire"));
@@ -406,6 +427,8 @@ export const ZH_FUNCTION: Record<string, string> = {
   "吧": "attitude-particle",
   "不": "negation",
   "没": "negation",
+  "是": "copula",
+  "会": "modal",
   "没有": "negation",
   "把": "ba-marker",
   "被": "bei-marker",

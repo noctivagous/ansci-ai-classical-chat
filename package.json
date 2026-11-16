@@ -8,7 +8,8 @@
   "private": true,
   "scripts": {
     "ask": "npm run build --silent && node dist/src/cli.js",
-    "chat": "npm run build --silent && node dist/src/chat.js",
+    "chat": "npm run build --silent && node scripts/fork-chat.mjs",
+    "chat:cskg": "npm run build --silent && node dist/src/chat.js",
     "chat:once": "npm run build --silent && node scripts/chat-once.mjs",
     "build": "tsc",
     "dev": "npm run build --silent && node dist/src/cskg/devserver.js",
@@ -28,7 +29,9 @@
     "fork:sense": "npm run build --silent && node scripts/fork-sense-challenge.mjs",
     "fork:dashboard": "npm --prefix demo/dashboard run build",
     "fork:stage5-probes": "node scripts/fork-stage5-probes.mjs",
-    "fork:stage5": "node scripts/fork-stage5.mjs"
+    "fork:stage5": "node scripts/fork-stage5.mjs",
+    "fork:sealed": "npm run build --silent && node scripts/fork-sealed.mjs",
+    "fork:triage": "npm run build --silent && node scripts/fork-triage.mjs"
   },
   "type": "commonjs",
   "version": "0.1.0"

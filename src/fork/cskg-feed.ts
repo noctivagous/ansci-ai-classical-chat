@@ -2,13 +2,14 @@
  * cskg-feed.ts — the CSKG feeder interface for the fork (mapping only).
  *
  * STATUS, plainly: the interface and the relation mapping are built
- * and fixture-tested; LIVE CSKG INGESTION IS NOT. The CSKG data is
- * not installed in this tree (there is no data/cskg directory — the
- * install substrate, scripts/install.mjs and the loader in
- * src/cskg/loader.ts, belongs to the classical track), and nothing
- * here fakes an ingestion. When the data is installed, triples in the
- * loader's shape can be fed through mapTriple one at a time and the
- * surviving links banked into the fork graph with provenance "cskg".
+ * and fixture-tested, and live ingestion is built beside it in
+ * cskg-ingest.ts, which streams the installed CSKG extract
+ * (data/raw/cskg/cskg.tsv.gz — a local install artifact, gitignored;
+ * the classical loader in src/cskg/loader.ts reads the same files)
+ * through mapTriple. Whether the data is present in a given tree is
+ * a reported state (cskgDataStatus), never an assumption: on an
+ * absent extract, ingestion reports "absent" and banks nothing.
+ * Surviving links bank into the fork graph with provenance "cskg".
  *
  * Input shape follows the CSKG TSV conventions the loader reads
  * (src/cskg/loader.ts): subject/object are concept labels, relation

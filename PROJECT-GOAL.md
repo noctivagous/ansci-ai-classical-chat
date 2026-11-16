@@ -24,3 +24,17 @@ Acceptance is by transcript. We run free conversation — statements as well as 
 Deferred past this milestone: the ancient Chinese ontology (yin/yang, Wuxing) as the direction layer; building our own unified graph from the separate nets; bringing in outside information; and modifying the knowledge base. Those return once a real chat exists for them to serve.
 
 Also watched for, under the project's emergence stance: behaviour the transcripts show that no rule was written to produce — recorded with its trace and classified honestly, as a coherent derivation, an artefact, or a bug.
+
+---
+
+## Status note — 2026-11-15 (added later; the document above stands as written)
+
+Milestone 1's CSKG chat was built, and that track is now archived in place —
+files, tests and data untouched. The project's centre has moved to the fork:
+building out the Wuxing ontology as AnSci's own knowledge system (docs/fork/).
+CSKG's role is supporting — a feeder, a benchmark, and a conventional-knowledge
+baseline to develop and evaluate against — not the primary knowledge system,
+and not slated for wholesale replacement: individual dependencies are retired
+only when AnSci has demonstrated an adequate alternative. The long-term
+objective is an independent knowledge system, not a CSKG interface with
+Five-Element labels attached.

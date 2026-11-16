@@ -18,7 +18,25 @@ are acquired by mapping their concepts onto those same priors, with confidence s
 **The graph is the model. An LLM, when one is used at all, is only ever the trainer or
 the translator — never the reasoner.**
 
-## Try the CSKG chat
+## Project status — 2026-11-15
+
+The active line of work is the fork in `src/fork/`: the Wuxing (wǔxíng, "five phases")
+ontology and the sentence engine built on it (see `docs/fork/`). The CSKG chat
+track described below (Milestone 1, `src/cskg/`) is **archived in place**: its
+files, tests and data stay where they are, and CSKG keeps a supporting role —
+a knowledge feeder (`src/fork/cskg-ingest.ts`), a benchmark, and a
+conventional-knowledge baseline the Wuxing system is developed and evaluated
+against. It is no longer the centre of the project. No substantial effort goes
+into expanding the CSKG integration, and individual CSKG dependencies are
+retired only when AnSci has demonstrated an adequate alternative; the
+long-term objective is an independent knowledge system of AnSci's own, with
+CSKG as an optional external resource.
+
+Concretely: `npm run chat` now starts the fork's surface
+(`scripts/fork-chat.mjs`) — a parser demonstrator, not a finished chat. The
+CSKG chat remains runnable under its own name: `npm run chat:cskg`.
+
+## Try the CSKG chat (archived track)
 
 A self-contained spike in `src/cskg/` puts a working chat on CSKG, the unified
 commonsense graph (ConceptNet, WordNet, FrameNet, ATOMIC, Roget's Thesaurus,

@@ -322,9 +322,19 @@ function zhGenerate(p: ParsedSentence): string {
   const predEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === root.id);
   if (predEdge) {
     const topic = nodeById(p, predEdge.from);
-    const degree = p.meaning.edges.filter((e) => e.relation === "modulates" && e.to === root.id).map((e) => nodeById(p, e.from))[0];
     const neg = root.states?.negation?.negator ?? (root.states?.negated ? zhNegatorFor(root.lemma, root.states?.aspect) : "");
-    return `${zhNp(p, topic)}${degree ? degree.form : ""}${neg}${root.form}。`;
+    // Nominal predication with a recorded copula: the negator
+    // precedes 是 （他不是老师）, as it precedes a verb.
+    if (root.states?.copulaForm) {
+      return `${zhNp(p, topic)}${neg}${root.states.copulaForm}${root.form}。`;
+    }
+    const degree = p.meaning.edges.filter((e) => e.relation === "modulates" && e.to === root.id).map((e) => nodeById(p, e.from))[0];
+    // Under negation the unmarked degree 很 is dropped: the
+    // attested negative of 他很忙 is 他不忙， not 他很不忙 (a
+    // stage-5 generation leftover). Marked degree words （非常）
+    // are content and stay.
+    const degForm = neg && degree?.form === "很" ? "" : degree ? degree.form : "";
+    return `${zhNp(p, topic)}${degForm}${neg}${root.form}。`;
   }
 
   /* Counted noun phrase standing alone. */
@@ -366,6 +376,17 @@ function zhGenerate(p: ParsedSentence): string {
     // rule's selection (Part F.2) — never a surface guess.
     const negator = current.states?.negated ? current.states?.negation?.negator ?? zhNegatorFor(current.lemma, current.states?.aspect) : undefined;
     if (negator) out += negator;
+    // The modal rides between the negator and its verb
+    // （他会游泳 / 他不会游泳）: 会 scopes under negation, as it
+    // surfaces.
+    if (current.states?.modal) out += current.states.modal;
+    // Progressive 在 rides immediately BEFORE its verb （他在游泳，
+    // 他不在游泳） — and suppresses the post-verbal particle the
+    // bundle would otherwise select: 在 and 着 are two realisations
+    // of {ongoing}, and the record says which one the clause
+    // carries. (A stage-5 leftover had 在 dropped under synthetic
+    // negation; the marker is state, independent of the negator.)
+    if (current.states?.aspectMarker) out += current.states.aspectMarker;
     // The aspect particle rides immediately after its own verb
     // (吃了饭), before the verb's arguments. One interaction the
     // stage-5 generation probe exposed: 没 absorbs the bounded
@@ -374,6 +395,7 @@ function zhGenerate(p: ParsedSentence): string {
     // 着 are not absorbed: 他没去过北京 keeps its experiential.)
     let tail = zhClauseTail(p, current);
     if (negator === "没" && tail === "了") tail = "";
+    if (current.states?.aspectMarker) tail = "";
     out += current.form + tail;
     // Degree complement (R6): 得 + degree content follows its verb.
     const deg = targets(p, current.id, "degree")[0];

@@ -47,7 +47,7 @@ import {
 import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
 import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
-import { zhAspectFor } from "./aspect";
+import { zhAspectFor, zhPreverbalAspectFor } from "./aspect";
 
 class Builder {
   nodes: MeaningNode[] = [];
@@ -1505,6 +1505,20 @@ function parseZh(text: string): ParsedSentence {
     if (predItem) {
       const root = nounNode(predItem, "predicate");
       root.states = { mood: interrogative ? "interrogative" : "indicative" };
+      // The copula 是， when present, is connective scaffolding for
+      // the same 'predicated-as' relation — recorded on the root,
+      // not a node: 他是老师 and 今天星期一 are one relation with
+      // two realisations, and generation re-emits the one the parse
+      // saw. Its negation rides the same record （他不是老师）.
+      const copItem = items.find((i) => i.func === "copula");
+      if (copItem) {
+        root.states.copulaForm = copItem.text;
+        const negItemC = items.find((i) => i.func === "negation");
+        if (negItemC) {
+          root.states.negated = true;
+          root.states.negation = { negator: negItemC.text, carrier: negItemC.text };
+        }
+      }
       b.edge(topic, root, "predicated-as");
       return { meaning: b.graph(root), connective: connective("zh", tokens, spans, 0), realizes: b.realizes, scopeAttachments: scope };
     }
@@ -1521,6 +1535,8 @@ function parseZh(text: string): ParsedSentence {
   // item at all and it fell through every case — the F1 defect:
   // 他不去学校。 parsed affirmative, checker silent.
   let pendingNegation: string | undefined;
+  let pendingModal: string | undefined;
+  let pendingAspectMarker: { bundle: AspectBundle; marker: string } | undefined;
   let current: MeaningNode | undefined;
   for (let k = 0; k < items.length; k++) {
     const it = items[k];
@@ -1551,6 +1567,20 @@ function parseZh(text: string): ParsedSentence {
     }
     if (it.func === "chain-marker") { pendingChainMarker = it.text; continue; }
     if (it.func === "negation") { pendingNegation = it.text; continue; }
+    if (it.func === "modal") { pendingModal = it.text; continue; }
+    if (it.func === "preposition" && it.text === "在") {
+      // Progressive 在: preverbal, immediately (modulo negation)
+      // before the verb it marks （他在游泳）. The locative 在 of
+      // this grammar is post-verbal (the ba branch, verb prep
+      // slots), so a preverbal 在 whose next content item is a verb
+      // is the aspect marker; any other 在 keeps its old fate —
+      // it falls through, as it always has.
+      const nextContent = items.slice(k + 1).find((x) => x.entry || x.func);
+      if (nextContent?.entry?.kind === "verb") {
+        pendingAspectMarker = zhPreverbalAspectFor(it.text);
+        continue;
+      }
+    }
     if (it.func === "aspect-particle" || it.func === "question-particle" || it.func === "attitude-particle") {
       scope.push({
         form: it.text,
@@ -1568,6 +1598,15 @@ function parseZh(text: string): ParsedSentence {
         node.states.negated = true;
         node.states.negation = { negator: pendingNegation, carrier: pendingNegation };
         pendingNegation = undefined;
+      }
+      if (pendingModal) {
+        node.states.modal = pendingModal;
+        pendingModal = undefined;
+      }
+      if (pendingAspectMarker) {
+        node.states.aspect = pendingAspectMarker.bundle;
+        node.states.aspectMarker = pendingAspectMarker.marker;
+        pendingAspectMarker = undefined;
       }
       if (subject) b.edge(node, subject, "agent");
       if (current) {

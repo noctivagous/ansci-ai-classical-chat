@@ -38,6 +38,19 @@ export function zhAspectFor(particle: string): AspectBundle | undefined {
   }
 }
 
+/** ZH PREVERBAL aspect markers -> the bundle they realise, with the
+ *  marker itself: 在 is the progressive, realised before its verb —
+ *  the preverbal half of the dispatcher, where zhAspectFor covers
+ *  the post-verbal particles. The marker travels with the bundle
+ *  because generation must re-emit 在 pre-verbally, not the
+ *  post-verbal 着 the same {ongoing} bundle selects by default. */
+export function zhPreverbalAspectFor(marker: string): { bundle: AspectBundle; marker: string } | undefined {
+  switch (marker) {
+    case "在": return { bundle: { ongoing: true }, marker: "在" };
+    default: return undefined;
+  }
+}
+
 /** The particle a bundle selects on ZH generation, in the order the
  *  language stacks them when several features are present. A bundle
  *  produced by the parser carries at most one particle feature. */

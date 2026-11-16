@@ -164,3 +164,20 @@ test("provider off: 'blows' fails exactly as it did before the provider existed"
   const p = parse("The wind blows from the east.", "en");
   assert.equal(generate(p), "The wind blows from the east.", "re-enabling restores derivation");
 });
+
+test("irregular-form resolution: 'found' derives find, and its paradigm drives generation", () => {
+  // The derived-verb form quirk: 'found' is itself a WordNet lemma
+  // (establish), so lemma-identity used to win and the surface's
+  // tense was lost — "She found rest in the garden" regenerated as
+  // "She founds rest…" under a bogus agreement violation.
+  const entry = wordnetVerb("found");
+  assert.equal(entry?.lemma, "find");
+  assert.equal(entry?.forms.past, "found");
+  const s = "She found rest in the garden.";
+  assert.equal(generate(parse(s, "en")), s);
+  assert.deepEqual(checkSentence(parse(s, "en")).map((v) => v.name), []);
+  // The homonymous lemma keeps its own paradigm via its marked
+  // surfaces: 'founded' still resolves to 'found' (establish).
+  assert.equal(wordnetVerb("founded")?.lemma, "found");
+  assert.equal(wordnetVerb("saw")?.lemma, "see");
+});
