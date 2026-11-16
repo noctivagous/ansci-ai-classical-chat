@@ -49,8 +49,9 @@
  */
 
 import { getDefaultFrameNetBundle, type FrameRecord } from "../framenet";
+import { getDefaultExtract, synsetsForLemma } from "../wordnet";
 import type { Element } from "./sentence";
-import { climbClassification } from "./wordnet-lex";
+import { climbClassification, wordnetAvailable } from "./wordnet-lex";
 
 /** FE -> role mapping, v1. Explicit and finite on purpose: an FE not
  *  listed here is unmapped, and unmapped core FEs are reported in the
@@ -214,6 +215,189 @@ export function signatureInventory(): FrameSignature[] {
   return out.sort((a, b) => a.lemma.localeCompare(b.lemma));
 }
 
+/* ---------------- verb classification (VERB_DOMAIN_V1) ----------------
+ * The stage-1 trial was not runnable because the system produced no
+ * semantic element for verbs: the noun/adjective climb
+ * (climbClassification) walks hypernyms to classified anchor
+ * CONCEPTS, and verbs are an island in the extract — troponym chains
+ * stay inside verb synsets and converge on a handful of abstract
+ * roots (act/move, exist/be…), the extract carries no derivational
+ * (verb->noun) relations, and a verb synset's lemmas spell an anchor
+ * only by homograph accident (wind-the-verb is twisting, not air).
+ * Every structural bridge was probed and measured before this rule
+ * was designed; the audit trail is docs/fork/verb-classification-
+ * trial.md.
+ *
+ * VERB_DOMAIN_V1 — the registered rule. A verb's semantic element
+ * is the phase whose process vocabulary dominates the dictionary
+ * definitions of the verb's own senses:
+ *   - Texts: the glosses of ALL the lemma's verb synsets in the
+ *     OEWN extract (every sense contributes; a cue word counts once
+ *     per element however many glosses carry it, so a frequent
+ *     sense cannot outvote the lemma's other senses by repetition).
+ *   - Vocabulary: VERB_DOMAIN_CUES_V1 below — the five phases'
+ *     process domains stated as word lists: Wood = growth,
+ *     expansion, rising, motion/transfer, shouting, sight; Fire =
+ *     heat, combustion, light, cooking, joy/laughter, speech and
+ *     cognition (the heart governs the tongue and the mind in the
+ *     correspondence system); Earth = making/creation,
+ *     transformation, nourishment, filling/holding, singing,
+ *     pensiveness; Metal = severing, division, contraction,
+ *     gathering-in, grief/weeping, smell; Water = precipitation,
+ *     flow, descent, cold, stillness/storage, washing, groaning,
+ *     fear, hearing. Emotion and perception words follow the
+ *     attested five-emotion and five-orifice rows; the rest is the
+ *     phases' process reading, fork-creative in kind.
+ *   - Assignment: the element with the most distinct cue hits is
+ *     assigned iff it scores >= 2 AND strictly beats the runner-up;
+ *     otherwise the rule ABSTAINS (no element). Matching is by
+ *     morphological variant sets (sing/singing/sings count once).
+ *   - Pricing: confidence = min(0.75, 0.50 + 0.05 x (score +
+ *     margin)) — never above the fork-creative ceiling; provenance
+ *     is "verb-domain-derived", a derived layer distinct from the
+ *     table and from the noun climb.
+ *   - Scope: verb lemmas with at least one verb synset in the
+ *     extract. The rule reads NO FrameNet data — deliberately: the
+ *     prior it feeds must be computable for lexical units FrameNet
+ *     does not contain, and must not read the evidence it is
+ *     tested against.
+ *   - Falsification: the C.2 stage-1 failure test — if the
+ *     FrameNet-only baseline (the inventory's global modal shape)
+ *     matches or beats the element-conditioned predictions on
+ *     held-out lexical units, the domain prior fails and is
+ *     adopted nowhere. The rule itself is falsified as a
+ *     classification if its assignments do not recover the
+ *     depth-cycle claim-3 desk groupings above chance on verbs it
+ *     was not calibrated against.
+ */
+
+export const VERB_DOMAIN_CUES_V1: Record<Element, string[]> = {
+  Wood: ["grow", "growth", "expand", "expansion", "extend", "extension", "spread", "rise", "rising", "ascend", "sprout", "develop", "development", "move", "movement", "motion", "travel", "journey", "proceed", "advance", "wind", "flourish", "transfer", "transmit", "convey", "deliver", "carry", "bring", "send", "go", "walk", "run", "shout", "anger", "angry", "see", "sight", "eye", "look", "watch"],
+  Fire: ["heat", "hot", "warm", "warmth", "burn", "burning", "flame", "fire", "glow", "shine", "light", "bright", "boil", "melt", "blaze", "flare", "cook", "cooking", "joy", "laugh", "laughter", "speak", "speech", "talk", "tell", "say", "communicate", "communication", "verbal", "teach", "teaching", "learn", "learning", "know", "knowledge", "think", "thinking", "impart", "instruct", "instruction", "skill", "study", "educate", "education", "taste", "tongue"],
+  Earth: ["make", "create", "creation", "build", "building", "construct", "construction", "produce", "production", "form", "prepare", "transform", "transformation", "assemble", "join", "food", "nourish", "fill", "filling", "full", "cover", "covering", "coat", "hold", "contain", "occupy", "receive", "sing", "singing", "song", "worry", "pensiveness", "anxious", "digest", "centre", "center", "stable"],
+  Metal: ["cut", "sever", "divide", "division", "separate", "separation", "contract", "contraction", "shrink", "gather", "collect", "harvest", "pierce", "stab", "slice", "grief", "sad", "sadness", "weep", "cry", "decline", "wither", "autumn", "smell", "nose", "scent"],
+  Water: ["rain", "snow", "precipitation", "precipitate", "water", "flow", "descend", "descent", "fall", "pour", "liquid", "cold", "freeze", "freezing", "ice", "rest", "store", "storage", "sleep", "still", "sink", "drip", "stream", "wet", "moisture", "wash", "cleanse", "bathe", "groan", "fear", "afraid", "hear", "ear", "listen"],
+};
+
+/** Morphological variants of a word, for cue matching: the word
+ *  itself plus its regular -s / -ing / -ed / -ies alternants, so
+ *  sing, sings and singing are one piece of evidence, not three. */
+function wordVariants(w: string): Set<string> {
+  const out = new Set([w]);
+  if (w.length > 3 && w.endsWith("s")) out.add(w.slice(0, -1));
+  if (w.length > 5 && w.endsWith("ing")) {
+    out.add(w.slice(0, -3));
+    out.add(w.slice(0, -3) + "e");
+  }
+  if (w.length > 4 && w.endsWith("ed")) {
+    out.add(w.slice(0, -2));
+    out.add(w.slice(0, -1));
+  }
+  if (w.length > 4 && w.endsWith("ies")) out.add(w.slice(0, -3) + "y");
+  return out;
+}
+
+/** Cue surface form -> (element, cue word). The registered lists
+ *  are collision-free across elements (verified at registration:
+ *  no surface form is generated by two elements' cue words), so
+ *  first-claim is unambiguous. */
+const CUE_FORMS: Map<string, { element: Element; cue: string }> = (() => {
+  const map = new Map<string, { element: Element; cue: string }>();
+  for (const [element, words] of Object.entries(VERB_DOMAIN_CUES_V1) as [Element, string[]][]) {
+    for (const cue of words) {
+      for (const form of wordVariants(cue)) {
+        if (!map.has(form)) map.set(form, { element, cue });
+      }
+    }
+  }
+  return map;
+})();
+
+export interface VerbClassification {
+  element: Element;
+  /** Priced per the rule: min(0.75, 0.50 + 0.05 x (score + margin)). */
+  confidence: number;
+  /** Distinct cue words of the winning element found in the glosses. */
+  score: number;
+  /** Winning score minus the runner-up element's score. */
+  margin: number;
+  /** The cue words that fired, in the order first seen — the
+   *  classification is inspectable from these plus the glosses. */
+  hits: string[];
+  provenance: "verb-domain-derived";
+  rule: "VERB_DOMAIN_V1";
+}
+
+const verbClassificationCache = new Map<string, VerbClassification | undefined>();
+
+/**
+ * The verb equivalent of climbClassification: a verb lemma's
+ * semantic element under VERB_DOMAIN_V1, or undefined when the rule
+ * abstains (no verb synsets, top score < 2, or a tie). Mirrors
+ * climbClassification's toggle discipline: while the WordNet
+ * provider is off the function abstains and caches nothing.
+ */
+export function verbClassification(lemma: string): VerbClassification | undefined {
+  if (!wordnetAvailable()) return undefined;
+  const key = lemma.toLowerCase();
+  if (verbClassificationCache.has(key)) return verbClassificationCache.get(key);
+  const result = computeVerbClassification(key);
+  verbClassificationCache.set(key, result);
+  return result;
+}
+
+function computeVerbClassification(key: string): VerbClassification | undefined {
+  let ex;
+  try {
+    ex = getDefaultExtract();
+  } catch {
+    return undefined;
+  }
+  const synsets = synsetsForLemma(ex, key).filter((s) => s.pos === "v");
+  if (!synsets.length) return undefined;
+  const counts = new Map<Element, number>();
+  const hits = new Map<Element, string[]>();
+  const seen = new Set<string>();
+  for (const synset of synsets) {
+    for (const raw of synset.gloss.toLowerCase().split(/[^a-z]+/)) {
+      if (!raw) continue;
+      for (const form of wordVariants(raw)) {
+        const claim = CUE_FORMS.get(form);
+        if (!claim) continue;
+        const id = `${claim.element}:${claim.cue}`;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        counts.set(claim.element, (counts.get(claim.element) ?? 0) + 1);
+        const list = hits.get(claim.element) ?? [];
+        list.push(claim.cue);
+        hits.set(claim.element, list);
+      }
+    }
+  }
+  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  if (!ranked.length) return undefined;
+  const [element, score] = ranked[0];
+  const runnerUp = ranked.length > 1 ? ranked[1][1] : 0;
+  if (score < 2 || score <= runnerUp) return undefined;
+  const margin = score - runnerUp;
+  return {
+    element,
+    confidence: Math.min(0.75, 0.5 + 0.05 * (score + margin)),
+    score,
+    margin,
+    hits: hits.get(element) ?? [],
+    provenance: "verb-domain-derived",
+    rule: "VERB_DOMAIN_V1",
+  };
+}
+
+/** A lemma's semantic element from whichever classification reaches
+ *  it: the curated table / noun climb first (the join's evidence),
+ *  then VERB_DOMAIN_V1 for verbs. Used only by the domain prior. */
+function elementOf(lemma: string): Element | undefined {
+  return climbClassification(lemma)?.element ?? verbClassification(lemma)?.element;
+}
+
 /* ---------------- the domain prior (evaluation only) ---------------- */
 
 /** A signature *shape*: the role inventory, abstracted from any frame. */
@@ -225,13 +409,18 @@ export function shapeOf(sig: FrameSignature): SignatureShape {
 
 /**
  * The elemental domain prior, as a falsifiable predictor: a verb's
- * semantic element (WordNet climb, the same evidence the join uses)
- * predicts the modal signature shape among the *seen* inventory verbs
- * sharing that element. Falls back to the global modal shape when the
- * verb has no classification or its element group is empty. This is
- * the depth-cycle claim-3 mechanism (element-domain predicts signature
- * shape) stated as code so the stage-1 evaluation can score it —
- * it is used NOWHERE in parsing or checking.
+ * semantic element predicts the modal signature shape among the
+ * *seen* inventory verbs sharing that element. The element comes
+ * from the same evidence the join uses where that reaches (the
+ * curated table / WordNet noun climb), and for verbs — which the
+ * climb cannot reach — from VERB_DOMAIN_V1 (verbClassification
+ * above), a WordNet-side rule that reads no FrameNet data. Falls
+ * back to the global modal shape when the verb has no classification
+ * or its element group is empty. This is the depth-cycle claim-3
+ * mechanism (element-domain predicts signature shape) stated as code
+ * so the evaluation can score it — it is used NOWHERE in parsing or
+ * checking. Its trial record (stage 1: not runnable; slice 4: run)
+ * is docs/fork/verb-classification-trial.md and registry entry H8.
  */
 export function predictSignatureShape(
   lemma: string,
@@ -249,10 +438,10 @@ export function predictSignatureShape(
     }
     return [...counts.values()].sort((a, b) => b.n - a.n || shapeKey(a.shape).localeCompare(shapeKey(b.shape)))[0]?.shape;
   };
-  const element = climbClassification(lemma)?.element;
+  const element = elementOf(lemma);
   if (element) {
     const group = inventory.filter(
-      (sig) => climbClassification(sig.lemma)?.element === element,
+      (sig) => elementOf(sig.lemma) === element,
     );
     const shape = group.length > 0 ? modal(group) : undefined;
     if (shape) return { shape, element, basis: `modal shape of ${group.length} seen verbs classified ${element}` };
