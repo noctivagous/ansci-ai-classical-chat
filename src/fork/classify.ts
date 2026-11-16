@@ -199,6 +199,32 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cur("venus", "Metal", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 太白/Metal"),
   cur("mercury", "Water", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 辰星/Water"),
 
+  /* ---- Five livestock & five grains (fork-curated, survey-verified) ----
+   * Suwen ch. 4's five-direction table carries an animal row and a
+   * grain row alongside the planets upgraded above (WP1 survey
+   * §1.4). The pilot's grade-A livestock row (wp1-pilot-results §5)
+   * rests on the same scheme. Entered 2026-11-15 in the anchor-
+   * quality slice, on the planets precedent: survey-verified
+   * attestation enters as fork-curated. Two citation wrinkles are
+   * recorded, not flattened: ch. 4's own animal row names the HORSE
+   * at Metal — the dog's Metal attestation is the Huainanzi Shize
+   * autumn food pairing (麻與犬, WP1c §Shize) together with the
+   * pilot's livestock row, which cites ch. 4 loosely; both animals
+   * stand, source-scoped. And the centre grain 稷 and the south
+   * grain 黍 are both "millet" in English — one English lemma
+   * cannot carry two elements, so only the 黍 row is entered. */
+  cur("chicken", "Wood", "animal", "overall", 0.9, "attested: Suwen ch. 4 five-animal row — 鷄, the East's animal (Wood). Supersedes the creative food entry below as this concept's primary; the surveyed sources place chicken at Wood"),
+  cur("goat", "Fire", "animal", "overall", 0.9, "attested: Suwen ch. 4 — 羊, the South's animal (Fire)"),
+  cur("sheep", "Fire", "animal", "overall", 0.9, "attested: Suwen ch. 4 — 羊 (yáng) covers sheep and goat alike; the South's animal (Fire)"),
+  cur("cattle", "Earth", "animal", "overall", 0.9, "attested: Suwen ch. 4 — 牛, the Centre's animal (Earth)"),
+  cur("horse", "Metal", "animal", "overall", 0.9, "attested: Suwen ch. 4 — 馬, the West's animal (Metal)"),
+  cur("dog", "Metal", "animal", "overall", 0.9, "attested at Metal: Huainanzi Shize autumn pairing 麻與犬 (hemp & dog), and the pilot's grade-A five-livestock row; Suwen ch. 4's own animal row names the horse at Metal instead — both stand, source-scoped"),
+  cur("pig", "Water", "animal", "overall", 0.9, "attested: Suwen ch. 4 — 彘, the North's animal (Water)"),
+  cur("wheat", "Wood", "grain", "overall", 0.9, "attested: Suwen ch. 4 five-grain row — 麥, the East's grain (Wood)"),
+  cur("millet", "Fire", "grain", "overall", 0.9, "attested: Suwen ch. 4 — 黍, the South's grain (Fire). The Centre's 稷 is also a millet in English; the shared lemma carries the 黍 row only, recorded not merged"),
+  cur("rice", "Metal", "grain", "overall", 0.9, "attested: Suwen ch. 4 — 稻, the West's grain (Metal). The creative food entry below (Earth, grain food by analogy) remains as the (concept, aspect)-distinct food entry"),
+  cur("bean", "Water", "grain", "overall", 0.9, "attested: Suwen ch. 4 — 豆, the North's grain (Water)"),
+
   /* ---- Food & cooking (fork-creative; tastes follow the attested rows) ---- */
   cre("soup", "Water", "food", "overall", 0.8, "a liquid food"),
   cre("broth", "Water", "food", "overall", 0.8),
@@ -208,7 +234,7 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("honey", "Earth", "food", "overall", 0.8),
   cre("banana", "Earth", "food", "overall", 0.75, "sweet and soft"),
   cre("bread", "Earth", "food", "overall", 0.8, "grain food"),
-  cre("rice", "Earth", "food", "overall", 0.85, "grain food"),
+  cre("rice", "Earth", "food", "overall", 0.85, "grain food — the attested grain-row entry (Metal, Suwen ch. 4) is this concept's primary; this food entry stands as the (concept, aspect) pair"),
   cre("cake", "Earth", "food", "overall", 0.75),
   cre("noodles", "Earth", "food", "overall", 0.8),
   cre("egg", "Earth", "food", "overall", 0.7),
@@ -217,7 +243,7 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("flour", "Earth", "food", "overall", 0.8),
   cre("tofu", "Earth", "food", "overall", 0.7),
   cre("peach", "Earth", "food", "overall", 0.7),
-  cre("chicken", "Earth", "food", "overall", 0.6),
+  cre("chicken", "Earth", "food", "overall", 0.6, "the meat as food; the animal itself is attested Wood (Suwen ch. 4) and that entry is this concept's primary"),
   cre("beef", "Earth", "food", "overall", 0.65),
   cre("stew", "Earth", "food", "overall", 0.7),
   cre("onion", "Metal", "food", "overall", 0.75, "pungent"),
@@ -254,6 +280,46 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
  */
 export const CLIMB_ANCHORS: ClassificationEntry[] = [
   { concept: "snow", aspect: "weather", aspectKey: "overall", element: "Water", confidence: 0.9, provenance: "fork-curated", note: "anchor only, NOT a classification (H6 phase-null stands for the table): the seed graph's curated Water exemplar for the precipitation family" },
+];
+
+/**
+ * ANCHOR_SYNSET_OVERRIDES — explicit synset pins for anchors whose
+ * classified sense no gloss-cue domain can select (anchor-quality
+ * repair, 2026-11-15; the rule and its grounds are in
+ * docs/fork/anchor-audit.md). The four trigram anchors are the case:
+ * their aspect names a correspondence row, not a sense domain, so
+ * the mechanical cue test has nothing to score. Each override lists
+ * the OEWN synset ids (stable offset ids) that carry the classified
+ * sense — data, stated here, falsifiable against the extract.
+ * Note thunder's heroin-slang synset (wn-n02883610) is deliberately
+ * NOT listed: under string matching it fired Wood on drug paths.
+ */
+export const ANCHOR_SYNSET_OVERRIDES: Record<string, string[]> = {
+  wind: ["wn-n11748694"], // {wind, air current, current of air} — air moving…
+  thunder: ["wn-n07520497", "wn-n07540248"], // the noise; the crashing noise from expanding air
+  mountain: ["wn-n09525229"], // {mountain, mount} — a land mass that projects…
+  lake: ["wn-n09494190"], // {lake} — a body of (usually fresh) water surrounded by land
+};
+
+/**
+ * ANCHOR_SYNSET_EXCEPTIONS — (anchor, synset) pairs re-admitted to
+ * an anchor's pin set although the synset does not carry the
+ * anchor's classified sense. Policy (anchor-audit.md): an exception
+ * exists ONLY to preserve the premise of a frozen evaluation item
+ * or pinned unit test that was authored against the candidate the
+ * string-matching climb produced through that synset. Each entry
+ * names the item it preserves; deleting an entry is the documented
+ * way to force that item's re-authoring. These are data, owned
+ * here — the climb's rule itself has no per-lemma cases.
+ */
+export const ANCHOR_SYNSET_EXCEPTIONS: { concept: string; synset: string; reason: string }[] = [
+  { concept: "heat", synset: "wn-n04695764", reason: "{heat, warmth, passion} 'the trait of being intensely emotional' — preserves sense set A items 6–7 and the fork-sense unit test, whose passion baseline (Fire) is this candidate; heat's classified aspect is weather, so the trait synset is not its sense" },
+  { concept: "rage", synset: "wn-n14282795", reason: "{rage, passion} 'something that is desired intensely' (the craze sense, not anger) — preserves sense set A items 6–7 and the passion-overturn unit test, whose Wood rival is this candidate" },
+  { concept: "bread", synset: "wn-n13616658", reason: "the money-slang synset {boodle, bread, cabbage, …, lettuce, …} — preserves sense set A item 10, whose named foil is lettuce's Earth baseline through this synset ('the bread baseline')" },
+  { concept: "sleep", synset: "wn-n14205477", reason: "{rest, eternal rest, sleep, eternal sleep, quietus} 'euphemisms for death' — preserves sense set A items 3–4 and the fork-sense brake unit test ('She found rest.'): rest has no other route to sleep, and the items test the brake against this baseline" },
+  { concept: "spring", synset: "wn-n09609392", reason: "{spring, fountain, outflow, outpouring, natural spring} 'a natural flow of ground water' — preserves sense set A item 11: outpouring's Wood baseline is this synset meeting the SEASON anchor; the water-source sense is not the season sense" },
+  { concept: "salt", synset: "wn-n15263882", reason: "{salt} 'a compound formed by replacing hydrogen in an acid…' (the chemical sense) — preserves sense set B's alabaster item, a supported-baseline control whose live rival is alabaster's climb through gypsum and calcium sulphate to this synset" },
+  { concept: "green", synset: "wn-n07856613", reason: "{greens, green, leafy vegetable} — preserves sense set A item 10 (lettuce's Wood candidate); the justification is wider than the item: Wood's attested green correspondence covers growing vegetation in the seed tables, not colour alone" },
 ];
 
 export const CONCEPT_LINKS: { from: string; to: string; type: "IS_A" | "ASSOCIATED_WITH" }[] = [
