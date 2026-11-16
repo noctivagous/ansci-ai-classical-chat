@@ -3,7 +3,9 @@
 Status: DESIGN NOTE (2026-11-15). Commissioned by the user as a
 short note for judgment before anything is built. Nothing in
 this note is implemented. It covers parts 1 and 2 of the Path to
-a Working Chatbot (dialogue core; reply generation).
+a Working Chatbot (dialogue core; reply generation). The user's
+decisions on §7 questions 1, 3 and 4 were recorded the same day
+(§7); question 2 remains open.
 
 ## 1. The gap
 
@@ -172,22 +174,45 @@ call at that point, not the build's.
 - The four scripted scenarios keep passing. Their traces keep
   the same structure; only the wording's origin changes.
 
-## 7. Open questions for the user
+## 7. Decisions (user, 2026-11-15) and the one open question
 
-1. Composing several conclusions into one reply: order by
-   support, or by relation to the newest state? This note leans
-   to relation-first (the conversation's thread leads, strength
-   orders within it), but it is a real choice.
-2. The causal subordinate: realised when "why" is asked, and
-   otherwise? Or offered whenever support is middling — the
-   path produced as the reply's own evidence?
-3. Chinese: the generator covers it, but the turn loop is
-   English-only today. Land the planner English-first, with the
-   transform language-neutral so Chinese reply graphs follow —
-   or hold the planner until both land together?
-4. Disposition — the riding assumptions of the original
-   architecture, which bias processing and nothing else. This
-   note's proposal: disposition enters at §2.1's arbitration,
-   as a tie-break bias between rival contents, and nowhere
-   else. It never supplies content and never changes a support
-   figure.
+1. **Composition order — decided: build both, support is the
+   default.** When several conclusions compose into one reply,
+   both orderings are built out so they can be seen side by
+   side: ordered by support, and ordered by relation to the
+   newest state. Support-order is the default; relation-order
+   is the comparison that can displace it on evidence.
+2. **The causal subordinate — OPEN.** When the planner builds a
+   reply from a derivation, the path can be realised as a
+   subordinate "because" clause, or left in the trace. Two
+   policies are on the table. (a) Demand-driven: the path is
+   verbalised only when the person asks why, or challenges the
+   conclusion; otherwise the reply is the bare conclusion.
+   (b) Support-driven: the path is verbalised whenever the
+   derivation's support is middling — the reply offers its own
+   evidence exactly when the conclusion is not strong enough
+   to stand naked; strong conclusions stand alone. Under (b),
+   §2.2's dial turns one notch further: support controls not
+   only qualification but evidence-offering. A "why" question
+   triggers the clause under either policy. Undecided.
+3. **Language — decided: English-first, transform
+   language-neutral.** The planner lands English-first (the
+   turn loop's current reach); the transform itself is built
+   language-neutral, so Chinese reply graphs follow from the
+   same machinery when the turn loop's Chinese side is built,
+   rather than the planner being rebuilt for them.
+4. **Disposition — decided, broader than this note's
+   proposal.** The note proposed disposition as a tie-break
+   bias at §2.1's arbitration and nowhere else. The user's
+   ruling supersedes that: disposition is itself composed of a
+   Five Element combination, and it influences the system's
+   processes generally — arbitration, steering, generation —
+   so that a disposition of one composition actually produces
+   different responses from a disposition of another, by
+   changing how the processes run, not by supplying content.
+   The same composition treatment is available to other
+   architectural aspects: an aspect can be parameterised by an
+   elemental composition and thereby change behaviour across
+   the system. Two standing limits hold unchanged: disposition
+   is architecture, never surface (no reply names it), and it
+   biases processing only — it is never a source of testimony.
