@@ -72,6 +72,49 @@ function baselineElementOf(lemma: string, current: Element | undefined): Element
   return lookupClassification(lemma)?.element ?? climbClassification(lemma)?.element ?? current;
 }
 
+/** One node's sense analysis, shared by the selection pass and
+ *  the rival-split detection (R3) so the two can never drift
+ *  apart arithmetically: the ungated candidates, the live set
+ *  (within CONFIDENCE_BAND of the best confidence, spanning at
+ *  least two distinct elements), the baseline, the context
+ *  elements and the support each live element earns. Undefined
+ *  at exactly the points the selection pass skips a node. */
+interface SenseAnalysis {
+  baseline: Element;
+  /** The live candidates (ungated, within the band). */
+  live: ReturnType<typeof climbCandidates>;
+  liveElements: Element[];
+  context: Element[];
+  support: Partial<Record<Element, number>>;
+}
+
+function analyseSenseNode(node: ParsedSentence["meaning"]["nodes"][number], nodes: ParsedSentence["meaning"]["nodes"]): SenseAnalysis | undefined {
+  if (node.syntacticElement !== "Earth" && node.syntacticElement !== "Fire") return undefined;
+  const candidates = climbCandidates(node.lemma).filter((c) => !c.gated);
+  const elements = [...new Set(candidates.map((c) => c.element))];
+  if (elements.length < 2) return undefined;
+  const baseline = climbClassification(node.lemma)?.element;
+  if (!baseline) return undefined;
+  const bestConf = Math.max(...candidates.map((c) => c.confidence));
+  const live = candidates.filter((c) => c.confidence >= bestConf - CONFIDENCE_BAND);
+  const liveElements = [...new Set(live.map((c) => c.element))];
+  if (liveElements.length < 2) return undefined;
+  // Context: distinct elements of the OTHER content nodes.
+  const contextSet = new Set<Element>();
+  for (const other of nodes) {
+    if (other.id === node.id) continue;
+    if (other.syntacticElement !== "Earth" && other.syntacticElement !== "Fire") continue;
+    const el = baselineElementOf(other.lemma, other.semanticElement);
+    if (el) contextSet.add(el);
+  }
+  const context = [...contextSet];
+  const support: Partial<Record<Element, number>> = {};
+  for (const el of liveElements) {
+    support[el] = context.reduce((sum, ctx) => sum + relationSupport(ctx, el), 0);
+  }
+  return { baseline, live, liveElements, context, support };
+}
+
 /**
  * Apply sense-by-coherence to a parsed sentence in place: derived
  * nodes with live multi-element candidates may have their
@@ -82,29 +125,9 @@ export function applySenseSelection(parsed: ParsedSentence): SenseDecision[] {
   const decisions: SenseDecision[] = [];
   const nodes = parsed.meaning.nodes;
   for (const node of nodes) {
-    if (node.syntacticElement !== "Earth" && node.syntacticElement !== "Fire") continue;
-    const candidates = climbCandidates(node.lemma).filter((c) => !c.gated);
-    const elements = [...new Set(candidates.map((c) => c.element))];
-    if (elements.length < 2) continue;
-    const baseline = climbClassification(node.lemma)?.element;
-    if (!baseline) continue;
-    const bestConf = Math.max(...candidates.map((c) => c.confidence));
-    const live = candidates.filter((c) => c.confidence >= bestConf - CONFIDENCE_BAND);
-    const liveElements = [...new Set(live.map((c) => c.element))];
-    if (liveElements.length < 2) continue;
-    // Context: distinct elements of the OTHER content nodes.
-    const contextSet = new Set<Element>();
-    for (const other of nodes) {
-      if (other.id === node.id) continue;
-      if (other.syntacticElement !== "Earth" && other.syntacticElement !== "Fire") continue;
-      const el = baselineElementOf(other.lemma, other.semanticElement);
-      if (el) contextSet.add(el);
-    }
-    const context = [...contextSet];
-    const support: Partial<Record<Element, number>> = {};
-    for (const el of liveElements) {
-      support[el] = context.reduce((sum, ctx) => sum + relationSupport(ctx, el), 0);
-    }
+    const analysis = analyseSenseNode(node, nodes);
+    if (!analysis) continue;
+    const { baseline, liveElements, context, support } = analysis;
     let chosen = baseline;
     let bestSupport = support[baseline] ?? 0;
     for (const el of liveElements) {
@@ -118,4 +141,82 @@ export function applySenseSelection(parsed: ParsedSentence): SenseDecision[] {
     decisions.push({ lemma: node.lemma, baseline, chosen, overturned, support, context });
   }
   return decisions;
+}
+
+/* ------------------------------------------------------------------ */
+/* Rival splits (slice R3: §2.3's second gap shape)                   */
+/* ------------------------------------------------------------------ */
+
+/** One side of a rival split: the derivation the sense arithmetic
+ *  cannot separate from its rival — its landing element, the
+ *  anchor concept the climb derivation lands on (the derivation's
+ *  content, in a plain word), the candidate's confidence, the
+ *  coherence support it earned in this sentence, and its path. */
+export interface RivalDerivation {
+  element: Element;
+  anchor: string;
+  aspect?: string;
+  confidence: number;
+  support: number;
+  path: string;
+}
+
+export interface RivalSplit {
+  lemma: string;
+  nodeId: string;
+  /** The element the selection pass proceeds with — on a split,
+   *  it stands only by the tie-keep convention. */
+  baseline: Element;
+  /** The inseparable derivations, best confidence first. */
+  rivals: RivalDerivation[];
+}
+
+/**
+ * The nodes of a parsed sentence whose classification is SPLIT
+ * between rival derivations (§2.3: finite ambiguity): at least
+ * two live candidates in distinct elements whose coherence
+ * supports are EQUAL at the top — compared at the project's
+ * 4-decimal rounding, the rounding the climb confidences
+ * themselves are computed at. The sense arithmetic then offers
+ * no basis to choose: whichever element the selection pass
+ * proceeds with, it proceeds by its tie-keep convention, not by
+ * evidence. Supports that differ at all are decisive and are
+ * NOT splits — the selection stands on them, as it should.
+ *
+ * Purely a report: this function changes nothing in the parse.
+ * The turn loop (R3) asks the speaker to separate the rivals;
+ * the selection pass's own choice is left exactly as it was.
+ */
+export function rivalSplits(parsed: ParsedSentence): RivalSplit[] {
+  const nodes = parsed.meaning.nodes;
+  const splits: RivalSplit[] = [];
+  const round4 = (x: number): number => Math.round(x * 10000) / 10000;
+  for (const node of nodes) {
+    const analysis = analyseSenseNode(node, nodes);
+    if (!analysis) continue;
+    const { baseline, live, liveElements, support } = analysis;
+    const top = Math.max(...liveElements.map((el) => round4(support[el] ?? 0)));
+    const tied = liveElements.filter((el) => round4(support[el] ?? 0) === top);
+    if (tied.length < 2) continue;
+    const rivals: RivalDerivation[] = tied
+      .map((el) => {
+        // The element's representative derivation: its strongest
+        // live candidate (the one the isolated choice would take
+        // for that reading).
+        const best = live
+          .filter((c) => c.element === el)
+          .reduce((a, b) => (b.confidence > a.confidence ? b : a));
+        return {
+          element: el,
+          anchor: best.anchor,
+          ...(best.aspect ? { aspect: best.aspect } : {}),
+          confidence: best.confidence,
+          support: round4(support[el] ?? 0),
+          path: best.path,
+        };
+      })
+      .sort((a, b) => b.confidence - a.confidence || a.element.localeCompare(b.element));
+    splits.push({ lemma: node.lemma, nodeId: node.id, baseline, rivals });
+  }
+  return splits;
 }

@@ -57,12 +57,57 @@ const NEG_CONTRACTION: Record<string, string> = {
   had: "hadn't", did: "didn't", have: "haven't", has: "hasn't", do: "don't", does: "doesn't", can: "can't",
 };
 
+/**
+ * Cohesion markers (R5, §8.7 S3) realised sentence-initially:
+ * a 'links' edge from a predication's subject node into its
+ * predicate root carries the marker the planner earned against
+ * the session record (plan.ts's COHESION_MARKERS); the surface
+ * is the capitalised connective heading the clause. The fourth
+ * marker, "as for", is not a prefix but a fronted topic phrase
+ * and is handled at the call site.
+ */
+const COHESION_PREFIX: Record<string, string> = { and: "And ", so: "So ", but: "But " };
+
 /** The copula form for a copula root: tense from copulaTense, person
  *  from the subjectPerson the parse recorded (defaulting to 3sg). */
 function copulaForm(root: MeaningNode): string {
   const person = root.states?.subjectPerson ?? "3sg";
   if (root.states?.copulaTense === "past") return person === "1sg" || person === "3sg" ? "was" : "were";
   return person === "1sg" ? "am" : person === "3sg" ? "is" : "are";
+}
+
+/**
+ * One EN predicate clause (subject + copula + complement), without
+ * terminal punctuation — composed once here so a main clause and a
+ * causal subordinate are built by the same machinery (R1.5).
+ *
+ * Two state readings the predicate path did not make before R1.5:
+ *  - Modulators of the predicate root ('modulates' edges in): the
+ *    degree and hedge adverbs the graph carries, in graph order,
+ *    before the complement ("is most fully cold", "is likely
+ *    cold"). This is the EN counterpart of the ZH predicate path's
+ *    degree reading — the same states, English placement.
+ *  - A modal state on the predicate root: the modal carries the
+ *    clause and the copula surfaces as bare "be" ("The soup may
+ *    be cold."). Before R1.5 the state was silently dropped, so a
+ *    qualified conclusion could not be spoken from a graph at all.
+ * `subjectForm` overrides the subject's surface — a causal
+ * subordinate whose subject is the main clause's own subject again
+ * surfaces as "it", the connective layer's ordinary anaphora.
+ */
+function enPredicateClause(p: ParsedSentence, rootNode: MeaningNode, subjectForm?: string): string {
+  const predEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === rootNode.id);
+  const subject = predEdge ? nodeById(p, predEdge.from) : undefined;
+  const comp = rootNode.syntacticElement === "Earth" ? enNp(p, rootNode) : rootNode.form.toLowerCase();
+  const mods = p.meaning.edges
+    .filter((e) => e.relation === "modulates" && e.to === rootNode.id)
+    .map((e) => nodeById(p, e.from).form.toLowerCase());
+  const subj = subjectForm ?? (subject ? enNp(p, subject) : "");
+  const modal = rootNode.states?.modal;
+  if (modal) {
+    return `${subj} ${modal}${rootNode.states?.negated ? " not" : ""} be${mods.length ? " " + mods.join(" ") : ""} ${comp}`;
+  }
+  return `${subj} ${copulaForm(rootNode)}${rootNode.states?.negated ? " not" : ""}${mods.length ? " " + mods.join(" ") : ""} ${comp}`;
 }
 
 function enGenerate(p: ParsedSentence): string {
@@ -146,10 +191,103 @@ function enGenerate(p: ParsedSentence): string {
    * copula at all). */
   const predEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === root.id);
   if (predEdge) {
-    const subject = nodeById(p, predEdge.from);
-    const copula = copulaForm(root);
-    const comp = root.syntacticElement === "Earth" ? enNp(p, root) : root.form.toLowerCase();
-    return `${cap(enNp(p, subject))} ${copula}${root.states?.negated ? " not" : ""} ${comp}${punct}`;
+    const mainSubject = nodeById(p, predEdge.from);
+    /* Disjunctive clarification question (R3): an interrogative
+     * predication whose root carries a 'links' edge marked "or"
+     * to a second, alternative predication of the same subject —
+     * the representation plan.ts builds for a rival split (§2.3).
+     * The question asks which of the two contents the subject is
+     * meant as; the alternatives are the graph's own predicate
+     * nodes, realised by the same NP machinery as everything else. */
+    if (root.states?.mood === "interrogative") {
+      const orEdge = p.meaning.edges.find((e) => e.from === root.id && e.relation === "links" && e.marker === "or");
+      if (orEdge) {
+        const alt = nodeById(p, orEdge.to);
+        return `Do you mean ${enNp(p, mainSubject)} as in ${enNp(p, root)}, or as in ${enNp(p, alt)}?`;
+      }
+    }
+    /* Cohesion (R5, §8.7 S3): a 'links' edge from the subject
+     * node into the root, carrying an earned marker, joins this
+     * clause to the prior discourse. "as for" fronts the
+     * subject as a topic phrase and the clause's own subject
+     * surfaces as "it" (a person subject keeps its own form —
+     * the fronted phrase and the clause then name it alike);
+     * the other markers head the clause as sentence-initial
+     * connectives. The head replaces the capitalisation the
+     * bare clause would get: the marker is already capitalised
+     * and the clause keeps its own (lower) case. */
+    const cohesionEdge = p.meaning.edges.find(
+      (e) =>
+        e.to === root.id &&
+        e.from === predEdge.from &&
+        e.relation === "links" &&
+        !!e.marker &&
+        (e.marker === "as for" || e.marker in COHESION_PREFIX),
+    );
+    let front = "";
+    let subjectOverride: string | undefined;
+    if (cohesionEdge?.marker === "as for") {
+      front = `As for ${enNp(p, mainSubject)}, `;
+      if (mainSubject.lemma !== "you" && mainSubject.lemma !== "i") subjectOverride = "it";
+    } else if (cohesionEdge?.marker) {
+      front = COHESION_PREFIX[cohesionEdge.marker];
+    }
+    let clause = enPredicateClause(p, root, subjectOverride);
+    /* Coordinated predications (R2, §8.7 S13): 'links' edges out
+     * of a predicate root whose marker is "and" chain further
+     * predications onto the clause — the representation plan.ts
+     * builds for a composed set. Each chained predication is
+     * composed by the same predicate machinery, so its degree
+     * and qualification states realise identically to the main
+     * clause's; a chained subject repeating the main subject
+     * surfaces as "it", the same anaphora as the causal form
+     * below. R5: the same device with the marker "but" joins a
+     * correction's struck predication to the state that
+     * replaces it (planCorrection) — the join word is the
+     * edge's own marker in both cases. */
+    let cursor = root;
+    for (;;) {
+      const joinEdge = p.meaning.edges.find(
+        (e) => e.from === cursor.id && e.relation === "links" && (e.marker === "and" || e.marker === "but"),
+      );
+      if (!joinEdge) break;
+      const nextRoot = nodeById(p, joinEdge.to);
+      const nextSubjEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === nextRoot.id);
+      const nextSubject = nextSubjEdge ? nodeById(p, nextSubjEdge.from) : undefined;
+      // The repeated subject surfaces as "it" — for things.
+      // A person subject is not "it": it repeats in its own
+      // form ("You are not furious, but you are calm.").
+      const override =
+        nextSubject && nextSubject.lemma === mainSubject.lemma && mainSubject.lemma !== "you" && mainSubject.lemma !== "i"
+          ? "it"
+          : undefined;
+      clause += `, ${joinEdge.marker} ${enPredicateClause(p, nextRoot, override)}`;
+      cursor = nextRoot;
+    }
+    const head = front ? `${front}${clause}` : cap(clause);
+    /* Causal subordinate (R1.5, gap G2): a 'links' edge out of the
+     * root whose marker is "because" joins the clause's causal
+     * graph — the representation plan.ts builds for a demanded
+     * causal form (§7.2). 'links' is the graph's existing
+     * clause-joining relation (its ZH use joins the correlative
+     * construction's two verbs) and the edge's marker field is the
+     * connective layer's own device for carrying the surface
+     * connective (the same field that carries 就 on chains-to
+     * edges); no new vocabulary is introduced. The subordinate is
+     * composed by the same predicate machinery, so its degree and
+     * qualification states realise identically. */
+    const causeEdge = p.meaning.edges.find((e) => e.from === root.id && e.relation === "links" && e.marker === "because");
+    if (causeEdge && root.states?.mood !== "interrogative") {
+      const causeRoot = nodeById(p, causeEdge.to);
+      const causeSubjEdge = p.meaning.edges.find((e) => (e.relation === "predicate" || e.relation === "predicated-as") && e.to === causeRoot.id);
+      const causeSubject = causeSubjEdge ? nodeById(p, causeSubjEdge.from) : undefined;
+      const override =
+        causeSubject && causeSubject.lemma === mainSubject.lemma && mainSubject.lemma !== "you" && mainSubject.lemma !== "i"
+          ? "it"
+          : undefined;
+      return `${head}, because ${enPredicateClause(p, causeRoot, override)}${punct}`;
+    }
+    return `${head}${punct}`;
   }
 
   /* Locative copula (stage 3): the place is the predicate — the
@@ -180,7 +318,15 @@ function enGenerate(p: ParsedSentence): string {
       return `${cap(qNode.form)} ${form}${adverbs.length ? " " + adverbs.map((a) => a.form.toLowerCase()).join(" ") : ""}${restSurface.length ? " " + restSurface.join(" ") : ""}?`;
     }
     const carrier = root.states?.aux ?? (root.states?.tense === "past" ? "did" : "does");
-    return `${cap(qNode.form)} ${carrier} ${agent ? enNp(p, agent) : ""} ${entry.forms.base}?`;
+    // The clause's other filled arguments ride along — the
+    // why-branch above already composes them; an object question
+    // over a fuller event ("What did you put in the soup?",
+    // "What did you give him?") keeps its remaining roles rather
+    // than dropping them. The questioned node itself is the gap
+    // and is never among them.
+    const rest = orderedArgs(p, root, entry).filter((n) => n.id !== agent?.id && n.id !== qNode.id);
+    const restSurface = rest.map((n) => (n.prep ? `${n.prep} ${enNp(p, n)}` : enNp(p, n)));
+    return `${cap(qNode.form)} ${carrier} ${agent ? enNp(p, agent) : ""} ${entry.forms.base}${restSurface.length ? " " + restSurface.join(" ") : ""}?`;
   }
 
   const entry = EN_LEXICON[root.lemma] as VerbEntry;
@@ -235,7 +381,23 @@ function enGenerate(p: ParsedSentence): string {
   // alone is the simple form, which is also the unmarked default.
   const bundle = st.aspect ?? {};
   const pushAdverbs = () => { for (const a of preAdverbs) words.push(a.form.toLowerCase()); };
-  if (st.negated && st.aux) {
+  if (st.modal) {
+    // A modal state on the verb root is part of the clause's
+    // record (features.ts counts it as an atom): the modal
+    // carries the clause and the verb surfaces in base form,
+    // with the aspect bundle riding under it ("would have
+    // gone", "would be going"). Generation dropped this state
+    // until R1.5 — "You would go." came out as "You go." — which
+    // spoke the clause at a strength its graph never claimed
+    // (gap G3's verb-clause half).
+    words.push(st.modal);
+    if (st.negated) words.push("not");
+    pushAdverbs();
+    if (bundle.perfect && bundle.ongoing) words.push("have", "been", ingForm(entry.lemma));
+    else if (bundle.perfect) words.push("have", entry.forms.participle);
+    else if (bundle.ongoing) words.push("be", ingForm(entry.lemma));
+    else words.push(entry.forms.base);
+  } else if (st.negated && st.aux) {
     words.push(NEG_CONTRACTION[st.aux] ?? `${st.aux} not`);
     pushAdverbs();
     if (bundle.perfect && bundle.ongoing) words.push("been", ingForm(entry.lemma));
