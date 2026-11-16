@@ -67,61 +67,16 @@ function LiveF1() {
   );
 }
 
-const FIRST_STEPS: { priority: string; task: string; requirements: string }[] = [
-  {
-    priority: "1 · Dialogue core",
-    task: "Grow the steering probe (src/fork/turn.ts) into a session: state that persists across turns, an intent arc, and a situation model maintained by the directing layer.",
-    requirements:
-      "Transcripts are the acceptance test — every turn checkable in its trace, with the mechanism named. Questions arise only from a genuine gap in the combined conclusions, never from a template. What a conversation establishes reaches the durable graph only through the gated banking pipeline.",
-  },
-  {
-    priority: "2 · Reply generation",
-    task: "Make the generator the reply surface: plan a meaning graph from the turn's conclusions, situation and intent, and generate the reply sentence from that graph.",
-    requirements:
-      "No canned sentence whose content is not in the reply's own meaning graph. Every claim inspectable back to the derivation that produced it. Confidence carried through — weak derivations surface hedged — and abstention is a legitimate reply, produced by the mechanism, not by a deflection template.",
-  },
-  {
-    priority: "3 · Coverage growth",
-    task: "The three items at the head of the Coverage tab's list: the H7 banking pass over the mineral survey, the anchor-quality audit and repair, and the ingestion pipeline over the classical texts as its own slice.",
-    requirements:
-      "Every classification is an (concept, aspect) assertion with provenance and confidence — never an entity classified wholesale. Inference is priced always: a heuristic output names its registered rule and version, or it stands as an unresolved case. Attested tradition, creative application and analysis stay in distinct labelled layers; ingested text enters only with a citation.",
-  },
-  {
-    priority: "4 · Independent evaluation",
-    task: "WP2, the judged benchmark; the first sealed set under the full C.5 protocol; and the H3 sense experiment, including its Chinese arm.",
-    requirements:
-      "The tooling landed on 2026-11-15 — the sealed-set machinery and the review-triage queue are built and in the repo. What this needs now is people: an item author independent of the builders, a custodian distinct from the author, and judges who are never the builder. Bars are ratified before the run (precision ≥90% with the lower bound ≥85%; unsupported inferences ≤5%). H3 additionally needs 60 native Chinese speakers.",
-  },
-  {
-    priority: "5 · Feeders & banking",
-    task: "The tiers beyond CSKG, behind the same provider interface: Wikidata for facts, the web for procedures, a small model last — and the banking pipeline that distils successful retrievals into the overlay graph.",
-    requirements:
-      "CSKG ingestion is built (2026-11-15) and its extract installs locally as a feeder; the data is a local artifact, never shipped in the repo. Routing order is fixed — local graph, Wikidata, web, model — and a later tier is reached only when the earlier ones genuinely come back empty. Every answer carries its provenance visibly; banked edges live only in the overlay graph and enter at derived confidence.",
-  },
-  {
-    priority: "6 · The gardener",
-    task: "Two decisions before any build: the scope (development loop first, or live runtime as well) and the model (a hosted fast model, or a local 3–4B-class model behind the same provider interface).",
-    requirements:
-      "Both decisions are the owner's and both are open; until they are taken, the gardener stays a design record. When it is built: code changes are proposals with diffs and reasons, graph adjustments are gated and logged, and every fix is judged on a fresh holdout, never on the material that produced the failure.",
-  },
-  {
-    priority: "7 · Runtime & access",
-    task: "Session persistence, an asset strategy for the lexical providers, and a first served surface — the simplest real one — over the same engine.",
-    requirements:
-      "The core conversation loop runs fully offline against the local graph; connectivity buys reach, never basic function. A conversation survives restarts, with its memory boundary enforced by storage, not convention. Degraded configurations label themselves in the interface before they are asked a question they cannot answer.",
-  },
-];
-
 const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   {
     title: "Sense selection can be talked out of the right answer (X1)",
-    body: "In the sealed sense set, “The stock simmered in the pot” was overturned from broth (Water, correct) to bloodline (Fire): the pot's own Earth classification supported the wrong sense through a generating relation. The cycles amplify whatever classifications they touch — including wrong ones. Direction-sensitive support is the recorded fix direction; it was deliberately NOT retuned after seeing the sealed set.",
-    status: "recorded in docs/fork/sense-challenge.md · mechanism v2 not yet built",
+    body: "In the sealed sense set, “The stock simmered in the pot” was overturned from broth (Water, correct) to bloodline (Fire): the pot's own Earth classification supported the wrong sense through a generating relation. The cycles amplify whatever classifications they touch — including wrong ones. The anchor-quality repair (2026-11-15) removed the rival itself — stock's Fire candidate arrived through blood's lineage synset, a spelling-match artifact — and the sealed set now reads 6/6. The scorer flaw the failure exposed (generation support runs in both directions) is NOT fixed; it has lost the wayward candidate it acted on. Direction-sensitive support remains the recorded v2 direction.",
+    status: "rival removed by the anchor repair · scorer v2 not yet built · recorded in docs/fork/sense-challenge.md",
   },
   {
-    title: "The elemental valency prior cannot yet be tested",
-    body: "The programme's sharpest open question — does a verb's element predict its argument shape better than FrameNet alone? — is unrunnable: derived verbs carry no semantic element, because hypernym climbs anchor nouns and adjectives but not verbs. Until verbs are classified, the prior is adopted nowhere. Claims are sized to evidence here: an untestable mechanism earns nothing.",
-    status: "open · route is the classification pilot / coverage work",
+    title: "The elemental valency prior was tested — and failed",
+    body: "The programme's sharpest open question — does a verb's element predict its argument shape better than FrameNet alone? — has been run, and at the strength claimed the answer is no. Verbs were classified (574 of 3,071, by a stated gloss rule), the trial ran on held-out verbs, and on the predeclared headline (exact shape match) the prior tied the FrameNet-only baseline 0/4; under the rule set down when the test was designed, a tie fails it. Partial-credit measures favoured the prior throughout — within each element the shapes spread too widely for a single best guess to carry the signal. The prior remains adopted nowhere; the verb classifications are banked as labelled derivations.",
+    status: "trial run 2026-11-15 · verdict in docs/fork/verb-classification-trial.md · prior adopted nowhere",
   },
   {
     title: "H3a vs H3b — the sense rivalry — is unsettled",
@@ -130,8 +85,8 @@ const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   },
   {
     title: "Anchor coverage is the binding constraint",
-    body: "Of 8,099 polysemous words, only 28 have anchored senses in more than one element — and several anchors are reached by wayward paths (rock arrives at Earth via “sweet”; snap via “cake”). Better disambiguation cannot fix thin, noisy anchors; classification coverage and path quality are the long pole.",
-    status: "measured in the stage-4 census · the 500-object run is reframed under Part E (sample ready, P2 registered)",
+    body: "Of 8,094 polysemous words, only 19 have anchored senses in more than one element. The wayward paths are repaired — anchors now fire only on the dictionary senses carrying their classification, so rock no longer arrives at Earth via “sweet” — but the repair cost coverage: words with any anchored candidate fell from 646 to 416, and the lost candidates have not been judged one by one. Better disambiguation cannot fix thin anchors; classification coverage is the long pole.",
+    status: "repair measured in docs/fork/anchor-audit.md · coverage still the constraint",
   },
   {
     title: "Review does not scale yet",
@@ -168,14 +123,12 @@ export default function App() {
           <strong>not a percentage</strong>. A single number would pretend the remaining work is
           uniform and that every score measures the same thing. Instead there are three ledgers —
           mechanical feature preservation, externally judged correctness, and evidence-qualified
-          coverage — and a gain in one is never presented as a gain in another. Below: the engine
-          itself to try, the measured capabilities with their caveats attached, the traces behind its
+          coverage — and a gain in one is never presented as a gain in another. Below: the measured
+          capabilities with their caveats attached, the engine itself to try, the traces behind its
           answers, and a wall of named failures.
         </p>
         <p className="asof">Evidence as of {EVIDENCE_AS_OF}. The reports in docs/fork/ are the record; this page is a view of them.</p>
       </header>
-
-      <Ask />
 
       <section id="path">
         <h2>Path to a working chatbot</h2>
@@ -190,37 +143,6 @@ export default function App() {
           before that part may be called done.
         </p>
         <Roadmap />
-      </section>
-
-      <section id="first">
-        <h2>What comes first</h2>
-        <p className="lede">
-          The tabs above are the whole map, part by part. This is the order to work them in.
-          The first two rows are the path to anything that can be called a chat at all; the
-          rest are ordered by when work on them has to start — the evaluation row stands high
-          because its missing ingredient is people, and people take the longest to arrange.
-          Each row states what the task requires before it can be called done; the fuller
-          acceptance checklists stay in the tabs.
-        </p>
-        <table className="first-table">
-          <thead>
-            <tr>
-              <th>Priority</th>
-              <th>Task requirements</th>
-            </tr>
-          </thead>
-          <tbody>
-            {FIRST_STEPS.map((s) => (
-              <tr key={s.priority}>
-                <td className="pri">
-                  <strong>{s.priority}</strong>
-                  <span className="pri-task">{s.task}</span>
-                </td>
-                <td>{s.requirements}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </section>
 
       <section id="capabilities">
@@ -279,6 +201,7 @@ export default function App() {
       </section>
 
       <Lab />
+      <Ask />
 
       <section id="failures">
         <h2>Where it currently fails</h2>
