@@ -51,7 +51,14 @@ test("winter scenario: questions answered from the derivation path", () => {
   assert.match(t1.trace.derivationPath ?? "", /winter —ELEMENT_OF→ Water/);
   assert.match(t1.reply, /Winter is cold/);
   assert.match(t2.trace.derivationPath ?? "", /summer —ELEMENT_OF→ Fire/);
-  assert.match(t2.reply, /summer is hot/);
+  // R1.5: this turn's origin changed (probe degree-profile
+  // rendering → the planner's generated reply graph), so the
+  // reply is now the generator's sentence — capitalised
+  // sentence-initially and carrying the degree as a modulator
+  // ("Summer is most fully hot."). The old case-sensitive
+  // /summer is hot/ match cannot survive a generated sentence;
+  // it is replaced by the generated form, per T-R1.5-results.md.
+  assert.match(t2.reply, /Summer is most fully hot/);
   assert.match(t3.reply, /Winter is dark/);
 });
 
