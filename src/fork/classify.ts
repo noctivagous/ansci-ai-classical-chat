@@ -6,10 +6,14 @@
  * kept distinct, per the fork's standing rule that attested tradition,
  * creative extension and analysis never blur:
  *
- *  - "fork-curated": the entry restates a correspondence that the seed
- *    graph's attested tables already carry (src/seed.ts: the per-element
- *    correspondence rows for sound/color/taste/direction/emotion/organ,
- *    the season and time-of-day ELEMENT_OF edges, the trigram elements).
+ *  - "fork-curated": the entry restates an attested correspondence —
+ *    one the seed graph's attested tables already carry (src/seed.ts:
+ *    the per-element correspondence rows for
+ *    sound/color/taste/direction/emotion/organ, the season and
+ *    time-of-day ELEMENT_OF edges, the trigram elements), or one a
+ *    project survey has since verified in a named classical source
+ *    (so far: the five planets, Suwen ch. 4 + Huainanzi Tianwen —
+ *    see the planet rows).
  *  - "fork-creative": Kavi's extension by analogy from those tables.
  *    Same machinery, lower trust, always labelled.
  *
@@ -180,11 +184,20 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("garden", "Earth", "place", "overall", 0.7),
   cre("sun", "Fire", "sky", "overall", 0.8),
   cre("moon", "Water", "sky", "overall", 0.8),
-  cre("jupiter", "Wood", "planet", "overall", 0.8, "the five-planet scheme: Jupiter/Wood"),
-  cre("mars", "Fire", "planet", "overall", 0.8, "Mars/Fire"),
-  cre("saturn", "Earth", "planet", "overall", 0.8, "Saturn/Earth"),
-  cre("venus", "Metal", "planet", "overall", 0.8, "Venus/Metal"),
-  cre("mercury", "Water", "planet", "overall", 0.8, "Mercury/Water"),
+  // The five planets — upgraded from fork-creative to attested
+  // (2026-11-15, at the user's word). The project first carried
+  // these as its own addition by analogy; the WP1 survey then
+  // found them stated in Suwen ch. 4, and WP1c found the
+  // identical assignments in Huainanzi, Tianwen (139 BCE):
+  // 歲星 Wood, 熒惑 Fire, 鎮星 Earth, 太白 Metal, 辰星 Water.
+  // The heuristic landed where two early texts land — recorded
+  // in the programme as a convergence: the system is logical,
+  // and a heuristic can be developed to accord with it.
+  cur("jupiter", "Wood", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 歲星/Wood"),
+  cur("mars", "Fire", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 熒惑/Fire"),
+  cur("saturn", "Earth", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 鎮星/Earth"),
+  cur("venus", "Metal", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 太白/Metal"),
+  cur("mercury", "Water", "planet", "overall", 0.9, "attested: Suwen ch. 4 and Huainanzi Tianwen — 辰星/Water"),
 
   /* ---- Food & cooking (fork-creative; tastes follow the attested rows) ---- */
   cre("soup", "Water", "food", "overall", 0.8, "a liquid food"),

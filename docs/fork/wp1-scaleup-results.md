@@ -746,3 +746,32 @@ with them.
   attested, at the user's word, citing *Suwen* ch. 4 and
   *Huainanzi Tianwen*. The table's counts move to 46 curated /
   107 creative; the total is unchanged at 153.
+- **Malachite and kaolin — identifications resolved (research
+  completed 2026-11-15; findings in the project working papers,
+  `identification-research.md`).** Both §7 flags are superseded,
+  in opposite ways. **Malachite:** the flavor was never unstable
+  — the name mapping was. The substance takes the 綠青 record:
+  「綠青，味酸，寒，無毒」 from the *Bielu* onward, carried
+  unchanged into the *Gangmu*; the tradition itself states the
+  identity (Su Song, 1061: 綠青 is what is now called 石綠， the
+  painters' green). Its nature therefore resolves on the
+  recorded-flavor aspect: sour → **Wood · T3 · B-derived ·
+  0.50**, flagged for the modern-editorial identification leg.
+  The neighbouring names are azurite in other habits — 空青
+  (hollow), 曾青 (layered), 扁青 (block) — and their flavors
+  must not be borrowed; 空青's Benjing 甘 belongs to a different
+  thing. **Kaolin:** no flavor-stated record exists under
+  高嶺土 — the name is a Ming industrial place-name (its
+  documentary home is the *Tiangong Kaiwu*, 1637). The record
+  that denotes this clay is 白石脂： the *Benjing*'s joint
+  five-greases entry gives 味甘平 (the *Bielu* splits it as
+  甘酸，平）. Its nature resolves on the flavor aspect: sweet →
+  **Earth · T3 · B-derived · 0.50**, priced by identification —
+  the modern mineral ID splits between kaolinite and
+  halloysite, both kaolin-group, so the split does not touch
+  the flavor; and the record denotes the white kaolin clay as a
+  kind, not the Gaoling deposit alone. 白堊， the candidate that
+  produced the original flag, is chalk — a different white
+  earth; its 苦溫 must not be used for kaolin. **Revised
+  counts:** coverage 457 → **459/800** (nature 154 → 156/400);
+  T3 276 → 278; T5 343 → 341. Nothing else in §§6–8 changes.

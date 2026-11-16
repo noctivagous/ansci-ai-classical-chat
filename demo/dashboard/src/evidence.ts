@@ -93,9 +93,9 @@ export const CAPABILITIES: Capability[] = [
   {
     area: "Knowledge graph",
     headline: "153 classifications drive derivations by correspondence",
-    figure: "41 curated · 112 creative",
+    figure: "46 curated · 107 creative",
     meaning:
-      "Concepts classified onto the Five-Element spine (as (concept, aspect) pairs with confidence and provenance) yield correspondence conclusions through the ontology: anger → Wood → liver, spring, east, sour… Classifications from attested sources and the project's creative extensions are labelled as what they are, never blended. The weather entries were re-scoped under hypothesis H6 and its follow-on: rain classifies only through its precipitation aspect, provisionally (0.71); sleet, snow, hail, frost and fog assert nothing — the table is phase-null for them; ice classifies as a substance, storm through its wind aspect only. The hypernym climb keeps its own anchors: an assertion and an anchor are different jobs.",
+      "Concepts classified onto the Five-Element spine (as (concept, aspect) pairs with confidence and provenance) yield correspondence conclusions through the ontology: anger → Wood → liver, spring, east, sour… Classifications from attested sources and the project's creative extensions are labelled as what they are, never blended. The five planet rows began as creative extensions and were upgraded to attested (2026-11-15) when the surveys found them stated in Suwen ch. 4 and the Huainanzi — the project's heuristic had landed where two early texts land. The weather entries were re-scoped under hypothesis H6 and its follow-on: rain classifies only through its precipitation aspect, provisionally (0.71); sleet, snow, hail, frost and fog assert nothing — the table is phase-null for them; ice classifies as a substance, storm through its wind aspect only. The hypernym climb keeps its own anchors: an assertion and an anchor are different jobs.",
     caveat: "Coverage is small and hand-built — see the pilot card below for what happens when the protocol meets 100 ordinary objects.",
     source: "src/fork/classify.ts · docs/fork/wp1-classification-survey.md · repair-programme.md (H6 record)",
   },

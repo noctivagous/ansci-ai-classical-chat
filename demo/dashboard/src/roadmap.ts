@@ -77,7 +77,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     roadmap: [
       { done: true, text: "The classification procedure is proven: the 100-object pilot produced eight adjudication rulings and 94/95 supported assertions." },
       { done: true, text: "The 500-object run is designed and its sample ready: the pilot's 100 as calibration, 400 fresh objects on a prepared sheet, prediction rules P1/P2/P6/P7 registered." },
-      { done: false, text: "Run the 500-object run under Part E, scored on the three evaluations — heuristic coverage per tier, validated accuracy, abstention discipline." },
+      { done: true, text: "Run the 500-object run under Part E, scored on the three evaluations — heuristic coverage per tier, validated accuracy, abstention discipline. (Executed 2026-11-15: coverage 457/800, the accuracy ledger open for independent judges.)" },
       { done: false, text: "The H7 banking pass: the mineral survey's 50 substances gain derived flavor correspondences in the graph, as B-derived records with their derivation paths stored." },
       { done: false, text: "Anchor quality: audit and repair the hypernym climb's wayward paths (rock arriving at Earth via “sweet”), and widen anchor coverage where the tradition actually offers anchors." },
       { done: false, text: "The ingestion pipeline as its own approved slice: acquire → segment → read → propose → review → apply over the classical texts — no citation, no insertion; variant schemes coexist as source-scoped assertions." },
