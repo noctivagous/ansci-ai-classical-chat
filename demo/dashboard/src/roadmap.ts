@@ -28,7 +28,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     id: "dialogue",
     tab: "Dialogue core",
     title: "The conversation engine",
-    status: "dialogue core built · intent arc and person model still open",
+    status: "session core built — record, planner inputs, gap questions, bounded initiative · intent arc, person model, wider situation and durable memory still open",
     stands:
       "The steering probe has grown into a session record the planner reads: entities, events and states (each state carrying its origin — the classification leg it came from, its support, its tier), first-class topics with the turns they were raised and last touched, corrections recorded as supersession deltas, a disposition and a role composition, and an awareness frame — the session's season and daypart, classified from the shell's clock. Follow-up questions arise from genuine gaps (an unfilled required role, a classification split between rival derivations), and bounded initiative takes up a standing thread whose generating direction has gone unexpressed. The dashboard chat above runs all of it. What does not exist is unchanged in kind: no intent arc, no person model, no situation wider than the frame. Evidence: docs/fork/transcripts/T-R3.md, T-R5.md, T-R6.md and their results files; the §11 exercise in T-R7-dashboard-check.md.",
     roadmap: [

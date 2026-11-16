@@ -70,19 +70,19 @@ function LiveF1() {
 const FIRST_STEPS: { priority: string; task: string; requirements: string }[] = [
   {
     priority: "1 · Dialogue core",
-    task: "Grow the steering probe (src/fork/turn.ts) into a session: state that persists across turns, an intent arc, and a situation model maintained by the directing layer.",
+    task: "Session core built (2026-11-16): the steering probe is now a planner over a session record — states with their origins, first-class topics, corrections as supersession deltas, a disposition, an awareness frame. What remains in this row: the intent arc, a person model, a situation wider than the frame, and durable memory across sessions.",
     requirements:
-      "Transcripts are the acceptance test — every turn checkable in its trace, with the mechanism named. Questions arise only from a genuine gap in the combined conclusions, never from a template. What a conversation establishes reaches the durable graph only through the gated banking pipeline.",
+      "Transcripts are the acceptance test — every turn checkable in its trace, with the mechanism named. Questions arise only from a genuine gap in the combined conclusions, never from a template. What a conversation establishes reaches the durable graph only through the gated banking pipeline — that durable half is still outstanding.",
   },
   {
     priority: "2 · Reply generation",
-    task: "Make the generator the reply surface: plan a meaning graph from the turn's conclusions, situation and intent, and generate the reply sentence from that graph.",
+    task: "Built (2026-11-16): the planner builds a meaning graph for each reply from the turn's derivations and the session record, prices it, and the generator speaks from that graph — assertions, sets of conclusions, causal forms, gap questions, corrections, bounded initiative. English-first; the Chinese reply surface is separate work.",
     requirements:
-      "No canned sentence whose content is not in the reply's own meaning graph. Every claim inspectable back to the derivation that produced it. Confidence carried through — weak derivations surface hedged — and abstention is a legitimate reply, produced by the mechanism, not by a deflection template.",
+      "No canned sentence whose content is not in the reply's own meaning graph — with one named exception: the steering probe's wording on turns no derivation backs, flagged wording-not-derived in every trace. Every claim inspectable back to the derivation that produced it. Confidence carried through — weak derivations surface hedged, and below the floor the turn declines with its ground recorded.",
   },
   {
     priority: "3 · Coverage growth",
-    task: "The three items at the head of the Coverage tab's list: the H7 banking pass over the mineral survey, the anchor-quality audit and repair, and the ingestion pipeline over the classical texts as its own slice.",
+    task: "The three items are built (2026-11-15): the H7 banking pass over the mineral survey, the anchor-quality audit and repair, and the ingestion pipeline (Suwen ch. 5 banked through it). What remains in this row is scale: the table still holds 164 classifications, and anchor coverage is the binding constraint on everything above it.",
     requirements:
       "Every classification is an (concept, aspect) assertion with provenance and confidence — never an entity classified wholesale. Inference is priced always: a heuristic output names its registered rule and version, or it stands as an unresolved case. Attested tradition, creative application and analysis stay in distinct labelled layers; ingested text enters only with a citation.",
   },
@@ -180,11 +180,13 @@ export default function App() {
       <section id="path">
         <h2>Path to a working chatbot</h2>
         <p className="lede">
-          Everything below this section is built and measured: the parser, the ontology, their
-          evaluations. A working chatbot is a further system on top of them, and it has parts —
+          A working chatbot is a further system on top of the parser and the ontology, and it has parts —
           each with its own remaining steps and its own requirements. The tabs give each part
           separately, with its status stated plainly; the statuses are never averaged into a
-          single readiness number, for the same reason this page has no percentage. Each part's
+          single readiness number, for the same reason this page has no percentage. The parser
+          and the ontology themselves are built and measured — their evidence is the capability
+          ledger further down this page; nothing in the roadmap below should be read as sharing
+          that status unless its own status line says so. Each part's
           roadmap is a task list — a ticked box is work already in place, an empty one is work
           outstanding — and its requirements are the acceptance checklist that must fully hold
           before that part may be called done.
@@ -225,11 +227,18 @@ export default function App() {
 
       <section id="capabilities">
         <h2>The capability ledger</h2>
+        <p className="lede">
+          Each card's figure measures one thing, and the card says what that thing is. The figures
+          are not commensurable — a parse rate, a round-trip retention rate, a judged precision and
+          a coverage count measure different properties, and no combination of them adds up to
+          semantic correctness.
+        </p>
         <div className="cards">
           {CAPABILITIES.map((c) => (
             <article key={c.area} className="card">
               <p className="card-area">{c.area}</p>
               <p className="card-figure">{c.figure}</p>
+              <p className="measures">Measures — {c.measures}</p>
               <h3>{c.headline}</h3>
               <p>{c.meaning}</p>
               {c.bars && <Bars bars={c.bars} />}
@@ -306,15 +315,23 @@ export default function App() {
           </article>
           <article className="card failure">
             <p className="card-area">Surface limits</p>
-            <h3>The chat surface is a demonstrator, honestly labelled</h3>
+            <h3>The generator is the reply surface — the limits are elsewhere</h3>
             <p>
-              The evaluated transcripts are the four scripted scenarios; free conversation has not
-              been through an acceptance pass. Reply wordings are a small hand-written set steered
-              by the mechanism — the generator is not yet the reply surface. By the project's own
-              assessment the system is very far from a usable chat; what exists is a parser and
-              evaluation demonstrator, and this page presents it as exactly that.
+              Since the reply-planning programme (2026-11-16), the chat's replies are planned and
+              generated: the planner builds a meaning graph for each reply from the turn's
+              derivations and the session record, and the generator speaks from that graph. The
+              hand-written wording that remains is the steering probe's, on turns no derivation
+              backs — and the trace flags those turns as wording-not-derived rather than letting
+              them pass as generated. What still limits the surface: free conversation has not been
+              through an acceptance pass (the judged transcripts are the scenario set and the slice
+              sets T-R1–T-R7.5); the generator's repertoire is an enumerated set of forms —
+              predications, sets of conclusions, causal forms, questions, cohesion markers — and
+              social formulae (greetings, thanks) are not among them; and the parser's reach bounds
+              everything upstream of the planner. By the project's own assessment the system is
+              still very far from a usable chat; what exists is a working reply mechanism over a
+              small graph, and this page presents it as exactly that.
             </p>
-            <p className="source">fork status, 2026-11-15 · the steering probe is in src/fork/turn.ts</p>
+            <p className="source">reply-planning programme, 2026-11-16 · docs/fork/transcripts/T-R1–T-R7.5 · src/fork/plan.ts</p>
           </article>
           <article className="card failure">
             <p className="card-area">Coverage gap · lexicon — closed</p>
@@ -347,8 +364,8 @@ export default function App() {
           provider, FrameNet bundle, every evaluation runner — is in the repository:
         </p>
         <pre>{`npm install
-npm test                 # the suite (308 tests)
-npm run fork:demo        # the 26-sentence exhibit
+npm test                 # the suite (542 tests)
+npm run fork:demo        # the 29-sentence exhibit
 npm run fork:valency     # stage 1 report
 npm run fork:aspect      # stage 2 report
 npm run fork:construction  # stage 3 report

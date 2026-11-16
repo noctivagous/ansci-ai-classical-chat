@@ -354,6 +354,13 @@ export default function Ask() {
         knows this conversation, not you, and its range is the graph's range: outside that it
         declines, with the ground named in the trace.
       </p>
+      <p className="caveat">
+        <strong>Configuration of this build:</strong> this page runs the engine with its WordNet
+        and FrameNet providers off — they are disk-backed and are not shipped to the browser.
+        Sense selection and verb-argument analysis therefore run on the local layers alone, and
+        some of what looks like a miss here is this configuration, not the full system; the local
+        run described at the bottom of this page enables both.
+      </p>
       <div className="chips" role="group" aria-label="disposition">
         {DISPOSITIONS.map((d) => (
           <button
