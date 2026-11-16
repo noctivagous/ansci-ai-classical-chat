@@ -897,6 +897,114 @@ passage, recension), `rule_id` (H7, with version), `scope`,
 | The bridge does not license clinical conclusions | Test downstream inferences with explicit counterexamples and safety-sensitive cases (cinnabar first) | The system produces clinical or safety claims from the correspondence alone |
 | The bridge is better than an unqualified vocabulary lookup | Compare qualified H7 against a simple flavor-to-element lookup on held-out entries and adversarial cases | H7 does not reduce scope errors or unsupported conclusions |
 
+### H8 — The elemental domain prior (C.3 / C.4 level 1) and VERB_DOMAIN_V1
+
+**Statement.** The domain prior is the depth-cycle claim-3
+mechanism stated as a predictor (`predictSignatureShape`): a
+verb's semantic element predicts the modal FrameNet signature
+shape among seen inventory verbs classified with that element.
+At stage 1 the trial of this predictor against the FrameNet-only
+baseline was **not runnable**: the system produced no semantic
+element for verbs — `climbClassification` resolves elements for
+nouns and adjectives, but verb synsets climb to no classified
+anchor. This entry registers the classification rule built to
+supply the missing input, and records the trial's outcome.
+
+**The classification rule — VERB_DOMAIN_V1 (registered
+2026-11-16).** A verb's semantic element is the phase whose
+process vocabulary dominates the dictionary definitions of the
+verb's own senses. Texts: the glosses of all the lemma's verb
+synsets in the OEWN extract; each cue word counts once per
+element across all glosses. Vocabulary: five registered cue
+lists (in `framenet-lex.ts`) stating the phases' process domains
+— Wood: growth, expansion, rising, motion/transfer, shouting,
+sight; Fire: heat, combustion, light, cooking, joy/laughter,
+speech and cognition (the heart governs the tongue and the mind);
+Earth: making/creation, transformation, nourishment,
+filling/holding, singing, pensiveness; Metal: severing,
+division, contraction, gathering-in, grief/weeping, smell;
+Water: precipitation, flow, descent, cold, stillness/storage,
+washing, groaning, fear, hearing. Emotion and perception words
+follow the attested five-emotion and five-orifice rows; the rest
+is the phases' process reading (fork-creative in kind).
+Assignment iff the top element scores ≥ 2 distinct cues AND
+strictly beats the runner-up; otherwise the rule abstains.
+Confidence = min(0.75, 0.50 + 0.05 × (score + margin)) — never
+above the fork-creative ceiling. Provenance:
+`verb-domain-derived`. Scope: verb lemmas with ≥ 1 verb synset
+in the extract. The rule reads **no FrameNet data** — the prior
+must be computable for lexical units FrameNet does not contain,
+and must not read the evidence it is tested against. Structural
+alternatives were probed and measured first (troponym chains
+converge on abstract roots and are sense-contaminated at entry;
+the extract carries no derivational verb→noun relations; the
+chosen frame's noun LUs climb for 13% of inventory verbs and 0
+of the 12 challenge verbs; frame-inheritance tops are structural,
+not domain-semantic) — the audit trail is
+`docs/fork/verb-classification-trial.md`.
+
+**Coverage.** 574 of 3,071 inventory verbs classify under the
+rule alone (Wood 235, Fire 86, Earth 175, Metal 24, Water 54);
+636 (20.7%) counting the noun climb where it reaches a verb
+lemma. All four recorded held-out verbs classify (teach Fire,
+fill Earth, sing Earth, paint Earth), as do 11 of the 12
+challenge verbs (show abstains). Calibration against the
+claim-3 desk groupings (13 scored verbs): 8 agree, 3 abstain
+(drizzle, make, worry), 2 disagree by a stated rival reading
+(bake → Fire by heat, where the desk grouped by creation;
+fall → Water by descent, where the desk grouped by motion).
+The full table is in the trial report.
+
+**The trial — RUN 2026-11-16.** Protocol declared before the
+run (runner: `npm run fork:prior-trial`; generated results:
+`docs/fork/prior-trial-results.md`). Arms: the prior
+(element-conditioned modal shape) vs the FrameNet-only baseline
+(the same inventory's global modal shape). Ground truth: each
+target verb's own signature shape. Headline metric: exact shape
+match (agent flag, slot list, prep slot). Populations: PRIMARY =
+the recorded held-out set (teach, fill, sing, paint) withheld as
+a group, the stage-1 protocol; SECONDARY = leave-one-out over
+the 12 challenge verbs; SUPPORTING = leave-one-out over all 636
+classified inventory verbs.
+
+**Outcome.** PRIMARY: prior **0/4** exact, baseline **0/4**
+exact (mean partial credit 0.646 vs 0.417). Under the
+predeclared C.2 rule — the prior fails if the baseline matches
+or beats it — **the prior FAILED the failure test.** SECONDARY:
+prior 1/12 exact vs baseline 0/12; partial 0.500 vs 0.396.
+SUPPORTING: prior 166/636 exact (26.1%) vs baseline 152/636
+(23.9%); partial 0.569 vs 0.541. The secondary measures say the
+element carries real but coarse signal — consistent with claim
+3's own verdict (holds at coarse grain, fails at fine) — but
+the headline test is the recorded four at exact match, and
+there the baseline matches the prior. A structural reason is
+visible in the groups: every element group's shape distribution
+is multimodal (10–20 distinct shapes), and for four of the five
+elements the modal shape IS the baseline's bare-agent shape;
+only Earth's mode (agent + theme) differs. A modal predictor
+cannot express the distribution the element actually predicts.
+
+**Status. TRIAL RUN; PRIOR FAILED; ADOPTED NOWHERE.** The
+predictor and the classification rule are used in no parse,
+check, or join path (verified: their only callers are the two
+evaluation runners and tests). VERB_DOMAIN_V1 remains
+registered as the prior's input machinery and as a priced,
+provenanced verb classification in its own right; it licenses
+nothing downstream. What would change this status: a
+distributional (not modal) form of the prior, or a finer
+prediction target than the exact shape, tested on a larger
+held-out set under a protocol declared before the run — the
+failure recorded here is of the modal-shape predictor at exact
+match, and any retest must say why its protocol is the fair one
+before it runs, not after.
+
+**Falsification conditions.**
+
+| Prediction | Discriminating test | Failure condition |
+| --- | --- | --- |
+| VERB_DOMAIN_V1 assignments reflect the phases' process domains, not the rule author's tuning | Score the rule against independently grouped verb domains (claim-3-style desk groupings) on verbs not used in its calibration | Agreement at or below the rate expected from the element base rates |
+| The element of a verb carries valency information beyond the global shape distribution | Any future prior form (distributional, partial-credit-scored) on a predeclared held-out set vs the FrameNet-only baseline | Baseline matches or beats the prior on the predeclared headline metric — already the recorded outcome for the modal form at exact match |
+
 ### Settled corrections carried forward
 
 - **Suppletion placement (v3).** Suppletion is a form-selection
@@ -1032,6 +1140,12 @@ and the global 95% bar is not claimable before stage 5.
 - **Valency: partly.** The argument inventory is lexical/frame evidence;
   the elemental domain prior is a defeasible hypothesis that must beat a
   FrameNet-only baseline on held-out lexical units or be removed.
+  *(Trial outcome, 2026-11-16: the trial ran — registry entry H8. On
+  the recorded held-out set at exact shape match the baseline matched
+  the prior 0/4 to 0/4, so under this section's own rule the prior
+  FAILED and is adopted nowhere; the modal-shape form of the prior is
+  the part that failed — see H8 for the secondary measures and what
+  a retest would require.)*
 - **Sense selection: potentially.** Restraint asymmetry is the one
   distinctive elemental mechanism in the depth programme. A candidate
   earns restraint-based corroboration only when (1) the relation is
