@@ -73,15 +73,15 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     title: "A graph big enough to talk about the world",
     status: "procedure proven · scale-up ready",
     stands:
-      "The table holds 153 classifications, hand-built and surveyed against transmitted texts. The join derives real conclusions from them, but coverage is the binding constraint on everything above: only 28 of 8,099 polysemous words even have competing anchored senses, several anchors are reached by wayward paths, and verbs carry no classification at all — which is why the elemental valency prior's trial is still unrunnable. The classification procedure itself is proven: the 100-object pilot produced eight adjudication rulings and 94/95 supported assertions.",
+      "The table holds 164 classifications, hand-built and surveyed against transmitted texts. The four commissioned coverage items are done: the mineral survey's flavor records are banked as derived correspondences; the climb's anchors are pinned to their classified senses (coverage fell from 646 to 416 candidate words — the price of removing paths that reached anchors by spelling, not sense); an ingestion pipeline banks source-scoped assertions from cited chapters (63 from Suwen ch. 5); and verbs carry classifications, which made the elemental valency prior's trial runnable at last — it was run, and on its predeclared headline it failed, so the prior remains adopted nowhere. Coverage is still the binding constraint on everything above: only 19 polysemous words have competing anchored senses. The classification procedure itself is proven: the 100-object pilot produced eight adjudication rulings and 94/95 supported assertions.",
     roadmap: [
       { done: true, text: "The classification procedure is proven: the 100-object pilot produced eight adjudication rulings and 94/95 supported assertions." },
       { done: true, text: "The 500-object run is designed and its sample ready: the pilot's 100 as calibration, 400 fresh objects on a prepared sheet, prediction rules P1/P2/P6/P7 registered." },
       { done: true, text: "Run the 500-object run under Part E, scored on the three evaluations — heuristic coverage per tier, validated accuracy, abstention discipline. (Executed 2026-11-15: coverage 457/800, the accuracy ledger open for independent judges.)" },
-      { done: false, text: "The H7 banking pass: the mineral survey's 50 substances gain derived flavor correspondences in the graph, as B-derived records with their derivation paths stored." },
-      { done: false, text: "Anchor quality: audit and repair the hypernym climb's wayward paths (rock arriving at Earth via “sweet”), and widen anchor coverage where the tradition actually offers anchors." },
-      { done: false, text: "The ingestion pipeline as its own approved slice: acquire → segment → read → propose → review → apply over the classical texts — no citation, no insertion; variant schemes coexist as source-scoped assertions." },
-      { done: false, text: "Verb classifications, last because they are hardest: the piece that finally makes the elemental-prior trial runnable — and lets it fail, if it fails, on evidence." },
+      { done: true, text: "The H7 banking pass: the mineral survey's 50 substances gain derived flavor correspondences in the graph, as B-derived records with their derivation paths stored." },
+      { done: true, text: "Anchor quality: audit and repair the hypernym climb's wayward paths (rock arriving at Earth via “sweet”), and widen anchor coverage where the tradition actually offers anchors." },
+      { done: true, text: "The ingestion pipeline as its own approved slice: acquire → segment → read → propose → review → apply over the classical texts — no citation, no insertion; variant schemes coexist as source-scoped assertions." },
+      { done: true, text: "Verb classifications, last because they are hardest: the piece that finally makes the elemental-prior trial runnable — and lets it fail, if it fails, on evidence." },
     ],
     requirements: [
       "Every classification is an (concept, aspect) assertion with provenance and confidence — never an entity classified wholesale.",
@@ -95,12 +95,12 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     id: "feeders",
     tab: "Feeders & banking",
     title: "Live knowledge, banked with provenance",
-    status: "CSKG ingestion built · the tiers beyond it are designed, not built",
+    status: "interface only · data not installed",
     stands:
-      "The fork's answer to “the graph can't contain everything” is routing: local graph first, then Wikidata for facts, then web search for procedures, then a small model last — with successful retrievals distilled back into the graph (“bank what works”). The CSKG feeder's interface, relation mapping and ingestion exist in code, and the extract installs on a working machine as a local feeder (data/raw — a local artifact, never shipped in the repo). The Wikidata and web tiers are designed, not built, and the banking pipeline with them.",
+      "The fork's answer to “the graph can't contain everything” is routing: local graph first, then Wikidata for facts, then web search for procedures, then a small model last — with successful retrievals distilled back into the graph (“bank what works”). Of this, only the CSKG feeder's interface and relation mapping exist in code; its data is not installed, and the Wikidata and web tiers are designed, not built.",
     roadmap: [
       { done: true, text: "The CSKG feeder's interface and relation mapping exist in code." },
-      { done: true, text: "CSKG ingestion is built (2026-11-15): the extract streams through the feeder's relation mapping with kept/dropped accounting, so relational commonsense (causes, uses, locations, subevents) that WordNet does not carry reaches the graph, its concepts classified onto the spine through the WordNet join. The data itself installs locally; it is not in the repo." },
+      { done: false, text: "Install CSKG data as a feeder: relational commonsense (causes, uses, locations, subevents) that WordNet does not carry, its concepts classified onto the spine through the WordNet join." },
       { done: false, text: "The Wikidata tier for facts — dishes, ingredients, origins, dates — explicitly not procedures." },
       { done: false, text: "The web tier for how-to and procedural knowledge, behind the same provider interface, optional over the offline graph." },
       { done: false, text: "The banking pipeline: a successful retrieval is distilled into the overlay graph as structure with its source attached, gated on arrival, individually reversible thereafter." },

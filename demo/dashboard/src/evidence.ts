@@ -7,7 +7,7 @@
  * is not a correct-meaning rate, and builder-authored sets are internal
  * evidence until independently authored sets reproduce them.
  */
-export const EVIDENCE_AS_OF = "depth programme stages 0–5 complete · Part E heuristic principle + Part F ontology-first stage 5 · H6 re-scope and follow-on (2026-11-15) · suite 320/320";
+export const EVIDENCE_AS_OF = "depth programme stages 0–5 complete · four coverage slices: H7 banking pass · anchor-quality repair · ingestion pipeline · verb classifications with the elemental-prior trial run (2026-11-15) · suite 355/355";
 
 export interface Capability {
   area: string;
@@ -49,7 +49,7 @@ export const CAPABILITIES: Capability[] = [
     figure: "98.2% role precision",
     meaning:
       "Verbs the hand lexicon doesn't list get argument frames from FrameNet signatures, judged by a three-state assessment (supported / unusual-but-licensed / unsupported). Legitimate-argument acceptance 100%, invalid-argument rejection 91.7% across 12 verbs. On held-out verbs whose signatures are withheld, the system abstains — every argument unusual-but-licensed, nothing unsupported, nothing invented. Abstention is a designed behaviour, not a gap in the table.",
-    caveat: "The elemental domain prior has NOT faced its baseline: verbs carry no semantic classification yet, so its trial is unrunnable and it is adopted nowhere.",
+    caveat: "The elemental domain prior has now faced its baseline (2026-11-15): verbs carry classifications (574 of 3,071, VERB_DOMAIN_V1), and on the predeclared headline — exact shape match on held-out verbs — the prior tied the FrameNet-only baseline 0/4, so under the C.2 rule it FAILED and remains adopted nowhere. Partial-credit measures favoured the prior throughout; a retest would need a distributional predictor, argued before it runs.",
     source: "docs/fork/valency-challenge.md",
   },
   {
@@ -73,8 +73,8 @@ export const CAPABILITIES: Capability[] = [
     headline: "Sentence context overturns the isolated climb — with brakes",
     figure: "11/11 vs 3/11",
     meaning:
-      "When a word has anchored senses in different elements, coherence with the sentence's other elements picks the sense; a confidence band stops context overturning decisive gaps, and restraint corroborates rather than contradicts. Development set A: coherence 11/11, isolated-climb baseline 3/11. Sealed set B, run once: 5/6 vs 4/6 — the gain survives, with one recorded failure (see the failure wall).",
-    caveat: "The H3a/H3b rivalry this mechanism serves is NOT settled — its criterion needs human judges. Only 28 words in the lexicon even have multi-element candidates; anchor coverage is the real bottleneck.",
+      "When a word has anchored senses in different elements, coherence with the sentence's other elements picks the sense; a confidence band stops context overturning decisive gaps, and restraint corroborates rather than contradicts. Development set A: coherence 11/11, isolated-climb baseline 3/11. Sealed set B, run once at stage 4: 5/6 vs 4/6 — the gain survives. After the anchor-quality repair the sealed set reads 6/6: the one failure's rival candidate was itself a wayward anchor path (stock's Fire via blood's lineage synset), removed when anchors were pinned to their classified senses.",
+    caveat: "The H3a/H3b rivalry this mechanism serves is NOT settled — its criterion needs human judges. Only 19 words in the lexicon have multi-element candidates after the anchor repair; anchor coverage is the real bottleneck.",
     source: "docs/fork/sense-challenge.md",
     bars: [
       { label: "isolated climb (baseline)", value: 3, max: 11 },
@@ -92,10 +92,10 @@ export const CAPABILITIES: Capability[] = [
   },
   {
     area: "Knowledge graph",
-    headline: "153 classifications drive derivations by correspondence",
-    figure: "46 curated · 107 creative",
+    headline: "164 classifications drive derivations by correspondence",
+    figure: "57 curated · 107 creative",
     meaning:
-      "Concepts classified onto the Five-Element spine (as (concept, aspect) pairs with confidence and provenance) yield correspondence conclusions through the ontology: anger → Wood → liver, spring, east, sour… Classifications from attested sources and the project's creative extensions are labelled as what they are, never blended. The five planet rows began as creative extensions and were upgraded to attested (2026-11-15) when the surveys found them stated in Suwen ch. 4 and the Huainanzi — the project's heuristic had landed where two early texts land. The weather entries were re-scoped under hypothesis H6 and its follow-on: rain classifies only through its precipitation aspect, provisionally (0.71); sleet, snow, hail, frost and fog assert nothing — the table is phase-null for them; ice classifies as a substance, storm through its wind aspect only. The hypernym climb keeps its own anchors: an assertion and an anchor are different jobs.",
+      "Concepts classified onto the Five-Element spine (as (concept, aspect) pairs with confidence and provenance) yield correspondence conclusions through the ontology: anger → Wood → liver, spring, east, sour… Classifications from attested sources and the project's creative extensions are labelled as what they are, never blended. The five planet rows began as creative extensions and were upgraded to attested (2026-11-15) when the surveys found them stated in Suwen ch. 4 and the Huainanzi — the project's heuristic had landed where two early texts land. The weather entries were re-scoped under hypothesis H6 and its follow-on: rain classifies only through its precipitation aspect, provisionally (0.71); sleet, snow, hail, frost and fog assert nothing — the table is phase-null for them; ice classifies as a substance, storm through its wind aspect only. The hypernym climb keeps its own anchors: an assertion and an anchor are different jobs. The livestock and grain rows of Suwen ch. 4 joined the table as attested entries in the anchor-quality slice (2026-11-15). Two further stores sit beside the table, fenced from it: 46 derived flavor correspondences banked from the mineral survey under the H7 bridge (flavor aspect only, derivation paths stored), and 63 source-scoped assertions ingested from Suwen ch. 5 by the citation-gated pipeline.",
     caveat: "Coverage is small and hand-built — see the pilot card below for what happens when the protocol meets 100 ordinary objects.",
     source: "src/fork/classify.ts · docs/fork/wp1-classification-survey.md · repair-programme.md (H6 record)",
   },
