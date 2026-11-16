@@ -32,16 +32,22 @@ export default function Roadmap() {
         </p>
         <h4>Where it stands</h4>
         <p>{part.stands}</p>
-        <h4>Roadmap</h4>
-        <ol className="roadmap-steps">
+        <h4>Task list</h4>
+        <ul className="tasklist">
           {part.roadmap.map((step, i) => (
-            <li key={i}>{step}</li>
+            <li key={i} className={step.done ? "done" : undefined}>
+              <input type="checkbox" checked={step.done} disabled readOnly aria-label={step.done ? "done" : "not done"} />
+              <span>{step.text}</span>
+            </li>
           ))}
-        </ol>
-        <h4>Requirements</h4>
-        <ul className="roadmap-reqs">
+        </ul>
+        <h4>Requirements — the acceptance checklist</h4>
+        <ul className="tasklist reqlist">
           {part.requirements.map((req, i) => (
-            <li key={i}>{req}</li>
+            <li key={i}>
+              <input type="checkbox" checked={false} disabled readOnly aria-label="must hold before this part is called done" />
+              <span>{req}</span>
+            </li>
           ))}
         </ul>
         <p className="source">{part.source}</p>
