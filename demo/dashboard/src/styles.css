@@ -92,6 +92,7 @@ ul.violations { padding-left: 20px; }
 .bot-line { font-weight: 600; }
 .trace { font-size: 13.5px; color: #37404e; margin: 4px 0 6px; }
 .trace summary { cursor: pointer; color: var(--accent); }
+.trace-graph { font-size: 12px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; background: #f2f0eb; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; margin: 2px 0 8px; max-height: 220px; overflow: auto; }
 .live-outcome { background: #faf0ee; border-radius: 6px; padding: 8px 12px; font-size: 14px; }
 .sense-table { margin-top: 16px; }
 .sense-table summary { cursor: pointer; font-weight: 600; }
