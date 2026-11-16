@@ -68,7 +68,7 @@ trace turn 2: root 'worried' (Fire, predicate); nodes: i, worried; mood: indicat
 
 **You:** Why is winter cold?
 
-**Bot:** Winter is cold, because it is the season turned most fully toward cold — cold runs at its strongest there.
+**Bot:** Winter is cold, because it is most fully cold.
 
 ```text
 trace turn 1: root 'cold' (Fire, predicate); nodes: winter, cold; mood: interrogative
@@ -79,7 +79,7 @@ trace turn 1: root 'cold' (Fire, predicate); nodes: winter, cold; mood: interrog
 
 **You:** Is summer hot?
 
-**Bot:** Yes — summer is hot: it is the season turned most fully toward hot.
+**Bot:** Summer is most fully hot, and it is most fully bright.
 
 ```text
 trace turn 2: root 'hot' (Fire, predicate); nodes: summer, hot; mood: interrogative
@@ -90,7 +90,7 @@ trace turn 2: root 'hot' (Fire, predicate); nodes: summer, hot; mood: interrogat
 
 **You:** Why is winter dark?
 
-**Bot:** Winter is dark, because it is the season turned most fully toward dark — dark runs at its strongest there.
+**Bot:** Winter is dark, because it is most fully dark.
 
 ```text
 trace turn 3: root 'dark' (Fire, predicate); nodes: winter, dark; mood: interrogative
