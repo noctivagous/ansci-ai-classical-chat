@@ -137,7 +137,10 @@ export default function App() {
           evaluations. A working chatbot is a further system on top of them, and it has parts —
           each with its own remaining steps and its own requirements. The tabs give each part
           separately, with its status stated plainly; the statuses are never averaged into a
-          single readiness number, for the same reason this page has no percentage.
+          single readiness number, for the same reason this page has no percentage. Each part's
+          roadmap is a task list — a ticked box is work already in place, an empty one is work
+          outstanding — and its requirements are the acceptance checklist that must fully hold
+          before that part may be called done.
         </p>
         <Roadmap />
       </section>
