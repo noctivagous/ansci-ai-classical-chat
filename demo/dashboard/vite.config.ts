@@ -11,6 +11,12 @@ const stub = fileURLToPath(new URL("./src/node-stub.ts", import.meta.url));
 export default defineConfig({
   plugins: [react()],
   base: "./",
+  // The dashboard app is served under /dashboard/; the site root (/) is
+  // the schematic root page (root/index.html), copied into dist/ by the
+  // build script after Vite emits the app into dist/dashboard/.
+  build: {
+    outDir: "dist/dashboard",
+  },
   // src/framenet.ts resolves its bundle directory from __dirname at
   // module level (harmless under Node's CJS build). Give the browser
   // bundle a defined value; the fs stub then reports the bundle absent

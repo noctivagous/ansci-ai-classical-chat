@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>AnSci Root Page — Zoomable Schematic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2rem}
+  *{box-sizing:border-box}
+  :root{
+    --bg:#e9e7e0; --panel:#f4f2ec; --panel2:#fffefa; --ink:#1a1c1e; --muted:#5c6066; --line:#1a1c1e;
+    --line-soft:#b9b6ab; --grid:rgba(26,28,30,.07);
+    --accent:#d9480f; --accent-ink:#fff; --teal:#0b7285; --amber:#e67700; --green:#2b8a3e; --red:#c92a2a; --blue:#1971c2; --metal:#868e96;
+    --wire:#0b7285; --trace:#d9480f;
+    --chip:#e9e7e0;
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0c0e10; --panel:#121518; --panel2:#171b1f; --ink:#e8e6df; --muted:#9aa0a3; --line:#e8e6df;
+      --line-soft:#343a3f; --grid:rgba(232,230,223,.055);
+      --accent:#ff6b35; --teal:#3bc9db; --amber:#ffa94d; --green:#51cf66; --red:#ff8787; --blue:#74c0fc; --metal:#adb5bd;
+      --wire:#3bc9db; --trace:#ff6b35; --chip:#1c2126;
+    }
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif}
+  a{color:inherit}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+
+  /* ---------- header ---------- */
+  header.top{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;
+    padding:18px 20px 14px;border-bottom:2px solid var(--line);
+  }
+  .title-block h1{font-family:"IBM Plex Mono",monospace;font-size:clamp(20px,3.4vw,32px);line-height:1.05;margin:0;letter-spacing:-.01em;font-weight:700;text-transform:uppercase}
+  .title-block h1 .thin{font-weight:400;color:var(--muted)}
+  .title-block p{margin:7px 0 0;max-width:62ch;font-size:14px;line-height:1.5;color:var(--muted)}
+  .title-block p strong{color:var(--ink)}
+  .head-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .btn{
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);padding:9px 14px;min-height:40px;
+    display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;border-radius:3px;
+  }
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn.primary:hover{filter:brightness(1.07);color:var(--accent-ink)}
+  .btn.dashboard{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .btn.dashboard:hover{color:var(--bg);opacity:.88}
+  .preview-tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1.5px solid var(--accent);color:var(--accent);padding:6px 9px;border-radius:3px;font-weight:700}
+
+  .crumb{
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--line-soft);
+    font-family:"IBM Plex Mono",monospace;font-size:12px;
+  }
+  .crumb .sep{color:var(--muted)}
+  .crumb button{font:inherit;background:none;border:1px solid var(--line-soft);border-radius:3px;padding:5px 9px;cursor:pointer;color:var(--ink);min-height:32px}
+  .crumb button:hover,.crumb button.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+  .crumb .note{margin-left:auto;color:var(--muted);font-size:11.5px}
+
+  /* ---------- layout ---------- */
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:0;align-items:stretch}
+  @media (max-width:960px){.layout{grid-template-columns:1fr}}
+
+  /* ---------- viewport / schematic ---------- */
+  .stage{position:relative;border-right:1px solid var(--line-soft);display:flex;flex-direction:column;min-width:0}
+  @media (max-width:960px){.stage{border-right:none;border-bottom:1px solid var(--line-soft)}}
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line-soft);background:var(--panel);
+  }
+  .toolbar .group{display:flex;gap:4px;align-items:center}
+  .toolbar .lbl{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+  .tbtn{
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;border:1.5px solid var(--line);background:var(--panel2);
+    width:40px;height:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:3px;color:var(--ink);padding:0 10px;
+  }
+  .tbtn.wide{width:auto}
+  .tbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .tbtn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .zoomread{font-family:"IBM Plex Mono",monospace;font-size:12px;min-width:52px;text-align:center;color:var(--muted)}
+  .toolbar .spacer{flex:1}
+
+  .viewport{
+    position:relative;overflow:hidden;height:min(72vh,780px);min-height:480px;cursor:grab;touch-action:none;
+    user-select:none;-webkit-user-select:none;
+    background:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+      var(--panel);
+    background-size:28px 28px,28px 28px,auto;
+  }
+  @media (max-width:640px){.viewport{height:64vh;min-height:440px}}
+  .viewport.dragging{cursor:grabbing}
+  .viewport.dragging .box,.viewport.dragging .sec-item,.viewport.dragging .srctab,.viewport.dragging .configreg{cursor:grabbing}
+  .world{position:absolute;left:0;top:0;width:1640px;height:1920px;transform-origin:0 0}
+  .world svg.wires{position:absolute;inset:0;width:1640px;height:1920px;overflow:visible;pointer-events:none}
+  .world svg.wires path{fill:none;stroke:var(--wire);stroke-width:2.2;opacity:.75}
+  .world svg.wires path.dash{stroke-dasharray:7 6;opacity:.5}
+  .world svg.wires path.tracepath{stroke:var(--trace);stroke-width:3;opacity:0;stroke-dasharray:none}
+  .world svg.wires path.tracepath.lit{opacity:.95}
+  .packet{
+    position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--trace);color:#fff;
+    display:none;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--trace) 25%,transparent);z-index:60;pointer-events:none;
+  }
+  .packet.show{display:flex}
+  .packet-label{
+    position:absolute;transform:translate(-50%,-190%);background:var(--ink);color:var(--bg);font-family:"IBM Plex Mono",monospace;
+    font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;white-space:nowrap;
+  }
+
+  /* boxes */
+  .box{position:absolute;border:2px solid var(--line);background:color-mix(in srgb,var(--panel2) 88%,transparent);border-radius:4px;cursor:grab;touch-action:none}
+  .box:hover{border-color:var(--accent)}
+  .box.selected{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+  .box.lit{border-color:var(--trace);box-shadow:0 0 0 4px color-mix(in srgb,var(--trace) 35%,transparent)}
+  .box .bhead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:10px 12px 0}
+  .box .bname{font-family:"IBM Plex Mono",monospace;font-weight:700;text-transform:uppercase;letter-spacing:.05em;line-height:1.15}
+  .box .bsub{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .box .btag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:1.5px solid currentColor;padding:3px 6px;border-radius:3px;white-space:nowrap}
+  .box .bbody{padding:8px 12px 12px;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .box.system{background:color-mix(in srgb,var(--panel) 72%,transparent);border-width:2.5px}
+  .box.system>.bhead .bname{font-size:21px}
+  .box.lpu{border-color:var(--teal)}
+  .box.lpu>.bhead .bname{font-size:19px;color:var(--teal)}
+  .box.aware{border-color:var(--amber)}
+  .box.aware>.bhead .bname{font-size:16px;color:var(--amber)}
+  .box.unit>.bhead .bname{font-size:15px}
+  .box.sub>.bhead .bname{font-size:13px}
+  .box.parser{border-width:2.5px}
+  .port{
+    position:absolute;top:50%;width:34px;height:34px;margin-top:-17px;border-radius:50%;border:2.5px solid var(--line);background:var(--panel2);
+    display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.03em;z-index:5;
+  }
+  .port.in{left:-18px}.port.out{right:-18px}
+  .port.lit{background:var(--trace);border-color:var(--trace);color:#fff}
+  .aware-list{list-style:none;margin:6px 0 0;padding:0}
+  .aware-list li{display:flex;gap:8px;padding:7px 0;border-top:1px dashed var(--line-soft);font-size:12.5px;line-height:1.45}
+  .aware-list li:first-child{border-top:none}
+  .aware-list .k{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);min-width:86px;padding-top:2px}
+  .aware-list .v{color:var(--ink)}
+  .situation{
+    margin:10px 12px 12px;border:1.5px solid var(--amber);border-radius:3px;padding:9px 11px;background:color-mix(in srgb,var(--amber) 9%,transparent);
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.5;
+  }
+  .situation .sl{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:4px}
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 12px}
+  .wx-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+  .ext{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+  .ext .who{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+  .bubble{display:inline-block;margin-top:6px;border:2px solid var(--line);background:var(--panel2);border-radius:10px 10px 10px 2px;padding:8px 13px;font-size:16px;font-weight:600}
+  .bubble.reply{border-color:var(--accent);border-radius:10px 10px 2px 10px}
+  .flowtag{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--wire);background:var(--panel);padding:2px 6px}
+
+  .hintbar{padding:9px 12px;border-top:1px solid var(--line-soft);font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--panel)}
+
+  /* ---------- side panel ---------- */
+  aside.side{background:var(--panel);display:flex;flex-direction:column;min-width:0}
+  .side section{padding:16px 18px;border-bottom:1px solid var(--line-soft)}
+  .side h2{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .side h2::before{content:"";width:9px;height:9px;background:var(--accent);display:inline-block}
+  .trace-controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .say{display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
+  .say .utter{flex:1;border:1.5px solid var(--line-soft);border-radius:3px;padding:9px 11px;font-family:"IBM Plex Mono",monospace;font-size:14px;background:var(--panel2)}
+  .say .utter span{color:var(--muted);font-size:10px;display:block;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
+  .nowstep{border:1.5px solid var(--line);border-radius:3px;padding:11px 12px;background:var(--panel2);min-height:86px}
+  .nowstep .ns-loc{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--trace);margin-bottom:5px}
+  .nowstep .ns-text{font-size:13.5px;line-height:1.55}
+  .nowstep .ns-text code{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--chip);padding:1px 5px;border-radius:3px}
+  ol.steplog{list-style:none;margin:12px 0 0;padding:0;max-height:300px;overflow:auto}
+  ol.steplog li{display:flex;gap:9px;padding:7px 8px;border-top:1px solid var(--line-soft);font-size:12.5px;line-height:1.45;opacity:.42}
+  ol.steplog li.done,ol.steplog li.now{opacity:1}
+  ol.steplog li.now{background:color-mix(in srgb,var(--trace) 9%,transparent)}
+  ol.steplog .n{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:11px;border:1.5px solid var(--line-soft);border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  ol.steplog li.now .n{border-color:var(--trace);color:var(--trace)}
+  ol.steplog .sl2{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block}
+  .insp-name{font-family:"IBM Plex Mono",monospace;font-size:17px;font-weight:700;text-transform:uppercase;line-height:1.2}
+  .insp-path{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);margin:5px 0 9px}
+  .insp-body{font-size:13.5px;line-height:1.6;color:var(--muted)}
+  .insp-body strong{color:var(--ink)}
+  .insp-ports{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .insp-ports span{font-family:"IBM Plex Mono",monospace;font-size:11px;border:1px solid var(--line-soft);border-radius:3px;padding:5px 8px}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;font-size:12px;color:var(--muted)}
+  .legend div{display:flex;gap:8px;align-items:center}
+  .swatch{width:22px;height:14px;border:2px solid var(--line);border-radius:2px;flex:none}
+  /* ===== module types — subtle drafting treatments only =====
+     One family: same rectangles, same stroke, same title placement.
+     Type is carried by corner, edge and ruling treatments. */
+  .t-unit{position:relative}
+  .box.t-unit::after{content:"";position:absolute;top:-2px;right:-2px;width:20px;height:20px;pointer-events:none;
+    background:linear-gradient(to bottom left, var(--panel) 0 43%, var(--line) 43% 53%, transparent 53%)}
+  .t-store{border-bottom:7px double var(--line)}
+  .t-register{background-image:repeating-linear-gradient(90deg, var(--line) 0 12px, transparent 12px 22px);
+    background-size:100% 5px;background-position:top left;background-repeat:no-repeat}
+  .t-table{background-image:linear-gradient(color-mix(in srgb,var(--line) 10%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 10%,transparent) 1px,transparent 1px);background-size:22px 22px}
+  .t-surface{box-shadow:inset 0 5px 0 var(--panel2), inset 0 7px 0 var(--line)}
+  .t-router{border-radius:12px}
+  /* held modules (store / register / table) are double-ruled; active modules single-ruled */
+  .t-store,.t-table{outline:1.5px solid color-mix(in srgb,var(--line) 55%,transparent);outline-offset:2px}
+  /* containers: double-ruled frames with a title tab */
+  .frame{outline:2px solid var(--line);outline-offset:4px}
+  .frame>.bhead{background:color-mix(in srgb,var(--line) 7%,transparent);border-bottom:1.5px solid var(--line);padding:9px 12px 8px;margin:0}
+  /* gate: a box whose input edge is a bold barrier line */
+  .gatewrap{position:absolute;z-index:8;cursor:pointer;background:var(--panel2);border:2px solid var(--line);border-left:9px solid var(--red);border-radius:3px;padding:7px 10px}
+  .gatewrap .glabel{font-family:"IBM Plex Mono",monospace;font-size:11px;line-height:1.45}
+  .gatewrap.lit{box-shadow:0 0 0 4px color-mix(in srgb,var(--red) 35%,transparent)}
+  /* source: type carried by placement astride the boundary — plain tab, no pictogram */
+  .srctab{position:absolute;z-index:9;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:700;letter-spacing:.05em;border:2px solid var(--line);background:var(--panel2);padding:7px 10px;border-radius:3px}
+  .srctab.lit{border-color:var(--trace);color:var(--trace)}
+  .configreg{position:absolute;z-index:9;cursor:pointer;border:2px solid var(--line);background:var(--panel2);border-radius:3px;padding:7px 12px 8px;font-family:"IBM Plex Mono",monospace;font-size:12px;
+    background-image:repeating-linear-gradient(90deg, var(--line) 0 12px, transparent 12px 22px);background-size:100% 5px;background-position:top left;background-repeat:no-repeat;padding-top:11px}
+  .configreg .cfg-l{display:block;font-size:8.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .configreg.lit{border-color:var(--trace)}
+  /* legend shapes — same subtle treatments, miniature */
+  .lshape{width:34px;height:26px;flex:none;border:2px solid var(--line);background:var(--panel2);position:relative}
+  .lshape.unit::after{content:"";position:absolute;top:-2px;right:-2px;width:11px;height:11px;background:linear-gradient(to bottom left, var(--panel) 0 43%, var(--line) 43% 53%, transparent 53%)}
+  .lshape.store{border-bottom:6px double var(--line)}
+  .lshape.register{background-image:repeating-linear-gradient(90deg, var(--line) 0 7px, transparent 7px 12px);background-size:100% 4px;background-position:top left;background-repeat:no-repeat}
+  .lshape.table{background-image:linear-gradient(color-mix(in srgb,var(--line) 22%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 22%,transparent) 1px,transparent 1px);background-size:9px 9px}
+  .lshape.gate{border-left:8px solid var(--red)}
+  .lshape.router{border-radius:9px}
+  .lshape.source{margin-top:0}
+  .lshape.surface{box-shadow:inset 0 4px 0 var(--panel2), inset 0 6px 0 var(--line)}
+  .typelegend{display:flex;flex-direction:column;gap:0}
+  .typelegend .trow{display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--line-soft);align-items:flex-start}
+  .typelegend .trow:first-child{border-top:none}
+  .typelegend .tname{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:12.5px;letter-spacing:.06em}
+  .typelegend .tdef{font-size:12px;line-height:1.5;color:var(--muted)}
+  .typelegend .tdef em{color:var(--ink);font-style:normal;font-weight:600}
+  /* awareness interior */
+  .aw-branches{padding:8px 10px 10px;display:flex;flex-direction:column;gap:8px}
+  .aw-branch{border:1.5px solid var(--line-soft);border-radius:3px}
+  .aw-branch>.aw-bhead{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;background:color-mix(in srgb,var(--line) 7%,transparent);border-bottom:1px solid var(--line-soft);padding:4px 8px}
+  .aw-items{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px}
+  .aw-item{border:1.5px solid var(--line-soft);border-radius:2px;padding:5px 7px;font-size:10.5px;line-height:1.4;min-width:0}
+  .aw-item .aw-type{font-family:"IBM Plex Mono",monospace;font-size:8.5px;font-weight:700;letter-spacing:.1em;display:block;color:var(--muted)}
+  .aw-item .aw-name{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:11px}
+  .aw-item .aw-note{display:block;color:var(--muted);font-size:10px}
+  .aw-item.full{grid-column:1/-1}
+  .aw-item.reg{background-image:repeating-linear-gradient(90deg, var(--line) 0 9px, transparent 9px 16px);background-size:100% 4px;background-position:top left;background-repeat:no-repeat;padding-top:8px}
+  .aw-item.tbl{background-image:linear-gradient(color-mix(in srgb,var(--line) 10%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 10%,transparent) 1px,transparent 1px);background-size:16px 16px}
+  .aw-item.unit{cursor:pointer;background:linear-gradient(to bottom left, transparent 0 100%)}
+  .aw-item.unit:hover{border-color:var(--accent)}
+  .aw-item.src{border-style:solid}
+
+  /* ===== gray gradation hierarchy — contrast carries nesting depth ===== */
+  :root{ --g0:#f7f6f2; --g1:#eceae4; --g2:#dedbd2; --g3:#c9c5ba; --g4:#a9a499; --cord:#6f6c64; }
+  @media (prefers-color-scheme: dark){ :root{ --g0:#101214; --g1:#171a1d; --g2:#22262a; --g3:#2f3439; --g4:#454b51; --cord:#9a978c; } }
+  .box.system{background:var(--g0)}
+  .box.frame.sec, .box.lpu, .box.aware{background:var(--g1)}
+  .box.unit{background:var(--g2)}
+  .box.sub{background:var(--g3)}
+  .box.lpu{border-color:var(--line)} .box.lpu>.bhead .bname{color:var(--ink)}
+  .box.aware{border-color:var(--line)} .box.aware>.bhead .bname{color:var(--ink)}
+  .situation{border-color:var(--line);background:var(--g2)}
+  .situation .sl{color:var(--muted)}
+  .gatewrap{border-left-color:var(--ink)}
+  .lshape.gate{border-left-color:var(--ink)}
+  .sec-items{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:9px 10px 11px}
+  .sec-items.cols4{grid-template-columns:repeat(4,1fr)}
+  .sec-items.cols3{grid-template-columns:repeat(3,1fr)}
+  .sec-item{border:1.5px solid var(--line);border-radius:2px;padding:7px 9px;font-size:11px;line-height:1.45;background:var(--g2);min-width:0}
+  .sec-item .aw-type{font-family:"IBM Plex Mono",monospace;font-size:8.5px;font-weight:700;letter-spacing:.1em;display:block;color:var(--muted)}
+  .sec-item .aw-name{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:11.5px;color:var(--ink)}
+  .sec-item .aw-note{display:block;color:var(--muted);font-size:10.5px}
+  .sec-item.reg{background-image:repeating-linear-gradient(90deg, var(--line) 0 9px, transparent 9px 16px);background-size:100% 4px;background-position:top left;background-repeat:no-repeat;padding-top:10px}
+  .sec-item.tbl{background-image:linear-gradient(color-mix(in srgb,var(--line) 10%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--line) 10%,transparent) 1px,transparent 1px);background-size:16px 16px}
+  .sec-item.store{border-bottom:6px double var(--line)}
+  .sec-item.unit{cursor:pointer}
+  .sec-item.selected{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+  .sec-item.lit{border-color:var(--trace);box-shadow:0 0 0 3px color-mix(in srgb,var(--trace) 35%,transparent)}
+  .placeholder{border:2px dashed var(--g4)!important;background:transparent!important;cursor:pointer}
+  .placeholder .bname{color:var(--muted);letter-spacing:.14em}
+  .placeholder .bbody{color:var(--muted);font-style:italic}
+  /* ===== cords ===== */
+  .world svg.wires path.pw1,.world svg.wires path.pw2{stroke:var(--cord);stroke-width:1.6;opacity:.85}
+  .world svg.wires path.conn{stroke:var(--cord);stroke-width:1.1;opacity:.8}
+  .world svg.wires path.conn.uses{stroke:var(--ink);stroke-width:1.6;opacity:.95}
+  .world svg.wires circle.cdot{fill:var(--panel2);stroke:var(--cord);stroke-width:1.6}
+  .world svg.wires circle.cdot.uses{stroke:var(--ink)}
+  .world svg.wires path.tracepath{stroke-width:5}
+  .cordlabel{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cord);background:var(--panel);padding:2px 6px;z-index:7}
+  .cordlabel.uses{color:var(--ink);border:1.5px solid var(--ink);border-radius:3px;background:var(--panel2)}
+  .cord-sample{width:52px;flex:none;display:flex;flex-direction:column;gap:3px;padding-top:5px}
+  .cord-sample i{display:block;border-top:1.6px solid var(--cord)}
+  .cord-sample.single i{border-top-width:1.1px}
+  .cord-sample.taken i{border-top:5px solid var(--trace)}
+  .grayramp{display:flex;gap:5px;margin:8px 0 2px}
+  .grayramp span{flex:1;height:16px;border:1.5px solid var(--line);border-radius:2px}
+  .grayramp-lbls{display:flex;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .grayramp-lbls span{flex:1}
+  footer.foot{padding:14px 20px 22px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);line-height:1.7;display:flex;flex-wrap:wrap;gap:6px 22px}
+  footer.foot a{color:var(--accent);font-weight:700}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="title-block">
+    <h1>AnSci <span class="thin">/ Root — System Schematic</span></h1>
+    <p>Preview of the reorganised root page: the codebase redrawn as <strong>one zoomable schematic</strong>. What is drawn here is a <strong>general-purpose system</strong> — not a chat system. <strong>Chat is a configuration applied to it</strong>, its first configuration, shown on the System frame. Zoom in and the boxes open up — the <strong>System</strong> contains the <strong>LPU</strong>, the LPU contains the <strong>Parser</strong>, and the Parser contains its submodules; around them sit Awareness, Session &amp; Situation, Knowledge, Reasoning, and Intake &amp; Harboring. Nesting means <strong>containment</strong> only: a resource is reached by a <strong>connection cord</strong> labelled <em>uses</em> — as the Verbalizer uses the LPU — while <strong>pathway cords</strong> (double tracks) carry the travelling circle. Hierarchy is read from <strong>gradations of gray</strong>, deeper elements on stronger grounds. Press <strong>Trace “Hello”</strong> and watch a single utterance travel the whole machine, under the Chat configuration.</p>
+  </div>
+  <div class="head-actions">
+    <span class="preview-tag">Preview · Reorganisation</span>
+    <a class="btn dashboard" href="/dashboard/">Old dashboard&nbsp;→&nbsp;/dashboard/</a>
+  </div>
+</header>
+
+<nav class="crumb" aria-label="Schematic nesting">
+  <span style="color:var(--muted)">NESTING</span>
+  <button data-focus="system" class="on">System</button><span class="sep">⊃</span>
+  <button data-focus="lpu">LPU</button><span class="sep">⊃</span>
+  <button data-focus="parser">Parser unit</button><span class="sep">⊃</span>
+  <button data-focus="token">Token</button>
+  <button data-focus="sense">Sense</button>
+  <button data-focus="valency">Valency</button>
+  <button data-focus="aspect">Aspect &amp; Forms</button>
+  <span class="note">Click any box in the schematic to inspect it · drag to pan · scroll to zoom</span>
+</nav>
+
+<div class="layout">
+  <!-- ================= STAGE ================= -->
+  <div class="stage">
+    <div class="toolbar" role="toolbar" aria-label="Schematic controls">
+      <div class="group"><span class="lbl">Zoom</span>
+        <button class="tbtn" id="zoomOut" aria-label="Zoom out">−</button>
+        <span class="zoomread" id="zoomRead">62%</span>
+        <button class="tbtn" id="zoomIn" aria-label="Zoom in">+</button>
+      </div>
+      <div class="group">
+        <button class="tbtn wide" id="fitBtn">Fit system</button>
+        <button class="tbtn wide" data-focus="lpu">LPU</button>
+        <button class="tbtn wide" data-focus="parser">Parser</button>
+        <button class="tbtn wide" data-focus="awareness">Awareness</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="group"><span class="lbl">Trace</span>
+        <button class="tbtn wide on" id="playBtn">▶ Trace “Hello”</button>
+        <button class="tbtn wide" id="stepBtn">Step</button>
+        <button class="tbtn wide" id="resetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div class="viewport" id="viewport" aria-label="Zoomable system schematic">
+      <div class="world" id="world">
+        <svg class="wires" viewBox="0 0 1640 1920" aria-hidden="true">
+          <path class="tracepath" id="tracePath" d="M 118 300 L 213 300 L 1219 268 L 240 430 L 262 430 L 373 321 L 599 321 L 373 447 L 599 447 L 712 430 L 1219 750 L 422 1360 L 792 1360 L 860 303 L 1219 915 L 1427 430" />
+          <path class="pw1" d="M 118 297 L 250 297 L 250 427 L 722 427 L 722 700 L 1210 700 L 1210 1284 L 980 1284 L 980 330 L 968 330" />
+          <path class="pw2" d="M 118 303 L 244 303 L 244 433 L 716 433 L 716 706 L 1204 706 L 1204 1290 L 974 1290 L 974 336 L 962 336" />
+          <path class="pw1" d="M 968 303 L 1440 303" /><path class="pw2" d="M 968 309 L 1440 309" />
+          <path class="pw1" d="M 1090 1567 L 1180 1567 L 1180 1215" /><path class="pw2" d="M 1090 1573 L 1186 1573 L 1186 1221" />
+          <circle class="cdot" cx="250" cy="300" r="4"/><circle class="cdot" cx="968" cy="306" r="4"/><circle class="cdot" cx="1183" cy="1218" r="4"/>
+          <path class="conn" d="M 792 1430 L 792 1472 L 560 1472 L 560 1444" />
+          <path class="conn" d="M 422 1430 L 422 1452 L 480 1452 L 480 1214" />
+          <path class="conn" d="M 1219 628 L 1219 652" />
+          <path class="conn" d="M 745 57 L 745 100 L 1150 100 L 1150 118" />
+          <path class="conn" d="M 599 516 L 599 1240 L 900 1240 L 900 1284" />
+          <circle class="cdot" cx="560" cy="1440" r="4"/><circle class="cdot" cx="480" cy="1210" r="4"/>
+          <circle class="cdot" cx="1219" cy="650" r="4"/><circle class="cdot" cx="1150" cy="116" r="4"/><circle class="cdot" cx="900" cy="1280" r="4"/>
+          <path class="conn uses" d="M 1030 905 C 985 760, 985 520, 895 415" />
+          <circle class="cdot uses" cx="892" cy="412" r="5"/>
+        </svg>
+
+        <!-- speaker (outside system) -->
+        <div class="ext" style="left:8px;top:196px;width:172px">
+          <span class="who">◉ A person</span><br>
+          <span style="color:var(--muted);font-size:11px">identity unknown · first utterance · no shared topic yet</span><br>
+          <span class="bubble" id="helloBubble">“Hello.”</span>
+        </div>
+        <!-- reply (outside system) -->
+        <div class="ext" style="left:1428px;top:238px;width:196px;text-align:right">
+          <span class="who">▣ Surface — reply out</span><br>
+          <span class="bubble reply" id="replyBubble" style="opacity:.28">“Hello.”</span><br>
+          <span style="color:var(--muted);font-size:11px" id="replyNote">— not yet generated —</span>
+        </div>
+
+        <span class="flowtag" style="left:206px;top:282px">utterance in</span>
+        <span class="cordlabel uses" style="left:946px;top:640px">uses &#8594;</span>
+        <span class="cordlabel" style="left:806px;top:1452px">planner consults &#8595; correspondence graph</span>
+        <span class="cordlabel" style="left:612px;top:880px">sense consults &#8595; lexicon</span>
+        <span class="cordlabel" style="left:1230px;top:632px">awareness reads &#8593; session</span>
+        <span class="flowtag" style="left:1150px;top:306px">situation feed · dashed</span>
+        <span class="flowtag" style="left:1440px;top:412px">reply out</span>
+
+        <div class="srctab" data-id="clock" style="left:660px;top:40px">SOURCE · CLOCK ◷</div>
+        <div class="configreg" data-id="config" style="left:902px;top:34px"><span class="cfg-l">Configuration register</span><strong>Configuration: Chat</strong> — first configuration of a general-purpose system</div>
+        <div class="srctab" data-id="source" style="left:102px;top:283px">SOURCE · PERSON'S CHANNEL</div>
+        <!-- ============ SYSTEM ============ -->
+        <div class="box system frame" data-id="system" style="left:190px;top:56px;width:1250px;height:1800px">
+          <div class="bhead">
+            <div><div class="bname">The System</div><div class="bsub">ANSCI · outermost bounding box · everything the root page shows lives in here</div></div>
+            <span class="btag" style="color:var(--accent)">Root · general-purpose</span>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- ============ AWARENESS UNIT (System level) ============ -->
+        <div class="box aware frame" data-id="awareness" style="left:1030px;top:118px;width:378px;height:510px">
+          <div class="bhead">
+            <div><div class="bname">Awareness Unit</div><div class="bsub">System level · sibling of the LPU · four branches, contents typed</div></div>
+            <span class="btag" style="color:var(--amber)">Unit · container</span>
+          </div>
+          <div class="aw-branches">
+            <div class="aw-branch"><div class="aw-bhead">Self</div><div class="aw-items">
+              <div class="aw-item tbl"><span class="aw-type">Table</span><span class="aw-name">Identity</span><span class="aw-note">who it is — fixed definition</span></div>
+              <div class="aw-item tbl"><span class="aw-type">Table</span><span class="aw-name">Capabilities &amp; limits</span><span class="aw-note">what it can &amp; cannot do</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Current disposition</span><span class="aw-note">copied from its Table definition at session open</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Own state</span><span class="aw-note">its standing right now</span></div>
+            </div></div>
+            <div class="aw-branch"><div class="aw-bhead">Place &amp; Time</div><div class="aw-items">
+              <div class="aw-item src"><span class="aw-type">Source</span><span class="aw-name">Clock</span><span class="aw-note">drawn astride the System edge, above</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Season &amp; daypart</span><span class="aw-note">classified against the season / daypart Table</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Surface &amp; channel</span><span class="aw-note">root-page surface · under the Chat configuration</span></div>
+              <div class="aw-item src"><span class="aw-type">Source → Register</span><span class="aw-name">Weather</span><span class="aw-note">a Source feeding a Register it keeps current</span></div>
+            </div></div>
+            <div class="aw-branch"><div class="aw-bhead">Surroundings</div><div class="aw-items">
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Interlocutor standing</span><span class="aw-note">identity unknown · first contact</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Standing topics</span><span class="aw-note">none standing yet</span></div>
+              <div class="aw-item reg full"><span class="aw-type">Register</span><span class="aw-name">Other presences</span><span class="aw-note">none registered</span></div>
+            </div></div>
+            <div class="aw-branch"><div class="aw-bhead">Current Activity</div><div class="aw-items">
+              <div class="aw-item reg full"><span class="aw-type">Register</span><span class="aw-name">Situation statement</span><span class="aw-note">“I am chatting to a person with unknown identity.”</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Last act</span><span class="aw-note">a greeting was received</span></div>
+              <div class="aw-item reg"><span class="aw-type">Register</span><span class="aw-name">Open gaps</span><span class="aw-note">what is currently missing</span></div>
+              <div class="aw-item unit full" data-id="composer"><span class="aw-type">Unit — the one worker</span><span class="aw-name">Composer</span><span class="aw-note">each turn it reads the other registers and writes the new situation statement — one writer, many readers; the Planner consults the situation register</span></div>
+            </div></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- Session & Situation (System level) -->
+        <div class="box unit frame sec" data-id="session" style="left:1030px;top:652px;width:378px;height:196px">
+          <div class="bhead">
+            <div><div class="bname">Session &amp; Situation</div><div class="bsub">System level · general machinery — a record of an ongoing interaction, usable by any configuration; Chat is its first use</div></div>
+            <span class="btag" style="color:var(--muted)">Registers</span>
+          </div>
+          <div class="sec-items">
+            <div class="sec-item reg"><span class="aw-type">Register</span><span class="aw-name">States &amp; origins</span><span class="aw-note">what stands, and where it came from</span></div>
+            <div class="sec-item reg"><span class="aw-type">Register</span><span class="aw-name">Events</span><span class="aw-note">what has happened, in order</span></div>
+            <div class="sec-item reg"><span class="aw-type">Register</span><span class="aw-name">Topics</span><span class="aw-note">topics and their standing</span></div>
+            <div class="sec-item reg"><span class="aw-type">Register</span><span class="aw-name">Corrections</span><span class="aw-note">supersession deltas — what replaced what</span></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+                <!-- Verbalizer (System level) — USES the LPU; does not contain it, is not inside it -->
+        <div class="box unit t-surface" data-id="verbalizer" style="left:1030px;top:862px;width:378px;height:106px">
+          <div class="bhead">
+            <div><div class="bname">Verbalizer</div><div class="bsub">System level · a resource user, not a container</div></div>
+            <span class="btag" style="color:var(--muted)">Unit · Surface</span>
+          </div>
+          <div class="bbody">Turns a selected move into the sentence actually said. It <strong style="color:var(--ink)">uses the LPU</strong> — follow the <em>uses</em> cord to the Generator inside the LPU. Using is a connection, never nesting.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- ============ KNOWLEDGE (System level) ============ -->
+        <div class="box frame sec" data-id="knowledge" style="left:222px;top:984px;width:1186px;height:230px">
+          <div class="bhead">
+            <div><div class="bname">Knowledge</div><div class="bsub">System level · what the rest of the system consults — held things only; nothing here acts</div></div>
+            <span class="btag" style="color:var(--muted)">Container</span>
+          </div>
+          <div class="sec-items cols4">
+            <div class="sec-item store" data-id="correspondence"><span class="aw-type">Store</span><span class="aw-name">Correspondence graph</span><span class="aw-note">classifications at Wuxing addresses — incl. the generating &amp; controlling cycles as its relations. The Derivation unit walks it.</span></div>
+            <div class="sec-item tbl"><span class="aw-type">Table</span><span class="aw-name">Classification</span><span class="aw-note">the fixed classification mapping the graph is filed under</span></div>
+            <div class="sec-item store" data-id="lexicon"><span class="aw-type">Store</span><span class="aw-name">Lexicon</span><span class="aw-note">the classified word stock the Sense submodule consults — a resource, reached by a connection cord, not by nesting</span></div>
+            <div class="sec-item store"><span class="aw-type">Store</span><span class="aw-name">Banked stores</span><span class="aw-note">derived flavours · ingested assertions — what the Retrieval Harborer has kept, with provenance</span></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- ============ REASONING (System level) ============ -->
+        <div class="box frame sec" data-id="reasoning" style="left:222px;top:1228px;width:1186px;height:230px">
+          <div class="bhead">
+            <div><div class="bname">Reasoning</div><div class="bsub">System level · derivation and planning — outside the LPU; language is a resource it uses</div></div>
+            <span class="btag" style="color:var(--muted)">Container</span>
+          </div>
+          <div class="sec-items cols3">
+            <div class="sec-item unit" data-id="derivation"><span class="aw-type">Unit</span><span class="aw-name">Derivation</span><span class="aw-note">the cycle walks — consults the Correspondence graph by connection cord</span></div>
+            <div class="sec-item unit" data-id="planner"><span class="aw-type">Unit</span><span class="aw-name">Planner</span><span class="aw-note">move selection, reply graph — consults Awareness and Knowledge</span></div>
+            <div class="sec-item tbl"><span class="aw-type">Table</span><span class="aw-name">Pricing</span><span class="aw-note">fixed ceilings: key in &#8594; value out</span></div>
+            <div class="sec-item unit" data-id="gate"><span class="aw-type">Gate</span><span class="aw-name">Decline floor</span><span class="aw-note">stands astride the pathway Derivation &#8594; Planner; prices passage or refuses it</span></div>
+            <div class="sec-item tbl" data-id="tables"><span class="aw-type">Table</span><span class="aw-name">Composition definitions</span><span class="aw-note">the definitions; the live copy is held as a Register in Awareness</span></div>
+            <div class="sec-item reg"><span class="aw-type">Register</span><span class="aw-name">Priced results</span><span class="aw-note">what Derivation hands the Planner this turn</span></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- ============ INTAKE & HARBORING (System edge) ============ -->
+        <div class="box frame sec" data-id="intake" style="left:222px;top:1472px;width:1186px;height:200px">
+          <div class="bhead">
+            <div><div class="bname">Intake &amp; Harboring</div><div class="bsub">System edge · one doorway: the Router governs what may be asked for, the Harborer what may be kept</div></div>
+            <span class="btag" style="color:var(--muted)">Container</span>
+          </div>
+          <div class="sec-items cols3">
+            <div class="sec-item unit" data-id="router" style="border-radius:10px"><span class="aw-type">Router</span><span class="aw-name">Intake Router</span><span class="aw-note">local graph &#8594; CSKG &#8594; Wikidata &#8594; Web &#8594; Model — in that order, first tier that genuinely answers</span></div>
+            <div class="sec-item"><span class="aw-type">Sources</span><span class="aw-name">CSKG · Wikidata · Web · Model</span><span class="aw-note">external tiers, drawn on the edge — they feed the system on demand</span></div>
+            <div class="sec-item unit" data-id="harborer"><span class="aw-type">Unit · behind its Gate</span><span class="aw-name">Retrieval Harborer</span><span class="aw-note">what came back is held — not certified — with its papers: provenance is the condition of entry, every entry reversible, no citation &#8594; no entry. Kept retrievals land in Knowledge by pathway cord.</span></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- ============ SURFACES + SYSTEM UNPLACED ============ -->
+        <div class="box frame sec" data-id="surfaces" style="left:222px;top:1686px;width:760px;height:140px">
+          <div class="bhead">
+            <div><div class="bname">Surfaces</div><div class="bsub">Where output leaves and is seen</div></div>
+            <span class="btag" style="color:var(--muted)">Surfaces</span>
+          </div>
+          <div class="sec-items cols3">
+            <div class="sec-item"><span class="aw-type">Surface</span><span class="aw-name">Reply</span><span class="aw-note">the sentence, spoken by the Verbalizer</span></div>
+            <div class="sec-item"><span class="aw-type">Surface</span><span class="aw-name">This root page</span><span class="aw-note">the schematic itself</span></div>
+            <div class="sec-item"><span class="aw-type">Surface</span><span class="aw-name">Dashboard · Trace view</span><span class="aw-note">/dashboard/ and the trace, as surfaces</span></div>
+          </div>
+        </div>
+        <div class="box placeholder" data-id="unplaced-sys" style="left:998px;top:1686px;width:410px;height:140px">
+          <div class="bhead"><div><div class="bname">Unplaced</div><div class="bsub">System level</div></div><span class="btag" style="color:var(--muted)">—</span></div>
+          <div class="bbody">Further units — territory not yet categorised. A place held, not a thing built. To be settled.</div>
+        </div>
+
+                <!-- ============ LPU ============ -->
+        <div class="box lpu frame" data-id="lpu" style="left:222px;top:118px;width:776px;height:850px">
+          <div class="bhead">
+            <div><div class="bname">LPU — Language Processing Unit</div><div class="bsub">Inside the System · contains the Parser and the Generator, and one held place — Derivation, Planner and the Lexicon are not in here: they sit at System level and use the LPU by cord</div></div>
+            <span class="btag" style="color:var(--teal)">Unit · container</span>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- ============ PARSER UNIT ============ -->
+        <div class="box unit parser frame t-unit" data-id="parser" style="left:252px;top:196px;width:470px;height:468px">
+          <div class="bhead">
+            <div><div class="bname">Parser Unit</div><div class="bsub">Inside the LPU · sentence in → meaning graph out · four submodules inside</div></div>
+            <span class="btag" style="color:var(--accent)">Unit</span>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+
+          <div class="mini-grid">
+            <div class="box sub t-unit" data-id="token" style="position:relative;height:134px">
+              <div class="bhead"><div><div class="bname"><span class="wx-dot" style="background:var(--metal)"></span>Token</div><div class="bsub">Submodule · Unit · inside Parser</div></div></div>
+              <div class="bbody">Splits the raw string into tokens; normalises case &amp; punctuation. <em>No spelling recovery lives here yet — a located gap.</em></div>
+              <div class="port in" data-port>IN</div><div class="port out" data-port>OUT</div>
+            </div>
+            <div class="box sub t-unit" data-id="sense" style="position:relative;height:134px">
+              <div class="bhead"><div><div class="bname"><span class="wx-dot" style="background:var(--green)"></span>Sense</div><div class="bsub">Submodule · Unit · inside Parser</div></div></div>
+              <div class="bbody">Settles which sense of each word is meant; rival senses are arbitrated by cycle coherence.</div>
+              <div class="port in" data-port>IN</div><div class="port out" data-port>OUT</div>
+            </div>
+            <div class="box sub t-unit" data-id="valency" style="position:relative;height:134px">
+              <div class="bhead"><div><div class="bname"><span class="wx-dot" style="background:var(--red)"></span>Valency</div><div class="bsub">Submodule · Unit · inside Parser</div></div></div>
+              <div class="bbody">What arguments a verb requires — and which required role is missing when a sentence stops short.</div>
+              <div class="port in" data-port>IN</div><div class="port out" data-port>OUT</div>
+            </div>
+            <div class="box sub t-unit" data-id="aspect" style="position:relative;height:134px">
+              <div class="bhead"><div><div class="bname"><span class="wx-dot" style="background:var(--blue)"></span>Aspect &amp; Forms</div><div class="bsub">Submodule · Unit · inside Parser</div></div></div>
+              <div class="bbody">Tense, aspect and form bundles — how the event is shaped in time, and which surface forms realise it.</div>
+              <div class="port in" data-port>IN</div><div class="port out" data-port>OUT</div>
+            </div>
+          </div>
+          <div class="bbody" style="padding-top:2px">Parser output is a <strong style="color:var(--ink)">meaning graph whose nodes sit at Wuxing addresses</strong> — not an English tree with labels on it.</div>
+        </div>
+
+        <!-- Generator (sibling of Parser, inside LPU) -->
+        <div class="box unit t-unit" data-id="generator" style="left:752px;top:196px;width:216px;height:216px">
+          <div class="bhead">
+            <div><div class="bname">Generator Unit</div><div class="bsub">Inside the LPU · sibling of the Parser</div></div>
+            <span class="btag" style="color:var(--teal)">Unit</span>
+          </div>
+          <div class="bbody">Reply meaning graph in → surface wording out. Replies are generated from the graph the Planner hands it — the reverse road of the Parser.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:712px;width:716px;height:168px">
+          <div class="bhead"><div><div class="bname">Unplaced · Unit</div><div class="bsub">Inside the LPU</div></div><span class="btag" style="color:var(--muted)">—</span></div>
+          <div class="bbody">Other aspect units of the LPU, beyond the Parser and the Generator — a place held, not a thing built. To be settled.</div>
+        </div>
+
+                <div class="packet" id="packet"><span class="packet-label" id="packetLabel">“Hello”</span>●</div>
+      </div>
+    </div>
+
+    <div class="hintbar">
+      <span>🖱 Drag — pan</span><span>Scroll / pinch buttons — zoom</span><span>Click a box — inspect + focus</span><span>Double-click — zoom to box</span><span>Trace — follow “Hello” end to end</span>
+    </div>
+  </div>
+
+  <!-- ================= SIDE ================= -->
+  <aside class="side">
+    <section aria-label="Trace Hello through the system">
+      <h2>Watch it move — “Hello”</h2>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5">Traced under the <strong style="color:var(--ink)">Chat configuration</strong> — the first configuration of the general-purpose system drawn here.</p>
+      <div class="say">
+        <div class="utter"><span>A person says</span>“Hello.”</div>
+      </div>
+      <div class="trace-controls">
+        <button class="btn primary" id="playBtn2">▶ Play trace</button>
+        <button class="btn" id="stepBtn2">Step →</button>
+        <button class="btn" id="resetBtn2">Reset</button>
+      </div>
+      <div class="nowstep" id="nowStep">
+        <div class="ns-loc">Ready</div>
+        <div class="ns-text">Press <strong>Play trace</strong>. The packet is the utterance itself — follow it from the person's mouth, through the Awareness Unit and every LPU unit, to the reply leaving the System's OUT port.</div>
+      </div>
+      <ol class="steplog" id="stepLog"></ol>
+    </section>
+
+    <section aria-label="Inspector">
+      <h2>Inspector</h2>
+      <div class="insp-name" id="inspName">The System</div>
+      <div class="insp-path" id="inspPath">System</div>
+      <div class="insp-body" id="inspBody">The outermost bounding box and the new root page's whole subject. Everything else on this schematic is inside it. Its IN port takes a person's utterance; its OUT port delivers the reply.</div>
+      <div class="insp-ports" id="inspPorts"><span>IN — utterance</span><span>OUT — reply</span></div>
+      <div style="margin-top:12px"><button class="btn" id="inspFocus">Zoom to this unit</button></div>
+    </section>
+
+    <section aria-label="Legend">
+      <h2>Legend — module types</h2>
+      <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 4px">One drafting family — same rectangles, same stroke, same title placement. Type is carried by small systematic treatments only: a corner, an edge, a ruling. Held modules are double-ruled, active modules single-ruled; containers are double-ruled frames with a title tab.</p>
+      <div class="typelegend">
+        <div class="trow"><span class="lshape unit"></span><div><span class="tname">UNIT</span><div class="tdef">Transforms: in → work → out. Told by a <em>chamfered output corner</em>. <em>Parser, Generator, Planner.</em></div></div></div>
+        <div class="trow"><span class="lshape store"></span><div><span class="tname">STORE</span><div class="tdef">Holds and is consulted; never acts. Told by a <em>double bottom edge — a shelf line</em>. <em>Knowledge graph, lexicon.</em></div></div></div>
+        <div class="trow"><span class="lshape register"></span><div><span class="tname">REGISTER</span><div class="tdef">Holds current state — small, rewritten constantly. Told by a <em>segmented top strip</em>. <em>Session record, situation statement.</em></div></div></div>
+        <div class="trow"><span class="lshape table"></span><div><span class="tname">TABLE</span><div class="tdef">Fixed mapping: key in → value out; never changes at runtime. Told by <em>faint internal ruling</em>. <em>Pricing ceilings, correspondence tables, composition definitions.</em></div></div></div>
+        <div class="trow"><span class="lshape gate"></span><div><span class="tname">GATE</span><div class="tdef">Stands in a path and prices or refuses passage. Told by a <em>bold input edge — a barrier line</em>. <em>Harbor gate, decline floor, confidence band.</em></div></div></div>
+        <div class="trow"><span class="lshape router"></span><div><span class="tname">ROUTER</span><div class="tdef">Directs flow among paths, by rule. Told by <em>the only rounded corners on the map</em>. <em>The Intake Router: local graph → CSKG → Wikidata → web → model.</em></div></div></div>
+        <div class="trow"><span class="lshape source"></span><div><span class="tname">SOURCE</span><div class="tdef">Originates input from outside the boundary. Told by <em>placement alone — astride the System boundary</em>. <em>Clock, the person's channel, external tiers.</em></div></div></div>
+        <div class="trow"><span class="lshape surface"></span><div><span class="tname">SURFACE</span><div class="tdef">Where output leaves and is seen. Told by a <em>double top edge</em>. <em>Reply surface, dashboard, trace view.</em></div></div></div>
+      </div>
+
+      <h2 style="margin-top:20px">Cords — connection vs pathway</h2>
+      <div class="typelegend">
+        <div class="trow"><span class="cord-sample"><i></i><i></i></span><div><span class="tname">PATHWAY CORD</span><div class="tdef">Two close parallel hairlines — a track. <em>A token — the circle — can travel it.</em> These form the utterance circuit. A Store never has one; a Gate sits astride one.</div></div></div>
+        <div class="trow"><span class="cord-sample single"><i></i></span><div><span class="tname">CONNECTION CORD</span><div class="tdef">One hairline, open dot at the end that is read. Standing structure, labelled with its verb: <em>consults · holds · writes · uses</em>.</div></div></div>
+        <div class="trow"><span class="cord-sample taken"><i></i></span><div><span class="tname">TAKEN PATH</span><div class="tdef">Not a third cord — a state. As the circle travels, the pathway behind it <em>fills to one solid weight</em>, so a finished trace leaves the actual journey standing among the merely possible ones.</div></div></div>
+      </div>
+      <h2 style="margin-top:20px">Containment vs use</h2>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:0">A box inside a box means <strong style="color:var(--ink)">containment</strong> — nothing else. A module that is a <strong style="color:var(--ink)">resource</strong> for another is never nested inside its user: it is reached by a connection cord labelled <em style="color:var(--ink)">uses</em>. The <strong style="color:var(--ink)">Verbalizer</strong> is the standing example — a System-level element whose uses cord runs to the Generator inside the LPU it makes use of.</p>
+      <h2 style="margin-top:20px">Gray hierarchy</h2>
+      <div class="grayramp"><span style="background:var(--g0)"></span><span style="background:var(--g1)"></span><span style="background:var(--g2)"></span><span style="background:var(--g3)"></span></div>
+      <div class="grayramp-lbls"><span>System</span><span>Section</span><span>Unit</span><span>Submodule</span></div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:6px 0 0">Hierarchy is carried by <strong style="color:var(--ink)">gradations of gray</strong>: the deeper an element sits, the stronger its ground. Colour is reserved for the travelling circle and the path it takes.</p>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:12px 0 0">Zoom is the organising idea of the reorganisation: at System zoom you see the units; at Parser zoom you see four submodules. The root page will work the same way — <strong style="color:var(--ink)">one map, every scale</strong>.</p>
+    </section>
+  </aside>
+</div>
+
+<footer class="foot">
+  <span>ANSCI · ROOT PAGE PREVIEW — ZOOMABLE SCHEMATIC</span>
+  <span>PREVIOUS ROOT: <a href="/dashboard/">/dashboard/</a></span>
+  <span>NESTING: SYSTEM ⊃ LPU ⊃ PARSER ⊃ TOKEN · SENSE · VALENCY · ASPECT &amp; FORMS</span>
+  <span>SYSTEM ALSO CONTAINS: AWARENESS · SESSION &amp; SITUATION · KNOWLEDGE · REASONING · INTAKE &amp; HARBORING · VERBALIZER (USES LPU)</span>
+  <span>CORDS: PATHWAY (DOUBLE) · CONNECTION (SINGLE, OPEN DOT) · USES</span>
+  <span>AWARENESS UNIT SITS AT SYSTEM LEVEL, BESIDE THE LPU</span>
+  <span>MODULE TYPES: UNIT · STORE · REGISTER · TABLE · GATE · ROUTER · SOURCE · SURFACE</span>
+  <span>GENERAL-PURPOSE SYSTEM · CONFIGURATION: CHAT — FIRST CONFIGURATION</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var viewport=document.getElementById('viewport'), world=document.getElementById('world');
+  var zoomRead=document.getElementById('zoomRead');
+  var view={x:0,y:0,k:0.62};
+  function apply(){ world.style.transform='translate('+view.x+'px,'+view.y+'px) scale('+view.k+')'; zoomRead.textContent=Math.round(view.k*100)+'%'; }
+  function clampK(k){return Math.max(0.18,Math.min(2.6,k));}
+  function fitRect(r,pad){
+    pad=pad||36;
+    var vw=viewport.clientWidth, vh=viewport.clientHeight;
+    var k=clampK(Math.min((vw-pad*2)/r.w,(vh-pad*2)/r.h));
+    view.k=k; view.x=(vw-r.w*k)/2-r.x*k; view.y=(vh-r.h*k)/2-r.y*k; apply();
+  }
+  function fitSystem(){ fitRect({x:190,y:56,w:1250,h:1800},30); }
+  var RECTS={
+    system:{x:190,y:56,w:1250,h:1800}, lpu:{x:222,y:118,w:776,h:850}, parser:{x:252,y:196,w:470,h:468},
+    awareness:{x:1030,y:118,w:378,h:510}, generator:{x:752,y:196,w:216,h:216},
+    planner:{x:640,y:1284,w:330,h:64}, derivation:{x:240,y:1284,w:330,h:64},
+    lexicon:{x:900,y:1040,w:270,h:120}, correspondence:{x:240,y:1040,w:270,h:120},
+    session:{x:1030,y:652,w:378,h:196}, router:{x:240,y:1528,w:370,h:120}, harborer:{x:1020,y:1528,w:370,h:120}, intake:{x:222,y:1472,w:1186,h:200},
+    gate:{x:640,y:1352,w:330,h:56}, tables:{x:240,y:1352,w:330,h:56}, clock:{x:660,y:40,w:170,h:34}, config:{x:902,y:34,w:520,h:44}, source:{x:102,y:283,w:220,h:34}, composer:{x:1048,y:540,w:342,h:64},
+    verbalizer:{x:1030,y:862,w:378,h:106}, knowledge:{x:222,y:984,w:1186,h:230}, reasoning:{x:222,y:1228,w:1186,h:230},
+    surfaces:{x:222,y:1686,w:760,h:140}, 'unplaced-lpu':{x:252,y:712,w:716,h:168}, 'unplaced-sys':{x:998,y:1686,w:410,h:140},
+    token:{x:264,y:262,w:218,h:118}, sense:{x:490,y:262,w:218,h:118}, valency:{x:264,y:388,w:218,h:118}, aspect:{x:490,y:388,w:218,h:118}
+  };
+  function focusId(id){ var r=RECTS[id]; if(r) fitRect(r,54); select(id,false); }
+
+  /* pan — a drag may start anywhere in the viewport, including on a box:
+     the boxes cover nearly the whole map, so panning must not be limited
+     to the gaps between them. A press that stays put is a click (it still
+     selects / inspects the box); a press that moves past a small threshold
+     becomes a pan, and the click / double-click it would otherwise fire
+     on release is swallowed so a pan never also selects or zooms a box. */
+  var drag=null, suppressClick=false, suppressDblUntil=0;
+  viewport.addEventListener('pointerdown',function(e){
+    if(e.button!==undefined && e.button!==0) return;
+    drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y,moved:false,id:e.pointerId};
+  });
+  viewport.addEventListener('pointermove',function(e){
+    if(!drag) return;
+    var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+    if(!drag.moved){
+      if(Math.sqrt(dx*dx+dy*dy)<5) return;
+      drag.moved=true; viewport.classList.add('dragging');
+      try{ viewport.setPointerCapture(drag.id); }catch(err){}
+    }
+    view.x=drag.vx+dx; view.y=drag.vy+dy; apply();
+    if(e.cancelable) e.preventDefault();
+  });
+  function endDrag(){
+    if(drag && drag.moved){
+      suppressClick=true; suppressDblUntil=Date.now()+600;
+      setTimeout(function(){ suppressClick=false; },350);
+    }
+    drag=null; viewport.classList.remove('dragging');
+  }
+  viewport.addEventListener('pointerup',endDrag); viewport.addEventListener('pointercancel',endDrag);
+  viewport.addEventListener('click',function(e){
+    if(!suppressClick) return;
+    suppressClick=false; e.stopPropagation(); e.preventDefault();
+  },true);
+  viewport.addEventListener('dblclick',function(e){
+    if(Date.now()>suppressDblUntil) return;
+    e.stopPropagation(); e.preventDefault();
+  },true);
+  viewport.addEventListener('wheel',function(e){
+    e.preventDefault();
+    var r=viewport.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+    var k2=clampK(view.k*(e.deltaY<0?1.12:0.89));
+    view.x=mx-(mx-view.x)*(k2/view.k); view.y=my-(my-view.y)*(k2/view.k); view.k=k2; apply();
+  },{passive:false});
+  function zoomStep(f){ var cx=viewport.clientWidth/2, cy=viewport.clientHeight/2; var k2=clampK(view.k*f); view.x=cx-(cx-view.x)*(k2/view.k); view.y=cy-(cy-view.y)*(k2/view.k); view.k=k2; apply(); }
+  document.getElementById('zoomIn').addEventListener('click',function(){zoomStep(1.25);});
+  document.getElementById('zoomOut').addEventListener('click',function(){zoomStep(0.8);});
+  document.getElementById('fitBtn').addEventListener('click',fitSystem);
+
+  /* inspector */
+  var INFO={
+    system:{name:'The System',path:'System · general-purpose',body:'The outermost bounding box and the new root page\u2019s whole subject. It is drawn <strong>configuration-neutral</strong>: a general-purpose system, not a chat system. What it is currently running is held in the <strong>Configuration register</strong> on its frame — <em>Configuration: Chat, first configuration</em>. Change the configuration and the same units serve a different purpose; the map does not change.',ports:['IN — input (per configuration)','OUT — output (per configuration)']},
+    lpu:{name:'LPU — Language Processing Unit',path:'System ⊃ LPU',body:'The language machine inside the System. It <strong>contains</strong> the Parser and the Generator, plus one unplaced place for other aspect units. Derivation, the Planner and the Lexicon are <strong>not</strong> in here — they sit at System level (Reasoning, Knowledge) and reach the LPU by cord, the way the Verbalizer does.',ports:['IN — utterance + situation','OUT — reply meaning']},
+    parser:{name:'Parser Unit',path:'System ⊃ LPU ⊃ Parser unit',body:'Sentence in, meaning graph out. The Parser has explicit <strong>IN and OUT ports</strong> and contains four submodules — Token, Sense, Valency, Aspect &amp; Forms. Its output is a meaning graph whose nodes sit at Wuxing addresses.',ports:['IN — token stream target','OUT — meaning graph']},
+    token:{name:'Token',path:'System ⊃ LPU ⊃ Parser ⊃ Token',body:'First submodule of the Parser. Splits the raw string into tokens and normalises case and punctuation. <strong>Located gap:</strong> there is no token-level spelling recovery here yet — a mistyped word and an unparseable sentence currently fail in the same place, and this box is where that distinction belongs.',ports:['IN — raw string','OUT — tokens']},
+    sense:{name:'Sense',path:'System ⊃ LPU ⊃ Parser ⊃ Sense',body:'Settles which sense of each word is meant. Where a word carries rival anchored senses, cycle coherence — same element, generating, controlling — arbitrates between them. For “Hello” this is the submodule that finds a <strong>social act</strong>, not a thing or an event.',ports:['IN — tokens','OUT — settled senses']},
+    valency:{name:'Valency',path:'System ⊃ LPU ⊃ Parser ⊃ Valency',body:'What arguments a verb requires, and which required role is missing when a sentence stops short — the machinery behind “What did you give him?” A greeting requires no arguments, so “Hello” passes through clean.',ports:['IN — senses','OUT — argument frame']},
+    aspect:{name:'Aspect & Forms',path:'System ⊃ LPU ⊃ Parser ⊃ Aspect & Forms',body:'Tense, aspect and form bundles: how an event is shaped in time and which surface forms realise it. A standalone greeting carries no aspect — this submodule records exactly that, rather than inventing an event.',ports:['IN — frame','OUT — formed graph']},
+    generator:{name:'Generator Unit',path:'System ⊃ LPU ⊃ Generator unit',body:'A <strong>sibling of the Parser</strong> inside the LPU — the reverse road. It takes the reply meaning graph the Planner selected and generates the surface wording from it.',ports:['IN — reply meaning graph','OUT — wording']},
+    derivation:{name:'Derivation',path:'System ⊃ Reasoning ⊃ Derivation · UNIT',body:'Walks the Correspondence Store — generating and controlling cycles — and prices what it finds. Support below the floor is reported as weak rather than asserted. For a greeting there is nothing to derive, and the unit says so: that negative result is what routes the turn to the situation instead.',ports:['IN — meaning graph','OUT — priced derivations']},
+    planner:{name:'Planner',path:'System ⊃ Reasoning ⊃ Planner · UNIT',body:'Chooses the next conversational move from two inputs: the Derivation Unit\u2019s priced results <strong>and</strong> the Awareness Unit\u2019s situation statement. Unknown person + first utterance + a greeting = acknowledge and open. That is a planned move, not a canned string.',ports:['IN — derivations + situation','OUT — selected move']},
+    awareness:{name:'Awareness Unit',path:'System ⊃ Awareness Unit',body:'At <strong>System level, beside the LPU</strong> — a container with four branches. <strong>Self:</strong> Identity (Table), Capabilities &amp; limits (Table), Current disposition (Register, copied from its Table at session open), Own state (Register). <strong>Place &amp; Time:</strong> Clock (Source, astride the edge), Season &amp; daypart (Register, classified against its Table), Surface &amp; channel (Register), Weather (Source feeding a Register). <strong>Surroundings:</strong> Interlocutor standing, Standing topics, Other presences (all Registers). <strong>Current Activity:</strong> Situation statement, Last act, Open gaps (Registers) — and the <strong>Composer</strong>, the one Unit inside: one writer, many readers. It represents that the system knows <strong>where it is, who it is, who and what is around it, and what is currently happening</strong>. It continuously holds a situation statement — currently: <em>“I am chatting to a person with unknown identity.”</em> The Planner and Verbalizer read it on every turn, including turns the LPU cannot answer from knowledge.',ports:['IN — session + arrivals','OUT — situation statement']},
+    session:{name:'Session & Situation',path:'System ⊃ Session & Situation · REGISTERS',body:'A general record, usable by <strong>any configuration</strong> — sessions and situations are not chat notions. It holds what stands between turns: topics and their standing, what has been settled, who has spoken. Chat is its first use; under that configuration a first utterance finds it empty, and that emptiness is data for the Awareness Unit.',ports:['IN — turn record','OUT — standing']},
+    verbalizer:{name:'Verbalizer',path:'System ⊃ Verbalizer · uses LPU',body:'A <strong>System-level</strong> element that <strong>uses the LPU</strong> — it neither contains it nor sits inside it. The uses cord runs from here to the Generator inside the LPU: containment is nesting, use is a cord. Turns a selected move into the sentence actually said — including moves whose content is the situation assessment itself. “What are you talking about?” from a stranger\u2019s context-free question is generated here, from the assessment, the same way a gap question is generated from a missing role.',ports:['IN — selected move','OUT — sentence']},
+    config:{name:'Configuration Register',path:'System frame ⊃ Configuration · REGISTER',body:'A <strong>Register</strong> mounted on the System frame, drawn with the segmented top strip. It holds which configuration the general-purpose system is running: currently <strong>Chat — the first configuration</strong>. Everything inside the frame — LPU, Awareness, Session &amp; Situation — is configuration-neutral machinery; the configuration is what aims it. The “Hello” trace runs under this configuration.',ports:['HOLDS — active configuration','READ BY — every unit']},
+    composer:{name:'Composer',path:'System ⊃ Awareness Unit ⊃ Current Activity ⊃ Composer · UNIT',body:'The <strong>one worker</strong> inside the Awareness Unit — a Unit, told by its chamfered output corner. Each turn it reads the other registers (self, place &amp; time, surroundings, activity) and <strong>writes the new situation statement</strong>. One writer, many readers: the Planner consults the situation register, but only the Composer may write it.',ports:['IN — all awareness registers','OUT — situation statement']},
+    router:{name:'Intake Router',path:'System ⊃ Intake & Harboring ⊃ Intake Router · ROUTER',body:'A <strong>Router</strong> at the System edge: it governs <strong>intake</strong> — what may be asked for, and in what order. Local graph first, then <strong>CSKG → Wikidata → web → model</strong>, each tier only when the one before it cannot genuinely answer. What returns enters through the same point, to the Retrieval Harborer.',ports:['IN — knowledge need','OUT — routed answer + provenance']},
+    gate:{name:'Decline Floor — Gate',path:'System ⊃ Reasoning ⊃ Gate (Derivation → Planner)',body:'A <strong>Gate</strong> standing astride the pathway cord between Derivation and Planner. It prices passage: support at or above the floor passes and may be asserted; below it, passage is refused and the turn is routed elsewhere — to a gap question, or to the situation. The harbor gate and the confidence band are gates of the same type.',ports:['IN — priced derivation','OUT — pass / refuse']},
+    tables:{name:'Composition Definitions — Table',path:'System ⊃ Reasoning ⊃ Composition definitions · TABLE',body:'A <strong>Table</strong>: a fixed mapping, key in → value out, that never changes at runtime. Pricing ceilings, correspondence tables and composition definitions live here. When a number in the system looks arbitrary, it is read off one of these — and can be changed here, in one place.',ports:['IN — key','OUT — value']},
+    clock:{name:'Clock — Source',path:'System edge ⊃ Clock · SOURCE',body:'A <strong>Source</strong>: it originates input from outside the system boundary, so it is drawn on the System\u2019s edge. The clock feeds the Awareness Unit its sense of when it is — session start, time of day, how long a turn has taken.',ports:['OUT — time signal']},
+    source:{name:"The Person's Channel — Source",path:'System edge ⊃ Person · SOURCE',body:'A <strong>Source</strong>: the person\u2019s channel originates the utterance from outside the boundary and is drawn on the System\u2019s edge. Everything the system knows about this source right now is in the Awareness Unit: identity unknown, first utterance, no shared topic yet.',ports:['OUT — utterance']},
+    knowledge:{name:'Knowledge',path:'System ⊃ Knowledge',body:'The held side of the system: the <strong>Correspondence graph</strong> (Store, its cycles as relations), <strong>Classification</strong> (Table), the <strong>Lexicon</strong> (Store) and the <strong>Banked stores</strong> — retrievals the Retrieval Harborer has kept, with provenance. Everything here is consulted by cord; nothing here acts.',ports:['IN — harbored retrievals','OUT — consultations']},harborer:{name:'Retrieval Harborer',path:'System ⊃ Intake & Harboring ⊃ Retrieval Harborer · UNIT',body:'Where a retrieval is given <strong>harbor</strong>: kept, not certified. Retrieval is the neutral word — kept material may later prove wrong and be struck, so the name claims only that it was retrieved. Entry is gated: provenance required, derived confidence, individually reversible. Kept retrievals travel the pathway cord up into Knowledge.',ports:['IN — returned retrieval + papers','OUT — harbored entry']},intake:{name:'Intake & Harboring',path:'System ⊃ Intake & Harboring',body:'One doorway at the System edge, a matched pair: the <strong>Intake Router</strong> governs what may be asked for and in what order; the <strong>Retrieval Harborer</strong>, behind its gate, governs what may be kept.',ports:['IN — knowledge need','OUT — harbored retrievals']},reasoning:{name:'Reasoning',path:'System ⊃ Reasoning',body:'Derivation (the cycle walks) and the Planner (move selection, reply graph), with Pricing and Composition definitions as Tables and the Decline floor as a Gate astride the pathway between them. It sits at System level — it <em>uses</em> language; it is not part of the LPU.',ports:['IN — meaning graph + situation','OUT — reply graph']},correspondence:{name:'Correspondence Graph',path:'System ⊃ Knowledge ⊃ Correspondence graph · STORE',body:'Classifications and correspondences at Wuxing addresses, the generating and controlling cycles held as its relations. A Store: consulted by Derivation via connection cord, never travelled through.',ports:['IN — harbored entries','OUT — correspondences']},surfaces:{name:'Surfaces',path:'System ⊃ Surfaces',body:'Where output leaves and is seen: the Reply, this root page, the dashboard and the trace view.',ports:['OUT — what is shown']},'unplaced-lpu':{name:'Unplaced — LPU',path:'System ⊃ LPU ⊃ Unplaced',body:'A place held inside the LPU for other aspect units, beyond the Parser and the Generator. Dashed ruling: reserved, not built. To be settled.',ports:['—']},'unplaced-sys':{name:'Unplaced — System',path:'System ⊃ Unplaced',body:'A place held at System level for further units whose territory is not yet categorised. Dashed ruling: reserved, not built. To be settled.',ports:['—']},lexicon:{name:'Lexicon',path:'System ⊃ Knowledge ⊃ Lexicon · STORE',body:'The classified word stock the Sense submodule consults — a <strong>resource</strong>, reached by a connection cord, never by nesting. When a word has no entry, the gap is located in this unit by name.',ports:['IN — lookup','OUT — entries / located gap']}
+  };
+  var selectedId='system';
+  var inspName=document.getElementById('inspName'), inspPath=document.getElementById('inspPath'),
+      inspBody=document.getElementById('inspBody'), inspPorts=document.getElementById('inspPorts');
+  function select(id,focus){
+    var info=INFO[id]; if(!info) return; selectedId=id;
+    document.querySelectorAll('.box,.sec-item[data-id]').forEach(function(b){ b.classList.toggle('selected', b.getAttribute('data-id')===id); });
+    document.querySelectorAll('.crumb button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-focus')===id); });
+    inspName.textContent=info.name; inspPath.textContent=info.path; inspBody.innerHTML=info.body;
+    inspPorts.innerHTML=info.ports.map(function(p){return '<span>'+p+'</span>';}).join('');
+    if(focus) { var r=RECTS[id]; if(r) fitRect(r,54); }
+  }
+  document.querySelectorAll('.gatewrap,.srctab,.configreg,.aw-item[data-id],.sec-item[data-id]').forEach(function(b){ b.addEventListener('click',function(e){ e.stopPropagation(); select(b.getAttribute('data-id'),false); }); b.addEventListener('dblclick',function(e){ e.stopPropagation(); focusId(b.getAttribute('data-id')); }); });
+  document.querySelectorAll('.box').forEach(function(b){
+    b.addEventListener('click',function(e){ e.stopPropagation(); select(b.getAttribute('data-id'),false); });
+    b.addEventListener('dblclick',function(e){ e.stopPropagation(); focusId(b.getAttribute('data-id')); });
+  });
+  document.querySelectorAll('[data-focus]').forEach(function(b){
+    b.addEventListener('click',function(){ focusId(b.getAttribute('data-focus')); });
+  });
+  document.getElementById('inspFocus').addEventListener('click',function(){ focusId(selectedId); });
+
+  /* ---------- trace ---------- */
+  var STEPS=[
+    {at:[118,300], box:null, loc:'Outside the System — a person', text:'A person — <strong>identity unknown</strong> — says <code>“Hello.”</code> First utterance of the session. The circle starts here; every cord it will travel is already drawn.'},
+    {at:[213,300], box:'system', loc:'System · IN port', text:'The utterance crosses the System\u2019s <strong>IN</strong> port along a <strong>pathway cord</strong> — the double track. Everything from here is inside the outermost box.'},
+    {at:[1219,268], box:'awareness', loc:'Awareness Unit', text:'Before language work, the situation is read: <em>where</em> — this chat; <em>who</em> — AnSci; <em>around</em> — one person, unknown identity; <em>happening</em> — a first utterance. Held statement: <code>“I am chatting to a person with unknown identity.”</code> Awareness <em>consults</em> the Session record by connection cord — it does not contain it.'},
+    {at:[240,430], box:'lpu', loc:'LPU · IN port', text:'The utterance enters the <strong>Language Processing Unit</strong>, routed to the Parser first.'},
+    {at:[262,430], box:'parser', loc:'Parser Unit · IN port', text:'In through the Parser\u2019s <strong>IN</strong> port. Four submodules now handle it in sequence.'},
+    {at:[373,321], box:'token', loc:'Parser ⊃ Token', text:'Tokenised: one token, <code>hello</code> — case normalised, full stop stripped.'},
+    {at:[599,321], box:'sense', loc:'Parser ⊃ Sense', text:'Sense settles it as a <strong>social act — a greeting</strong>. The Lexicon it consults sits in Knowledge, reached by a <em>connection cord</em> running down the map — a resource, not a part of the Parser.'},
+    {at:[373,447], box:'valency', loc:'Parser ⊃ Valency', text:'A greeting takes <strong>no arguments</strong> — no required role is missing, so no gap question is owed.'},
+    {at:[599,447], box:'aspect', loc:'Parser ⊃ Aspect & Forms', text:'No tense, no aspect: a standalone formula. Recorded as such — no event is invented for it.'},
+    {at:[712,430], box:'parser', loc:'Parser Unit · OUT port', text:'Out through the Parser\u2019s <strong>OUT</strong> port as a meaning graph: <code>SPEECH-ACT(greeting)</code>, speaker = the unknown person.'},
+    {at:[1219,750], box:'session', loc:'Session & Situation', text:'The turn is recorded: states and origins, the event, topics, corrections. The pathway cord runs Parser \u2192 Session — and Awareness reads the record back by connection cord.'},
+    {at:[422,1360], box:'derivation', loc:'Reasoning ⊃ Derivation', text:'In <strong>Reasoning</strong>, at System level: nothing to derive — a greeting carries no claim about the world. Derivation consults the Correspondence graph by connection cord and returns that empty result, which meets the <strong>Decline floor Gate</strong> astride the pathway to the Planner.'},
+    {at:[792,1360], box:'planner', loc:'Reasoning ⊃ Planner', text:'The Planner reads the Awareness statement — unknown person, first contact, greeting received — and selects the move a person selects: <strong>acknowledge, and open</strong>.'},
+    {at:[860,303], box:'generator', loc:'Generator Unit', text:'Back up the pathway into the LPU: the selected move arrives at the <strong>Generator</strong> — the Parser\u2019s sibling — as a reply meaning graph.'},
+    {at:[1219,915], box:'verbalizer', loc:'Verbalizer · uses the LPU', text:'The <strong>Verbalizer</strong> takes the wording over. Note the cord labelled <em>uses</em>: the Verbalizer is a System-level element that <strong>uses</strong> the LPU — the Generator did the language work for it; it does not contain the LPU and is not inside it.'},
+    {at:[1427,430], box:'system', loc:'System · OUT port → reply', text:'The reply leaves the System\u2019s <strong>OUT</strong> port: <code>“Hello.”</code> Behind the circle, the pathway it travelled now stands filled — the taken path, distinct from every cord it did not take.'}
+  ];
+  var logEl=document.getElementById('stepLog'), nowEl=document.getElementById('nowStep');
+  STEPS.forEach(function(s,i){
+    var li=document.createElement('li');
+    li.innerHTML='<span class="n">'+(i+1)+'</span><span><span class="sl2">'+s.loc+'</span>'+s.text+'</span>';
+    logEl.appendChild(li);
+  });
+  var packet=document.getElementById('packet'), tracePath=document.getElementById('tracePath');
+  var replyBubble=document.getElementById('replyBubble'), replyNote=document.getElementById('replyNote');
+  var cur=-1, playing=false, raf=null, segStart=0;
+  function lightBox(id){
+    document.querySelectorAll('.box.lit,.gatewrap.lit,.srctab.lit,.configreg.lit,.sec-item.lit').forEach(function(b){b.classList.remove('lit');});
+    document.querySelectorAll('.port.lit').forEach(function(p){p.classList.remove('lit');});
+    if(!id) return;
+    document.querySelectorAll('.gatewrap[data-id="'+id+'"],.srctab[data-id="'+id+'"],.configreg[data-id="'+id+'"],.sec-item[data-id="'+id+'"]').forEach(function(b){ b.classList.add('lit'); });
+    document.querySelectorAll('.box[data-id="'+id+'"]').forEach(function(b){
+      b.classList.add('lit');
+      b.querySelectorAll('.port').forEach(function(p){p.classList.add('lit');});
+    });
+  }
+  function showStep(i){
+    cur=i; var s=STEPS[i];
+    packet.classList.add('show');
+    packet.style.left=s.at[0]+'px'; packet.style.top=s.at[1]+'px';
+    tracePath.classList.add('lit');
+    lightBox(s.box); if(s.box) select(s.box,false);
+    nowEl.innerHTML='<div class="ns-loc">Step '+(i+1)+' / '+STEPS.length+' — '+s.loc+'</div><div class="ns-text">'+s.text+'</div>';
+    Array.prototype.forEach.call(logEl.children,function(li,j){
+      li.classList.toggle('done',j<i); li.classList.toggle('now',j===i);
+      if(j===i) li.scrollIntoView({block:'nearest'});
+    });
+    if(i===STEPS.length-1){ replyBubble.style.opacity='1'; replyNote.textContent='— generated · situation-derived —'; }
+  }
+  function resetTrace(){
+    playing=false; if(raf) cancelAnimationFrame(raf);
+    cur=-1; packet.classList.remove('show'); tracePath.classList.remove('lit'); lightBox(null);
+    replyBubble.style.opacity='.28'; replyNote.textContent='— not yet generated —';
+    nowEl.innerHTML='<div class="ns-loc">Ready</div><div class="ns-text">Press <strong>Play trace</strong>. The packet is the utterance itself — follow it from the person\u2019s mouth, through the Awareness Unit and every LPU unit, to the reply leaving the System\u2019s OUT port.</div>';
+    Array.prototype.forEach.call(logEl.children,function(li){ li.classList.remove('done','now'); });
+    setPlayLabels();
+  }
+  function animateTo(i,done){
+    var from = cur<0 ? STEPS[0].at : STEPS[cur].at, to=STEPS[i].at, t0=null;
+    var dur=Math.max(420, Math.hypot(to[0]-from[0],to[1]-from[1])*1.15);
+    packet.classList.add('show');
+    function frame(ts){
+      if(!playing && !frame.stepMode){ return; }
+      if(!t0) t0=ts;
+      var p=Math.min(1,(ts-t0)/dur), e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+      packet.style.left=(from[0]+(to[0]-from[0])*e)+'px';
+      packet.style.top=(from[1]+(to[1]-from[1])*e)+'px';
+      if(p<1){ raf=requestAnimationFrame(frame); } else { showStep(i); if(done) done(); }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  function playNext(){
+    if(!playing) return;
+    if(cur>=STEPS.length-1){ playing=false; setPlayLabels(); return; }
+    animateTo(cur+1,function(){ if(playing) segStart=setTimeout(playNext,1350); });
+  }
+  function setPlayLabels(){
+    var t=playing?'❚❚ Pause trace':'▶ Play trace';
+    document.getElementById('playBtn').textContent=playing?'❚❚ Pause':'▶ Trace “Hello”';
+    document.getElementById('playBtn2').textContent=t;
+  }
+  function togglePlay(){
+    if(playing){ playing=false; if(raf)cancelAnimationFrame(raf); clearTimeout(segStart); setPlayLabels(); return; }
+    if(cur>=STEPS.length-1) resetTrace();
+    playing=true; setPlayLabels(); playNext();
+  }
+  function stepOnce(){
+    playing=false; setPlayLabels();
+    if(cur>=STEPS.length-1) resetTrace();
+    var target=cur+1;
+    /* step mode: jump-animate quickly */
+    var from = cur<0 ? STEPS[0].at : STEPS[cur].at, to=STEPS[target].at, t0=null;
+    packet.classList.add('show');
+    (function frame(ts){
+      if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/450), e=1-Math.pow(1-p,3);
+      packet.style.left=(from[0]+(to[0]-from[0])*e)+'px'; packet.style.top=(from[1]+(to[1]-from[1])*e)+'px';
+      if(p<1) requestAnimationFrame(frame); else showStep(target);
+    })(performance.now());
+  }
+  ['playBtn','playBtn2'].forEach(function(id){document.getElementById(id).addEventListener('click',togglePlay);});
+  ['stepBtn','stepBtn2'].forEach(function(id){document.getElementById(id).addEventListener('click',stepOnce);});
+  ['resetBtn','resetBtn2'].forEach(function(id){document.getElementById(id).addEventListener('click',resetTrace);});
+
+  window.addEventListener('resize',function(){ /* keep transform; user can refit */ });
+  fitSystem(); select('system',false); apply();
+})();
+</script>
+</body>
+</html>

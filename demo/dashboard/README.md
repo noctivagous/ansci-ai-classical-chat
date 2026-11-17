@@ -7,6 +7,18 @@ live in the browser (parse, meaning graph, checker, derivations), the
 steering probe's answers with their turn traces, and a wall of named
 failures, two of which demonstrate themselves live.
 
+## Site layout
+
+The site root (`/`) is the zoomable schematic root page — a map of the
+whole system with the "Hello" trace. Its source is `root/index.html`
+(a self-contained page, no build step); the build copies it to
+`dist/index.html`. This dashboard app builds into `dist/dashboard/`
+and is served at `/dashboard/`.
+
+Sync loop: the schematic is revised in its Muse artifact first
+(fast iteration), then the new revision replaces `root/index.html`,
+the site is rebuilt, and the change is pushed.
+
 The engine is imported from `../../src/fork/` — the same TypeScript the
 test suite and evaluation runners measure. Nothing in the lab is canned.
 The disk-backed providers (WordNet extract, FrameNet bundle) are stubbed
