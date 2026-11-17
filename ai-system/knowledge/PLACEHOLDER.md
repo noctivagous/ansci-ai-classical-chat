@@ -7,8 +7,6 @@ What the system holds as stores: the lexicon, the variant graph, and the banked 
 Working code today: src/fork/classify.ts and the foundation graph
 
 Holds:
-- `knowledge/correspondence-graph` — Correspondence graph
-- `knowledge/classification` — Classification
 - `knowledge/lexicon` — Lexicon
 - `knowledge/banked` — Banked stores
 

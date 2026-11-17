@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "source": "FrameNet (framenet_v15 via the NLTK nltk_data mirror)",
+  "edition": "1.5",
+  "license": "CC BY 3.0",
+  "counts": {
+    "frames": 1019,
+    "frameElements": 9634,
+    "lexicalUnits": 11942,
+    "frameRelations": 1676
+  },
+  "parts": [
+    {
+      "file": "part-001.json",
+      "kind": "frames",
+      "count": 1019,
+      "bytes": 1888288
+    },
+    {
+      "file": "part-002.json",
+      "kind": "relations",
+      "count": 1676,
+      "bytes": 302974
+    }
+  ]
+}
