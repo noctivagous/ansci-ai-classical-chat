@@ -752,6 +752,45 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "Decides that something is said and shapes the act of saying it. Uses the LPU; is not in it."
     },
     {
+      "id": "coherence",
+      "title": "Coherence",
+      "type": "Unit",
+      "parent": "system",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "coherence",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "The system's coherence demand, as a unit (the CoherenceProcessor of the worked example): analyses what arrives against who is talking, what is known of the situation, and what has been said — and says so when it doesn't make sense. Consults Awareness and Session & Situation. Design capture: docs/coherence-note.md."
+    },
+    {
+      "id": "coherence/coherence-demand",
+      "title": "Coherence Demand",
+      "type": "Register",
+      "parent": "coherence",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "coherence/coherence-demand",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "The standing demand that things make sense, held as state: the current degree level of not-knowing the situation, and the system's personal boundaries. When the level is high and the input doesn't fit, the system says so and replies accordingly."
+    },
+    {
+      "id": "coherence/coherence-analysis",
+      "title": "Coherence Analysis",
+      "type": "Unit",
+      "parent": "coherence",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "coherence/coherence-analysis",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "Works out what doesn't fit and what would: who is talking, what information is missing, whether the stream fits what has been said — and forms the response (e.g. an unknown person's 'I was furious' → 'Furious about what?')."
+    },
+    {
       "id": "surfaces",
       "title": "Surfaces",
       "type": "Container",
@@ -953,6 +992,18 @@ export const SYSTEM_MAP: SystemMap = {
       "to": "verbalizer",
       "kind": "pathway",
       "label": null
+    },
+    {
+      "from": "coherence",
+      "to": "awareness",
+      "kind": "connection",
+      "label": "consults"
+    },
+    {
+      "from": "coherence",
+      "to": "session-and-situation",
+      "kind": "connection",
+      "label": "consults"
     }
   ],
   "traces": {

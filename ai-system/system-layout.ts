@@ -154,8 +154,17 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "reasoning/compositions": {
       "order": 5
     },
-    "intake": {
+    "coherence": {
       "order": 7
+    },
+    "coherence/coherence-demand": {
+      "order": 1
+    },
+    "coherence/coherence-analysis": {
+      "order": 2
+    },
+    "intake": {
+      "order": 8
     },
     "intake/router": {
       "order": 1
@@ -173,7 +182,7 @@ export const SYSTEM_LAYOUT: SystemLayout = {
       "order": 5
     },
     "retrieval-harborer": {
-      "order": 8
+      "order": 9
     },
     "retrieval-harborer/pipeline": {
       "order": 1
@@ -182,10 +191,10 @@ export const SYSTEM_LAYOUT: SystemLayout = {
       "order": 2
     },
     "verbalizer": {
-      "order": 9
+      "order": 10
     },
     "surfaces": {
-      "order": 10
+      "order": 11
     },
     "surfaces/root-page": {
       "order": 1
@@ -200,16 +209,16 @@ export const SYSTEM_LAYOUT: SystemLayout = {
       "order": 4
     },
     "unplaced": {
-      "order": 11
-    },
-    "person": {
       "order": 12
     },
-    "clock": {
+    "person": {
       "order": 13
     },
-    "weather": {
+    "clock": {
       "order": 14
+    },
+    "weather": {
+      "order": 15
     }
   }
 };

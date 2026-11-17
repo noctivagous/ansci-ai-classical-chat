@@ -16,7 +16,11 @@
     --bg:#e9e7e0; --panel:#f4f2ec; --panel2:#fffefa; --ink:#1a1c1e; --muted:#5c6066; --line:#1a1c1e;
     --line-soft:#b9b6ab; --grid:rgba(26,28,30,.07);
     --accent:#d9480f; --accent-ink:#fff; --teal:#0b7285; --amber:#e67700; --green:#2b8a3e; --red:#c92a2a; --blue:#1971c2; --metal:#868e96;
-    --wire:#0b7285; --trace:#d9480f;
+    --wire:#0b7285;
+    /* live trace colours — the single place they are named:
+       --trace (deep teal) = a walk in progress and a completed walk;
+       --trace-stop (red) is RESERVED for stopped turns only. */
+    --trace:#0b7285; --trace-stop:#c92a2a;
     --chip:#e9e7e0;
     color-scheme:light dark;
   }
@@ -25,10 +29,16 @@
       --bg:#0c0e10; --panel:#121518; --panel2:#171b1f; --ink:#e8e6df; --muted:#9aa0a3; --line:#e8e6df;
       --line-soft:#343a3f; --grid:rgba(232,230,223,.055);
       --accent:#ff6b35; --teal:#3bc9db; --amber:#ffa94d; --green:#51cf66; --red:#ff8787; --blue:#74c0fc; --metal:#adb5bd;
-      --wire:#3bc9db; --trace:#ff6b35; --chip:#1c2126;
+      --wire:#3bc9db; --trace:#3bc9db; --trace-stop:#ff8787; --chip:#1c2126;
     }
   }
+  html{height:100%}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif}
+  /* SPA shell: the page itself never scrolls — header / crumb / footer are
+     fixed rows and the layout row takes whatever viewport height remains,
+     so a tall sidebar can never push the body past the viewport. */
+  body{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+  header.top,.crumb,footer.foot{flex:none}
   a{color:inherit}
   .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
 
@@ -73,11 +83,29 @@
   .crumb .note{margin-left:auto;color:var(--muted);font-size:11.5px}
 
   /* ---------- layout ---------- */
-  .layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:0;align-items:stretch}
-  @media (max-width:960px){.layout{grid-template-columns:1fr}}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:0;align-items:stretch;flex:1 1 auto;min-height:0}
+  @media (max-width:960px){.layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1.7fr) minmax(0,1fr)}}
+  /* phone: the fixed rows must not eat the layout row — compact the
+     header and crumb, drop the footer's small-print spans beyond the
+     first two, and drop toolbar groups whose actions are duplicated in
+     the crumb (focus) and the sidebar (reset), so every remaining
+     control fits inside the stage. */
+  @media (max-width:640px){
+    header.top{padding:10px 14px 9px;gap:5px}
+    .h-line2{font-size:12.5px}
+    .h-line3 .h-note ~ .h-note{display:none}
+    .crumb{padding:8px 14px}
+    .crumb .note{display:none}
+    .toolbar{padding:8px;gap:4px}
+    .toolbar .group:nth-of-type(4){display:none}
+    .toolbar button[data-focus]{display:none}
+    .hintbar{display:none}
+    footer.foot{padding:10px 14px 12px;font-size:10.5px;line-height:1.55;gap:4px 14px}
+    footer.foot span:nth-of-type(n+3){display:none}
+  }
 
   /* ---------- viewport / schematic ---------- */
-  .stage{position:relative;border-right:1px solid var(--line-soft);display:flex;flex-direction:column;min-width:0}
+  .stage{position:relative;border-right:1px solid var(--line-soft);display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
   @media (max-width:960px){.stage{border-right:none;border-bottom:1px solid var(--line-soft)}}
   .toolbar{
     display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line-soft);background:var(--panel);
@@ -95,7 +123,7 @@
   .toolbar .spacer{flex:1}
 
   .viewport{
-    position:relative;overflow:hidden;height:min(72vh,780px);min-height:480px;cursor:grab;touch-action:none;
+    position:relative;overflow:hidden;flex:1 1 auto;height:auto;min-height:0;cursor:grab;touch-action:none;
     user-select:none;-webkit-user-select:none;
     background:
       linear-gradient(var(--grid) 1px,transparent 1px),
@@ -103,11 +131,11 @@
       var(--panel);
     background-size:28px 28px,28px 28px,auto;
   }
-  @media (max-width:640px){.viewport{height:64vh;min-height:440px}}
+  @media (max-width:640px){.viewport{min-height:0}}
   .viewport.dragging{cursor:grabbing}
   .viewport.dragging .box,.viewport.dragging .sec-item,.viewport.dragging .srctab,.viewport.dragging .configreg{cursor:grabbing}
-  .world{position:absolute;left:0;top:0;width:1640px;height:1920px;transform-origin:0 0}
-  .world svg.wires{position:absolute;inset:0;width:1640px;height:1920px;overflow:visible;pointer-events:none}
+  .world{position:absolute;left:0;top:0;width:1640px;height:2150px;transform-origin:0 0}
+  .world svg.wires{position:absolute;inset:0;width:1640px;height:2150px;overflow:visible;pointer-events:none}
   .world svg.wires path{fill:none;stroke:var(--wire);stroke-width:2.2;opacity:.75}
   .world svg.wires path.dash{stroke-dasharray:7 6;opacity:.5}
   .world svg.wires path.tracepath{stroke:var(--trace);stroke-width:3;opacity:0;stroke-dasharray:none}
@@ -118,13 +146,30 @@
     box-shadow:0 0 0 5px color-mix(in srgb,var(--trace) 25%,transparent);z-index:60;pointer-events:none;
   }
   .packet.show{display:flex}
+  /* stopped end-state — red appears ONLY here, on the lit stopping node and
+     on the circle where it stopped (plus the stop popover above). A walk in
+     progress or completed keeps the teal --trace everywhere. */
+  .packet.stopped{background:var(--trace-stop);box-shadow:0 0 0 5px color-mix(in srgb,var(--trace-stop) 25%,transparent)}
+  .box.lit.stopped{border-color:var(--trace-stop);box-shadow:0 0 0 4px color-mix(in srgb,var(--trace-stop) 35%,transparent)}
+  .sec-item.lit.stopped,.gatewrap.lit.stopped{border-color:var(--trace-stop);box-shadow:0 0 0 3px color-mix(in srgb,var(--trace-stop) 35%,transparent)}
+  .srctab.lit.stopped,.configreg.lit.stopped{border-color:var(--trace-stop);color:var(--trace-stop)}
+  .port.lit.stopped{background:var(--trace-stop);border-color:var(--trace-stop)}
+  /* inspector popover — Popover display mode; same drafting family and the
+     same content as the sidebar Inspector, anchored at the clicked element
+     inside the world so it pans and zooms with the map. */
+  .infopop{position:absolute;z-index:65;width:300px;border:1.5px solid var(--line);background:var(--panel2);border-radius:3px;padding:10px 12px 11px;box-shadow:0 5px 16px rgba(0,0,0,.20)}
+  .infopop[hidden]{display:none}
+  .infopop-name{font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:700;text-transform:uppercase;line-height:1.2}
+  .infopop-path{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);margin:4px 0 7px;line-height:1.5}
+  .infopop-body{font-size:12.5px;line-height:1.55;color:var(--muted)}
+  .infopop-body strong{color:var(--ink)}
   /* stop popover — anchored at the node where a walk stopped (decline / parse failure).
      Same drafting family: single-ruled small card, panel ground, no new colours. */
-  .stoppop{position:absolute;z-index:70;width:252px;border:1.5px solid var(--line);background:var(--panel2);border-radius:3px;padding:9px 11px 10px;box-shadow:0 5px 16px rgba(0,0,0,.20)}
+  .stoppop{position:absolute;z-index:70;width:252px;border:1.5px solid var(--trace-stop);background:var(--panel2);border-radius:3px;padding:9px 11px 10px;box-shadow:0 5px 16px rgba(0,0,0,.20)}
   .stoppop[hidden]{display:none}
   [hidden]{display:none!important}
   .stoppop-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px}
-  .stoppop-loc{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+  .stoppop-loc{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--trace-stop);padding-top:2px}
   .stoppop-close{flex:none;width:24px;height:24px;min-height:24px;border:1.5px solid var(--line-soft);border-radius:3px;background:var(--panel2);color:var(--ink);font-size:14px;line-height:1;cursor:pointer;padding:0}
   .stoppop-close:hover{border-color:var(--accent);color:var(--accent)}
   .stoppop-body{font-size:12.5px;line-height:1.55;color:var(--ink)}
@@ -170,19 +215,43 @@
   .situation .sl{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:4px}
   .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 12px}
   .wx-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
-  .ext{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+  /* external labels (the person, the reply surface) sit astride / outside the
+     System frame — they must paint ABOVE the System container, never under
+     it, so the part crossing the frame stays fully visible. */
+  .ext{position:absolute;z-index:12;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+  .ext.reply-out{z-index:14}
   .ext .who{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
   .bubble{display:inline-block;margin-top:6px;border:2px solid var(--line);background:var(--panel2);border-radius:10px 10px 10px 2px;padding:8px 13px;font-size:16px;font-weight:600}
   .bubble.reply{border-color:var(--accent);border-radius:10px 10px 2px 10px}
-  .flowtag{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--wire);background:var(--panel);padding:2px 6px}
+  .flowtag{position:absolute;z-index:12;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--wire);background:var(--panel);padding:2px 6px}
 
   .hintbar{padding:9px 12px;border-top:1px solid var(--line-soft);font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--panel)}
 
   /* ---------- side panel ---------- */
-  aside.side{background:var(--panel);display:flex;flex-direction:column;min-width:0}
-  .side section{padding:16px 18px;border-bottom:1px solid var(--line-soft)}
+  /* ---------- side panel — clipped to the layout row, scrolls internally.
+     overflow-y:scroll (not auto) + scrollbar-gutter:stable, with a styled
+     scrollbar in the page's gray palette: the bar is always rendered. */
+  aside.side{background:var(--panel);display:flex;flex-direction:column;min-width:0;min-height:0;height:100%;
+    overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable;
+    scrollbar-width:auto;scrollbar-color:var(--muted) var(--panel)}
+  aside.side::-webkit-scrollbar{width:12px}
+  aside.side::-webkit-scrollbar-track{background:var(--panel);border-left:1px solid var(--line-soft)}
+  aside.side::-webkit-scrollbar-thumb{background:var(--muted);border:3px solid var(--panel);border-radius:7px;min-height:44px}
+  aside.side::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+  .side section{border-bottom:1px solid var(--line-soft);flex:none}
   .side h2{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 10px;display:flex;align-items:center;gap:8px}
   .side h2::before{content:"";width:9px;height:9px;background:var(--accent);display:inline-block}
+  /* accordion titlebars — one per sidebar section; ▾ open / ▸ closed,
+     the ▶ motif from the page header. Sections toggle independently. */
+  .side h2.acc-head{margin:0;display:block}
+  .side h2.acc-head::before{content:none}
+  .acc-btn{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:var(--panel2);border:0;border-bottom:1px solid var(--line-soft);
+    padding:12px 18px;min-height:44px;cursor:pointer;color:var(--ink);
+    font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+  .acc-btn:hover{color:var(--accent)}
+  .acc-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .acc-tri{color:var(--accent);font-size:11px;line-height:1;flex:none;width:13px;text-align:center}
+  .acc-body{padding:16px 18px}
   .trace-controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
   .say{display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
   .say .utter{flex:1;border:1.5px solid var(--line-soft);border-radius:3px;padding:9px 11px;font-family:"IBM Plex Mono",monospace;font-size:14px;background:var(--panel2)}
@@ -389,6 +458,11 @@
       <button type="button" class="vt-btn" id="viewBuiltBtn" aria-pressed="false">Built only</button>
     </div>
     <span class="h-note" id="viewNote">Plan view — everything drawn, placeholders included.</span>
+    <span class="h-note">Inspector:</span>
+    <div class="view-toggle" role="group" aria-label="Inspector display mode — sidebar or popover">
+      <button type="button" class="vt-btn on" id="inspSidebarBtn" aria-pressed="true">Sidebar</button>
+      <button type="button" class="vt-btn" id="inspPopoverBtn" aria-pressed="false">Popover</button>
+    </div>
     <span class="h-note">% completed to goal — set by us, assessed by the project, not measured or computed.</span>
     <a class="btn dashboard" href="/dashboard/" style="margin-left:auto;min-height:36px;padding:7px 12px">Dashboard&nbsp;→&nbsp;/dashboard/</a>
   </div>
@@ -429,20 +503,23 @@
 
     <div class="viewport" id="viewport" aria-label="Zoomable system schematic">
       <div class="world" id="world">
-        <svg class="wires" viewBox="0 0 1640 1920" aria-hidden="true">
+        <svg class="wires" viewBox="0 0 1640 2150" aria-hidden="true">
           <path class="tracepath" id="tracePath" d="" />
-          <path class="pw1" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 297 L 250 297 L 250 427 L 722 427 L 722 700 L 1210 700 L 1210 1284 L 980 1284 L 980 330 L 968 330" />
-          <path class="pw2" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 303 L 244 303 L 244 433 L 716 433 L 716 706 L 1204 706 L 1204 1290 L 974 1290 L 974 336 L 962 336" />
+          <path class="pw1" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 297 L 250 297 L 250 427 L 722 427 L 722 700 L 1210 700 L 1210 1514 L 980 1514 L 980 330 L 968 330" />
+          <path class="pw2" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 303 L 244 303 L 244 433 L 716 433 L 716 706 L 1204 706 L 1204 1520 L 974 1520 L 974 336 L 962 336" />
           <path class="pw1" data-endpoints="awareness,system" d="M 968 303 L 1440 303" /><path class="pw2" data-endpoints="awareness,system" d="M 968 309 L 1440 309" />
-          <path class="pw1" data-endpoints="harborer,knowledge" d="M 1090 1567 L 1180 1567 L 1180 1215" /><path class="pw2" data-endpoints="harborer,knowledge" d="M 1090 1573 L 1186 1573 L 1186 1221" />
-          <circle class="cdot" data-endpoints="system" cx="250" cy="300" r="4"/><circle class="cdot" data-endpoints="awareness" cx="968" cy="306" r="4"/><circle class="cdot" data-endpoints="knowledge" cx="1183" cy="1218" r="4"/>
-          <path class="conn" data-endpoints="planner,correspondence" d="M 792 1430 L 792 1472 L 560 1472 L 560 1444" />
-          <path class="conn" data-endpoints="derivation,correspondence" d="M 422 1430 L 422 1452 L 480 1452 L 480 1214" />
+          <path class="pw1" data-endpoints="harborer,knowledge" d="M 1090 1797 L 1180 1797 L 1180 1445" /><path class="pw2" data-endpoints="harborer,knowledge" d="M 1090 1803 L 1186 1803 L 1186 1451" />
+          <circle class="cdot" data-endpoints="system" cx="250" cy="300" r="4"/><circle class="cdot" data-endpoints="awareness" cx="968" cy="306" r="4"/><circle class="cdot" data-endpoints="knowledge" cx="1183" cy="1448" r="4"/>
+          <path class="conn" data-endpoints="planner,correspondence" d="M 792 1660 L 792 1702 L 560 1702 L 560 1674" />
+          <path class="conn" data-endpoints="derivation,correspondence" d="M 422 1660 L 422 1682 L 480 1682 L 480 1444" />
           <path class="conn" data-endpoints="awareness,session" d="M 1219 628 L 1219 652" />
           <path class="conn" data-endpoints="config,awareness" d="M 745 57 L 745 100 L 1150 100 L 1150 118" />
-          <path class="conn" data-endpoints="sense,lexicon" d="M 599 516 L 599 1240 L 900 1240 L 900 1284" />
-          <circle class="cdot" data-endpoints="correspondence" cx="560" cy="1440" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="480" cy="1210" r="4"/>
-          <circle class="cdot" data-endpoints="session" cx="1219" cy="650" r="4"/><circle class="cdot" data-endpoints="awareness" cx="1150" cy="116" r="4"/><circle class="cdot" data-endpoints="planner" cx="900" cy="1280" r="4"/>
+          <path class="conn" data-endpoints="sense,lexicon" d="M 599 516 L 599 1470 L 900 1470 L 900 1514" />
+          <path class="conn" data-endpoints="coherence,awareness" d="M 1432 982 L 1432 373 L 1410 373" />
+          <path class="conn" data-endpoints="coherence,session" d="M 1424 982 L 1424 750 L 1410 750" />
+          <circle class="cdot" data-endpoints="correspondence" cx="560" cy="1670" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="480" cy="1440" r="4"/>
+          <circle class="cdot" data-endpoints="session" cx="1219" cy="650" r="4"/><circle class="cdot" data-endpoints="awareness" cx="1150" cy="116" r="4"/><circle class="cdot" data-endpoints="planner" cx="900" cy="1510" r="4"/>
+          <circle class="cdot" data-endpoints="coherence,awareness" cx="1412" cy="373" r="4"/><circle class="cdot" data-endpoints="coherence,session" cx="1412" cy="750" r="4"/>
           <path class="conn uses" data-endpoints="verbalizer,generator" d="M 1030 905 C 985 760, 985 520, 895 415" />
           <circle class="cdot uses" data-endpoints="generator" cx="892" cy="412" r="5"/>
         </svg>
@@ -454,7 +531,7 @@
           <span class="bubble" id="helloBubble">…</span>
         </div>
         <!-- reply (outside system) -->
-        <div class="ext" style="left:1428px;top:238px;width:196px;text-align:right">
+        <div class="ext reply-out" style="left:1428px;top:238px;width:196px;text-align:right">
           <span class="who">▣ Surface — reply out</span><br>
           <span class="bubble reply" id="replyBubble" style="opacity:.28">…</span><br>
           <span style="color:var(--muted);font-size:11px" id="replyNote">— no reply yet —</span>
@@ -462,7 +539,9 @@
 
         <span class="flowtag" style="left:206px;top:282px">utterance in</span>
         <span class="cordlabel uses" data-endpoints="verbalizer,generator" style="left:946px;top:640px">uses &#8594;</span>
-        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:806px;top:1452px">planner consults &#8595; correspondence graph</span>
+        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:806px;top:1682px">planner consults &#8595; correspondence graph</span>
+        <span class="cordlabel" data-endpoints="coherence,awareness" style="left:1446px;top:392px;writing-mode:vertical-rl">coherence consults &#8593; awareness</span>
+        <span class="cordlabel" data-endpoints="coherence,session" style="left:1458px;top:600px;writing-mode:vertical-rl">coherence consults &#8593; session &amp; situation</span>
         <span class="cordlabel" data-endpoints="sense,lexicon" style="left:612px;top:880px">sense consults &#8595; lexicon</span>
         <span class="cordlabel" data-endpoints="awareness,session" style="left:1230px;top:632px">awareness reads &#8593; session</span>
         <span class="flowtag" style="left:1150px;top:306px">situation feed · dashed</span>
@@ -472,7 +551,7 @@
         <div class="configreg" data-id="config" style="left:902px;top:34px"><span class="cfg-l">Configuration register</span><strong>Configuration: Chat</strong> — first configuration of a general-purpose system</div>
         <div class="srctab" data-id="source" style="left:102px;top:283px">SOURCE · PERSON'S CHANNEL</div>
         <!-- ============ SYSTEM ============ -->
-        <div class="box system frame" data-id="system" style="left:190px;top:56px;width:1250px;height:1800px">
+        <div class="box system frame" data-id="system" style="left:190px;top:56px;width:1250px;height:2030px">
           <div class="bhead">
             <div><div class="bname">The System</div><div class="bsub">ANSCI · outermost bounding box · everything the root page shows lives in here</div></div>
             <span class="btag" style="color:var(--accent)">Root · general-purpose</span>
@@ -543,8 +622,22 @@
           <div class="port out" data-port>OUT</div>
         </div>
 
+        <!-- ============ COHERENCE (System level) — its own unit, consulting Awareness and Session & Situation ============ -->
+        <div class="box unit frame sec" data-id="coherence" style="left:1030px;top:982px;width:378px;height:216px">
+          <div class="bhead">
+            <div><div class="bname">Coherence</div><div class="bsub">System level · its own unit · the system's coherence demand — consults Awareness and Session &amp; Situation by cord (see the consults cords on its right edge)</div></div>
+            <span class="btag" style="color:var(--muted)">Unit</span>
+          </div>
+          <div class="sec-items">
+            <div class="sec-item reg" data-id="coherence-demand"><span class="aw-type">Register</span><span class="aw-name">Coherence Demand</span><span class="aw-note">the standing demand that things make sense, held as state — the current degree level of not-knowing the situation, and the system's personal boundaries</span></div>
+            <div class="sec-item unit" data-id="coherence-analysis"><span class="aw-type">Unit</span><span class="aw-name">Coherence Analysis</span><span class="aw-note">works out what doesn't fit and what would — who is talking, what is missing, whether the stream fits what has been said — and forms the response</span></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
         <!-- ============ KNOWLEDGE (System level) ============ -->
-        <div class="box frame sec" data-id="knowledge" style="left:222px;top:984px;width:1186px;height:230px">
+        <div class="box frame sec" data-id="knowledge" style="left:222px;top:1214px;width:1186px;height:230px">
           <div class="bhead">
             <div><div class="bname">Knowledge</div><div class="bsub">System level · what the rest of the system consults — held things only; nothing here acts</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -560,7 +653,7 @@
         </div>
 
         <!-- ============ REASONING (System level) ============ -->
-        <div class="box frame sec" data-id="reasoning" style="left:222px;top:1228px;width:1186px;height:230px">
+        <div class="box frame sec" data-id="reasoning" style="left:222px;top:1458px;width:1186px;height:230px">
           <div class="bhead">
             <div><div class="bname">Reasoning</div><div class="bsub">System level · derivation and planning — outside the LPU; language is a resource it uses</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -578,7 +671,7 @@
         </div>
 
         <!-- ============ INTAKE & HARBORING (System edge) ============ -->
-        <div class="box frame sec" data-id="intake" style="left:222px;top:1472px;width:1186px;height:200px">
+        <div class="box frame sec" data-id="intake" style="left:222px;top:1702px;width:1186px;height:200px">
           <div class="bhead">
             <div><div class="bname">Intake &amp; Harboring</div><div class="bsub">System edge · one doorway: the Router governs what may be asked for, the Harborer what may be kept</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -593,7 +686,7 @@
         </div>
 
         <!-- ============ SURFACES + SYSTEM UNPLACED ============ -->
-        <div class="box frame sec" data-id="surfaces" style="left:222px;top:1686px;width:760px;height:140px">
+        <div class="box frame sec" data-id="surfaces" style="left:222px;top:1916px;width:760px;height:140px">
           <div class="bhead">
             <div><div class="bname">Surfaces</div><div class="bsub">Where output leaves and is seen</div></div>
             <span class="btag" style="color:var(--muted)">Surfaces</span>
@@ -604,7 +697,7 @@
             <div class="sec-item"><span class="aw-type">Surface</span><span class="aw-name">Dashboard · Trace view</span><span class="aw-note">/dashboard/ and the trace, as surfaces</span></div>
           </div>
         </div>
-        <div class="box placeholder" data-id="unplaced-sys" style="left:998px;top:1686px;width:410px;height:140px">
+        <div class="box placeholder" data-id="unplaced-sys" style="left:998px;top:1916px;width:410px;height:140px">
           <div class="bhead"><div><div class="bname">Unplaced</div><div class="bsub">System level</div></div><span class="btag" style="color:var(--muted)">—</span></div>
           <div class="bbody">Further units — territory not yet categorised. A place held, not a thing built. To be settled.</div>
         </div>
@@ -674,6 +767,13 @@
           <div class="stoppop-head"><span class="stoppop-loc" id="stopPopLoc">Walk stopped</span><button type="button" class="stoppop-close" id="stopPopClose" aria-label="Dismiss stop message">×</button></div>
           <div class="stoppop-body" id="stopPopBody"></div>
         </div>
+        <div class="infopop" id="infoPop" hidden role="note" aria-label="Element information">
+          <div class="stoppop-head"><span class="stoppop-loc" style="color:var(--muted)">Inspector</span><button type="button" class="stoppop-close" id="infoPopClose" aria-label="Dismiss information panel">×</button></div>
+          <div class="infopop-name" id="infoPopName"></div>
+          <div class="infopop-path" id="infoPopPath"></div>
+          <div class="infopop-body" id="infoPopBody"></div>
+          <div class="insp-ports" id="infoPopPorts"></div>
+        </div>
       </div>
     </div>
 
@@ -683,12 +783,13 @@
   </div>
 
   <!-- ================= SIDE ================= -->
-  <aside class="side">
+  <aside class="side" id="sidePanel">
     <section aria-label="Chat — a person says">
-      <h2>A person says — chat</h2>
+      <h2 class="acc-head"><button type="button" class="acc-btn" id="accBtnChat" aria-expanded="true" aria-controls="accBodyChat"><span class="acc-tri" aria-hidden="true">▾</span><span>A person says — chat</span></button></h2>
+      <div class="acc-body" id="accBodyChat">
       <p class="chat-caption" id="chatCaption">Recorded from the real turn loop. The live root page runs your sentence through the code itself.</p>
       <form class="chat-form" id="chatForm">
-        <input type="text" id="chatInput" autocomplete="off" placeholder="Type what the person says…" aria-label="What the person says">
+        <input type="text" id="chatInput" autocomplete="off" placeholder="Type what the person says…" aria-label="What the person says" value="Hello.">
         <button class="btn primary" type="submit" id="sayBtn">Say</button>
       </form>
       <div id="chipGroups" aria-label="Recorded example turns"></div>
@@ -705,19 +806,23 @@
         <div class="ns-text">Say something recorded. The packet is the utterance itself — follow it from the person, through each node the turn loop actually visited, to where that turn stopped. A decline stops the circle at the node where the code stopped.</div>
       </div>
       <ol class="steplog" id="stepLog"></ol>
+      </div>
     </section>
 
     <section aria-label="Inspector">
-      <h2>Inspector</h2>
+      <h2 class="acc-head"><button type="button" class="acc-btn" id="accBtnInsp" aria-expanded="true" aria-controls="accBodyInsp"><span class="acc-tri" aria-hidden="true">▾</span><span>Inspector</span></button></h2>
+      <div class="acc-body" id="accBodyInsp">
       <div class="insp-name" id="inspName">The System</div>
       <div class="insp-path" id="inspPath">System</div>
       <div class="insp-body" id="inspBody">The outermost bounding box and the root page's whole subject. Everything else on this schematic is inside it. Its IN port takes a person's utterance; its OUT port delivers the reply.</div>
       <div class="insp-ports" id="inspPorts"><span>IN — utterance</span><span>OUT — reply</span></div>
       <div style="margin-top:12px"><button class="btn" id="inspFocus">Zoom to this unit</button></div>
+      </div>
     </section>
 
     <section aria-label="Legend">
-      <h2>Legend — module types</h2>
+      <h2 class="acc-head"><button type="button" class="acc-btn" id="accBtnLegend" aria-expanded="true" aria-controls="accBodyLegend"><span class="acc-tri" aria-hidden="true">▾</span><span>Legend — module types</span></button></h2>
+      <div class="acc-body" id="accBodyLegend">
       <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 4px">One drafting family — same rectangles, same stroke, same title placement. Type is carried by small systematic treatments only: a corner, an edge, a ruling. Held modules are double-ruled, active modules single-ruled; containers are double-ruled frames with a title tab.</p>
       <div class="typelegend">
         <div class="trow"><span class="lshape unit"></span><div><span class="tname">UNIT</span><div class="tdef">Transforms: in → work → out. Told by a <em>chamfered output corner</em>. <em>Parser, Generator, Planner.</em></div></div></div>
@@ -746,12 +851,13 @@
       <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 4px">Every percent on this map is <strong style="color:var(--ink)">% completed to goal — set by us</strong>: assessed by the project, not measured or computed, and not derived from code or tests. Node data mirrors the registry in <strong style="color:var(--ink)">ai-system/system-map.ts</strong>; sibling order and placement are held separately in <strong style="color:var(--ink)">system-layout.ts</strong>, so the presentation can be rearranged without touching the registry. State is read straight off the percent:</p>
       <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 8px"><strong style="color:var(--ink)">Plan view</strong> (default) shows the whole map, placeholders included. <strong style="color:var(--ink)">Built only</strong> — the toggle in the header — hides every 0% placeholder, any container left with nothing visible inside it, and any cord touching a hidden node; partial and functional nodes remain. The trace in Built only walks only visible nodes.</p>
       <div class="typelegend">
-        <div class="trow"><span class="lshape state-placeholder"><span class="pct-badge state-placeholder">0%</span></span><div><span class="tname">PLACEHOLDER · 0%</span><div class="tdef">Dashed ruling, faintest gray ground — a <em>place held, not a thing built</em>. <em>Identity, Capabilities, the Unplaced boxes, Wikidata / Web / Model tiers.</em></div></div></div>
+        <div class="trow"><span class="lshape state-placeholder"><span class="pct-badge state-placeholder">0%</span></span><div><span class="tname">PLACEHOLDER · 0%</span><div class="tdef">Dashed ruling, faintest gray ground — a <em>place held, not a thing built</em>. <em>Identity, Capabilities, Coherence and both its children, the Unplaced boxes, Wikidata / Web / Model tiers.</em></div></div></div>
         <div class="trow"><span class="lshape state-partial"><span class="pct-badge">45%</span></span><div><span class="tname">PARTIAL · 1–99%</span><div class="tdef">Solid ruling, but a <em>lighter gray ground</em> than a functional node, with its percent badge. Most of the system lives here today. <em>Retrieval Harborer 45%, Configuration 50%, System 55%.</em></div></div></div>
         <div class="trow"><span class="lshape state-functional"><span class="pct-badge state-functional">100%</span></span><div><span class="tname">FUNCTIONAL · 100%</span><div class="tdef"><em>Full-strength rendering</em> — the strongest ground, solid ruling, filled badge. No node has reached it yet; the state is drawn in the legend so the scale is complete.</div></div></div>
       </div>
       <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:8px 0 0">The badge sits at the <strong style="color:var(--ink)">upper right of the node's title bar</strong> on every titled node that carries a percent — containers carry their own assessed percent, not an average of their children. <strong style="color:var(--ink)">External sources</strong> (Person, Clock, Weather, the intake tiers as sources) carry <strong style="color:var(--ink)">no percent and no badge</strong>. Selecting a node shows its % completed to goal in the Inspector.</p>
       <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:12px 0 0">Zoom is the organising idea: at System zoom you see the units; at Parser zoom you see four submodules — <strong style="color:var(--ink)">one map, every scale</strong>.</p>
+      </div>
     </section>
   </aside>
 </div>
@@ -761,7 +867,7 @@
   <span>DASHBOARD: <a href="/dashboard/">/dashboard/</a></span>
   <span>VIEW: PLAN (DEFAULT, PLACEHOLDERS INCLUDED) · BUILT ONLY (0% PLACEHOLDERS HIDDEN)</span>
   <span>NESTING: SYSTEM ⊃ LPU ⊃ PARSER ⊃ TOKEN · SENSE · VALENCY · ASPECT &amp; FORMS</span>
-  <span>SYSTEM ALSO CONTAINS: AWARENESS · SESSION &amp; SITUATION · KNOWLEDGE · REASONING · INTAKE &amp; HARBORING · VERBALIZER (USES LPU)</span>
+  <span>SYSTEM ALSO CONTAINS: AWARENESS · SESSION &amp; SITUATION · KNOWLEDGE · REASONING · COHERENCE (CONSULTS AWARENESS + SESSION) · INTAKE &amp; HARBORING · VERBALIZER (USES LPU)</span>
   <span>CORDS: PATHWAY (DOUBLE) · CONNECTION (SINGLE, OPEN DOT) · USES</span>
   <span>AWARENESS UNIT SITS AT SYSTEM LEVEL, BESIDE THE LPU</span>
   <span>MODULE TYPES: UNIT · STORE · REGISTER · TABLE · GATE · ROUTER · SOURCE · SURFACE</span>
@@ -775,7 +881,17 @@
   var viewport=document.getElementById('viewport'), world=document.getElementById('world');
   var zoomRead=document.getElementById('zoomRead');
   var view={x:0,y:0,k:0.62};
-  function apply(){ world.style.transform='translate('+view.x+'px,'+view.y+'px) scale('+view.k+')'; zoomRead.textContent=Math.round(view.k*100)+'%'; }
+  function apply(){
+    world.style.transform='translate('+view.x+'px,'+view.y+'px) scale('+view.k+')';
+    zoomRead.textContent=Math.round(view.k*100)+'%';
+    /* the grid lives in the map's own coordinate space: its offset is the
+       pan and its cell is the world cell (28 units) times the zoom, so the
+       grid translates and scales with the content instead of staying
+       fixed to the viewport. */
+    var gs=(28*view.k)+'px';
+    viewport.style.backgroundSize=gs+' '+gs+', '+gs+' '+gs;
+    viewport.style.backgroundPosition=view.x+'px '+view.y+'px, '+view.x+'px '+view.y+'px';
+  }
   function clampK(k){return Math.max(0.18,Math.min(2.6,k));}
   function fitRect(r,pad){
     pad=pad||36;
@@ -783,7 +899,7 @@
     var k=clampK(Math.min((vw-pad*2)/r.w,(vh-pad*2)/r.h));
     view.k=k; view.x=(vw-r.w*k)/2-r.x*k; view.y=(vh-r.h*k)/2-r.y*k; apply();
   }
-  function fitSystem(){ fitRect({x:190,y:56,w:1250,h:1800},30); }
+  function fitSystem(){ var r=(typeof RECTS!=='undefined'&&RECTS.system)?RECTS.system:{x:190,y:56,w:1250,h:2030}; fitRect(r,30); }
   /* ===== node registry — mirrors ai-system/system-map.ts =====
      Every node's id is its schematic path; percent is % completed to goal — set by us, assessed by the project, not measured or computed.
      State is read off the percent: 0 placeholder, 1–99 partial, 100 functional.
@@ -802,12 +918,13 @@
     'intake':25,'intake/router':30,'intake/cskg':40,'intake/wikidata':0,'intake/web':0,'intake/model':0,
     'retrieval-harborer':45,'retrieval-harborer/pipeline':45,'retrieval-harborer/gate':70,
     'verbalizer':40,
+    'coherence':0,'coherence/coherence-demand':0,'coherence/coherence-analysis':0,
     'surfaces':70,'surfaces/root-page':90,'surfaces/dashboard':85,'surfaces/chat':45,'surfaces/trace-view':60,
     'unplaced':0
   };
   function stateOf(p){ return p<=0?'placeholder':(p>=100?'functional':'partial'); }
   /* inspector id -> registry id, for the percent readout in select() */
-  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'knowledge/correspondence-graph',lexicon:'knowledge/lexicon',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',surfaces:'surfaces','unplaced-sys':'unplaced'};
+  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'knowledge/correspondence-graph',lexicon:'knowledge/lexicon',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',coherence:'coherence','coherence-demand':'coherence/coherence-demand','coherence-analysis':'coherence/coherence-analysis',surfaces:'surfaces','unplaced-sys':'unplaced'};
   /* ===== layout — mirrors ai-system/system-layout.ts =====
      Placement (rects, for focus/zoom) and sibling ORDER live here, apart
      from the registry: move a column or row by editing this object only.
@@ -815,14 +932,14 @@
      renderer re-orders each container's items to match `order` below. */
   var SYSTEM_LAYOUT={
     rects:{
-    system:{x:190,y:56,w:1250,h:1800}, lpu:{x:222,y:118,w:776,h:850}, parser:{x:252,y:196,w:470,h:468},
+    system:{x:190,y:56,w:1250,h:2030}, lpu:{x:222,y:118,w:776,h:850}, parser:{x:252,y:196,w:470,h:468},
     awareness:{x:1030,y:118,w:378,h:510}, generator:{x:752,y:196,w:216,h:216},
-    planner:{x:640,y:1284,w:330,h:64}, derivation:{x:240,y:1284,w:330,h:64},
-    lexicon:{x:900,y:1040,w:270,h:120}, correspondence:{x:240,y:1040,w:270,h:120},
-    session:{x:1030,y:652,w:378,h:196}, router:{x:240,y:1528,w:370,h:120}, harborer:{x:1020,y:1528,w:370,h:120}, intake:{x:222,y:1472,w:1186,h:200},
-    gate:{x:640,y:1352,w:330,h:56}, tables:{x:240,y:1352,w:330,h:56}, clock:{x:660,y:40,w:170,h:34}, config:{x:902,y:34,w:520,h:44}, source:{x:102,y:283,w:220,h:34}, composer:{x:1048,y:540,w:342,h:64},
-    verbalizer:{x:1030,y:862,w:378,h:106}, knowledge:{x:222,y:984,w:1186,h:230}, reasoning:{x:222,y:1228,w:1186,h:230},
-    surfaces:{x:222,y:1686,w:760,h:140}, 'unplaced-lpu':{x:252,y:712,w:716,h:168}, 'unplaced-sys':{x:998,y:1686,w:410,h:140},
+    planner:{x:640,y:1514,w:330,h:64}, derivation:{x:240,y:1514,w:330,h:64},
+    lexicon:{x:900,y:1270,w:270,h:120}, correspondence:{x:240,y:1270,w:270,h:120},
+    session:{x:1030,y:652,w:378,h:196}, router:{x:240,y:1758,w:370,h:120}, harborer:{x:1020,y:1758,w:370,h:120}, intake:{x:222,y:1702,w:1186,h:200},
+    gate:{x:640,y:1582,w:330,h:56}, tables:{x:240,y:1582,w:330,h:56}, clock:{x:660,y:40,w:170,h:34}, config:{x:902,y:34,w:520,h:44}, source:{x:102,y:283,w:220,h:34}, composer:{x:1048,y:540,w:342,h:64},
+    verbalizer:{x:1030,y:862,w:378,h:106}, coherence:{x:1030,y:982,w:378,h:216}, 'coherence-demand':{x:1042,y:1062,w:172,h:118}, 'coherence-analysis':{x:1224,y:1062,w:172,h:118}, knowledge:{x:222,y:1214,w:1186,h:230}, reasoning:{x:222,y:1458,w:1186,h:230},
+    surfaces:{x:222,y:1916,w:760,h:140}, 'unplaced-lpu':{x:252,y:712,w:716,h:168}, 'unplaced-sys':{x:998,y:1916,w:410,h:140},
     token:{x:264,y:262,w:218,h:118}, sense:{x:490,y:262,w:218,h:118}, valency:{x:264,y:388,w:218,h:118}, aspect:{x:490,y:388,w:218,h:118}
     },
     order:{
@@ -830,8 +947,15 @@
       'reasoning':['reasoning/derivation','reasoning/planner','reasoning/pricing','reasoning/decline-floor','reasoning/compositions'],
       'session-and-situation':['session-and-situation/states-and-origins','session-and-situation/events','session-and-situation/topics','session-and-situation/corrections'],
       'intake':['intake/router','intake/sources','retrieval-harborer'],
+      'coherence':['coherence/coherence-demand','coherence/coherence-analysis'],
       'surfaces':['surfaces/chat','surfaces/root-page','surfaces/dashboard']
-    }
+    },
+    /* System children in registry order (system-layout.ts): coherence is
+       order 7; the siblings after it shift by one — intake 8,
+       retrieval-harborer 9, verbalizer 10, surfaces 11, unplaced 12,
+       person 13, clock 14, weather 15. Held as data here; the renderer
+       above only re-orders .sec-items containers. */
+    systemOrder:['configuration','lpu','awareness','session-and-situation','knowledge','reasoning','coherence','intake','retrieval-harborer','verbalizer','surfaces','unplaced','person','clock','weather']
   };
   var RECTS=SYSTEM_LAYOUT.rects;
   function focusId(id){ var r=RECTS[id]; if(r) fitRect(r,54); select(id,false); }
@@ -878,7 +1002,7 @@
   }
   (function applyCompleteness(){
     /* titled containers & units: badge at the upper right of the title bar */
-    [['system','system'],['awareness','awareness'],['session','session-and-situation'],['verbalizer','verbalizer'],
+    [['system','system'],['awareness','awareness'],['session','session-and-situation'],['verbalizer','verbalizer'],['coherence','coherence'],
      ['knowledge','knowledge'],['reasoning','reasoning'],['intake','intake'],['surfaces','surfaces'],
      ['lpu','lpu'],['parser','lpu/parser'],['generator','lpu/generator'],
      ['token','lpu/parser/token'],['sense','lpu/parser/sense'],['valency','lpu/parser/valency'],['aspect','lpu/parser/aspect-and-forms'],
@@ -902,6 +1026,11 @@
       markNode(itemByName(aw,'last act'),'awareness/current-activity/last-act','abs');
       markNode(itemByName(aw,'open gaps'),'awareness/current-activity/open-gaps','abs');
       markNode(aw.querySelector('.aw-item[data-id="composer"]'),'awareness/current-activity/composer','abs');
+    }
+    var coh=boxEl('coherence');
+    if(coh){
+      markNode(coh.querySelector('.sec-item[data-id="coherence-demand"]'),'coherence/coherence-demand','abs');
+      markNode(coh.querySelector('.sec-item[data-id="coherence-analysis"]'),'coherence/coherence-analysis','abs');
     }
     var sess=boxEl('session');
     if(sess){
@@ -1020,6 +1149,9 @@
     awareness:{name:'Awareness Unit',path:'System ⊃ Awareness Unit',body:'At <strong>System level, beside the LPU</strong> — a container with four branches. <strong>Self:</strong> Identity (Table), Capabilities &amp; limits (Table), Current disposition (Register, copied from its Table at session open), Own state (Register). <strong>Place &amp; Time:</strong> Clock (Source, astride the edge), Season &amp; daypart (Register, classified against its Table), Surface &amp; channel (Register), Weather (Source feeding a Register). <strong>Surroundings:</strong> Interlocutor standing, Standing topics, Other presences (all Registers). <strong>Current Activity:</strong> Situation statement, Last act, Open gaps (Registers) — and the <strong>Composer</strong>, the one Unit inside: one writer, many readers. It represents that the system knows <strong>where it is, who it is, who and what is around it, and what is currently happening</strong>. It continuously holds a situation statement — currently: <em>“I am chatting to a person with unknown identity.”</em> The Planner and Verbalizer read it on every turn, including turns the LPU cannot answer from knowledge.',ports:['IN — session + arrivals','OUT — situation statement']},
     session:{name:'Session & Situation',path:'System ⊃ Session & Situation · REGISTERS',body:'A general record, usable by <strong>any configuration</strong> — sessions and situations are not chat notions. It holds what stands between turns: topics and their standing, what has been settled, who has spoken. Chat is its first use; under that configuration a first utterance finds it empty, and that emptiness is data for the Awareness Unit.',ports:['IN — turn record','OUT — standing']},
     verbalizer:{name:'Verbalizer',path:'System ⊃ Verbalizer · uses LPU',body:'A <strong>System-level</strong> element that <strong>uses the LPU</strong> — it neither contains it nor sits inside it. The uses cord runs from here to the Generator inside the LPU: containment is nesting, use is a cord. Turns a selected move into the sentence actually said — including moves whose content is the situation assessment itself. “What are you talking about?” from a stranger\u2019s context-free question is generated here, from the assessment, the same way a gap question is generated from a missing role.',ports:['IN — selected move','OUT — sentence']},
+    coherence:{name:'Coherence',path:'System ⊃ Coherence · UNIT',body:'The system\u2019s <strong>coherence demand, as a unit</strong> — the CoherenceProcessor of the worked example. It analyses what arrives against <strong>who is talking, what is known of the situation, and what has been said</strong> — and says so when it doesn\u2019t make sense. It <strong>consults Awareness and Session &amp; Situation</strong> by connection cord (the consults cords on its right edge); it contains neither. Inside it: <strong>Coherence Demand</strong> (Register) and <strong>Coherence Analysis</strong> (Unit). Design capture: <em>docs/coherence-note.md</em>. A <strong>placeholder</strong> — a place held, not a thing built.',ports:['IN — what arrives','OUT — coherence response']},
+    'coherence-demand':{name:'Coherence Demand',path:'System ⊃ Coherence ⊃ Coherence Demand · REGISTER',body:'The <strong>standing demand that things make sense, held as state</strong>: the current <strong>degree level of not-knowing the situation</strong>, and the system\u2019s <strong>personal boundaries</strong>. When the level is high and the input doesn\u2019t fit, the system says so and replies accordingly. A Register — small, held current, rewritten as the situation settles. A <strong>placeholder</strong>.',ports:['HOLDS — not-knowing level + boundaries','READ BY — Coherence Analysis']},
+    'coherence-analysis':{name:'Coherence Analysis',path:'System ⊃ Coherence ⊃ Coherence Analysis · UNIT',body:'<strong>Works out what doesn\u2019t fit and what would</strong>: who is talking, what information is missing, whether the stream fits what has been said — and <strong>forms the response</strong>. The worked example: an unknown person\u2019s first words “I was furious” → <em>“Furious about what?”</em> — the natural reply of a system that doesn\u2019t know the situation and says so. A <strong>placeholder</strong>.',ports:['IN — arrival + demand state','OUT — formed response']},
     config:{name:'Configuration Register',path:'System frame ⊃ Configuration · REGISTER',body:'A <strong>Register</strong> mounted on the System frame, drawn with the segmented top strip. It holds which configuration the general-purpose system is running: currently <strong>Chat — the first configuration</strong>. Everything inside the frame — LPU, Awareness, Session &amp; Situation — is configuration-neutral machinery; the configuration is what aims it. The recorded chat turns run under this configuration.',ports:['HOLDS — active configuration','READ BY — every unit']},
     composer:{name:'Composer',path:'System ⊃ Awareness Unit ⊃ Current Activity ⊃ Composer · UNIT',body:'The <strong>one worker</strong> inside the Awareness Unit — a Unit, told by its chamfered output corner. Each turn it reads the other registers (self, place &amp; time, surroundings, activity) and <strong>writes the new situation statement</strong>. One writer, many readers: the Planner consults the situation register, but only the Composer may write it.',ports:['IN — all awareness registers','OUT — situation statement']},
     router:{name:'Intake Router',path:'System ⊃ Intake & Harboring ⊃ Intake Router · ROUTER',body:'A <strong>Router</strong> at the System edge: it governs <strong>intake</strong> — what may be asked for, and in what order. Local graph first, then <strong>CSKG → Wikidata → web → model</strong>, each tier only when the one before it cannot genuinely answer. What returns enters through the same point, to the Retrieval Harborer.',ports:['IN — knowledge need','OUT — routed answer + provenance']},
@@ -1032,27 +1164,81 @@
   var selectedId='system';
   var inspName=document.getElementById('inspName'), inspPath=document.getElementById('inspPath'),
       inspBody=document.getElementById('inspBody'), inspPorts=document.getElementById('inspPorts');
-  function select(id,focus){
+  /* the Inspector's path line, with the % completed to goal appended —
+     shared by the sidebar Inspector and the Popover panel so both modes
+     show exactly the same information. */
+  function decoratedPath(info,id){
+    var nodeId=ID2NODE[id];
+    if(nodeId && (nodeId in SYSTEM_MAP)){ var p=SYSTEM_MAP[nodeId]; return info.path+'  ·  '+p+'% completed to goal — '+stateOf(p)+(p===0?' (placeholder)':'')+' · set by us'; }
+    return info.path;
+  }
+  function select(id,focus,fromClick){
     var info=INFO[id]; if(!info) return; selectedId=id;
     if(typeof hideStopPop==='function') hideStopPop();
     document.querySelectorAll('.box,.sec-item[data-id]').forEach(function(b){ b.classList.toggle('selected', b.getAttribute('data-id')===id); });
     document.querySelectorAll('.crumb button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-focus')===id); });
-    inspName.textContent=info.name; inspPath.textContent=info.path;
-    var nodeId=ID2NODE[id];
-    if(nodeId && (nodeId in SYSTEM_MAP)){ var p=SYSTEM_MAP[nodeId]; inspPath.textContent=info.path+'  ·  '+p+'% completed to goal — '+stateOf(p)+(p===0?' (placeholder)':'')+' · set by us'; }
+    inspName.textContent=info.name; inspPath.textContent=decoratedPath(info,id);
     inspBody.innerHTML=info.body;
     inspPorts.innerHTML=info.ports.map(function(p){return '<span>'+p+'</span>';}).join('');
+    /* Popover mode: a user click opens the same panel at the element on
+       the map. Programmatic selects (walk steps, focus jumps, the view
+       fallback) never spawn a popover. */
+    if(fromClick && typeof inspectorMode!=='undefined' && inspectorMode==='popover') showInfoPop(id);
+    else if(typeof hideInfoPop==='function') hideInfoPop();
     if(focus) { var r=RECTS[id]; if(r) fitRect(r,54); }
   }
-  document.querySelectorAll('.gatewrap,.srctab,.configreg,.aw-item[data-id],.sec-item[data-id]').forEach(function(b){ b.addEventListener('click',function(e){ e.stopPropagation(); select(b.getAttribute('data-id'),false); }); b.addEventListener('dblclick',function(e){ e.stopPropagation(); focusId(b.getAttribute('data-id')); }); });
+  document.querySelectorAll('.gatewrap,.srctab,.configreg,.aw-item[data-id],.sec-item[data-id]').forEach(function(b){ b.addEventListener('click',function(e){ e.stopPropagation(); select(b.getAttribute('data-id'),false,true); }); b.addEventListener('dblclick',function(e){ e.stopPropagation(); focusId(b.getAttribute('data-id')); }); });
   document.querySelectorAll('.box').forEach(function(b){
-    b.addEventListener('click',function(e){ e.stopPropagation(); select(b.getAttribute('data-id'),false); });
+    b.addEventListener('click',function(e){ e.stopPropagation(); select(b.getAttribute('data-id'),false,true); });
     b.addEventListener('dblclick',function(e){ e.stopPropagation(); focusId(b.getAttribute('data-id')); });
   });
   document.querySelectorAll('[data-focus]').forEach(function(b){
     b.addEventListener('click',function(){ focusId(b.getAttribute('data-focus')); });
   });
   document.getElementById('inspFocus').addEventListener('click',function(){ focusId(selectedId); });
+
+  /* ===== inspector display mode — [ Sidebar | Popover ] =====
+     A session-only page preference (kept in memory, never stored).
+     Sidebar (default): clicking a map element loads its information
+     panel into the sidebar Inspector, as before. Popover: the same
+     panel opens as a popover anchored at the element on the map —
+     it lives inside the world, so it pans and zooms with the map, and
+     it dismisses the same ways the stop popover does (its × button,
+     or a click anywhere outside it). */
+  var inspectorMode='sidebar';
+  var infoPop=document.getElementById('infoPop'), infoPopName=document.getElementById('infoPopName'),
+      infoPopPath=document.getElementById('infoPopPath'), infoPopBody=document.getElementById('infoPopBody'),
+      infoPopPorts=document.getElementById('infoPopPorts');
+  function hideInfoPop(){ if(infoPop) infoPop.hidden=true; }
+  function showInfoPop(id){
+    var info=INFO[id]; if(!info || !infoPop) return;
+    if(typeof hideStopPop==='function') hideStopPop();
+    infoPopName.textContent=info.name;
+    infoPopPath.textContent=decoratedPath(info,id);
+    infoPopBody.innerHTML=info.body;
+    infoPopPorts.innerHTML=info.ports.map(function(p){return '<span>'+p+'</span>';}).join('');
+    var r=RECTS[id], x=8, y=8;
+    if(r){
+      x=r.x+r.w+16; y=r.y;
+      if(x+300>1632) x=r.x-316;
+      if(x<8) x=Math.max(8,Math.min(r.x,1632-308));
+      if(y+240>2142) y=Math.max(8,2142-248);
+    }
+    infoPop.style.left=x+'px'; infoPop.style.top=y+'px';
+    infoPop.hidden=false;
+  }
+  var inspSidebarBtn=document.getElementById('inspSidebarBtn'), inspPopoverBtn=document.getElementById('inspPopoverBtn');
+  function setInspectorMode(mode){
+    inspectorMode=mode;
+    if(inspSidebarBtn){ inspSidebarBtn.classList.toggle('on',mode==='sidebar'); inspSidebarBtn.setAttribute('aria-pressed',String(mode==='sidebar')); }
+    if(inspPopoverBtn){ inspPopoverBtn.classList.toggle('on',mode==='popover'); inspPopoverBtn.setAttribute('aria-pressed',String(mode==='popover')); }
+    if(mode==='sidebar') hideInfoPop();
+    else showInfoPop(selectedId);
+  }
+  if(inspSidebarBtn) inspSidebarBtn.addEventListener('click',function(e){ e.stopPropagation(); setInspectorMode('sidebar'); });
+  if(inspPopoverBtn) inspPopoverBtn.addEventListener('click',function(e){ e.stopPropagation(); setInspectorMode('popover'); });
+  var infoPopClose=document.getElementById('infoPopClose');
+  if(infoPopClose) infoPopClose.addEventListener('click',function(e){ e.stopPropagation(); hideInfoPop(); });
 
   /* ---------- functional chat — RECORDED REAL TURNS ----------
      This static preview cannot run the repo's code. Every turn below was
@@ -1070,9 +1256,9 @@
     'lpu/parser/token':[373,321],'lpu/parser/sense':[599,321],'lpu/parser/valency':[373,447],'lpu/parser/aspect-and-forms':[599,447],
     'lpu/parser':[712,430],
     'session-and-situation':[1219,750],'awareness':[1219,268],
-    'reasoning/derivation':[422,1360],'reasoning/pricing':[1190,1316],'reasoning/planner':[792,1360],
+    'reasoning/derivation':[422,1590],'reasoning/pricing':[1190,1546],'reasoning/planner':[792,1590],
     'lpu/generator':[860,303],'verbalizer':[1219,915],
-    'knowledge/correspondence-graph':[375,1100]
+    'knowledge/correspondence-graph':[375,1330]
   };
   var NODE_BOX={
     'person':null,'lpu/parser/token':'token','lpu/parser/sense':'sense','lpu/parser/valency':'valency','lpu/parser/aspect-and-forms':'aspect',
@@ -1151,21 +1337,26 @@
   function hideStopPop(){ if(stopPop) stopPop.hidden=true; }
   function showStopPop(step,turn){
     if(!stopPop) return;
+    hideInfoPop();
     stopPopLoc.textContent=turn.live?('Walk stopped · '+step.loc):((turn.stop==='parse'?'Walk stopped — parse failure · ':'Walk stopped — decline · ')+step.loc);
     stopPopBody.textContent=turn.popText||turn.reply;
     var x=step.at[0]+20, y=step.at[1]+20;
     if(x+252>1620) x=step.at[0]-272;
-    if(y+170>1900) y=step.at[1]-180;
+    if(y+170>2142) y=step.at[1]-180;
     stopPop.style.left=Math.max(8,x)+'px'; stopPop.style.top=Math.max(8,y)+'px';
     stopPop.hidden=false;
   }
   if(stopPop) document.getElementById('stopPopClose').addEventListener('click',function(e){ e.stopPropagation(); hideStopPop(); });
   document.addEventListener('click',function(e){
     if(stopPop && !stopPop.hidden && !stopPop.contains(e.target)) hideStopPop();
+    if(infoPop && !infoPop.hidden && !infoPop.contains(e.target)) hideInfoPop();
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){ hideStopPop(); hideInfoPop(); }
   });
   function lightBox(id){
-    document.querySelectorAll('.box.lit,.gatewrap.lit,.srctab.lit,.configreg.lit,.sec-item.lit').forEach(function(b){b.classList.remove('lit');});
-    document.querySelectorAll('.port.lit').forEach(function(p){p.classList.remove('lit');});
+    document.querySelectorAll('.box.lit,.gatewrap.lit,.srctab.lit,.configreg.lit,.sec-item.lit').forEach(function(b){b.classList.remove('lit','stopped');});
+    document.querySelectorAll('.port.lit').forEach(function(p){p.classList.remove('lit','stopped');});
     if(!id) return;
     document.querySelectorAll('.gatewrap[data-id="'+id+'"],.srctab[data-id="'+id+'"],.configreg[data-id="'+id+'"],.sec-item[data-id="'+id+'"]').forEach(function(b){ b.classList.add('lit'); });
     document.querySelectorAll('.box[data-id="'+id+'"]').forEach(function(b){
@@ -1311,6 +1502,13 @@
   function finishWalk(){
     walking=false; setFormEnabled(true);
     var turn=currentTurn, lastStep=walkSteps[walkSteps.length-1];
+    /* a stopped turn — and only a stopped turn — turns red: the stopping
+       node (still lit from the final step), the ports on it, and the
+       circle's end state. Everything before the stop stays teal. */
+    if(turn.stop){
+      packet.classList.add('stopped');
+      document.querySelectorAll('.box.lit,.sec-item.lit,.gatewrap.lit,.srctab.lit,.configreg.lit,.port.lit').forEach(function(b){ b.classList.add('stopped'); });
+    }
     if(pendingSys) setSysReply(pendingSys,turn);
     pendingSys=null;
     if(turn.session) sessionProgress[turn.session]=turn.idx+1;
@@ -1337,7 +1535,7 @@
   }
   /* ----- live say — the engine answers, the page walks its path ----- */
   function liveSay(utter){
-    hideStopPop();
+    hideStopPop(); hideInfoPop(); packet.classList.remove('stopped');
     helloBubble.textContent='\u201C'+utter+'\u201D';
     var sys=convoTurnEl(utter);
     var result;
@@ -1375,7 +1573,7 @@
     var utter=String(raw||'').trim();
     if(!utter) return;
     if(LIVE){ liveSay(utter); return; }
-    hideStopPop();
+    hideStopPop(); hideInfoPop(); packet.classList.remove('stopped');
     helloBubble.textContent='\u201C'+utter+'\u201D';
     var found=findRecorded(utter);
     if(found.status!=='ok'){
@@ -1385,7 +1583,7 @@
         msg='\u201C'+found.turn.say+'\u201D is turn '+(found.turn.idx+1)+' of the '+SESSION_NAME[found.turn.session]+', and sessions run in order — turn '+(found.expected+1)+' comes first. Said out of order it counts as unrecorded: '+msg;
       }
       setSysNotice(sys,msg);
-      packet.classList.remove('show'); tracePath.classList.remove('lit'); lightBox(null);
+      packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); lightBox(null);
       nowEl.innerHTML='<div class="ns-loc">Not recorded</div><div class="ns-text">'+msg+'</div>';
       logEl.innerHTML='';
       return;
@@ -1406,8 +1604,8 @@
     cancelWalk('Walk cleared by reset.');
     if(LIVE && window.AnSciLive){ try{ window.AnSciLive.reset(); }catch(e){} }
     sessionProgress={anger:0,soup:0};
-    hideStopPop();
-    packet.classList.remove('show'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
+    hideStopPop(); hideInfoPop();
+    packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
     helloBubble.textContent='…';
     replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— no reply yet —';
     convoLog.innerHTML='<div class="convo-empty">'+(LIVE?'Nothing said yet. Type a sentence above, or tap an example chip — the circle on the map walks the path your sentence actually takes through the code, and the reply appears when the walk ends.':'Nothing said yet. Type a recorded sentence above, or tap an example chip — the circle on the map walks the path that turn actually took through the code, and the recorded reply appears when the walk ends.')+'</div>';
@@ -1499,17 +1697,147 @@
     });
     /* 4 — a chat walk in progress is cancelled; recorded paths are
        re-filtered against visible nodes on the next Say */
-    hideStopPop();
+    hideStopPop(); hideInfoPop();
     cancelWalk('Walk interrupted — the view changed. Say it again to walk it in this view.');
-    packet.classList.remove('show'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
+    packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
     logEl.innerHTML='';
     /* if the inspected node is now hidden, fall back to the System */
     if(builtOnly && !isBoxVisible(selectedId)) select('system',false);
+    /* visibility changed the contents — re-derive container heights */
+    layoutContainers();
   }
   if(viewPlanBtn) viewPlanBtn.addEventListener('click',function(){ applyView('plan'); });
   if(viewBuiltBtn) viewBuiltBtn.addEventListener('click',function(){ applyView('built'); });
 
+  /* ===== sidebar accordions — independent toggles, all open by default.
+     Collapsing hides only that section's body; the sidebar keeps scrolling
+     and the map / chat / popover are untouched. ===== */
+  document.querySelectorAll('.acc-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var body=document.getElementById(btn.getAttribute('aria-controls'));
+      if(!body) return;
+      var open=btn.getAttribute('aria-expanded')==='true';
+      btn.setAttribute('aria-expanded',String(!open));
+      body.hidden=open;
+      var tri=btn.querySelector('.acc-tri');
+      if(tri) tri.textContent=open?'\u25B8':'\u25BE';
+    });
+  });
+  /* wheel over the sidebar scrolls the sidebar — it must never fall
+     through to the map zoom (the zoom handler lives on the viewport, and
+     this keeps the boundary explicit). */
+  var sidePanel=document.getElementById('sidePanel');
+  if(sidePanel) sidePanel.addEventListener('wheel',function(e){ e.stopPropagation(); },{passive:true});
+
+  /* ===== content-driven container heights =====
+     A container's frame must enclose its contents at every nesting level.
+     Hand-set heights in the markup / layout data are only a starting
+     point: on load (and whenever Built only changes what's visible) each
+     flow container's height is re-derived from its rendered content,
+     everything below a grown container shifts down by the growth, cords
+     stretch vertex-by-vertex, geometric containers (LPU, System) grow to
+     enclose their children, and RECTS / NODE_POS are shifted in step so
+     focus zoom and the chat walks stay registered with the drawing. */
+  var GEO=null;
+  function snapshotGeo(){
+    GEO={els:[],boxH:[],paths:[],circles:[],rects:JSON.parse(JSON.stringify(SYSTEM_LAYOUT.rects)),nodepos:JSON.parse(JSON.stringify(NODE_POS)),worldH:2150};
+    document.querySelectorAll('#world > *').forEach(function(el){
+      if(el.id==='packet'||el.id==='stopPop'||el.id==='infoPop'||el.tagName==='svg') return;
+      if(el.style.top||el.style.left) GEO.els.push({el:el,top:parseFloat(el.style.top)||0});
+    });
+    document.querySelectorAll('.box').forEach(function(el){
+      if(el.style.height) GEO.boxH.push({el:el,h:parseFloat(el.style.height)});
+    });
+    document.querySelectorAll('#world svg.wires path').forEach(function(p){ if(p.id!=='tracePath') GEO.paths.push({el:p,d:p.getAttribute('d')}); });
+    document.querySelectorAll('#world svg.wires circle').forEach(function(c){ GEO.circles.push({el:c,cy:parseFloat(c.getAttribute('cy')),cx:parseFloat(c.getAttribute('cx'))}); });
+  }
+  /* shifts are scoped: a System-level stack box (Awareness, Session, …)
+     pushes everything below it ('all'); a box contained in the LPU
+     (Parser, Generator, Unplaced) moves only its in-LPU siblings
+     ('lpu') — its growth is otherwise absorbed by the LPU frame. */
+  function shiftForY(y,deltas,scope){ var s=0; for(var i=0;i<deltas.length;i++){ if(deltas[i].scope===scope && y>=deltas[i].bottom-0.5) s+=deltas[i].delta; } return s; }
+  var LPU_KIDS=['parser','generator','unplaced-lpu'];
+  function scopeForPoint(x,y){ return (x>=222&&x<=998&&y>=118&&y<=968)?'lpu':'all'; }
+  function layoutContainers(){
+    if(!GEO) snapshotGeo();
+    var i,g;
+    /* restore the original geometry, then re-derive from current content */
+    for(i=0;i<GEO.els.length;i++) GEO.els[i].el.style.top=GEO.els[i].top+'px';
+    for(i=0;i<GEO.boxH.length;i++) GEO.boxH[i].el.style.height=GEO.boxH[i].h+'px';
+    for(i=0;i<GEO.paths.length;i++) GEO.paths[i].el.setAttribute('d',GEO.paths[i].d);
+    for(i=0;i<GEO.circles.length;i++) GEO.circles[i].el.setAttribute('cy',GEO.circles[i].cy);
+    world.style.height=GEO.worldH+'px';
+    var svg=document.querySelector('#world svg.wires');
+    if(svg){ svg.style.height=GEO.worldH+'px'; svg.setAttribute('viewBox','0 0 1640 '+GEO.worldH); }
+    Object.keys(GEO.rects).forEach(function(k){ RECTS[k]={x:GEO.rects[k].x,y:GEO.rects[k].y,w:GEO.rects[k].w,h:GEO.rects[k].h}; });
+    Object.keys(GEO.nodepos).forEach(function(k){ NODE_POS[k]=GEO.nodepos[k].slice(); });
+
+    var origH={}, newH={}, deltas=[];
+    for(i=0;i<GEO.boxH.length;i++){ g=GEO.boxH[i]; var gid=g.el.getAttribute('data-id'); if(gid){ origH[gid]=g.h; newH[gid]=g.h; } }
+    function origTopOf(id){ var el=boxEl(id); for(var j=0;j<GEO.els.length;j++) if(GEO.els[j].el===el) return GEO.els[j].top; return null; }
+    function deriveFlowBox(id){
+      var el=boxEl(id); if(!el||el.classList.contains('built-hidden')||!(id in origH)) return;
+      el.style.height='auto';
+      var nat=el.offsetHeight;
+      var scope=(LPU_KIDS.indexOf(id)>=0)?'lpu':'all';
+      /* contained boxes keep their layout height as a floor — their
+         slack is the LPU's internal spacing; only growth propagates */
+      if(scope==='lpu' && nat<origH[id]) nat=origH[id];
+      el.style.height=nat+'px';
+      newH[id]=nat;
+      var d=nat-origH[id], ot=origTopOf(id);
+      /* only world-positioned boxes cast a shift over what sits below
+         them; in-flow submodules (Token, Sense, …) grow inside their
+         parent, whose own derived height already accounts for them */
+      if(d!==0 && ot!==null) deltas.push({id:id,bottom:ot+origH[id],delta:d,scope:scope});
+      if(RECTS[id]) RECTS[id].h=nat;
+    }
+    /* submodules first — the Parser's natural height depends on theirs */
+    ['token','sense','valency','aspect'].forEach(deriveFlowBox);
+    ['awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','generator','parser','unplaced-lpu','unplaced-sys'].forEach(deriveFlowBox);
+
+    /* geometric containers grow to enclose their (shifted) children */
+    function childBottom(id){
+      var t=origTopOf(id); if(t===null) return -Infinity;
+      var el=boxEl(id); if(el&&el.classList.contains('built-hidden')) return -Infinity;
+      var sc=(LPU_KIDS.indexOf(id)>=0)?'lpu':'all';
+      return t+shiftForY(t,deltas,sc)+(newH[id]||origH[id]||0);
+    }
+    var lpuTop=origTopOf('lpu'), lpuDelta=0;
+    if(lpuTop!==null && ('lpu' in origH)){
+      var needLpu=Math.max(childBottom('parser'),childBottom('generator'),childBottom('unplaced-lpu'))-lpuTop+24;
+      lpuDelta=Math.max(0,needLpu-origH['lpu']);
+      if(lpuDelta>0){ deltas.push({id:'lpu',bottom:lpuTop+origH['lpu'],delta:lpuDelta,scope:'all'}); newH['lpu']=origH['lpu']+lpuDelta; var lpuEl=boxEl('lpu'); if(lpuEl) lpuEl.style.height=newH['lpu']+'px'; if(RECTS['lpu']) RECTS['lpu'].h=newH['lpu']; }
+    }
+    var sysTop=origTopOf('system'), sysNewH=origH['system'];
+    if(sysTop!==null && ('system' in origH)){
+      var maxB=-Infinity;
+      ['lpu','awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','unplaced-sys'].forEach(function(id){ maxB=Math.max(maxB,childBottom(id)); });
+      sysNewH=Math.max(origH['system'],maxB-sysTop+30);
+      var sysEl=boxEl('system'); if(sysEl) sysEl.style.height=sysNewH+'px';
+      if(RECTS['system']) RECTS['system'].h=sysNewH;
+    }
+
+    /* shift positioned elements, cords, focus rects and walk points */
+    for(i=0;i<GEO.els.length;i++){ g=GEO.els[i]; var esc=(g.el.classList.contains('box')&&LPU_KIDS.indexOf(g.el.getAttribute('data-id'))>=0)?'lpu':'all'; var s=shiftForY(g.top,deltas,esc); if(s) g.el.style.top=(g.top+s)+'px'; }
+    for(i=0;i<GEO.paths.length;i++){ g=GEO.paths[i];
+      var vs=[]; g.d.replace(/-?\d+\.?\d*/g,function(m){ vs.push(parseFloat(m)); return m; });
+      for(var vi=1;vi<vs.length;vi+=2){ vs[vi]+=shiftForY(vs[vi],deltas,scopeForPoint(vs[vi-1],vs[vi])); }
+      var vn=0; g.el.setAttribute('d',g.d.replace(/-?\d+\.?\d*/g,function(){ var v=vs[vn++]; return Math.round(v*100)/100; }));
+    }
+    for(i=0;i<GEO.circles.length;i++){ g=GEO.circles[i]; g.el.setAttribute('cy',g.cy+shiftForY(g.cy,deltas,scopeForPoint(g.cx,g.cy))); }
+    var RECT_LPU=['parser','generator','unplaced-lpu','token','sense','valency','aspect'];
+    Object.keys(GEO.rects).forEach(function(k){ var rsc=RECT_LPU.indexOf(k)>=0?'lpu':'all'; RECTS[k].y=GEO.rects[k].y+shiftForY(GEO.rects[k].y,deltas,rsc); });
+    Object.keys(GEO.nodepos).forEach(function(k){ var p=GEO.nodepos[k]; NODE_POS[k][1]=p[1]+shiftForY(p[1],deltas,scopeForPoint(p[0],p[1])); });
+
+    /* the world (and its wire layer) grows with the System frame */
+    var worldH=(sysTop!==null?sysTop:56)+sysNewH+64;
+    world.style.height=worldH+'px';
+    if(svg){ svg.style.height=worldH+'px'; svg.setAttribute('viewBox','0 0 1640 '+worldH); }
+  }
+
   window.addEventListener('resize',function(){ /* keep transform; user can refit */ });
+  layoutContainers();
   fitSystem(); select('system',false); apply();
 })();
 </script>
