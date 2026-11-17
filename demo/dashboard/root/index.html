@@ -32,16 +32,25 @@
   a{color:inherit}
   .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
 
-  /* ---------- header ---------- */
+  /* ---------- header — exactly 3 lines: title / description / controls ---------- */
   header.top{
-    display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;
-    padding:18px 20px 14px;border-bottom:2px solid var(--line);
+    display:flex;flex-direction:column;gap:6px;
+    padding:14px 20px 12px;border-bottom:2px solid var(--line);background:var(--panel);
   }
-  .title-block h1{font-family:"IBM Plex Mono",monospace;font-size:clamp(20px,3.4vw,32px);line-height:1.05;margin:0;letter-spacing:-.01em;font-weight:700;text-transform:uppercase}
-  .title-block h1 .thin{font-weight:400;color:var(--muted)}
-  .title-block p{margin:7px 0 0;max-width:62ch;font-size:14px;line-height:1.5;color:var(--muted)}
-  .title-block p strong{color:var(--ink)}
-  .head-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .h-line1{display:flex;align-items:center;gap:10px;line-height:1.1;min-height:32px}
+  .h-tri{color:var(--accent);font-size:19px;line-height:1;flex:none}
+  .h-line1 h1{font-family:"IBM Plex Mono",monospace;font-size:clamp(20px,3.4vw,30px);line-height:1.05;margin:0;letter-spacing:-.01em;font-weight:700;text-transform:uppercase}
+  .h-line1 h1 .thin{font-weight:400;color:var(--muted)}
+  .h-line2{margin:0;font-size:13.5px;line-height:1.4;color:var(--muted)}
+  .h-line3{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;line-height:1.3}
+  .h-note{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.04em;color:var(--muted)}
+  .view-toggle{display:inline-flex;border:1.5px solid var(--line);border-radius:3px;overflow:hidden;background:var(--panel2);flex:none}
+  .vt-btn{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:0;background:transparent;color:var(--ink);padding:8px 13px;min-height:36px;cursor:pointer}
+  .vt-btn + .vt-btn{border-left:1.5px solid var(--line)}
+  .vt-btn.on{background:var(--ink);color:var(--bg)}
+  .vt-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .built-hidden{display:none !important}
+  .cord-hidden{display:none !important}
   .btn{
     font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
     border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);padding:9px 14px;min-height:40px;
@@ -52,7 +61,7 @@
   .btn.primary:hover{filter:brightness(1.07);color:var(--accent-ink)}
   .btn.dashboard{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   .btn.dashboard:hover{color:var(--bg);opacity:.88}
-  .preview-tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1.5px solid var(--accent);color:var(--accent);padding:6px 9px;border-radius:3px;font-weight:700}
+  .head-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 
   .crumb{
     display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--line-soft);
@@ -109,6 +118,16 @@
     box-shadow:0 0 0 5px color-mix(in srgb,var(--trace) 25%,transparent);z-index:60;pointer-events:none;
   }
   .packet.show{display:flex}
+  /* stop popover — anchored at the node where a walk stopped (decline / parse failure).
+     Same drafting family: single-ruled small card, panel ground, no new colours. */
+  .stoppop{position:absolute;z-index:70;width:252px;border:1.5px solid var(--line);background:var(--panel2);border-radius:3px;padding:9px 11px 10px;box-shadow:0 5px 16px rgba(0,0,0,.20)}
+  .stoppop[hidden]{display:none}
+  [hidden]{display:none!important}
+  .stoppop-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .stoppop-loc{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+  .stoppop-close{flex:none;width:24px;height:24px;min-height:24px;border:1.5px solid var(--line-soft);border-radius:3px;background:var(--panel2);color:var(--ink);font-size:14px;line-height:1;cursor:pointer;padding:0}
+  .stoppop-close:hover{border-color:var(--accent);color:var(--accent)}
+  .stoppop-body{font-size:12.5px;line-height:1.55;color:var(--ink)}
   .packet-label{
     position:absolute;transform:translate(-50%,-190%);background:var(--ink);color:var(--bg);font-family:"IBM Plex Mono",monospace;
     font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;white-space:nowrap;
@@ -168,6 +187,34 @@
   .say{display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
   .say .utter{flex:1;border:1.5px solid var(--line-soft);border-radius:3px;padding:9px 11px;font-family:"IBM Plex Mono",monospace;font-size:14px;background:var(--panel2)}
   .say .utter span{color:var(--muted);font-size:10px;display:block;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
+  /* ===== functional chat (recorded real turns) ===== */
+  .chat-caption{font-size:12px;line-height:1.55;color:var(--muted);margin:0 0 10px;border-left:3px solid var(--accent);padding-left:9px}
+  .chat-form{display:flex;gap:8px;margin-bottom:10px}
+  .chat-form input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:3px;padding:10px 11px;font-family:"IBM Plex Mono",monospace;font-size:14px;background:var(--panel2);color:var(--ink);min-height:44px}
+  .chat-form input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .chat-form input:disabled{opacity:.55}
+  .chip-group{margin-bottom:9px}
+  .chip-group .cg-lbl{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:12px;border:1.5px solid var(--line-soft);background:var(--panel2);color:var(--ink);border-radius:999px;padding:7px 11px;min-height:34px;cursor:pointer;text-align:left}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.next{border-color:var(--accent);font-weight:700}
+  .chip.done{opacity:.45}
+  .chip:disabled{opacity:.5;cursor:wait}
+  .session-hint{font-family:"IBM Plex Mono",monospace;font-size:11px;line-height:1.6;color:var(--muted);margin:2px 0 10px}
+  .session-hint strong{color:var(--ink)}
+  .convo{border:1.5px solid var(--line-soft);border-radius:3px;background:var(--panel2);padding:10px 12px;margin-bottom:10px;max-height:260px;overflow:auto}
+  .convo .convo-empty{font-size:12.5px;color:var(--muted);line-height:1.55}
+  .convo-turn{padding:8px 0;border-top:1px dashed var(--line-soft)}
+  .convo-turn:first-child{border-top:none;padding-top:0}
+  .convo-turn:last-child{padding-bottom:0}
+  .convo-you{font-size:13.5px;line-height:1.5}
+  .convo-you .who-l,.convo-sys .who-l{font-family:"IBM Plex Mono",monospace;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:2px}
+  .convo-you .who-l{color:var(--muted)}
+  .convo-sys{font-size:13.5px;line-height:1.55;margin-top:6px}
+  .convo-sys .who-l{color:var(--trace)}
+  .convo-sys.pending{color:var(--muted);font-style:italic}
+  .convo-sys.notice{color:var(--muted);font-size:12.5px}
   .nowstep{border:1.5px solid var(--line);border-radius:3px;padding:11px 12px;background:var(--panel2);min-height:86px}
   .nowstep .ns-loc{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--trace);margin-bottom:5px}
   .nowstep .ns-text{font-size:13.5px;line-height:1.55}
@@ -191,7 +238,8 @@
   /* ===== module types — subtle drafting treatments only =====
      One family: same rectangles, same stroke, same title placement.
      Type is carried by corner, edge and ruling treatments. */
-  .t-unit{position:relative}
+  /* .t-unit must NOT set position: its boxes are absolutely placed on the
+     schematic, and the chamfer ::after anchors to that absolute box. */
   .box.t-unit::after{content:"";position:absolute;top:-2px;right:-2px;width:20px;height:20px;pointer-events:none;
     background:linear-gradient(to bottom left, var(--panel) 0 43%, var(--line) 43% 53%, transparent 53%)}
   .t-store{border-bottom:7px double var(--line)}
@@ -277,6 +325,37 @@
   .placeholder{border:2px dashed var(--g4)!important;background:transparent!important;cursor:pointer}
   .placeholder .bname{color:var(--muted);letter-spacing:.14em}
   .placeholder .bbody{color:var(--muted);font-style:italic}
+  /* ===== completeness states — read off % completed to goal (system-map.ts, set by us) =====
+     0 = placeholder · 1–99 = partial · 100 = functional. No new colours:
+     state is carried by ruling (dashed vs solid) and gray ground only. */
+  .pct-badge{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.04em;
+    border:1.5px solid var(--line);background:var(--panel2);color:var(--ink);padding:2px 6px;border-radius:2px;white-space:nowrap;line-height:1.3}
+  .pct-badge.state-placeholder{border-style:dashed;color:var(--muted);background:transparent}
+  .pct-badge.state-functional{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .pct-badge.abs{position:absolute;top:4px;right:4px;z-index:6}
+  .head-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+  /* Only the otherwise-static items need a positioning anchor for their
+     absolute % badge. The titled .box nodes and .configreg are already
+     absolutely positioned — a blanket .has-pct{position:relative} here
+     overrode .box{position:absolute} (equal specificity, later rule) and
+     knocked every schematic box back into document flow, stacked below
+     the System frame instead of inside it. */
+  .aw-item.has-pct,.sec-item.has-pct,.aw-branch.has-pct{position:relative}
+  .aw-item.has-pct .aw-name,.sec-item.has-pct .aw-name{padding-right:36px}
+  .configreg.has-pct{padding-right:52px}
+  .state-placeholder{border-style:dashed!important;border-color:var(--g4)!important;background:var(--g0)!important;background-image:none!important}
+  .state-placeholder .aw-name,.state-placeholder .bname{color:var(--muted)}
+  .box.state-partial{background-image:linear-gradient(color-mix(in srgb,var(--panel2) 38%,transparent),color-mix(in srgb,var(--panel2) 38%,transparent))}
+  .sec-item.state-partial,.aw-item.state-partial{background-color:var(--g1)}
+  .aw-branch.state-partial{background:color-mix(in srgb,var(--g0) 55%,transparent)}
+  .box.state-functional{background-color:var(--g3)!important}
+  .sec-item.state-functional,.aw-item.state-functional{background-color:var(--g3)}
+  .pct-multi{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .pct-multi .pct-badge{position:static;font-size:9px;padding:1px 5px}
+  .lshape.state-placeholder{border-style:dashed;background:var(--g0)}
+  .lshape.state-partial{background:var(--g1)}
+  .lshape.state-functional{background:var(--g3)}
+  .lshape .pct-badge{position:absolute;top:2px;right:2px;font-size:8.5px;padding:0 4px}
   /* ===== cords ===== */
   .world svg.wires path.pw1,.world svg.wires path.pw2{stroke:var(--cord);stroke-width:1.6;opacity:.85}
   .world svg.wires path.conn{stroke:var(--cord);stroke-width:1.1;opacity:.8}
@@ -302,13 +381,16 @@
 <body>
 
 <header class="top">
-  <div class="title-block">
-    <h1>AnSci <span class="thin">/ Root — System Schematic</span></h1>
-    <p>Preview of the reorganised root page: the codebase redrawn as <strong>one zoomable schematic</strong>. What is drawn here is a <strong>general-purpose system</strong> — not a chat system. <strong>Chat is a configuration applied to it</strong>, its first configuration, shown on the System frame. Zoom in and the boxes open up — the <strong>System</strong> contains the <strong>LPU</strong>, the LPU contains the <strong>Parser</strong>, and the Parser contains its submodules; around them sit Awareness, Session &amp; Situation, Knowledge, Reasoning, and Intake &amp; Harboring. Nesting means <strong>containment</strong> only: a resource is reached by a <strong>connection cord</strong> labelled <em>uses</em> — as the Verbalizer uses the LPU — while <strong>pathway cords</strong> (double tracks) carry the travelling circle. Hierarchy is read from <strong>gradations of gray</strong>, deeper elements on stronger grounds. Press <strong>Trace “Hello”</strong> and watch a single utterance travel the whole machine, under the Chat configuration.</p>
-  </div>
-  <div class="head-actions">
-    <span class="preview-tag">Preview · Reorganisation</span>
-    <a class="btn dashboard" href="/dashboard/">Old dashboard&nbsp;→&nbsp;/dashboard/</a>
+  <div class="h-line1"><span class="h-tri" aria-hidden="true">▶</span><h1>AnSci <span class="thin">/ Root — System Schematic</span></h1></div>
+  <p class="h-line2">The whole system as planned — one zoomable schematic, placeholders included.</p>
+  <div class="h-line3">
+    <div class="view-toggle" role="group" aria-label="Map view — plan or built only">
+      <button type="button" class="vt-btn on" id="viewPlanBtn" aria-pressed="true">Plan</button>
+      <button type="button" class="vt-btn" id="viewBuiltBtn" aria-pressed="false">Built only</button>
+    </div>
+    <span class="h-note" id="viewNote">Plan view — everything drawn, placeholders included.</span>
+    <span class="h-note">% completed to goal — set by us, assessed by the project, not measured or computed.</span>
+    <a class="btn dashboard" href="/dashboard/" style="margin-left:auto;min-height:36px;padding:7px 12px">Dashboard&nbsp;→&nbsp;/dashboard/</a>
   </div>
 </header>
 
@@ -340,51 +422,49 @@
         <button class="tbtn wide" data-focus="awareness">Awareness</button>
       </div>
       <div class="spacer"></div>
-      <div class="group"><span class="lbl">Trace</span>
-        <button class="tbtn wide on" id="playBtn">▶ Trace “Hello”</button>
-        <button class="tbtn wide" id="stepBtn">Step</button>
-        <button class="tbtn wide" id="resetBtn">Reset</button>
+      <div class="group"><span class="lbl">Chat</span>
+        <button class="tbtn wide" id="resetBtn">Reset conversation</button>
       </div>
     </div>
 
     <div class="viewport" id="viewport" aria-label="Zoomable system schematic">
       <div class="world" id="world">
         <svg class="wires" viewBox="0 0 1640 1920" aria-hidden="true">
-          <path class="tracepath" id="tracePath" d="M 118 300 L 213 300 L 1219 268 L 240 430 L 262 430 L 373 321 L 599 321 L 373 447 L 599 447 L 712 430 L 1219 750 L 422 1360 L 792 1360 L 860 303 L 1219 915 L 1427 430" />
-          <path class="pw1" d="M 118 297 L 250 297 L 250 427 L 722 427 L 722 700 L 1210 700 L 1210 1284 L 980 1284 L 980 330 L 968 330" />
-          <path class="pw2" d="M 118 303 L 244 303 L 244 433 L 716 433 L 716 706 L 1204 706 L 1204 1290 L 974 1290 L 974 336 L 962 336" />
-          <path class="pw1" d="M 968 303 L 1440 303" /><path class="pw2" d="M 968 309 L 1440 309" />
-          <path class="pw1" d="M 1090 1567 L 1180 1567 L 1180 1215" /><path class="pw2" d="M 1090 1573 L 1186 1573 L 1186 1221" />
-          <circle class="cdot" cx="250" cy="300" r="4"/><circle class="cdot" cx="968" cy="306" r="4"/><circle class="cdot" cx="1183" cy="1218" r="4"/>
-          <path class="conn" d="M 792 1430 L 792 1472 L 560 1472 L 560 1444" />
-          <path class="conn" d="M 422 1430 L 422 1452 L 480 1452 L 480 1214" />
-          <path class="conn" d="M 1219 628 L 1219 652" />
-          <path class="conn" d="M 745 57 L 745 100 L 1150 100 L 1150 118" />
-          <path class="conn" d="M 599 516 L 599 1240 L 900 1240 L 900 1284" />
-          <circle class="cdot" cx="560" cy="1440" r="4"/><circle class="cdot" cx="480" cy="1210" r="4"/>
-          <circle class="cdot" cx="1219" cy="650" r="4"/><circle class="cdot" cx="1150" cy="116" r="4"/><circle class="cdot" cx="900" cy="1280" r="4"/>
-          <path class="conn uses" d="M 1030 905 C 985 760, 985 520, 895 415" />
-          <circle class="cdot uses" cx="892" cy="412" r="5"/>
+          <path class="tracepath" id="tracePath" d="" />
+          <path class="pw1" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 297 L 250 297 L 250 427 L 722 427 L 722 700 L 1210 700 L 1210 1284 L 980 1284 L 980 330 L 968 330" />
+          <path class="pw2" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 303 L 244 303 L 244 433 L 716 433 L 716 706 L 1204 706 L 1204 1290 L 974 1290 L 974 336 L 962 336" />
+          <path class="pw1" data-endpoints="awareness,system" d="M 968 303 L 1440 303" /><path class="pw2" data-endpoints="awareness,system" d="M 968 309 L 1440 309" />
+          <path class="pw1" data-endpoints="harborer,knowledge" d="M 1090 1567 L 1180 1567 L 1180 1215" /><path class="pw2" data-endpoints="harborer,knowledge" d="M 1090 1573 L 1186 1573 L 1186 1221" />
+          <circle class="cdot" data-endpoints="system" cx="250" cy="300" r="4"/><circle class="cdot" data-endpoints="awareness" cx="968" cy="306" r="4"/><circle class="cdot" data-endpoints="knowledge" cx="1183" cy="1218" r="4"/>
+          <path class="conn" data-endpoints="planner,correspondence" d="M 792 1430 L 792 1472 L 560 1472 L 560 1444" />
+          <path class="conn" data-endpoints="derivation,correspondence" d="M 422 1430 L 422 1452 L 480 1452 L 480 1214" />
+          <path class="conn" data-endpoints="awareness,session" d="M 1219 628 L 1219 652" />
+          <path class="conn" data-endpoints="config,awareness" d="M 745 57 L 745 100 L 1150 100 L 1150 118" />
+          <path class="conn" data-endpoints="sense,lexicon" d="M 599 516 L 599 1240 L 900 1240 L 900 1284" />
+          <circle class="cdot" data-endpoints="correspondence" cx="560" cy="1440" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="480" cy="1210" r="4"/>
+          <circle class="cdot" data-endpoints="session" cx="1219" cy="650" r="4"/><circle class="cdot" data-endpoints="awareness" cx="1150" cy="116" r="4"/><circle class="cdot" data-endpoints="planner" cx="900" cy="1280" r="4"/>
+          <path class="conn uses" data-endpoints="verbalizer,generator" d="M 1030 905 C 985 760, 985 520, 895 415" />
+          <circle class="cdot uses" data-endpoints="generator" cx="892" cy="412" r="5"/>
         </svg>
 
         <!-- speaker (outside system) -->
         <div class="ext" style="left:8px;top:196px;width:172px">
           <span class="who">◉ A person</span><br>
           <span style="color:var(--muted);font-size:11px">identity unknown · first utterance · no shared topic yet</span><br>
-          <span class="bubble" id="helloBubble">“Hello.”</span>
+          <span class="bubble" id="helloBubble">…</span>
         </div>
         <!-- reply (outside system) -->
         <div class="ext" style="left:1428px;top:238px;width:196px;text-align:right">
           <span class="who">▣ Surface — reply out</span><br>
-          <span class="bubble reply" id="replyBubble" style="opacity:.28">“Hello.”</span><br>
-          <span style="color:var(--muted);font-size:11px" id="replyNote">— not yet generated —</span>
+          <span class="bubble reply" id="replyBubble" style="opacity:.28">…</span><br>
+          <span style="color:var(--muted);font-size:11px" id="replyNote">— no reply yet —</span>
         </div>
 
         <span class="flowtag" style="left:206px;top:282px">utterance in</span>
-        <span class="cordlabel uses" style="left:946px;top:640px">uses &#8594;</span>
-        <span class="cordlabel" style="left:806px;top:1452px">planner consults &#8595; correspondence graph</span>
-        <span class="cordlabel" style="left:612px;top:880px">sense consults &#8595; lexicon</span>
-        <span class="cordlabel" style="left:1230px;top:632px">awareness reads &#8593; session</span>
+        <span class="cordlabel uses" data-endpoints="verbalizer,generator" style="left:946px;top:640px">uses &#8594;</span>
+        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:806px;top:1452px">planner consults &#8595; correspondence graph</span>
+        <span class="cordlabel" data-endpoints="sense,lexicon" style="left:612px;top:880px">sense consults &#8595; lexicon</span>
+        <span class="cordlabel" data-endpoints="awareness,session" style="left:1230px;top:632px">awareness reads &#8593; session</span>
         <span class="flowtag" style="left:1150px;top:306px">situation feed · dashed</span>
         <span class="flowtag" style="left:1440px;top:412px">reply out</span>
 
@@ -589,31 +669,40 @@
           <div class="bbody">Other aspect units of the LPU, beyond the Parser and the Generator — a place held, not a thing built. To be settled.</div>
         </div>
 
-                <div class="packet" id="packet"><span class="packet-label" id="packetLabel">“Hello”</span>●</div>
+                <div class="packet" id="packet"><span class="packet-label" id="packetLabel">…</span>●</div>
+        <div class="stoppop" id="stopPop" hidden role="note" aria-label="Where the walk stopped">
+          <div class="stoppop-head"><span class="stoppop-loc" id="stopPopLoc">Walk stopped</span><button type="button" class="stoppop-close" id="stopPopClose" aria-label="Dismiss stop message">×</button></div>
+          <div class="stoppop-body" id="stopPopBody"></div>
+        </div>
       </div>
     </div>
 
     <div class="hintbar">
-      <span>🖱 Drag — pan</span><span>Scroll / pinch buttons — zoom</span><span>Click a box — inspect + focus</span><span>Double-click — zoom to box</span><span>Trace — follow “Hello” end to end</span>
+      <span>🖱 Drag — pan</span><span>Scroll / pinch buttons — zoom</span><span>Click a box — inspect + focus</span><span>Double-click — zoom to box</span><span>Chat panel — say a recorded sentence and watch its real path</span>
     </div>
   </div>
 
   <!-- ================= SIDE ================= -->
   <aside class="side">
-    <section aria-label="Trace Hello through the system">
-      <h2>Watch it move — “Hello”</h2>
-      <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5">Traced under the <strong style="color:var(--ink)">Chat configuration</strong> — the first configuration of the general-purpose system drawn here.</p>
-      <div class="say">
-        <div class="utter"><span>A person says</span>“Hello.”</div>
+    <section aria-label="Chat — a person says">
+      <h2>A person says — chat</h2>
+      <p class="chat-caption" id="chatCaption">Recorded from the real turn loop. The live root page runs your sentence through the code itself.</p>
+      <form class="chat-form" id="chatForm">
+        <input type="text" id="chatInput" autocomplete="off" placeholder="Type what the person says…" aria-label="What the person says">
+        <button class="btn primary" type="submit" id="sayBtn">Say</button>
+      </form>
+      <div id="chipGroups" aria-label="Recorded example turns"></div>
+      <p class="session-hint" id="sessionHint"></p>
+      <div class="convo" id="convoLog" aria-label="Conversation readout" aria-live="polite">
+        <div class="convo-empty">Nothing said yet. Type a recorded sentence above, or tap an example chip — the circle on the map walks the path that turn actually took through the code, and the recorded reply appears when the walk ends.</div>
       </div>
       <div class="trace-controls">
-        <button class="btn primary" id="playBtn2">▶ Play trace</button>
-        <button class="btn" id="stepBtn2">Step →</button>
-        <button class="btn" id="resetBtn2">Reset</button>
+        <button class="btn" id="resetBtn2" type="button">Reset conversation</button>
+        <button class="btn" id="newConvoBtn" type="button" hidden>New conversation</button>
       </div>
       <div class="nowstep" id="nowStep">
         <div class="ns-loc">Ready</div>
-        <div class="ns-text">Press <strong>Play trace</strong>. The packet is the utterance itself — follow it from the person's mouth, through the Awareness Unit and every LPU unit, to the reply leaving the System's OUT port.</div>
+        <div class="ns-text">Say something recorded. The packet is the utterance itself — follow it from the person, through each node the turn loop actually visited, to where that turn stopped. A decline stops the circle at the node where the code stopped.</div>
       </div>
       <ol class="steplog" id="stepLog"></ol>
     </section>
@@ -622,7 +711,7 @@
       <h2>Inspector</h2>
       <div class="insp-name" id="inspName">The System</div>
       <div class="insp-path" id="inspPath">System</div>
-      <div class="insp-body" id="inspBody">The outermost bounding box and the new root page's whole subject. Everything else on this schematic is inside it. Its IN port takes a person's utterance; its OUT port delivers the reply.</div>
+      <div class="insp-body" id="inspBody">The outermost bounding box and the root page's whole subject. Everything else on this schematic is inside it. Its IN port takes a person's utterance; its OUT port delivers the reply.</div>
       <div class="insp-ports" id="inspPorts"><span>IN — utterance</span><span>OUT — reply</span></div>
       <div style="margin-top:12px"><button class="btn" id="inspFocus">Zoom to this unit</button></div>
     </section>
@@ -653,20 +742,31 @@
       <div class="grayramp"><span style="background:var(--g0)"></span><span style="background:var(--g1)"></span><span style="background:var(--g2)"></span><span style="background:var(--g3)"></span></div>
       <div class="grayramp-lbls"><span>System</span><span>Section</span><span>Unit</span><span>Submodule</span></div>
       <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:6px 0 0">Hierarchy is carried by <strong style="color:var(--ink)">gradations of gray</strong>: the deeper an element sits, the stronger its ground. Colour is reserved for the travelling circle and the path it takes.</p>
-      <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:12px 0 0">Zoom is the organising idea of the reorganisation: at System zoom you see the units; at Parser zoom you see four submodules. The root page will work the same way — <strong style="color:var(--ink)">one map, every scale</strong>.</p>
+      <h2 style="margin-top:20px">Completeness — % completed to goal</h2>
+      <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 4px">Every percent on this map is <strong style="color:var(--ink)">% completed to goal — set by us</strong>: assessed by the project, not measured or computed, and not derived from code or tests. Node data mirrors the registry in <strong style="color:var(--ink)">ai-system/system-map.ts</strong>; sibling order and placement are held separately in <strong style="color:var(--ink)">system-layout.ts</strong>, so the presentation can be rearranged without touching the registry. State is read straight off the percent:</p>
+      <p style="font-size:12.5px;line-height:1.55;color:var(--muted);margin:0 0 8px"><strong style="color:var(--ink)">Plan view</strong> (default) shows the whole map, placeholders included. <strong style="color:var(--ink)">Built only</strong> — the toggle in the header — hides every 0% placeholder, any container left with nothing visible inside it, and any cord touching a hidden node; partial and functional nodes remain. The trace in Built only walks only visible nodes.</p>
+      <div class="typelegend">
+        <div class="trow"><span class="lshape state-placeholder"><span class="pct-badge state-placeholder">0%</span></span><div><span class="tname">PLACEHOLDER · 0%</span><div class="tdef">Dashed ruling, faintest gray ground — a <em>place held, not a thing built</em>. <em>Identity, Capabilities, the Unplaced boxes, Wikidata / Web / Model tiers.</em></div></div></div>
+        <div class="trow"><span class="lshape state-partial"><span class="pct-badge">45%</span></span><div><span class="tname">PARTIAL · 1–99%</span><div class="tdef">Solid ruling, but a <em>lighter gray ground</em> than a functional node, with its percent badge. Most of the system lives here today. <em>Retrieval Harborer 45%, Configuration 50%, System 55%.</em></div></div></div>
+        <div class="trow"><span class="lshape state-functional"><span class="pct-badge state-functional">100%</span></span><div><span class="tname">FUNCTIONAL · 100%</span><div class="tdef"><em>Full-strength rendering</em> — the strongest ground, solid ruling, filled badge. No node has reached it yet; the state is drawn in the legend so the scale is complete.</div></div></div>
+      </div>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:8px 0 0">The badge sits at the <strong style="color:var(--ink)">upper right of the node's title bar</strong> on every titled node that carries a percent — containers carry their own assessed percent, not an average of their children. <strong style="color:var(--ink)">External sources</strong> (Person, Clock, Weather, the intake tiers as sources) carry <strong style="color:var(--ink)">no percent and no badge</strong>. Selecting a node shows its % completed to goal in the Inspector.</p>
+      <p style="font-size:12.5px;line-height:1.6;color:var(--muted);margin:12px 0 0">Zoom is the organising idea: at System zoom you see the units; at Parser zoom you see four submodules — <strong style="color:var(--ink)">one map, every scale</strong>.</p>
     </section>
   </aside>
 </div>
 
 <footer class="foot">
-  <span>ANSCI · ROOT PAGE PREVIEW — ZOOMABLE SCHEMATIC</span>
-  <span>PREVIOUS ROOT: <a href="/dashboard/">/dashboard/</a></span>
+  <span>ANSCI · ROOT PAGE — ZOOMABLE SCHEMATIC</span>
+  <span>DASHBOARD: <a href="/dashboard/">/dashboard/</a></span>
+  <span>VIEW: PLAN (DEFAULT, PLACEHOLDERS INCLUDED) · BUILT ONLY (0% PLACEHOLDERS HIDDEN)</span>
   <span>NESTING: SYSTEM ⊃ LPU ⊃ PARSER ⊃ TOKEN · SENSE · VALENCY · ASPECT &amp; FORMS</span>
   <span>SYSTEM ALSO CONTAINS: AWARENESS · SESSION &amp; SITUATION · KNOWLEDGE · REASONING · INTAKE &amp; HARBORING · VERBALIZER (USES LPU)</span>
   <span>CORDS: PATHWAY (DOUBLE) · CONNECTION (SINGLE, OPEN DOT) · USES</span>
   <span>AWARENESS UNIT SITS AT SYSTEM LEVEL, BESIDE THE LPU</span>
   <span>MODULE TYPES: UNIT · STORE · REGISTER · TABLE · GATE · ROUTER · SOURCE · SURFACE</span>
   <span>GENERAL-PURPOSE SYSTEM · CONFIGURATION: CHAT — FIRST CONFIGURATION</span>
+  <span>COMPLETENESS: % COMPLETED TO GOAL — SET BY US, ASSESSED BY THE PROJECT, NOT MEASURED OR COMPUTED · FROM SYSTEM-MAP.TS · PLACEMENT &amp; ORDER FROM SYSTEM-LAYOUT.TS · 0% PLACEHOLDER · 1–99% PARTIAL · 100% FUNCTIONAL · SOURCES CARRY NO %</span>
 </footer>
 
 <script>
@@ -684,7 +784,37 @@
     view.k=k; view.x=(vw-r.w*k)/2-r.x*k; view.y=(vh-r.h*k)/2-r.y*k; apply();
   }
   function fitSystem(){ fitRect({x:190,y:56,w:1250,h:1800},30); }
-  var RECTS={
+  /* ===== node registry — mirrors ai-system/system-map.ts =====
+     Every node's id is its schematic path; percent is % completed to goal — set by us, assessed by the project, not measured or computed.
+     State is read off the percent: 0 placeholder, 1–99 partial, 100 functional.
+     External sources (Person, Clock, Weather) are not in the registry's
+     percent table: they carry no percent and no badge. */
+  var SYSTEM_MAP={
+    'system':55,'configuration':50,
+    'awareness':35,'awareness/self':15,'awareness/self/identity':0,'awareness/self/capabilities':0,'awareness/self/disposition':80,'awareness/self/own-state':30,
+    'awareness/place-and-time':70,'awareness/place-and-time/season-daypart':85,'awareness/place-and-time/channel':40,
+    'awareness/surroundings':25,'awareness/surroundings/interlocutor-standing':10,'awareness/surroundings/standing-topics':75,'awareness/surroundings/other-presences':0,
+    'awareness/current-activity':30,'awareness/current-activity/composer':0,'awareness/current-activity/situation-statement':15,'awareness/current-activity/last-act':35,'awareness/current-activity/open-gaps':55,
+    'lpu':80,'lpu/parser':85,'lpu/parser/token':90,'lpu/parser/sense':70,'lpu/parser/valency':85,'lpu/parser/aspect-and-forms':90,'lpu/generator':80,'lpu/unplaced':0,
+    'session-and-situation':75,'session-and-situation/states-and-origins':85,'session-and-situation/events':70,'session-and-situation/topics':80,'session-and-situation/corrections':80,
+    'knowledge':70,'knowledge/correspondence-graph':75,'knowledge/classification':60,'knowledge/lexicon':80,'knowledge/banked':65,
+    'reasoning':80,'reasoning/derivation':85,'reasoning/planner':80,'reasoning/pricing':85,'reasoning/decline-floor':90,'reasoning/compositions':85,
+    'intake':25,'intake/router':30,'intake/cskg':40,'intake/wikidata':0,'intake/web':0,'intake/model':0,
+    'retrieval-harborer':45,'retrieval-harborer/pipeline':45,'retrieval-harborer/gate':70,
+    'verbalizer':40,
+    'surfaces':70,'surfaces/root-page':90,'surfaces/dashboard':85,'surfaces/chat':45,'surfaces/trace-view':60,
+    'unplaced':0
+  };
+  function stateOf(p){ return p<=0?'placeholder':(p>=100?'functional':'partial'); }
+  /* inspector id -> registry id, for the percent readout in select() */
+  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'knowledge/correspondence-graph',lexicon:'knowledge/lexicon',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',surfaces:'surfaces','unplaced-sys':'unplaced'};
+  /* ===== layout — mirrors ai-system/system-layout.ts =====
+     Placement (rects, for focus/zoom) and sibling ORDER live here, apart
+     from the registry: move a column or row by editing this object only.
+     Node order in the presentation is data, not fixed markup — the
+     renderer re-orders each container's items to match `order` below. */
+  var SYSTEM_LAYOUT={
+    rects:{
     system:{x:190,y:56,w:1250,h:1800}, lpu:{x:222,y:118,w:776,h:850}, parser:{x:252,y:196,w:470,h:468},
     awareness:{x:1030,y:118,w:378,h:510}, generator:{x:752,y:196,w:216,h:216},
     planner:{x:640,y:1284,w:330,h:64}, derivation:{x:240,y:1284,w:330,h:64},
@@ -694,8 +824,137 @@
     verbalizer:{x:1030,y:862,w:378,h:106}, knowledge:{x:222,y:984,w:1186,h:230}, reasoning:{x:222,y:1228,w:1186,h:230},
     surfaces:{x:222,y:1686,w:760,h:140}, 'unplaced-lpu':{x:252,y:712,w:716,h:168}, 'unplaced-sys':{x:998,y:1686,w:410,h:140},
     token:{x:264,y:262,w:218,h:118}, sense:{x:490,y:262,w:218,h:118}, valency:{x:264,y:388,w:218,h:118}, aspect:{x:490,y:388,w:218,h:118}
+    },
+    order:{
+      'knowledge':['knowledge/correspondence-graph','knowledge/classification','knowledge/lexicon','knowledge/banked'],
+      'reasoning':['reasoning/derivation','reasoning/planner','reasoning/pricing','reasoning/decline-floor','reasoning/compositions'],
+      'session-and-situation':['session-and-situation/states-and-origins','session-and-situation/events','session-and-situation/topics','session-and-situation/corrections'],
+      'intake':['intake/router','intake/sources','retrieval-harborer'],
+      'surfaces':['surfaces/chat','surfaces/root-page','surfaces/dashboard']
+    }
   };
+  var RECTS=SYSTEM_LAYOUT.rects;
   function focusId(id){ var r=RECTS[id]; if(r) fitRect(r,54); select(id,false); }
+
+  /* ===== completeness rendering — driven by SYSTEM_MAP + SYSTEM_LAYOUT ===== */
+  function makeBadge(p,label){
+    var b=document.createElement('span');
+    b.className='pct-badge state-'+stateOf(p);
+    b.textContent=(label?label+' ':'')+p+'%';
+    b.setAttribute('data-pct',p);
+    b.title=(label?label+' — ':'')+p+'% completed to goal · '+stateOf(p)+' · set by us — assessed by the project, not measured or computed';
+    return b;
+  }
+  function markNode(el,nodeId,mode){
+    if(!el || !(nodeId in SYSTEM_MAP)) return null;
+    var p=SYSTEM_MAP[nodeId];
+    el.classList.add('has-pct','state-'+stateOf(p));
+    el.setAttribute('data-node',nodeId); el.setAttribute('data-pct',p);
+    var badge=makeBadge(p);
+    if(mode==='titlebar'){
+      var head=el.querySelector('.bhead');
+      if(head){
+        var tag=head.querySelector('.btag');
+        if(tag){ var wrap=document.createElement('div'); wrap.className='head-right'; head.appendChild(wrap); wrap.appendChild(tag); wrap.appendChild(badge); }
+        else head.appendChild(badge);
+        return el;
+      }
+    }
+    badge.classList.add('abs'); el.appendChild(badge);
+    return el;
+  }
+  function markMulti(el,pairs){
+    if(!el) return;
+    var row=document.createElement('div'); row.className='pct-multi';
+    pairs.forEach(function(pr){ row.appendChild(makeBadge(SYSTEM_MAP[pr[0]],pr[1])); });
+    el.appendChild(row);
+  }
+  function boxEl(id){ return document.querySelector('.box[data-id="'+id+'"]'); }
+  function itemByName(scope,name){
+    if(!scope) return null;
+    var items=scope.querySelectorAll('.aw-item,.sec-item');
+    for(var i=0;i<items.length;i++){ var n=items[i].querySelector('.aw-name'); if(n && n.textContent.trim().toLowerCase().indexOf(name)===0) return items[i]; }
+    return null;
+  }
+  (function applyCompleteness(){
+    /* titled containers & units: badge at the upper right of the title bar */
+    [['system','system'],['awareness','awareness'],['session','session-and-situation'],['verbalizer','verbalizer'],
+     ['knowledge','knowledge'],['reasoning','reasoning'],['intake','intake'],['surfaces','surfaces'],
+     ['lpu','lpu'],['parser','lpu/parser'],['generator','lpu/generator'],
+     ['token','lpu/parser/token'],['sense','lpu/parser/sense'],['valency','lpu/parser/valency'],['aspect','lpu/parser/aspect-and-forms'],
+     ['unplaced-lpu','lpu/unplaced'],['unplaced-sys','unplaced']
+    ].forEach(function(pr){ markNode(boxEl(pr[0]),pr[1],'titlebar'); });
+    markNode(document.querySelector('.configreg[data-id="config"]'),'configuration','abs');
+    /* awareness branches (containers carry their own assessed percent) */
+    var aw=boxEl('awareness'), branches=aw?aw.querySelectorAll('.aw-branch'):[];
+    [['awareness/self'],['awareness/place-and-time'],['awareness/surroundings'],['awareness/current-activity']].forEach(function(pr,i){ markNode(branches[i],pr[0],'abs'); });
+    if(aw){
+      markNode(itemByName(aw,'identity'),'awareness/self/identity','abs');
+      markNode(itemByName(aw,'capabilities'),'awareness/self/capabilities','abs');
+      markNode(itemByName(aw,'current disposition'),'awareness/self/disposition','abs');
+      markNode(itemByName(aw,'own state'),'awareness/self/own-state','abs');
+      markNode(itemByName(aw,'season & daypart'),'awareness/place-and-time/season-daypart','abs');
+      markNode(itemByName(aw,'surface & channel'),'awareness/place-and-time/channel','abs');
+      markNode(itemByName(aw,'interlocutor standing'),'awareness/surroundings/interlocutor-standing','abs');
+      markNode(itemByName(aw,'standing topics'),'awareness/surroundings/standing-topics','abs');
+      markNode(itemByName(aw,'other presences'),'awareness/surroundings/other-presences','abs');
+      markNode(itemByName(aw,'situation statement'),'awareness/current-activity/situation-statement','abs');
+      markNode(itemByName(aw,'last act'),'awareness/current-activity/last-act','abs');
+      markNode(itemByName(aw,'open gaps'),'awareness/current-activity/open-gaps','abs');
+      markNode(aw.querySelector('.aw-item[data-id="composer"]'),'awareness/current-activity/composer','abs');
+    }
+    var sess=boxEl('session');
+    if(sess){
+      markNode(itemByName(sess,'states & origins'),'session-and-situation/states-and-origins','abs');
+      markNode(itemByName(sess,'events'),'session-and-situation/events','abs');
+      markNode(itemByName(sess,'topics'),'session-and-situation/topics','abs');
+      markNode(itemByName(sess,'corrections'),'session-and-situation/corrections','abs');
+    }
+    var kn=boxEl('knowledge');
+    if(kn){
+      markNode(kn.querySelector('.sec-item[data-id="correspondence"]'),'knowledge/correspondence-graph','abs');
+      markNode(itemByName(kn,'classification'),'knowledge/classification','abs');
+      markNode(kn.querySelector('.sec-item[data-id="lexicon"]'),'knowledge/lexicon','abs');
+      markNode(itemByName(kn,'banked stores'),'knowledge/banked','abs');
+    }
+    var rs=boxEl('reasoning');
+    if(rs){
+      markNode(rs.querySelector('.sec-item[data-id="derivation"]'),'reasoning/derivation','abs');
+      markNode(rs.querySelector('.sec-item[data-id="planner"]'),'reasoning/planner','abs');
+      markNode(itemByName(rs,'pricing'),'reasoning/pricing','abs');
+      markNode(rs.querySelector('.sec-item[data-id="gate"]'),'reasoning/decline-floor','abs');
+      markNode(rs.querySelector('.sec-item[data-id="tables"]'),'reasoning/compositions','abs');
+    }
+    var ink=boxEl('intake');
+    if(ink){
+      markNode(ink.querySelector('.sec-item[data-id="router"]'),'intake/router','abs');
+      var src=itemByName(ink,'cskg');
+      if(src){ src.setAttribute('data-node','intake/sources'); markMulti(src,[['intake/cskg','CSKG'],['intake/wikidata','Wikidata'],['intake/web','Web'],['intake/model','Model']]); }
+      var harb=ink.querySelector('.sec-item[data-id="harborer"]');
+      markNode(harb,'retrieval-harborer','abs');
+      if(harb) markMulti(harb,[['retrieval-harborer/pipeline','Pipeline'],['retrieval-harborer/gate','Gate']]);
+    }
+    var sf=boxEl('surfaces');
+    if(sf){
+      markNode(itemByName(sf,'reply'),'surfaces/chat','abs');
+      markNode(itemByName(sf,'this root page'),'surfaces/root-page','abs');
+      var dash=itemByName(sf,'dashboard');
+      if(dash){ dash.setAttribute('data-node','surfaces/dashboard'); markMulti(dash,[['surfaces/dashboard','Dashboard'],['surfaces/trace-view','Trace view']]); }
+    }
+    /* sibling order comes from SYSTEM_LAYOUT.order, not from markup order */
+    Object.keys(SYSTEM_LAYOUT.order).forEach(function(containerId){
+      var scope=document.querySelector('[data-node="'+containerId+'"] .sec-items');
+      if(!scope) return;
+      var wanted=SYSTEM_LAYOUT.order[containerId];
+      var items=Array.prototype.slice.call(scope.querySelectorAll('.sec-item'));
+      items.sort(function(a,b){
+        var ia=wanted.indexOf(a.getAttribute('data-node')), ib=wanted.indexOf(b.getAttribute('data-node'));
+        return (ia<0?99:ia)-(ib<0?99:ib);
+      });
+      items.forEach(function(it){ scope.appendChild(it); });
+    });
+    /* external sources (.srctab: Person, Clock) intentionally get no badge */
+  })();
 
   /* pan — a drag may start anywhere in the viewport, including on a box:
      the boxes cover nearly the whole map, so panning must not be limited
@@ -748,7 +1007,7 @@
 
   /* inspector */
   var INFO={
-    system:{name:'The System',path:'System · general-purpose',body:'The outermost bounding box and the new root page\u2019s whole subject. It is drawn <strong>configuration-neutral</strong>: a general-purpose system, not a chat system. What it is currently running is held in the <strong>Configuration register</strong> on its frame — <em>Configuration: Chat, first configuration</em>. Change the configuration and the same units serve a different purpose; the map does not change.',ports:['IN — input (per configuration)','OUT — output (per configuration)']},
+    system:{name:'The System',path:'System · general-purpose',body:'The outermost bounding box and the root page\u2019s whole subject. It is drawn <strong>configuration-neutral</strong>: a general-purpose system, not a chat system. What it is currently running is held in the <strong>Configuration register</strong> on its frame — <em>Configuration: Chat, first configuration</em>. Change the configuration and the same units serve a different purpose; the map does not change.',ports:['IN — input (per configuration)','OUT — output (per configuration)']},
     lpu:{name:'LPU — Language Processing Unit',path:'System ⊃ LPU',body:'The language machine inside the System. It <strong>contains</strong> the Parser and the Generator, plus one unplaced place for other aspect units. Derivation, the Planner and the Lexicon are <strong>not</strong> in here — they sit at System level (Reasoning, Knowledge) and reach the LPU by cord, the way the Verbalizer does.',ports:['IN — utterance + situation','OUT — reply meaning']},
     parser:{name:'Parser Unit',path:'System ⊃ LPU ⊃ Parser unit',body:'Sentence in, meaning graph out. The Parser has explicit <strong>IN and OUT ports</strong> and contains four submodules — Token, Sense, Valency, Aspect &amp; Forms. Its output is a meaning graph whose nodes sit at Wuxing addresses.',ports:['IN — token stream target','OUT — meaning graph']},
     token:{name:'Token',path:'System ⊃ LPU ⊃ Parser ⊃ Token',body:'First submodule of the Parser. Splits the raw string into tokens and normalises case and punctuation. <strong>Located gap:</strong> there is no token-level spelling recovery here yet — a mistyped word and an unparseable sentence currently fail in the same place, and this box is where that distinction belongs.',ports:['IN — raw string','OUT — tokens']},
@@ -761,7 +1020,7 @@
     awareness:{name:'Awareness Unit',path:'System ⊃ Awareness Unit',body:'At <strong>System level, beside the LPU</strong> — a container with four branches. <strong>Self:</strong> Identity (Table), Capabilities &amp; limits (Table), Current disposition (Register, copied from its Table at session open), Own state (Register). <strong>Place &amp; Time:</strong> Clock (Source, astride the edge), Season &amp; daypart (Register, classified against its Table), Surface &amp; channel (Register), Weather (Source feeding a Register). <strong>Surroundings:</strong> Interlocutor standing, Standing topics, Other presences (all Registers). <strong>Current Activity:</strong> Situation statement, Last act, Open gaps (Registers) — and the <strong>Composer</strong>, the one Unit inside: one writer, many readers. It represents that the system knows <strong>where it is, who it is, who and what is around it, and what is currently happening</strong>. It continuously holds a situation statement — currently: <em>“I am chatting to a person with unknown identity.”</em> The Planner and Verbalizer read it on every turn, including turns the LPU cannot answer from knowledge.',ports:['IN — session + arrivals','OUT — situation statement']},
     session:{name:'Session & Situation',path:'System ⊃ Session & Situation · REGISTERS',body:'A general record, usable by <strong>any configuration</strong> — sessions and situations are not chat notions. It holds what stands between turns: topics and their standing, what has been settled, who has spoken. Chat is its first use; under that configuration a first utterance finds it empty, and that emptiness is data for the Awareness Unit.',ports:['IN — turn record','OUT — standing']},
     verbalizer:{name:'Verbalizer',path:'System ⊃ Verbalizer · uses LPU',body:'A <strong>System-level</strong> element that <strong>uses the LPU</strong> — it neither contains it nor sits inside it. The uses cord runs from here to the Generator inside the LPU: containment is nesting, use is a cord. Turns a selected move into the sentence actually said — including moves whose content is the situation assessment itself. “What are you talking about?” from a stranger\u2019s context-free question is generated here, from the assessment, the same way a gap question is generated from a missing role.',ports:['IN — selected move','OUT — sentence']},
-    config:{name:'Configuration Register',path:'System frame ⊃ Configuration · REGISTER',body:'A <strong>Register</strong> mounted on the System frame, drawn with the segmented top strip. It holds which configuration the general-purpose system is running: currently <strong>Chat — the first configuration</strong>. Everything inside the frame — LPU, Awareness, Session &amp; Situation — is configuration-neutral machinery; the configuration is what aims it. The “Hello” trace runs under this configuration.',ports:['HOLDS — active configuration','READ BY — every unit']},
+    config:{name:'Configuration Register',path:'System frame ⊃ Configuration · REGISTER',body:'A <strong>Register</strong> mounted on the System frame, drawn with the segmented top strip. It holds which configuration the general-purpose system is running: currently <strong>Chat — the first configuration</strong>. Everything inside the frame — LPU, Awareness, Session &amp; Situation — is configuration-neutral machinery; the configuration is what aims it. The recorded chat turns run under this configuration.',ports:['HOLDS — active configuration','READ BY — every unit']},
     composer:{name:'Composer',path:'System ⊃ Awareness Unit ⊃ Current Activity ⊃ Composer · UNIT',body:'The <strong>one worker</strong> inside the Awareness Unit — a Unit, told by its chamfered output corner. Each turn it reads the other registers (self, place &amp; time, surroundings, activity) and <strong>writes the new situation statement</strong>. One writer, many readers: the Planner consults the situation register, but only the Composer may write it.',ports:['IN — all awareness registers','OUT — situation statement']},
     router:{name:'Intake Router',path:'System ⊃ Intake & Harboring ⊃ Intake Router · ROUTER',body:'A <strong>Router</strong> at the System edge: it governs <strong>intake</strong> — what may be asked for, and in what order. Local graph first, then <strong>CSKG → Wikidata → web → model</strong>, each tier only when the one before it cannot genuinely answer. What returns enters through the same point, to the Retrieval Harborer.',ports:['IN — knowledge need','OUT — routed answer + provenance']},
     gate:{name:'Decline Floor — Gate',path:'System ⊃ Reasoning ⊃ Gate (Derivation → Planner)',body:'A <strong>Gate</strong> standing astride the pathway cord between Derivation and Planner. It prices passage: support at or above the floor passes and may be asserted; below it, passage is refused and the turn is routed elsewhere — to a gap question, or to the situation. The harbor gate and the confidence band are gates of the same type.',ports:['IN — priced derivation','OUT — pass / refuse']},
@@ -775,9 +1034,13 @@
       inspBody=document.getElementById('inspBody'), inspPorts=document.getElementById('inspPorts');
   function select(id,focus){
     var info=INFO[id]; if(!info) return; selectedId=id;
+    if(typeof hideStopPop==='function') hideStopPop();
     document.querySelectorAll('.box,.sec-item[data-id]').forEach(function(b){ b.classList.toggle('selected', b.getAttribute('data-id')===id); });
     document.querySelectorAll('.crumb button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-focus')===id); });
-    inspName.textContent=info.name; inspPath.textContent=info.path; inspBody.innerHTML=info.body;
+    inspName.textContent=info.name; inspPath.textContent=info.path;
+    var nodeId=ID2NODE[id];
+    if(nodeId && (nodeId in SYSTEM_MAP)){ var p=SYSTEM_MAP[nodeId]; inspPath.textContent=info.path+'  ·  '+p+'% completed to goal — '+stateOf(p)+(p===0?' (placeholder)':'')+' · set by us'; }
+    inspBody.innerHTML=info.body;
     inspPorts.innerHTML=info.ports.map(function(p){return '<span>'+p+'</span>';}).join('');
     if(focus) { var r=RECTS[id]; if(r) fitRect(r,54); }
   }
@@ -791,34 +1054,115 @@
   });
   document.getElementById('inspFocus').addEventListener('click',function(){ focusId(selectedId); });
 
-  /* ---------- trace ---------- */
-  var STEPS=[
-    {at:[118,300], box:null, loc:'Outside the System — a person', text:'A person — <strong>identity unknown</strong> — says <code>“Hello.”</code> First utterance of the session. The circle starts here; every cord it will travel is already drawn.'},
-    {at:[213,300], box:'system', loc:'System · IN port', text:'The utterance crosses the System\u2019s <strong>IN</strong> port along a <strong>pathway cord</strong> — the double track. Everything from here is inside the outermost box.'},
-    {at:[1219,268], box:'awareness', loc:'Awareness Unit', text:'Before language work, the situation is read: <em>where</em> — this chat; <em>who</em> — AnSci; <em>around</em> — one person, unknown identity; <em>happening</em> — a first utterance. Held statement: <code>“I am chatting to a person with unknown identity.”</code> Awareness <em>consults</em> the Session record by connection cord — it does not contain it.'},
-    {at:[240,430], box:'lpu', loc:'LPU · IN port', text:'The utterance enters the <strong>Language Processing Unit</strong>, routed to the Parser first.'},
-    {at:[262,430], box:'parser', loc:'Parser Unit · IN port', text:'In through the Parser\u2019s <strong>IN</strong> port. Four submodules now handle it in sequence.'},
-    {at:[373,321], box:'token', loc:'Parser ⊃ Token', text:'Tokenised: one token, <code>hello</code> — case normalised, full stop stripped.'},
-    {at:[599,321], box:'sense', loc:'Parser ⊃ Sense', text:'Sense settles it as a <strong>social act — a greeting</strong>. The Lexicon it consults sits in Knowledge, reached by a <em>connection cord</em> running down the map — a resource, not a part of the Parser.'},
-    {at:[373,447], box:'valency', loc:'Parser ⊃ Valency', text:'A greeting takes <strong>no arguments</strong> — no required role is missing, so no gap question is owed.'},
-    {at:[599,447], box:'aspect', loc:'Parser ⊃ Aspect & Forms', text:'No tense, no aspect: a standalone formula. Recorded as such — no event is invented for it.'},
-    {at:[712,430], box:'parser', loc:'Parser Unit · OUT port', text:'Out through the Parser\u2019s <strong>OUT</strong> port as a meaning graph: <code>SPEECH-ACT(greeting)</code>, speaker = the unknown person.'},
-    {at:[1219,750], box:'session', loc:'Session & Situation', text:'The turn is recorded: states and origins, the event, topics, corrections. The pathway cord runs Parser \u2192 Session — and Awareness reads the record back by connection cord.'},
-    {at:[422,1360], box:'derivation', loc:'Reasoning ⊃ Derivation', text:'In <strong>Reasoning</strong>, at System level: nothing to derive — a greeting carries no claim about the world. Derivation consults the Correspondence graph by connection cord and returns that empty result, which meets the <strong>Decline floor Gate</strong> astride the pathway to the Planner.'},
-    {at:[792,1360], box:'planner', loc:'Reasoning ⊃ Planner', text:'The Planner reads the Awareness statement — unknown person, first contact, greeting received — and selects the move a person selects: <strong>acknowledge, and open</strong>.'},
-    {at:[860,303], box:'generator', loc:'Generator Unit', text:'Back up the pathway into the LPU: the selected move arrives at the <strong>Generator</strong> — the Parser\u2019s sibling — as a reply meaning graph.'},
-    {at:[1219,915], box:'verbalizer', loc:'Verbalizer · uses the LPU', text:'The <strong>Verbalizer</strong> takes the wording over. Note the cord labelled <em>uses</em>: the Verbalizer is a System-level element that <strong>uses</strong> the LPU — the Generator did the language work for it; it does not contain the LPU and is not inside it.'},
-    {at:[1427,430], box:'system', loc:'System · OUT port → reply', text:'The reply leaves the System\u2019s <strong>OUT</strong> port: <code>“Hello.”</code> Behind the circle, the pathway it travelled now stands filled — the taken path, distinct from every cord it did not take.'}
+  /* ---------- functional chat — RECORDED REAL TURNS ----------
+     This static preview cannot run the repo's code. Every turn below was
+     recorded by running the actual turn loop (processTurn) in the repo on
+     2026-11-16: the path is the ordered list of schematic node ids that
+     turn actually took, and the reply is the engine's exact reply.
+     The circle walks exactly that list; a decline or parse failure stops
+     the circle at the node where the code stopped, and the stop popover
+     appears at that node carrying the exact stop text. Anything not
+     recorded is NOT walked and NOT answered — the readout says so plainly.
+     Sessions (anger, soup) must be followed in order: a later turn said
+     first is treated as unrecorded. */
+  var NODE_POS={
+    'person':[118,300],
+    'lpu/parser/token':[373,321],'lpu/parser/sense':[599,321],'lpu/parser/valency':[373,447],'lpu/parser/aspect-and-forms':[599,447],
+    'lpu/parser':[712,430],
+    'session-and-situation':[1219,750],'awareness':[1219,268],
+    'reasoning/derivation':[422,1360],'reasoning/pricing':[1190,1316],'reasoning/planner':[792,1360],
+    'lpu/generator':[860,303],'verbalizer':[1219,915],
+    'knowledge/correspondence-graph':[375,1100]
+  };
+  var NODE_BOX={
+    'person':null,'lpu/parser/token':'token','lpu/parser/sense':'sense','lpu/parser/valency':'valency','lpu/parser/aspect-and-forms':'aspect',
+    'lpu/parser':'parser','session-and-situation':'session','awareness':'awareness',
+    'reasoning/derivation':'derivation','reasoning/pricing':null,'reasoning/planner':'planner',
+    'lpu/generator':'generator','verbalizer':'verbalizer','knowledge/correspondence-graph':'correspondence'
+  };
+  var NODE_INFO={
+    'person':{loc:'Outside the System — a person',text:'A person says the recorded utterance. The circle starts here, at the Person source.'},
+    'lpu/parser/token':{loc:'Parser ⊃ Token',text:'Tokenised and normalised — the recorded turn passes through Token.'},
+    'lpu/parser/sense':{loc:'Parser ⊃ Sense',text:'Sense settles which meaning of each word is meant; the Lexicon it consults sits in Knowledge, reached by connection cord.'},
+    'lpu/parser/valency':{loc:'Parser ⊃ Valency',text:'Argument structure checked — what each verb requires, and whether a required role is missing.'},
+    'lpu/parser/aspect-and-forms':{loc:'Parser ⊃ Aspect & Forms',text:'Tense, aspect and form bundles recorded for the turn.'},
+    'lpu/parser':{loc:'Parser Unit',text:'The meaning graph leaves the Parser and the turn moves on.'},
+    'session-and-situation':{loc:'Session & Situation',text:'The turn is recorded in the session record — states and origins, the event, topics.'},
+    'awareness':{loc:'Awareness Unit',text:'The situation statement is read for this turn — who is here, what is standing, what is happening.'},
+    'reasoning/derivation':{loc:'Reasoning ⊃ Derivation',text:'Derivation walks the Correspondence graph and prices what it finds.'},
+    'reasoning/pricing':{loc:'Reasoning ⊃ Pricing',text:'The priced result is checked against the fixed ceilings — passage to the Planner is priced here, at the decline floor.'},
+    'reasoning/planner':{loc:'Reasoning ⊃ Planner',text:'The Planner selects the next move from the priced results and the situation statement.'},
+    'lpu/generator':{loc:'Generator Unit',text:'The selected move arrives at the Generator as a reply meaning graph and becomes surface wording.'},
+    'verbalizer':{loc:'Verbalizer · uses the LPU',text:'The Verbalizer says the recorded reply — it appears in the conversation readout.'},
+    'knowledge/correspondence-graph':{loc:'Knowledge ⊃ Correspondence graph',text:'Derivation consults the Correspondence graph — and finds nothing it can use.'}
+  };
+  var PARSE_PATH=['person','lpu/parser/token','lpu/parser/sense','lpu/parser/valency','lpu/parser/aspect-and-forms','lpu/parser'];
+  var RECORDED=[
+    {say:'Hello.',path:PARSE_PATH.concat(['session-and-situation','verbalizer']),reply:'Noted. What happened next?',session:null,idx:0},
+    {say:'I heard the news.',path:PARSE_PATH.concat(['session-and-situation','verbalizer']),reply:'You heard the news. What was in it?',session:'anger',idx:0},
+    {say:'I was furious.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were furious when you heard the news. What did you say when you heard the news?',session:'anger',idx:1},
+    {say:'I shouted at him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You shouted at him. Now that it\u2019s out — what would help you settle?',session:'anger',idx:2},
+    {say:'Is winter cold?',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','reasoning/planner','lpu/generator','verbalizer']),reply:'Winter is most fully cold, and it is most fully dark.',session:null,idx:0},
+    {say:'Is the table cold?',path:PARSE_PATH.concat(['session-and-situation','reasoning/derivation','knowledge/correspondence-graph']),reply:'I can\u2019t answer that from what I know: I have nothing on table in my notes.',session:null,idx:0,stop:'decline'},
+    {say:'What was put in the soup?',path:PARSE_PATH.concat(['session-and-situation']),reply:'I can\u2019t answer that from what I know: nothing you have told me says what the agent of \u2018put\u2019 was.',session:null,idx:0,stop:'decline'},
+    {say:'I gave him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'You gave. What did you give him?',session:null,idx:0},
+    {say:'Blorp zizzle frak.',path:['person','lpu/parser'],reply:'I couldn\u2019t take that sentence apart — could you put it another way?',session:null,idx:0,stop:'parse'},
+    {say:'The soup is hot.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were hot. What did you say or do?',session:'soup',idx:0},
+    {say:'Is the soup hot?',path:PARSE_PATH.concat(['session-and-situation','reasoning/planner','lpu/generator','verbalizer']),reply:'The soup is hot.',session:'soup',idx:1}
   ];
+  var SESSION_LEN={anger:3,soup:2};
+  var SESSION_NAME={anger:'Anger session',soup:'Soup session'};
+  var sessionProgress={anger:0,soup:0};
+  /* LIVE mode: set when a sibling engine.js defines window.AnSciLive
+     (see the loader at the end of the chat section). Recorded mode is
+     the default and is unchanged when no engine is present. */
+  var LIVE=false;
+  var builtOnly=false;
+  function isBoxVisible(boxId){
+    if(!boxId) return true;
+    var nid=ID2NODE[boxId];
+    if(!nid || !(nid in SYSTEM_MAP)) return true;
+    return SYSTEM_MAP[nid]>0;
+  }
+  function nodeVisible(nid){
+    if(!(nid in SYSTEM_MAP)) return true;
+    return SYSTEM_MAP[nid]>0;
+  }
+  function normSay(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[.?!]+$/,''); }
+  function findRecorded(raw){
+    var n=normSay(raw), match=null;
+    for(var i=0;i<RECORDED.length;i++){ if(normSay(RECORDED[i].say)===n){ match=RECORDED[i]; break; } }
+    if(!match) return {status:'unrecorded'};
+    if(!match.session) return {status:'ok',turn:match};
+    var prog=sessionProgress[match.session];
+    if(match.idx===prog) return {status:'ok',turn:match};
+    if(match.idx===0 && prog>=SESSION_LEN[match.session]){ sessionProgress[match.session]=0; return {status:'ok',turn:match}; }
+    return {status:'order',turn:match,expected:prog};
+  }
   var logEl=document.getElementById('stepLog'), nowEl=document.getElementById('nowStep');
-  STEPS.forEach(function(s,i){
-    var li=document.createElement('li');
-    li.innerHTML='<span class="n">'+(i+1)+'</span><span><span class="sl2">'+s.loc+'</span>'+s.text+'</span>';
-    logEl.appendChild(li);
-  });
-  var packet=document.getElementById('packet'), tracePath=document.getElementById('tracePath');
+  var packet=document.getElementById('packet'), packetLabel=document.getElementById('packetLabel'), tracePath=document.getElementById('tracePath');
+  var helloBubble=document.getElementById('helloBubble');
   var replyBubble=document.getElementById('replyBubble'), replyNote=document.getElementById('replyNote');
-  var cur=-1, playing=false, raf=null, segStart=0;
+  var convoLog=document.getElementById('convoLog'), chatForm=document.getElementById('chatForm'),
+      chatInput=document.getElementById('chatInput'), sayBtn=document.getElementById('sayBtn'),
+      chipGroups=document.getElementById('chipGroups'), sessionHint=document.getElementById('sessionHint');
+  var newConvoBtn=document.getElementById('newConvoBtn');
+  var stopPop=document.getElementById('stopPop'), stopPopLoc=document.getElementById('stopPopLoc'), stopPopBody=document.getElementById('stopPopBody');
+  function hideStopPop(){ if(stopPop) stopPop.hidden=true; }
+  function showStopPop(step,turn){
+    if(!stopPop) return;
+    stopPopLoc.textContent=turn.live?('Walk stopped · '+step.loc):((turn.stop==='parse'?'Walk stopped — parse failure · ':'Walk stopped — decline · ')+step.loc);
+    stopPopBody.textContent=turn.popText||turn.reply;
+    var x=step.at[0]+20, y=step.at[1]+20;
+    if(x+252>1620) x=step.at[0]-272;
+    if(y+170>1900) y=step.at[1]-180;
+    stopPop.style.left=Math.max(8,x)+'px'; stopPop.style.top=Math.max(8,y)+'px';
+    stopPop.hidden=false;
+  }
+  if(stopPop) document.getElementById('stopPopClose').addEventListener('click',function(e){ e.stopPropagation(); hideStopPop(); });
+  document.addEventListener('click',function(e){
+    if(stopPop && !stopPop.hidden && !stopPop.contains(e.target)) hideStopPop();
+  });
   function lightBox(id){
     document.querySelectorAll('.box.lit,.gatewrap.lit,.srctab.lit,.configreg.lit,.sec-item.lit').forEach(function(b){b.classList.remove('lit');});
     document.querySelectorAll('.port.lit').forEach(function(p){p.classList.remove('lit');});
@@ -829,33 +1173,124 @@
       b.querySelectorAll('.port').forEach(function(p){p.classList.add('lit');});
     });
   }
+  /* ----- conversation readout ----- */
+  function convoTurnEl(utter){
+    var empty=convoLog.querySelector('.convo-empty'); if(empty) empty.remove();
+    var wrap=document.createElement('div'); wrap.className='convo-turn';
+    var you=document.createElement('div'); you.className='convo-you';
+    you.innerHTML='<span class="who-l">A person says</span>';
+    you.appendChild(document.createTextNode('\u201C'+utter+'\u201D'));
+    var sys=document.createElement('div'); sys.className='convo-sys pending';
+    sys.innerHTML='<span class="who-l">System</span>'+(LIVE?'— walking the live path… —':'— walking the recorded path… —');
+    wrap.appendChild(you); wrap.appendChild(sys); convoLog.appendChild(wrap);
+    convoLog.scrollTop=convoLog.scrollHeight;
+    return sys;
+  }
+  function setSysReply(sysEl,turn){
+    sysEl.classList.remove('pending');
+    sysEl.innerHTML='<span class="who-l">System'+(turn.stop?' · '+(turn.stop==='parse'?'parse failure':(turn.live?'stopped':'declined'))+'':'')+'</span>';
+    sysEl.appendChild(document.createTextNode('\u201C'+turn.reply+'\u201D'));
+    convoLog.scrollTop=convoLog.scrollHeight;
+  }
+  function setSysNotice(sysEl,text){
+    sysEl.classList.remove('pending'); sysEl.classList.add('notice');
+    sysEl.innerHTML='<span class="who-l">System</span>';
+    sysEl.appendChild(document.createTextNode(text));
+    convoLog.scrollTop=convoLog.scrollHeight;
+  }
+  /* ----- example chips + session hint ----- */
+  var CHIP_GROUPS=[
+    {label:'Recorded turns',says:['Hello.','Is winter cold?','Is the table cold?','What was put in the soup?','I gave him.','Blorp zizzle frak.']},
+    {label:'Anger session — say in order',session:'anger'},
+    {label:'Soup session — say in order',session:'soup'}
+  ];
+  function turnBySay(s){ for(var i=0;i<RECORDED.length;i++) if(RECORDED[i].say===s) return RECORDED[i]; return null; }
+  function refreshChips(){
+    chipGroups.innerHTML='';
+    CHIP_GROUPS.forEach(function(g){
+      var wrap=document.createElement('div'); wrap.className='chip-group';
+      var lbl=document.createElement('span'); lbl.className='cg-lbl'; lbl.textContent=g.label; wrap.appendChild(lbl);
+      var row=document.createElement('div'); row.className='chips';
+      var says=g.says?g.says.slice():RECORDED.filter(function(t){return t.session===g.session;}).sort(function(a,b){return a.idx-b.idx;}).map(function(t){return t.say;});
+      says.forEach(function(s){
+        var t=turnBySay(s); if(!t) return;
+        var b=document.createElement('button'); b.type='button'; b.className='chip'; b.disabled=walking;
+        b.textContent=(t.session?(t.idx+1)+'. ':'')+s;
+        if(t.session && !LIVE){
+          var prog=sessionProgress[t.session];
+          if(t.idx<prog) b.classList.add('done');
+          if(t.idx===prog || (t.idx===0 && prog>=SESSION_LEN[t.session])) b.classList.add('next');
+        }
+        b.addEventListener('click',function(){ chatInput.value=s; say(s); });
+        row.appendChild(b);
+      });
+      wrap.appendChild(row); chipGroups.appendChild(wrap);
+    });
+    var parts=[];
+    ['anger','soup'].forEach(function(sk){
+      var prog=sessionProgress[sk], len=SESSION_LEN[sk];
+      if(prog>=len) parts.push('<strong>'+SESSION_NAME[sk]+':</strong> complete — say turn 1 to run it again');
+      else { var nx=RECORDED.filter(function(t){return t.session===sk && t.idx===prog;})[0]; parts.push('<strong>'+SESSION_NAME[sk]+':</strong> next is turn '+(prog+1)+' of '+len+' — \u201C'+nx.say+'\u201D'); }
+    });
+    if(LIVE){ sessionHint.innerHTML='Live mode — the engine holds the real session, so session turns said in order are remembered naturally; anything you type is answered live.'; return; }
+    sessionHint.innerHTML='Sessions run in order; a later turn said first counts as unrecorded. '+parts.join(' · ');
+  }
+  /* ----- the walk ----- */
+  var walking=false, walkSteps=[], cur=-1, raf=null, segTimer=null, currentTurn=null, pendingSys=null;
+  function buildWalkSteps(turn){
+    var ids=turn.path.slice();
+    ids=ids.filter(function(nid){ return !!NODE_POS[nid]; });
+    if(builtOnly) ids=ids.filter(function(nid){ return nid==='person' || nodeVisible(nid); });
+    return ids.map(function(nid,i){
+      var at=NODE_POS[nid].slice();
+      if(nid==='lpu/parser' && turn.stop==='parse') at=[487,430];
+      var info=NODE_INFO[nid]||{loc:nid,text:''};
+      return {nid:nid,at:at,box:NODE_BOX[nid],loc:info.loc,text:info.text,last:(i===ids.length-1)};
+    });
+  }
+  function buildLog(){
+    logEl.innerHTML='';
+    walkSteps.forEach(function(s,i){
+      var li=document.createElement('li');
+      var txt=s.text;
+      if(s.last && currentTurn){
+        if(currentTurn.live){
+          txt=currentTurn.stop?('The walk <strong>stops here</strong> — the engine\u2019s stop message: <code>\u201C'+(currentTurn.popText||currentTurn.reply)+'\u201D</code>'):('The live reply is said: <code>\u201C'+currentTurn.reply+'\u201D</code>');
+        } else {
+          txt=currentTurn.stop?('The walk <strong>stops here</strong> — the recorded '+(currentTurn.stop==='parse'?'error':'decline')+': <code>\u201C'+currentTurn.reply+'\u201D</code>'):('The recorded reply is said: <code>\u201C'+currentTurn.reply+'\u201D</code>');
+        }
+      }
+      li.innerHTML='<span class="n">'+(i+1)+'</span><span><span class="sl2">'+s.loc+'</span>'+txt+'</span>';
+      logEl.appendChild(li);
+    });
+  }
+  function drawTakenPath(upto){
+    var d='';
+    for(var i=0;i<=upto && i<walkSteps.length;i++){ d+=(i===0?'M ':' L ')+walkSteps[i].at[0]+' '+walkSteps[i].at[1]; }
+    tracePath.setAttribute('d',d);
+    tracePath.classList.toggle('lit',upto>=0);
+  }
   function showStep(i){
-    cur=i; var s=STEPS[i];
+    cur=i; var s=walkSteps[i]; if(!s) return;
     packet.classList.add('show');
     packet.style.left=s.at[0]+'px'; packet.style.top=s.at[1]+'px';
-    tracePath.classList.add('lit');
+    drawTakenPath(i);
     lightBox(s.box); if(s.box) select(s.box,false);
-    nowEl.innerHTML='<div class="ns-loc">Step '+(i+1)+' / '+STEPS.length+' — '+s.loc+'</div><div class="ns-text">'+s.text+'</div>';
+    var txt=s.text;
+    if(s.last && currentTurn){
+      txt=currentTurn.stop?('The walk <strong>stops here</strong>. The stop message is shown on the map, at this node, and in the readout below.'):(s.text+' <code>\u201C'+currentTurn.reply+'\u201D</code>');
+    }
+    nowEl.innerHTML='<div class="ns-loc">Step '+(i+1)+' / '+walkSteps.length+(builtOnly?' · Built only — visible nodes only':'')+' — '+s.loc+'</div><div class="ns-text">'+txt+'</div>';
     Array.prototype.forEach.call(logEl.children,function(li,j){
       li.classList.toggle('done',j<i); li.classList.toggle('now',j===i);
       if(j===i) li.scrollIntoView({block:'nearest'});
     });
-    if(i===STEPS.length-1){ replyBubble.style.opacity='1'; replyNote.textContent='— generated · situation-derived —'; }
-  }
-  function resetTrace(){
-    playing=false; if(raf) cancelAnimationFrame(raf);
-    cur=-1; packet.classList.remove('show'); tracePath.classList.remove('lit'); lightBox(null);
-    replyBubble.style.opacity='.28'; replyNote.textContent='— not yet generated —';
-    nowEl.innerHTML='<div class="ns-loc">Ready</div><div class="ns-text">Press <strong>Play trace</strong>. The packet is the utterance itself — follow it from the person\u2019s mouth, through the Awareness Unit and every LPU unit, to the reply leaving the System\u2019s OUT port.</div>';
-    Array.prototype.forEach.call(logEl.children,function(li){ li.classList.remove('done','now'); });
-    setPlayLabels();
   }
   function animateTo(i,done){
-    var from = cur<0 ? STEPS[0].at : STEPS[cur].at, to=STEPS[i].at, t0=null;
+    var from=walkSteps[cur].at, to=walkSteps[i].at, t0=null;
     var dur=Math.max(420, Math.hypot(to[0]-from[0],to[1]-from[1])*1.15);
-    packet.classList.add('show');
     function frame(ts){
-      if(!playing && !frame.stepMode){ return; }
+      if(!walking) return;
       if(!t0) t0=ts;
       var p=Math.min(1,(ts-t0)/dur), e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
       packet.style.left=(from[0]+(to[0]-from[0])*e)+'px';
@@ -864,37 +1299,215 @@
     }
     raf=requestAnimationFrame(frame);
   }
-  function playNext(){
-    if(!playing) return;
-    if(cur>=STEPS.length-1){ playing=false; setPlayLabels(); return; }
-    animateTo(cur+1,function(){ if(playing) segStart=setTimeout(playNext,1350); });
+  function walkNext(){
+    if(!walking) return;
+    if(cur>=walkSteps.length-1){ finishWalk(); return; }
+    animateTo(cur+1,function(){ if(walking) segTimer=setTimeout(walkNext,1050); });
   }
-  function setPlayLabels(){
-    var t=playing?'❚❚ Pause trace':'▶ Play trace';
-    document.getElementById('playBtn').textContent=playing?'❚❚ Pause':'▶ Trace “Hello”';
-    document.getElementById('playBtn2').textContent=t;
+  function setFormEnabled(on){
+    chatInput.disabled=!on; sayBtn.disabled=!on;
+    chipGroups.querySelectorAll('.chip').forEach(function(c){ c.disabled=!on; });
   }
-  function togglePlay(){
-    if(playing){ playing=false; if(raf)cancelAnimationFrame(raf); clearTimeout(segStart); setPlayLabels(); return; }
-    if(cur>=STEPS.length-1) resetTrace();
-    playing=true; setPlayLabels(); playNext();
+  function finishWalk(){
+    walking=false; setFormEnabled(true);
+    var turn=currentTurn, lastStep=walkSteps[walkSteps.length-1];
+    if(pendingSys) setSysReply(pendingSys,turn);
+    pendingSys=null;
+    if(turn.session) sessionProgress[turn.session]=turn.idx+1;
+    if(turn.stop && turn.live){
+      replyBubble.style.opacity='1'; replyBubble.textContent='\u201C'+turn.reply+'\u201D';
+      replyNote.textContent='— walk stopped at '+lastStep.loc+' —';
+      showStopPop(lastStep,turn);
+    } else if(turn.stop){
+      replyBubble.style.opacity='.28'; replyBubble.textContent='…';
+      replyNote.textContent='— walk stopped at '+lastStep.loc+' —';
+      showStopPop(lastStep,turn);
+    } else {
+      replyBubble.style.opacity='1'; replyBubble.textContent='\u201C'+turn.reply+'\u201D';
+      replyNote.textContent=turn.live?'— live reply —':'— recorded reply —';
+    }
+    refreshChips();
   }
-  function stepOnce(){
-    playing=false; setPlayLabels();
-    if(cur>=STEPS.length-1) resetTrace();
-    var target=cur+1;
-    /* step mode: jump-animate quickly */
-    var from = cur<0 ? STEPS[0].at : STEPS[cur].at, to=STEPS[target].at, t0=null;
-    packet.classList.add('show');
-    (function frame(ts){
-      if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/450), e=1-Math.pow(1-p,3);
-      packet.style.left=(from[0]+(to[0]-from[0])*e)+'px'; packet.style.top=(from[1]+(to[1]-from[1])*e)+'px';
-      if(p<1) requestAnimationFrame(frame); else showStep(target);
-    })(performance.now());
+  function cancelWalk(notice){
+    if(raf) cancelAnimationFrame(raf);
+    clearTimeout(segTimer);
+    if(walking && pendingSys) setSysNotice(pendingSys,notice);
+    walking=false; pendingSys=null; currentTurn=null;
+    setFormEnabled(true);
   }
-  ['playBtn','playBtn2'].forEach(function(id){document.getElementById(id).addEventListener('click',togglePlay);});
-  ['stepBtn','stepBtn2'].forEach(function(id){document.getElementById(id).addEventListener('click',stepOnce);});
-  ['resetBtn','resetBtn2'].forEach(function(id){document.getElementById(id).addEventListener('click',resetTrace);});
+  /* ----- live say — the engine answers, the page walks its path ----- */
+  function liveSay(utter){
+    hideStopPop();
+    helloBubble.textContent='\u201C'+utter+'\u201D';
+    var sys=convoTurnEl(utter);
+    var result;
+    try{ result=window.AnSciLive.say(utter); }
+    catch(err){ setSysNotice(sys,'The live engine could not answer that — it raised an error, so nothing was walked.'); return; }
+    function begin(res){
+      if(!res || typeof res.reply!=='string' || !Array.isArray(res.path)){
+        setSysNotice(sys,'The live engine returned nothing walkable for that, so nothing was walked.');
+        return;
+      }
+      var turn={say:utter,path:res.path.slice(),reply:res.reply,session:null,idx:0,live:true,
+                stop:res.stopped?'live':null,popText:(typeof res.stopText==='string'?res.stopText:null)};
+      currentTurn=turn;
+      pendingSys=sys;
+      packetLabel.textContent='\u201C'+utter+'\u201D';
+      replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— walking… —';
+      walkSteps=buildWalkSteps(turn);
+      if(!walkSteps.length){
+        currentTurn=null; pendingSys=null;
+        setSysReply(sys,turn);
+        replyBubble.style.opacity='1'; replyBubble.textContent='\u201C'+turn.reply+'\u201D'; replyNote.textContent='— live reply —';
+        return;
+      }
+      buildLog();
+      walking=true; setFormEnabled(false);
+      cur=-1; showStep(0);
+      segTimer=setTimeout(walkNext,1050);
+    }
+    if(result && typeof result.then==='function'){
+      result.then(begin,function(){ setSysNotice(sys,'The live engine could not answer that, so nothing was walked.'); });
+    } else begin(result);
+  }
+  function say(raw){
+    if(walking) return;
+    var utter=String(raw||'').trim();
+    if(!utter) return;
+    if(LIVE){ liveSay(utter); return; }
+    hideStopPop();
+    helloBubble.textContent='\u201C'+utter+'\u201D';
+    var found=findRecorded(utter);
+    if(found.status!=='ok'){
+      var sys=convoTurnEl(utter);
+      var msg='Not a recorded turn. This preview walks recorded turns from the real engine, so nothing was walked and no reply was made up. The live root page runs every sentence through the code itself.';
+      if(found.status==='order'){
+        msg='\u201C'+found.turn.say+'\u201D is turn '+(found.turn.idx+1)+' of the '+SESSION_NAME[found.turn.session]+', and sessions run in order — turn '+(found.expected+1)+' comes first. Said out of order it counts as unrecorded: '+msg;
+      }
+      setSysNotice(sys,msg);
+      packet.classList.remove('show'); tracePath.classList.remove('lit'); lightBox(null);
+      nowEl.innerHTML='<div class="ns-loc">Not recorded</div><div class="ns-text">'+msg+'</div>';
+      logEl.innerHTML='';
+      return;
+    }
+    var turn=found.turn;
+    currentTurn=turn;
+    pendingSys=convoTurnEl(turn.say);
+    packetLabel.textContent='\u201C'+turn.say+'\u201D';
+    replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— walking… —';
+    walkSteps=buildWalkSteps(turn);
+    buildLog();
+    walking=true; setFormEnabled(false);
+    cur=-1; showStep(0);
+    segTimer=setTimeout(walkNext,1050);
+  }
+  if(chatForm) chatForm.addEventListener('submit',function(e){ e.preventDefault(); say(chatInput.value); chatInput.value=''; });
+  function resetConversation(){
+    cancelWalk('Walk cleared by reset.');
+    if(LIVE && window.AnSciLive){ try{ window.AnSciLive.reset(); }catch(e){} }
+    sessionProgress={anger:0,soup:0};
+    hideStopPop();
+    packet.classList.remove('show'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
+    helloBubble.textContent='…';
+    replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— no reply yet —';
+    convoLog.innerHTML='<div class="convo-empty">'+(LIVE?'Nothing said yet. Type a sentence above, or tap an example chip — the circle on the map walks the path your sentence actually takes through the code, and the reply appears when the walk ends.':'Nothing said yet. Type a recorded sentence above, or tap an example chip — the circle on the map walks the path that turn actually took through the code, and the recorded reply appears when the walk ends.')+'</div>';
+    logEl.innerHTML='';
+    nowEl.innerHTML='<div class="ns-loc">Ready</div><div class="ns-text">'+(LIVE?'Say something. The packet is the utterance itself — follow it from the person, through each node the code actually visits, to where that turn stops. A stop leaves the circle at the node where the code stopped.':'Say something recorded. The packet is the utterance itself — follow it from the person, through each node the turn loop actually visited, to where that turn stopped. A decline stops the circle at the node where the code stopped.')+'</div>';
+    refreshChips();
+  }
+  ['resetBtn','resetBtn2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('click',resetConversation); });
+  /* "New conversation" — live mode only (hidden in recorded mode).
+     resetConversation() calls AnSciLive.reset() when live and clears
+     the readout, the taken path and the map lighting. */
+  if(newConvoBtn) newConvoBtn.addEventListener('click',resetConversation);
+  refreshChips();
+
+  /* ===== live mode — optional sibling engine.js =====
+     On load the page tries to load "engine.js" from beside itself
+     (relative URL, async). Failure is silent: no engine, no live mode,
+     the recorded preview runs exactly as before. When the script loads
+     and defines window.AnSciLive with say(text) and reset(), the page
+     switches to live mode: every sentence goes to the engine, the
+     returned path is walked with the same machinery, the caption
+     changes, and the New conversation control appears. */
+  function enableLive(){
+    if(LIVE) return;
+    LIVE=true;
+    var cap=document.getElementById('chatCaption');
+    if(cap) cap.textContent='Live — every sentence runs through the code itself.';
+    if(newConvoBtn) newConvoBtn.hidden=false;
+    var empty=convoLog.querySelector('.convo-empty');
+    if(empty) empty.textContent='Nothing said yet. Type a sentence above, or tap an example chip — the circle on the map walks the path your sentence actually takes through the code, and the reply appears when the walk ends.';
+    refreshChips();
+  }
+  (function loadEngine(){
+    var s=document.createElement('script');
+    s.src='engine.js'; s.async=true;
+    s.onload=function(){
+      if(window.AnSciLive && typeof window.AnSciLive.say==='function' && typeof window.AnSciLive.reset==='function') enableLive();
+    };
+    s.onerror=function(){ /* silent — recorded mode continues */ };
+    (document.head||document.documentElement).appendChild(s);
+  })();
+
+  /* ===== Plan / Built only view =====
+     Plan (default): the whole map, placeholders included.
+     Built only: placeholder nodes (0% completed to goal) are hidden entirely;
+     a container whose visible children are all hidden disappears too;
+     cords touching a hidden node are hidden; partial (1–99%) and
+     functional (100%) nodes remain. The trace walks only visible nodes. */
+  var viewPlanBtn=document.getElementById('viewPlanBtn'), viewBuiltBtn=document.getElementById('viewBuiltBtn'), viewNote=document.getElementById('viewNote');
+  function applyView(mode){
+    builtOnly=(mode==='built');
+    document.body.classList.toggle('built-only',builtOnly);
+    if(viewPlanBtn){ viewPlanBtn.classList.toggle('on',!builtOnly); viewPlanBtn.setAttribute('aria-pressed',String(!builtOnly)); }
+    if(viewBuiltBtn){ viewBuiltBtn.classList.toggle('on',builtOnly); viewBuiltBtn.setAttribute('aria-pressed',String(builtOnly)); }
+    if(viewNote) viewNote.textContent=builtOnly?'Built only — what is actually built: placeholders (0%) hidden.':'Plan view — everything drawn, placeholders included.';
+    /* 1 — hide every 0% node (badges inside multi-badge items hide individually) */
+    document.querySelectorAll('.pct-badge[data-pct="0"]').forEach(function(b){ b.classList.toggle('built-hidden',builtOnly); });
+    document.querySelectorAll('[data-pct="0"]').forEach(function(el){ if(!el.classList.contains('pct-badge')) el.classList.toggle('built-hidden',builtOnly); });
+    document.querySelectorAll('.box.placeholder').forEach(function(el){ el.classList.toggle('built-hidden',builtOnly); });
+    /* 2 — containers whose children are all hidden disappear too */
+    document.querySelectorAll('.aw-branch').forEach(function(branch){
+      var items=branch.querySelectorAll('.aw-item');
+      if(!items.length) return;
+      var allHidden=Array.prototype.every.call(items,function(it){ return it.classList.contains('built-hidden'); });
+      branch.classList.toggle('built-hidden',builtOnly && allHidden);
+    });
+    document.querySelectorAll('.box.sec').forEach(function(box){
+      var items=box.querySelectorAll('.sec-item');
+      if(!items.length) return;
+      var allHidden=Array.prototype.every.call(items,function(it){ return it.classList.contains('built-hidden'); });
+      box.classList.toggle('built-hidden',builtOnly && allHidden);
+    });
+    (function(){
+      var lpu=boxEl('lpu'); if(!lpu) return;
+      var kids=[boxEl('parser'),boxEl('generator'),boxEl('unplaced-lpu')].filter(Boolean);
+      var allHidden=kids.length && kids.every(function(k){ return k.classList.contains('built-hidden'); });
+      lpu.classList.toggle('built-hidden',builtOnly && !!allHidden);
+      var aw=boxEl('awareness'); if(!aw) return;
+      var branches=aw.querySelectorAll('.aw-branch');
+      var allBr=branches.length && Array.prototype.every.call(branches,function(b){ return b.classList.contains('built-hidden'); });
+      aw.classList.toggle('built-hidden',builtOnly && !!allBr);
+    })();
+    /* 3 — cords touching a hidden node are hidden */
+    document.querySelectorAll('[data-endpoints]').forEach(function(el){
+      if(!builtOnly){ el.classList.remove('cord-hidden'); return; }
+      var eps=el.getAttribute('data-endpoints').split(',');
+      var touchesHidden=eps.some(function(ep){ return !isBoxVisible(ep.trim()); });
+      el.classList.toggle('cord-hidden',touchesHidden);
+    });
+    /* 4 — a chat walk in progress is cancelled; recorded paths are
+       re-filtered against visible nodes on the next Say */
+    hideStopPop();
+    cancelWalk('Walk interrupted — the view changed. Say it again to walk it in this view.');
+    packet.classList.remove('show'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
+    logEl.innerHTML='';
+    /* if the inspected node is now hidden, fall back to the System */
+    if(builtOnly && !isBoxVisible(selectedId)) select('system',false);
+  }
+  if(viewPlanBtn) viewPlanBtn.addEventListener('click',function(){ applyView('plan'); });
+  if(viewBuiltBtn) viewBuiltBtn.addEventListener('click',function(){ applyView('built'); });
 
   window.addEventListener('resize',function(){ /* keep transform; user can refit */ });
   fitSystem(); select('system',false); apply();

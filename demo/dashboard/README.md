@@ -10,10 +10,19 @@ failures, two of which demonstrate themselves live.
 ## Site layout
 
 The site root (`/`) is the zoomable schematic root page — a map of the
-whole system with the "Hello" trace. Its source is `root/index.html`
-(a self-contained page, no build step); the build copies it to
-`dist/index.html`. This dashboard app builds into `dist/dashboard/`
-and is served at `/dashboard/`.
+whole system whose "A Person Says" box is a working chat. Its source
+is `root/index.html` (a self-contained page, no build step); the build
+copies it to `dist/index.html`. This dashboard app builds into
+`dist/dashboard/` and is served at `/dashboard/`.
+
+The root page runs in two modes from one source. The build also emits
+`dist/engine.js` (from `src/engine-entry.ts`, via
+`vite.engine.config.ts`): the real fork turn loop as a single script.
+Served from this build, the page finds it and runs LIVE — every
+sentence goes through the code, and the walk drawn on the map is the
+turn trace's own mapPath. Where the script is absent (the Muse
+artifact preview), the same page walks recorded turns from the real
+engine instead, and says so.
 
 Sync loop: the schematic is revised in its Muse artifact first
 (fast iteration), then the new revision replaces `root/index.html`,
