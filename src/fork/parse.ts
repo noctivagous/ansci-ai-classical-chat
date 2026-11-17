@@ -45,6 +45,7 @@ import {
   type LexEntry,
 } from "./sentence";
 import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { resolveTokenList, type TokenClass } from "./token-resolve";
 import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
 import { zhAspectFor, zhPreverbalAspectFor } from "./aspect";
@@ -429,6 +430,79 @@ function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode
 
 function parseEn(text: string): ParsedSentence {
   const { tokens, interrogative } = enTokenize(text);
+  // Token resolution (token-resolve.ts): words the parser does not
+  // recognise are resolved — variant graph, ported SymSpell matcher,
+  // segmentation — before item classification, and every resolution
+  // is recorded on the sentence. The recognition test is enItems'
+  // own classification, reused: function words, the hand lexicon,
+  // and WordNet-derivable nouns/adjectives need no help.
+  const recognize = (lower: string): TokenClass => {
+    if (
+      lower === "," ||
+      EN_WH.has(lower) ||
+      lower === "why" ||
+      EN_MODAL.has(lower) ||
+      EN_DET.has(lower) ||
+      EN_PREP.has(lower) ||
+      lower in EN_BE ||
+      EN_AUX.has(lower) ||
+      lower === "n't" ||
+      lower === "not"
+    ) {
+      return "function";
+    }
+    if (
+      EN_LEXICON[lower] !== undefined ||
+      wordnetNoun(lower) !== undefined ||
+      wordnetAdjective(lower) !== undefined
+    ) {
+      return "known";
+    }
+    return undefined;
+  };
+  const resolved = resolveTokenList(tokens, recognize);
+  try {
+    const result = parseEnBody(text, resolved.tokens, interrogative);
+    if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
+    return result;
+  } catch (err) {
+    // Parse-arbitrated candidate selection (v1): a context-free
+    // correction can pick a word the sentence cannot use — "hto"
+    // corrects to "to" on frequency where "hot" was meant. If the
+    // first corrected token has a runner-up candidate, retry the
+    // parse once with it: the sentence layer arbitrates between
+    // the token layer's candidates. The record is updated to the
+    // applied candidate at a discounted confidence, and its rule
+    // names the retry.
+    const rec = resolved.resolutions.find(
+      (r) => r.outcome === "corrected" && (r.candidates?.length ?? 0) > 1,
+    );
+    if (rec) {
+      const next = rec.candidates![1].term;
+      const retryTokens = [...resolved.tokens];
+      retryTokens[rec.tokenIndex] = next;
+      try {
+        const result = parseEnBody(text, retryTokens, interrogative);
+        rec.replacement = [next];
+        rec.confidence = Math.round(rec.confidence * 0.8 * 100) / 100;
+        rec.rule = "matcher:symspell+parse-retry";
+        if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
+        return result;
+      } catch {
+        // The retry failed too: the original failure stands.
+      }
+    }
+    // A parse failure keeps its token resolutions: the trace can
+    // then locate the gap at the tokens that stayed unresolved,
+    // not just at the sentence layer as a whole.
+    if (resolved.resolutions.length > 0) {
+      (err as { tokenResolutions?: unknown }).tokenResolutions = resolved.resolutions;
+    }
+    throw err;
+  }
+}
+
+function parseEnBody(text: string, tokens: string[], interrogative: boolean): ParsedSentence {
   const items = enItems(tokens);
   const b = new Builder();
   const spans: ConnectiveGraph["spans"] = [];

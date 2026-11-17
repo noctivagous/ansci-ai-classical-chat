@@ -201,9 +201,33 @@ export interface ConnectiveGraph {
   scaffolding?: { index: number; kind: string }[];
 }
 
+/**
+ * One token's resolution record (token-resolve.ts): a word the
+ * parser did not recognise, and what the resolution pipeline did
+ * with it — an attested variant-graph edge, a matcher correction, a
+ * segmentation of a joined form, or an unresolved token whose gap
+ * is located here, with the best candidates found and the score.
+ */
+export interface TokenResolution {
+  surface: string;
+  outcome: "variant" | "corrected" | "segmented" | "unresolved";
+  /** The token list that entered the item stream in its place. */
+  replacement: string[];
+  /** Position of the replacement in the resolved token list. */
+  tokenIndex: number;
+  confidence: number;
+  rule: string;
+  candidates?: { term: string; distance: number; count: number }[];
+}
+
 export interface ParsedSentence {
   meaning: MeaningGraph;
   connective: ConnectiveGraph;
+  /** Token resolutions applied before item classification, when any
+   *  token needed them (token-resolve.ts). The connective graph is
+   *  built over the resolved tokens; this record is the provenance
+   *  of what was actually said. */
+  tokenResolutions?: TokenResolution[];
   /** REALIZES: meaning node id → token indices that realise it (empty = zero realisation). */
   realizes: Record<string, number[]>;
   /** Clause-scope attachments in surface order (zh particles), for the scope-order check. */

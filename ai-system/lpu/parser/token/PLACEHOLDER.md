@@ -1,9 +1,11 @@
 # Token
 
-Schematic address: `lpu/parser/token` · Type: Unit · State: partial · 90% completed to goal
+Schematic address: `lpu/parser/token` · Type: Unit · State: partial · 95% completed to goal
 
-Breaks the sentence into addressed tokens.
+Breaks the sentence into addressed tokens, and resolves the words it does not recognise — Variant Graph first, then the ported SymSpell matcher and its segmentation — every resolution recorded with its confidence in the trace, and an unresolved word locating the gap at itself.
 
-Working code today: src/fork/sentence.ts
+Working code today: src/fork/sentence.ts (tokenisation), src/fork/symspell.ts (the ported matcher), src/fork/token-resolve.ts (the resolution pipeline), wired in src/fork/parse.ts.
 
-This is a placeholder: the unit's home in ai-system/ exists so the tree and the map agree. Its implementation migrates or is built here in a gated slice; until then the working code stays where PLACEHOLDER.md says it is.
+Held in this directory: token-dictionary.txt — the matcher's frequency dictionary (top 12,000 of SymSpell's published English frequency dictionary, unfiltered) — and build-dictionary.mjs, its generator (sources and method in that file). Restricting corrections to words the parser can use is the resolver's recognise filter, not the dictionary's business.
+
+Still open: the browser build cannot read the data files (the filesystem is stubbed there), so resolution is a Node-context capability for now; the error model is distance + frequency, not yet calibrated from the Variant Graph's attested pairs; confirmed resolutions are not yet banked back into the graph.

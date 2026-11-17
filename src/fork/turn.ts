@@ -83,7 +83,7 @@
  * occupies the slot, the site is exactly the pre-R7.5 site.
  */
 import { seasonDegreeProfile } from "../engine";
-import { EN_LEXICON, type MeaningNode, type ParsedSentence, type VerbEntry } from "./sentence";
+import { EN_LEXICON, type MeaningNode, type ParsedSentence, type TokenResolution, type VerbEntry } from "./sentence";
 import { CONTROLS, GENERATES, type Element } from "./sentence";
 import { parse } from "./parse";
 import { lookupClassification } from "./classify";
@@ -148,6 +148,11 @@ export interface TurnTrace {
   parseSummary: string;
   classifications: { concept: string; element: Element; confidence: number; provenance: string }[];
   resolutions: { pronoun: string; resolvedTo: string }[];
+  /** Token resolutions from the sentence layer (token-resolve.ts):
+   *  words the parser did not recognise and what resolved them —
+   *  variant-graph edge, matcher correction, segmentation — or the
+   *  unresolved record locating the gap at that token. */
+  tokenResolutions: TokenResolution[];
   /** The named cycle arc that steered the reply, when one did. */
   cyclePath?: string;
   /** The derivation path the reply was built from, when one was. */
@@ -604,6 +609,7 @@ function processTurnInner(session: Session, text: string): TurnResult {
     parseSummary: "",
     classifications: [],
     resolutions: [],
+    tokenResolutions: [],
     // R1: the probe's wording speaks unless the planner's graph
     // replaces it; the planner clears this where it speaks.
     wordingNotDerived: true,
@@ -617,13 +623,16 @@ function processTurnInner(session: Session, text: string): TurnResult {
   let parsed: ParsedSentence;
   try {
     parsed = parse(text, "en");
-  } catch {
+  } catch (err) {
+    trace.tokenResolutions =
+      (err as { tokenResolutions?: TokenResolution[] }).tokenResolutions ?? [];
     trace.parseSummary = "parse failed";
     trace.declineReason = "the sentence could not be taken apart by the sentence layer";
     return { reply: "I couldn't take that sentence apart — could you put it another way?", trace };
   }
   const root = nodeById(parsed, parsed.meaning.rootId);
   trace.parseSummary = `root '${root.lemma}' (${root.syntacticElement}${root.role ? ", " + root.role : ""}); nodes: ${parsed.meaning.nodes.map((n) => n.lemma).join(", ")}; mood: ${root.states?.mood ?? "indicative"}`;
+  trace.tokenResolutions = parsed.tokenResolutions ?? [];
 
   /* ---- record: entities, pronoun resolutions, events, states ---- */
   const resolve = (lemma: string): string => {

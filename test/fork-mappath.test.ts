@@ -43,7 +43,13 @@ function assertWalkShape(result: TurnResult): void {
 }
 
 test("parse failure: the walk stops inside the Parser, naming no submodule", () => {
-  const [r] = run(newSession(), ["Blorp zizzle frak."]);
+  // The probe sentence must be one the token layer cannot rescue:
+  // "Blorp zizzle frak." served until token resolution landed —
+  // its words are each close to a real word and now resolve (the
+  // records are pinned in fork-tokenresolve.test.ts). These three
+  // have no candidates at all, so the failure is the sentence
+  // layer's own.
+  const [r] = run(newSession(), ["Xqzw jkvf wqzx."]);
   assert.equal(r.trace.parseSummary, "parse failed");
   assert.deepEqual(r.trace.mapPath, ["person", "lpu/parser"]);
 });

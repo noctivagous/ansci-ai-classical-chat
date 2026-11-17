@@ -341,12 +341,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "lpu/parser",
       "state": "partial",
-      "percent": 90,
+      "percent": 95,
       "path": "lpu/parser/token",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/sentence.ts",
-      "summary": "Breaks the sentence into addressed tokens."
+      "currentCode": "src/fork/sentence.ts, src/fork/symspell.ts, src/fork/token-resolve.ts",
+      "summary": "Breaks the sentence into addressed tokens, and resolves the words it does not recognise — Variant Graph first, then the ported SymSpell matcher and its segmentation — every resolution recorded with its confidence in the trace, and an unresolved word locating the gap at itself."
     },
     {
       "id": "lpu/parser/sense",
@@ -536,11 +536,11 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Store",
       "parent": "knowledge",
       "state": "partial",
-      "percent": 30,
+      "percent": 45,
       "path": "knowledge/variant-graph",
       "file": null,
       "external": false,
-      "currentCode": "—",
+      "currentCode": "ai-system/knowledge/variant-graph/variants.json, consulted by src/fork/token-resolve.ts",
       "summary": "AnSci's own graph of surface forms: variant nodes linked to the canonical forms they resolve to — shortforms, common misspellings, apostrophe-less contractions — each edge carrying register, provenance and confidence. Populated from published lists on the web, imported as sourced data, never hand-written into code. Consulted by Token during resolution; what is merely close is computed by the matcher, never stored; confirmed resolutions can be banked here."
     },
     {
