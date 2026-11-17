@@ -85,7 +85,9 @@ test("a knowledge-gap decline ends at the correspondence graph it searched", () 
   const [r] = run(newSession(), ["Is the table cold?"]);
   assertWalkShape(r);
   assert.ok(r.trace.declineReason);
-  assert.equal(r.trace.mapPath![r.trace.mapPath!.length - 1], "knowledge/correspondence-graph");
+  // The graph moved into the Ontology Knowledge Unit in the OntologyCore
+  // (owner's direction, 2026-11-16); the walk ends at its new address.
+  assert.equal(r.trace.mapPath![r.trace.mapPath!.length - 1], "ontology-core/ontology-knowledge-unit/correspondence-graph");
 });
 
 test("a missing-role decline ends at the session record — nothing further ran", () => {

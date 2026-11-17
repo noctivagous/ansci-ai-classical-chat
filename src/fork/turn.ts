@@ -1313,7 +1313,7 @@ function computeMapPath(trace: TurnTrace): string[] {
       trace.declineReason.includes("no path runs") ||
       trace.declineReason.includes("no way to connect")
     ) {
-      path.push("reasoning/derivation", "knowledge/correspondence-graph");
+      path.push("reasoning/derivation", "ontology-core/ontology-knowledge-unit/correspondence-graph");
       return path;
     }
     // The remaining declines stop at the record: a missing role

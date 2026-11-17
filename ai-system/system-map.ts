@@ -388,6 +388,32 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "Aspect as feature bundles; irregular forms selected, both languages."
     },
     {
+      "id": "lpu/semantic-assessment",
+      "title": "SemanticAssessment",
+      "type": "Unit",
+      "parent": "lpu",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "lpu/semantic-assessment",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction; nothing built."
+    },
+    {
+      "id": "lpu/language-emotion-desire-unit",
+      "title": "LanguageEmotionDesireUnit",
+      "type": "Unit",
+      "parent": "lpu",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "lpu/language-emotion-desire-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "The LEDU: the LPU's bridge to the EmotionDesireUnit, maintained inside the LPU. Maps emotion and desire as expressed in language — 'furious', 'longing to see her' — into the EDU's 七情六欲 framework on the way in, and an object's emotion or desire aspect back into language on the way out. Uses the EDU; the mapping is language's, the framework is the EDU's. Placed 2026-11-16 at the owner's direction; nothing built."
+    },
+    {
       "id": "lpu/generator",
       "title": "Generator Unit",
       "type": "Unit",
@@ -489,29 +515,29 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": "src/fork/classify.ts and the foundation graph",
-      "summary": "What the system holds: the correspondence graph and its tables and stores."
+      "summary": "What the system holds as stores: the lexicon, the variant graph, and the banked stores. The correspondence graph and the classification table moved to the Ontology Knowledge Unit in the OntologyCore (owner's direction, 2026-11-16)."
     },
     {
-      "id": "knowledge/correspondence-graph",
+      "id": "ontology-core/ontology-knowledge-unit/correspondence-graph",
       "title": "Correspondence graph",
       "type": "Store",
-      "parent": "knowledge",
+      "parent": "ontology-core/ontology-knowledge-unit",
       "state": "partial",
       "percent": 75,
-      "path": "knowledge/correspondence-graph",
+      "path": "ontology-core/ontology-knowledge-unit/correspondence-graph",
       "file": null,
       "external": false,
       "currentCode": "src/fork/classify.ts; foundation src/graph.ts, src/seed.ts",
       "summary": "The meaning graph: correspondences, with the generating and controlling cycles as its relations."
     },
     {
-      "id": "knowledge/classification",
+      "id": "ontology-core/ontology-knowledge-unit/classification",
       "title": "Classification",
       "type": "Table",
-      "parent": "knowledge",
+      "parent": "ontology-core/ontology-knowledge-unit",
       "state": "partial",
       "percent": 60,
-      "path": "knowledge/classification",
+      "path": "ontology-core/ontology-knowledge-unit/classification",
       "file": null,
       "external": false,
       "currentCode": "src/fork/classify.ts",
@@ -752,6 +778,45 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "No citation, no insertion. Derived layer only; every admission reversible."
     },
     {
+      "id": "ontology-core",
+      "title": "OntologyCore",
+      "type": "Container",
+      "parent": "system",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "ontology-core",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table) and the EmotionDesireUnit, both placed at the owner's direction (2026-11-16)."
+    },
+    {
+      "id": "ontology-core/ontology-knowledge-unit",
+      "title": "Ontology Knowledge Unit",
+      "type": "Unit",
+      "parent": "ontology-core",
+      "state": "partial",
+      "percent": 60,
+      "path": "ontology-core/ontology-knowledge-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/classify.ts; foundation src/graph.ts, src/seed.ts",
+      "summary": "The OKU: the OntologyCore's knowledge unit. It contains the correspondence graph and the classification table — the system's ontology as held, consultable knowledge. Placed 2026-11-16 at the owner's direction; the graph and the table moved here from Knowledge, which keeps the lexicon, the variant graph and the banked stores."
+    },
+    {
+      "id": "ontology-core/emotion-desire-unit",
+      "title": "EmotionDesireUnit",
+      "type": "Unit",
+      "parent": "ontology-core",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "ontology-core/emotion-desire-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "The EDU: the system's medium-neutral authority on emotion and desire, sitting inside the OntologyCore. Holds the 七情六欲 framework — the seven emotions and six desires, their phase and organ correspondences — and answers any medium's bridge unit: what emotion or desire is this, what does it correspond to. Language reaches it through the LPU's LEDU today; in the future an IDU will contact it for the Image Processing Unit, the same way. Placed 2026-11-16 at the owner's direction; nothing built."
+    },
+    {
       "id": "verbalizer",
       "title": "Verbalizer",
       "type": "Unit",
@@ -924,7 +989,7 @@ export const SYSTEM_MAP: SystemMap = {
   "cords": [
     {
       "from": "reasoning/planner",
-      "to": "knowledge/correspondence-graph",
+      "to": "ontology-core/ontology-knowledge-unit/correspondence-graph",
       "kind": "connection",
       "label": "consults"
     },
@@ -936,7 +1001,7 @@ export const SYSTEM_MAP: SystemMap = {
     },
     {
       "from": "reasoning/derivation",
-      "to": "knowledge/correspondence-graph",
+      "to": "ontology-core/ontology-knowledge-unit/correspondence-graph",
       "kind": "connection",
       "label": "consults"
     },
@@ -966,7 +1031,7 @@ export const SYSTEM_MAP: SystemMap = {
     },
     {
       "from": "intake/router",
-      "to": "knowledge/correspondence-graph",
+      "to": "ontology-core/ontology-knowledge-unit/correspondence-graph",
       "kind": "connection",
       "label": "asks first"
     },
@@ -1029,6 +1094,12 @@ export const SYSTEM_MAP: SystemMap = {
       "to": "knowledge/variant-graph",
       "kind": "connection",
       "label": "consults"
+    },
+    {
+      "from": "lpu/language-emotion-desire-unit",
+      "to": "ontology-core/emotion-desire-unit",
+      "kind": "connection",
+      "label": "uses"
     }
   ],
   "traces": {

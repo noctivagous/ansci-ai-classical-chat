@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="color-scheme" content="light dark" />
+<meta name="color-scheme" content="dark light" />
 <link rel="icon" href="data:," />
 <title>AnSci Root Page — Zoomable Schematic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,25 +12,26 @@
 <style>
   button,[role="button"],select,summary,input:not([type="checkbox"],[type="radio"]){min-height:2rem}
   *{box-sizing:border-box}
-  :root{
+  :root, :root[data-theme="dark"]{
+    --bg:#0c0e10; --panel:#121518; --panel2:#171b1f; --ink:#e8e6df; --muted:#9aa0a3; --line:#e8e6df;
+    --line-soft:#343a3f; --grid:rgba(232,230,223,.055);
+    --accent:#ff6b35; --accent-ink:#fff; --teal:#3bc9db; --amber:#ffa94d; --green:#51cf66; --red:#ff8787; --blue:#74c0fc; --metal:#adb5bd;
+    --wire:#3bc9db;
+    /* live trace colours — the single place they are named:
+       --trace (deep teal) = a walk in progress and a completed walk;
+       --trace-stop (red) is RESERVED for stopped turns only. */
+    --trace:#3bc9db; --trace-stop:#ff8787;
+    --chip:#1c2126;
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
     --bg:#e9e7e0; --panel:#f4f2ec; --panel2:#fffefa; --ink:#1a1c1e; --muted:#5c6066; --line:#1a1c1e;
     --line-soft:#b9b6ab; --grid:rgba(26,28,30,.07);
     --accent:#d9480f; --accent-ink:#fff; --teal:#0b7285; --amber:#e67700; --green:#2b8a3e; --red:#c92a2a; --blue:#1971c2; --metal:#868e96;
     --wire:#0b7285;
-    /* live trace colours — the single place they are named:
-       --trace (deep teal) = a walk in progress and a completed walk;
-       --trace-stop (red) is RESERVED for stopped turns only. */
     --trace:#0b7285; --trace-stop:#c92a2a;
     --chip:#e9e7e0;
-    color-scheme:light dark;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg:#0c0e10; --panel:#121518; --panel2:#171b1f; --ink:#e8e6df; --muted:#9aa0a3; --line:#e8e6df;
-      --line-soft:#343a3f; --grid:rgba(232,230,223,.055);
-      --accent:#ff6b35; --teal:#3bc9db; --amber:#ffa94d; --green:#51cf66; --red:#ff8787; --blue:#74c0fc; --metal:#adb5bd;
-      --wire:#3bc9db; --trace:#3bc9db; --trace-stop:#ff8787; --chip:#1c2126;
-    }
+    color-scheme:light;
   }
   html{height:100%}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif}
@@ -101,7 +102,9 @@
     .toolbar button[data-focus]{display:none}
     .hintbar{display:none}
     footer.foot{padding:10px 14px 12px;font-size:10.5px;line-height:1.55;gap:4px 14px}
-    footer.foot span:nth-of-type(n+3){display:none}
+    footer.foot:not(.is-open) span:nth-of-type(n+3){display:none}
+    footer.foot:not(.is-open) .foot-meta span:nth-of-type(n+2){display:none}
+    footer.foot .foot-toggle span{display:inline-block}
   }
 
   /* ---------- viewport / schematic ---------- */
@@ -366,8 +369,8 @@
   .aw-item.src{border-style:solid}
 
   /* ===== gray gradation hierarchy — contrast carries nesting depth ===== */
-  :root{ --g0:#f7f6f2; --g1:#eceae4; --g2:#dedbd2; --g3:#c9c5ba; --g4:#a9a499; --cord:#6f6c64; }
-  @media (prefers-color-scheme: dark){ :root{ --g0:#101214; --g1:#171a1d; --g2:#22262a; --g3:#2f3439; --g4:#454b51; --cord:#9a978c; } }
+  :root, :root[data-theme="dark"]{ --g0:#101214; --g1:#171a1d; --g2:#22262a; --g3:#2f3439; --g4:#454b51; --cord:#9a978c; }
+  :root[data-theme="light"]{ --g0:#f7f6f2; --g1:#eceae4; --g2:#dedbd2; --g3:#c9c5ba; --g4:#a9a499; --cord:#6f6c64; }
   .box.system{background:var(--g0)}
   .box.frame.sec, .box.lpu, .box.aware{background:var(--g1)}
   .box.unit{background:var(--g2)}
@@ -444,6 +447,17 @@
   .grayramp-lbls span{flex:1}
   footer.foot{padding:14px 20px 22px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);line-height:1.7;display:flex;flex-wrap:wrap;gap:6px 22px}
   footer.foot a{color:var(--accent);font-weight:700}
+  /* collapsible header-information block (the footer) — collapsed by
+     default: only the toggle line (triangle + first line) shows. The
+     meta wrapper uses display:contents when open so its spans keep
+     flowing in the footer's original flex-wrap layout. */
+  .foot-toggle{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;min-height:24px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-align:left}
+  .foot-toggle:hover{color:var(--ink)}
+  .foot-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .foot-tri{color:var(--accent);font-size:11px;line-height:1;flex:none;display:inline-block;transition:transform .15s ease}
+  footer.foot.is-open .foot-tri{transform:rotate(90deg)}
+  .foot-meta{display:contents}
+  footer.foot:not(.is-open) .foot-meta{display:none}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -462,6 +476,11 @@
     <div class="view-toggle" role="group" aria-label="Inspector display mode — sidebar or popover">
       <button type="button" class="vt-btn on" id="inspSidebarBtn" aria-pressed="true">Sidebar</button>
       <button type="button" class="vt-btn" id="inspPopoverBtn" aria-pressed="false">Popover</button>
+    </div>
+    <span class="h-note">Theme:</span>
+    <div class="view-toggle" role="group" aria-label="Theme — dark or light">
+      <button type="button" class="vt-btn on" id="themeDarkBtn" aria-pressed="true">Dark</button>
+      <button type="button" class="vt-btn" id="themeLightBtn" aria-pressed="false">Light</button>
     </div>
     <span class="h-note">% completed to goal — set by us, assessed by the project, not measured or computed.</span>
     <a class="btn dashboard" href="/dashboard/" style="margin-left:auto;min-height:36px;padding:7px 12px">Dashboard&nbsp;→&nbsp;/dashboard/</a>
@@ -510,8 +529,8 @@
           <path class="pw1" data-endpoints="awareness,system" d="M 968 303 L 1440 303" /><path class="pw2" data-endpoints="awareness,system" d="M 968 309 L 1440 309" />
           <path class="pw1" data-endpoints="harborer,knowledge" d="M 1090 1797 L 1180 1797 L 1180 1445" /><path class="pw2" data-endpoints="harborer,knowledge" d="M 1090 1803 L 1186 1803 L 1186 1451" />
           <circle class="cdot" data-endpoints="system" cx="250" cy="300" r="4"/><circle class="cdot" data-endpoints="awareness" cx="968" cy="306" r="4"/><circle class="cdot" data-endpoints="knowledge" cx="1183" cy="1448" r="4"/>
-          <path class="conn" data-endpoints="planner,correspondence" d="M 792 1660 L 792 1702 L 560 1702 L 560 1674" />
-          <path class="conn" data-endpoints="derivation,correspondence" d="M 422 1660 L 422 1682 L 480 1682 L 480 1444" />
+          <path class="conn" data-endpoints="planner,correspondence" d="M 792 1660 L 792 1730 L 300 1730 L 300 2197" />
+          <path class="conn" data-endpoints="derivation,correspondence" d="M 422 1660 L 422 1718 L 480 1718 L 480 2197" />
           <path class="conn" data-endpoints="awareness,session" d="M 1219 628 L 1219 652" />
           <path class="conn" data-endpoints="config,awareness" d="M 745 57 L 745 100 L 1150 100 L 1150 118" />
           <path class="conn" data-endpoints="sense,lexicon" d="M 599 516 L 599 1470 L 900 1470 L 900 1514" />
@@ -520,11 +539,13 @@
           <path class="conn" data-endpoints="coherence,awareness" d="M 1432 982 L 1432 373 L 1410 373" />
           <path class="conn" data-endpoints="coherence,session" d="M 1424 982 L 1424 750 L 1410 750" />
           <path class="conn uses" data-endpoints="verbalizer,coherence" d="M 1219 968 L 1219 982" />
-          <circle class="cdot" data-endpoints="correspondence" cx="560" cy="1670" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="480" cy="1440" r="4"/>
+          <circle class="cdot" data-endpoints="correspondence" cx="300" cy="2197" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="480" cy="2197" r="4"/>
           <circle class="cdot" data-endpoints="session" cx="1219" cy="650" r="4"/><circle class="cdot" data-endpoints="awareness" cx="1150" cy="116" r="4"/><circle class="cdot" data-endpoints="planner" cx="900" cy="1510" r="4"/>
           <circle class="cdot" data-endpoints="coherence,awareness" cx="1412" cy="373" r="4"/><circle class="cdot" data-endpoints="coherence,session" cx="1412" cy="750" r="4"/><circle class="cdot uses" data-endpoints="verbalizer,coherence" cx="1219" cy="980" r="4"/>
-          <path class="conn uses" data-endpoints="verbalizer,generator" d="M 1030 905 C 985 760, 985 520, 895 415" />
-          <circle class="cdot uses" data-endpoints="generator" cx="892" cy="412" r="5"/>
+          <path class="conn uses" data-endpoints="verbalizer,generator" d="M 1030 905 C 1000 870, 995 830, 972 793" />
+          <circle class="cdot uses" data-endpoints="generator" cx="969" cy="790" r="5"/>
+          <path class="conn uses" data-endpoints="language-emotion-desire-unit,emotion-desire" d="M 968 540 L 1012 540 L 1012 2396 L 666 2396" />
+          <circle class="cdot uses" data-endpoints="emotion-desire" cx="663" cy="2396" r="4"/>
         </svg>
 
         <!-- speaker (outside system) -->
@@ -541,9 +562,10 @@
         </div>
 
         <span class="flowtag" style="left:206px;top:282px">utterance in</span>
-        <span class="cordlabel uses" data-endpoints="verbalizer,generator" style="left:946px;top:640px">uses &#8594;</span>
+        <span class="cordlabel uses" data-endpoints="verbalizer,generator" style="left:976px;top:880px">uses &#8594;</span>
+        <span class="cordlabel uses" data-endpoints="language-emotion-desire-unit,emotion-desire" style="left:1004px;top:760px;writing-mode:vertical-rl">uses &#8595;</span>
         <span class="cordlabel uses" data-endpoints="verbalizer,coherence" style="left:1230px;top:969px">uses &#8595;</span>
-        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:806px;top:1682px">planner consults &#8595; correspondence graph</span>
+        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:430px;top:1708px">planner consults &#8595; correspondence graph</span>
         <span class="cordlabel" data-endpoints="coherence,awareness" style="left:1446px;top:392px;writing-mode:vertical-rl">coherence consults &#8593; awareness</span>
         <span class="cordlabel" data-endpoints="coherence,session" style="left:1458px;top:600px;writing-mode:vertical-rl">coherence consults &#8593; session &amp; situation</span>
         <span class="cordlabel" data-endpoints="sense,lexicon" style="left:612px;top:880px">sense consults &#8595; lexicon</span>
@@ -556,7 +578,7 @@
         <div class="configreg" data-id="config" style="left:902px;top:34px"><span class="cfg-l">Configuration register</span><strong>Configuration: Chat</strong> — first configuration of a general-purpose system</div>
         <div class="srctab" data-id="source" style="left:102px;top:283px">SOURCE · PERSON'S CHANNEL</div>
         <!-- ============ SYSTEM ============ -->
-        <div class="box system frame" data-id="system" style="left:190px;top:56px;width:1250px;height:2030px">
+        <div class="box system frame" data-id="system" style="left:190px;top:56px;width:1250px;height:2280px">
           <div class="bhead">
             <div><div class="bname">The System</div><div class="bsub">ANSCI · outermost bounding box · everything the root page shows lives in here</div></div>
             <span class="btag" style="color:var(--accent)">Root · general-purpose</span>
@@ -647,9 +669,7 @@
             <div><div class="bname">Knowledge</div><div class="bsub">System level · what the rest of the system consults — held things only; nothing here acts</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
           </div>
-          <div class="sec-items cols4">
-            <div class="sec-item store" data-id="correspondence"><span class="aw-type">Store</span><span class="aw-name">Correspondence graph</span><span class="aw-note">classifications at Wuxing addresses — incl. the generating &amp; controlling cycles as its relations. The Derivation unit walks it.</span></div>
-            <div class="sec-item tbl"><span class="aw-type">Table</span><span class="aw-name">Classification</span><span class="aw-note">the fixed classification mapping the graph is filed under</span></div>
+          <div class="sec-items cols3">
             <div class="sec-item store" data-id="lexicon"><span class="aw-type">Store</span><span class="aw-name">Lexicon</span><span class="aw-note">the classified word stock the Sense submodule consults — a resource, reached by a connection cord, not by nesting</span></div>
             <div class="sec-item store" data-id="variant-graph"><span class="aw-type">Store</span><span class="aw-name">Variant Graph</span><span class="aw-note">AnSci's own graph of surface forms — variant nodes linked to the canonical forms they resolve to; each edge carries register, provenance and confidence. Consulted by Token during resolution.</span></div>
             <div class="sec-item store"><span class="aw-type">Store</span><span class="aw-name">Banked stores</span><span class="aw-note">derived flavours · ingested assertions — what the Retrieval Harborer has kept, with provenance</span></div>
@@ -708,8 +728,41 @@
           <div class="bbody">Further units — territory not yet categorised. A place held, not a thing built. To be settled.</div>
         </div>
 
+        <!-- ============ ONTOLOGY CORE (System level) — container holding the EmotionDesireUnit ============ -->
+        <div class="box frame sec" data-id="ontology-core" style="left:222px;top:2072px;width:1186px;height:400px">
+          <div class="bhead">
+            <div><div class="bname">OntologyCore</div><div class="bsub">System level · container · the system's ontological heart — what the world is made of and how its kinds correspond</div></div>
+            <span class="btag" style="color:var(--muted)">Container</span>
+          </div>
+        </div>
+
+        <!-- Ontology Knowledge Unit (inside OntologyCore — first child; holds the Correspondence graph and the Classification table) -->
+        <div class="box unit t-unit frame sec" data-id="ontology-knowledge-unit" style="left:252px;top:2140px;width:1126px;height:176px">
+          <div class="bhead">
+            <div><div class="bname">Ontology Knowledge Unit</div><div class="bsub">Inside OntologyCore · the OntologyCore's knowledge unit — contains the correspondence graph and the classification table</div></div>
+            <span class="btag" style="color:var(--muted)">Unit</span>
+          </div>
+          <div class="sec-items">
+            <div class="sec-item store" data-id="correspondence"><span class="aw-type">Store</span><span class="aw-name">Correspondence graph</span><span class="aw-note">classifications at Wuxing addresses — incl. the generating &amp; controlling cycles as its relations. The Derivation unit walks it.</span></div>
+            <div class="sec-item tbl" data-id="classification"><span class="aw-type">Table</span><span class="aw-name">Classification</span><span class="aw-note">the fixed classification mapping the graph is filed under</span></div>
+          </div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- EmotionDesireUnit (inside OntologyCore) -->
+        <div class="box unit t-unit" data-id="emotion-desire" style="left:252px;top:2330px;width:410px;height:132px">
+          <div class="bhead">
+            <div><div class="bname">Emotion<wbr>Desire<wbr>Unit</div><div class="bsub">Inside OntologyCore · medium-neutral authority on emotion and desire</div></div>
+            <span class="btag" style="color:var(--muted)">Unit</span>
+          </div>
+          <div class="bbody">Holds the Seven Emotions and Six Desires framework — the emotions and desires, their phase and organ correspondences.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
                 <!-- ============ LPU ============ -->
-        <div class="box lpu frame" data-id="lpu" style="left:222px;top:118px;width:776px;height:850px">
+        <div class="box lpu frame" data-id="lpu" style="left:222px;top:118px;width:776px;height:1042px">
           <div class="bhead">
             <div><div class="bname">LPU — Language Processing Unit</div><div class="bsub">Inside the System · contains the Parser and the Generator, and one held place — Derivation, Planner and the Lexicon are not in here: they sit at System level and use the LPU by cord</div></div>
             <span class="btag" style="color:var(--teal)">Unit · container</span>
@@ -752,8 +805,30 @@
           <div class="bbody" style="padding-top:2px">Parser output is a <strong style="color:var(--ink)">meaning graph whose nodes sit at Wuxing addresses</strong> — not an English tree with labels on it.</div>
         </div>
 
+        <!-- SemanticAssessment (sibling of Parser, inside LPU — between Parser and Generator) -->
+        <div class="box unit t-unit" data-id="semantic-assessment" style="left:752px;top:196px;width:216px;height:216px">
+          <div class="bhead">
+            <div><div class="bname">Semantic<wbr>Assessment</div><div class="bsub">Inside the LPU · between Parser and Generator</div></div>
+            <span class="btag" style="color:var(--teal)">Unit</span>
+          </div>
+          <div class="bbody">Answers “What is this?” — what the text is saying. Packages the utterance as a whole as a semantic object that then travels the system.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
+        <!-- LanguageEmotionDesireUnit (inside LPU — the LPU's bridge to the EmotionDesireUnit) -->
+        <div class="box unit t-unit" data-id="language-emotion-desire-unit" style="left:752px;top:432px;width:216px;height:216px">
+          <div class="bhead">
+            <div><div class="bname">Language<wbr>Emotion<wbr>Desire<wbr>Unit</div><div class="bsub">Inside the LPU · bridge to the EmotionDesireUnit</div></div>
+            <span class="btag" style="color:var(--teal)">Unit</span>
+          </div>
+          <div class="bbody">The LPU's bridge to the EmotionDesireUnit, maintained inside the LPU — emotion and desire in language, mapped into the EDU's framework and back.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
         <!-- Generator (sibling of Parser, inside LPU) -->
-        <div class="box unit t-unit" data-id="generator" style="left:752px;top:196px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="generator" style="left:752px;top:668px;width:216px;height:216px">
           <div class="bhead">
             <div><div class="bname">Generator Unit</div><div class="bsub">Inside the LPU · sibling of the Parser</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -763,7 +838,7 @@
           <div class="port out" data-port>OUT</div>
         </div>
 
-<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:712px;width:716px;height:168px">
+<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:904px;width:716px;height:168px">
           <div class="bhead"><div><div class="bname">Unplaced · Unit</div><div class="bsub">Inside the LPU</div></div><span class="btag" style="color:var(--muted)">—</span></div>
           <div class="bbody">Other aspect units of the LPU, beyond the Parser and the Generator — a place held, not a thing built. To be settled.</div>
         </div>
@@ -868,8 +943,9 @@
   </aside>
 </div>
 
-<footer class="foot">
-  <span>ANSCI · ROOT PAGE — ZOOMABLE SCHEMATIC</span>
+<footer class="foot" id="footBlock">
+  <button type="button" class="foot-toggle" id="footToggle" aria-expanded="false" aria-controls="footMeta"><span class="foot-tri" aria-hidden="true">▸</span><span>ANSCI · ROOT PAGE — ZOOMABLE SCHEMATIC</span></button>
+  <div class="foot-meta" id="footMeta">
   <span>DASHBOARD: <a href="/dashboard/">/dashboard/</a></span>
   <span>VIEW: PLAN (DEFAULT, PLACEHOLDERS INCLUDED) · BUILT ONLY (0% PLACEHOLDERS HIDDEN)</span>
   <span>NESTING: SYSTEM ⊃ LPU ⊃ PARSER ⊃ TOKEN · SENSE · VALENCY · ASPECT &amp; FORMS</span>
@@ -879,6 +955,7 @@
   <span>MODULE TYPES: UNIT · STORE · REGISTER · TABLE · GATE · ROUTER · SOURCE · SURFACE</span>
   <span>GENERAL-PURPOSE SYSTEM · CONFIGURATION: CHAT — FIRST CONFIGURATION</span>
   <span>COMPLETENESS: % COMPLETED TO GOAL — SET BY US, ASSESSED BY THE PROJECT, NOT MEASURED OR COMPUTED · FROM SYSTEM-MAP.TS · PLACEMENT &amp; ORDER FROM SYSTEM-LAYOUT.TS · 0% PLACEHOLDER · 1–99% PARTIAL · 100% FUNCTIONAL · SOURCES CARRY NO %</span>
+  </div>
 </footer>
 
 <script>
@@ -917,9 +994,10 @@
     'awareness/place-and-time':70,'awareness/place-and-time/season-daypart':85,'awareness/place-and-time/channel':40,
     'awareness/surroundings':25,'awareness/surroundings/interlocutor-standing':10,'awareness/surroundings/standing-topics':75,'awareness/surroundings/other-presences':0,
     'awareness/current-activity':30,'awareness/current-activity/composer':0,'awareness/current-activity/situation-statement':15,'awareness/current-activity/last-act':35,'awareness/current-activity/open-gaps':55,
-    'lpu':80,'lpu/parser':85,'lpu/parser/token':95,'lpu/parser/sense':70,'lpu/parser/valency':85,'lpu/parser/aspect-and-forms':90,'lpu/generator':80,'lpu/unplaced':0,
+    'lpu':80,'lpu/parser':85,'lpu/parser/token':95,'lpu/parser/sense':70,'lpu/parser/valency':85,'lpu/parser/aspect-and-forms':90,'lpu/semantic-assessment':0,'lpu/language-emotion-desire-unit':0,'lpu/generator':80,'lpu/unplaced':0,
+    'ontology-core':0,'ontology-core/ontology-knowledge-unit':60,'ontology-core/ontology-knowledge-unit/correspondence-graph':75,'ontology-core/ontology-knowledge-unit/classification':60,'ontology-core/emotion-desire':0,
     'session-and-situation':75,'session-and-situation/states-and-origins':85,'session-and-situation/events':70,'session-and-situation/topics':80,'session-and-situation/corrections':80,
-    'knowledge':70,'knowledge/correspondence-graph':75,'knowledge/classification':60,'knowledge/lexicon':80,'knowledge/variant-graph':45,'knowledge/banked':65,
+    'knowledge':70,'knowledge/lexicon':80,'knowledge/variant-graph':45,'knowledge/banked':65,
     'reasoning':80,'reasoning/derivation':85,'reasoning/planner':80,'reasoning/pricing':85,'reasoning/decline-floor':90,'reasoning/compositions':85,
     'intake':25,'intake/router':30,'intake/cskg':40,'intake/wikidata':0,'intake/web':0,'intake/model':0,
     'retrieval-harborer':45,'retrieval-harborer/pipeline':45,'retrieval-harborer/gate':70,
@@ -930,7 +1008,7 @@
   };
   function stateOf(p){ return p<=0?'placeholder':(p>=100?'functional':'partial'); }
   /* inspector id -> registry id, for the percent readout in select() */
-  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'knowledge/correspondence-graph',lexicon:'knowledge/lexicon','variant-graph':'knowledge/variant-graph',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',coherence:'coherence','coherence-demand':'coherence/coherence-demand','coherence-analysis':'coherence/coherence-analysis',surfaces:'surfaces','unplaced-sys':'unplaced'};
+  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','semantic-assessment':'lpu/semantic-assessment','language-emotion-desire-unit':'lpu/language-emotion-desire-unit','ontology-core':'ontology-core','emotion-desire':'ontology-core/emotion-desire','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'ontology-core/ontology-knowledge-unit/correspondence-graph',classification:'ontology-core/ontology-knowledge-unit/classification','ontology-knowledge-unit':'ontology-core/ontology-knowledge-unit',lexicon:'knowledge/lexicon','variant-graph':'knowledge/variant-graph',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',coherence:'coherence','coherence-demand':'coherence/coherence-demand','coherence-analysis':'coherence/coherence-analysis',surfaces:'surfaces','unplaced-sys':'unplaced'};
   /* ===== layout — mirrors ai-system/system-layout.ts =====
      Placement (rects, for focus/zoom) and sibling ORDER live here, apart
      from the registry: move a column or row by editing this object only.
@@ -938,18 +1016,21 @@
      renderer re-orders each container's items to match `order` below. */
   var SYSTEM_LAYOUT={
     rects:{
-    system:{x:190,y:56,w:1250,h:2030}, lpu:{x:222,y:118,w:776,h:850}, parser:{x:252,y:196,w:470,h:468},
-    awareness:{x:1030,y:118,w:378,h:510}, generator:{x:752,y:196,w:216,h:216},
+    system:{x:190,y:56,w:1250,h:2280}, lpu:{x:222,y:118,w:776,h:1042}, parser:{x:252,y:196,w:470,h:468},
+    awareness:{x:1030,y:118,w:378,h:510}, 'semantic-assessment':{x:752,y:196,w:216,h:216}, 'language-emotion-desire-unit':{x:752,y:432,w:216,h:216}, generator:{x:752,y:668,w:216,h:216},
+    'ontology-core':{x:222,y:2072,w:1186,h:400}, 'ontology-knowledge-unit':{x:252,y:2140,w:1126,h:176}, 'emotion-desire':{x:252,y:2330,w:410,h:132},
     planner:{x:640,y:1514,w:330,h:64}, derivation:{x:240,y:1514,w:330,h:64},
-    lexicon:{x:900,y:1270,w:270,h:120}, 'variant-graph':{x:1118,y:1270,w:270,h:120}, correspondence:{x:240,y:1270,w:270,h:120},
+    lexicon:{x:900,y:1270,w:270,h:120}, 'variant-graph':{x:1118,y:1270,w:270,h:120}, correspondence:{x:262,y:2201,w:549,h:95}, classification:{x:818,y:2201,w:549,h:95},
     session:{x:1030,y:652,w:378,h:196}, router:{x:240,y:1758,w:370,h:120}, harborer:{x:1020,y:1758,w:370,h:120}, intake:{x:222,y:1702,w:1186,h:200},
     gate:{x:640,y:1582,w:330,h:56}, tables:{x:240,y:1582,w:330,h:56}, clock:{x:660,y:40,w:170,h:34}, config:{x:902,y:34,w:520,h:44}, source:{x:102,y:283,w:220,h:34}, composer:{x:1048,y:540,w:342,h:64},
     verbalizer:{x:1030,y:862,w:378,h:106}, coherence:{x:1030,y:982,w:378,h:216}, 'coherence-demand':{x:1042,y:1062,w:172,h:118}, 'coherence-analysis':{x:1224,y:1062,w:172,h:118}, knowledge:{x:222,y:1214,w:1186,h:230}, reasoning:{x:222,y:1458,w:1186,h:230},
-    surfaces:{x:222,y:1916,w:760,h:140}, 'unplaced-lpu':{x:252,y:712,w:716,h:168}, 'unplaced-sys':{x:998,y:1916,w:410,h:140},
+    surfaces:{x:222,y:1916,w:760,h:140}, 'unplaced-lpu':{x:252,y:904,w:716,h:168}, 'unplaced-sys':{x:998,y:1916,w:410,h:140},
     token:{x:264,y:262,w:218,h:118}, sense:{x:490,y:262,w:218,h:118}, valency:{x:264,y:388,w:218,h:118}, aspect:{x:490,y:388,w:218,h:118}
     },
     order:{
-      'knowledge':['knowledge/correspondence-graph','knowledge/classification','knowledge/lexicon','knowledge/variant-graph','knowledge/banked'],
+      'lpu':['lpu/parser','lpu/semantic-assessment','lpu/language-emotion-desire-unit','lpu/generator','lpu/unplaced'],
+      'knowledge':['knowledge/lexicon','knowledge/variant-graph','knowledge/banked'],
+      'ontology-core/ontology-knowledge-unit':['ontology-core/ontology-knowledge-unit/correspondence-graph','ontology-core/ontology-knowledge-unit/classification'],
       'reasoning':['reasoning/derivation','reasoning/planner','reasoning/pricing','reasoning/decline-floor','reasoning/compositions'],
       'session-and-situation':['session-and-situation/states-and-origins','session-and-situation/events','session-and-situation/topics','session-and-situation/corrections'],
       'intake':['intake/router','intake/sources','retrieval-harborer'],
@@ -958,10 +1039,10 @@
     },
     /* System children in registry order (system-layout.ts): coherence is
        order 7; the siblings after it shift by one — intake 8,
-       retrieval-harborer 9, verbalizer 10, surfaces 11, unplaced 12,
-       person 13, clock 14, weather 15. Held as data here; the renderer
+       retrieval-harborer 9, verbalizer 10, surfaces 11, ontology-core 12,
+       unplaced 13, person 14, clock 15, weather 16. Held as data here; the renderer
        above only re-orders .sec-items containers. */
-    systemOrder:['configuration','lpu','awareness','session-and-situation','knowledge','reasoning','coherence','intake','retrieval-harborer','verbalizer','surfaces','unplaced','person','clock','weather']
+    systemOrder:['configuration','lpu','awareness','session-and-situation','knowledge','reasoning','coherence','intake','retrieval-harborer','verbalizer','surfaces','ontology-core','unplaced','person','clock','weather']
   };
   var RECTS=SYSTEM_LAYOUT.rects;
   function focusId(id){ var r=RECTS[id]; if(r) fitRect(r,54); select(id,false); }
@@ -1010,7 +1091,8 @@
     /* titled containers & units: badge at the upper right of the title bar */
     [['system','system'],['awareness','awareness'],['session','session-and-situation'],['verbalizer','verbalizer'],['coherence','coherence'],
      ['knowledge','knowledge'],['reasoning','reasoning'],['intake','intake'],['surfaces','surfaces'],
-     ['lpu','lpu'],['parser','lpu/parser'],['generator','lpu/generator'],
+     ['lpu','lpu'],['parser','lpu/parser'],['semantic-assessment','lpu/semantic-assessment'],['language-emotion-desire-unit','lpu/language-emotion-desire-unit'],['generator','lpu/generator'],
+     ['ontology-core','ontology-core'],['ontology-knowledge-unit','ontology-core/ontology-knowledge-unit'],['emotion-desire','ontology-core/emotion-desire'],
      ['token','lpu/parser/token'],['sense','lpu/parser/sense'],['valency','lpu/parser/valency'],['aspect','lpu/parser/aspect-and-forms'],
      ['unplaced-lpu','lpu/unplaced'],['unplaced-sys','unplaced']
     ].forEach(function(pr){ markNode(boxEl(pr[0]),pr[1],'titlebar'); });
@@ -1045,10 +1127,13 @@
       markNode(itemByName(sess,'topics'),'session-and-situation/topics','abs');
       markNode(itemByName(sess,'corrections'),'session-and-situation/corrections','abs');
     }
+    var oku=boxEl('ontology-knowledge-unit');
+    if(oku){
+      markNode(oku.querySelector('.sec-item[data-id="correspondence"]'),'ontology-core/ontology-knowledge-unit/correspondence-graph','abs');
+      markNode(oku.querySelector('.sec-item[data-id="classification"]'),'ontology-core/ontology-knowledge-unit/classification','abs');
+    }
     var kn=boxEl('knowledge');
     if(kn){
-      markNode(kn.querySelector('.sec-item[data-id="correspondence"]'),'knowledge/correspondence-graph','abs');
-      markNode(itemByName(kn,'classification'),'knowledge/classification','abs');
       markNode(kn.querySelector('.sec-item[data-id="lexicon"]'),'knowledge/lexicon','abs');
       markNode(kn.querySelector('.sec-item[data-id="variant-graph"]'),'knowledge/variant-graph','abs');
       markNode(itemByName(kn,'banked stores'),'knowledge/banked','abs');
@@ -1150,7 +1235,12 @@
     sense:{name:'Sense',path:'System ⊃ LPU ⊃ Parser ⊃ Sense',body:'Settles which sense of each word is meant. Where a word carries rival anchored senses, cycle coherence — same element, generating, controlling — arbitrates between them. For “Hello” this is the submodule that finds a <strong>social act</strong>, not a thing or an event.',ports:['IN — tokens','OUT — settled senses']},
     valency:{name:'Valency',path:'System ⊃ LPU ⊃ Parser ⊃ Valency',body:'What arguments a verb requires, and which required role is missing when a sentence stops short — the machinery behind “What did you give him?” A greeting requires no arguments, so “Hello” passes through clean.',ports:['IN — senses','OUT — argument frame']},
     aspect:{name:'Aspect & Forms',path:'System ⊃ LPU ⊃ Parser ⊃ Aspect & Forms',body:'Tense, aspect and form bundles: how an event is shaped in time and which surface forms realise it. A standalone greeting carries no aspect — this submodule records exactly that, rather than inventing an event.',ports:['IN — frame','OUT — formed graph']},
+    'semantic-assessment':{name:'SemanticAssessment',path:'System › Language Processing Unit (LPU) › SemanticAssessment — 0% completed to goal',body:"Answers 'What is this?' — what the text is saying. The Parser says how the text is built; this unit says what the utterance is as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system. Coherence judges the object's fit; the Planner chooses the move that answers its kind; Session records it as the turn's event.",ports:['IN — meaning graph','OUT — semantic object']},
     generator:{name:'Generator Unit',path:'System ⊃ LPU ⊃ Generator unit',body:'A <strong>sibling of the Parser</strong> inside the LPU — the reverse road. It takes the reply meaning graph the Planner selected and generates the surface wording from it.',ports:['IN — reply meaning graph','OUT — wording']},
+    'language-emotion-desire-unit':{name:'LanguageEmotionDesireUnit',path:'System › Language Processing Unit (LPU) › LanguageEmotionDesireUnit — 0% completed to goal',body:"The LEDU: the LPU's bridge to the EmotionDesireUnit, maintained inside the LPU. It maps emotion and desire as expressed in language — 'furious', 'longing to see her' — into the EDU's framework on the way in, and an object's emotion or desire aspect back into language on the way out. The mapping is language's; the framework is the EDU's.",ports:['IN — emotion / desire in language','OUT — EDU framework terms']},
+    'ontology-core':{name:'OntologyCore',path:'System › OntologyCore — 0% completed to goal',body:"The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. The EmotionDesireUnit is its first placed unit. What else belongs in the core is still to be settled.",ports:['—']},
+    'emotion-desire':{name:'EmotionDesireUnit',path:'System › OntologyCore › EmotionDesireUnit — 0% completed to goal',body:"The EDU: the system's medium-neutral authority on emotion and desire. It holds the Seven Emotions and Six Desires framework — the emotions and desires, their phase and organ correspondences — and answers any medium's bridge unit: what emotion or desire is this, what does it correspond to. Language reaches it through the LPU's LEDU today; in the future an IDU will contact it for the Image Processing Unit, the same way.",ports:['IN — emotion / desire query','OUT — framework answer']},
+    'ontology-knowledge-unit':{name:'Ontology Knowledge Unit',path:'System › OntologyCore › Ontology Knowledge Unit — 60% completed to goal',body:"The OKU: the OntologyCore's knowledge unit. It contains the correspondence graph and the classification table — the system's ontology as held, consultable knowledge. The graph and the table moved here from Knowledge, which keeps the lexicon, the variant graph and the banked stores.",ports:['IN — consultation','OUT — correspondences / classifications']},
     derivation:{name:'Derivation',path:'System ⊃ Reasoning ⊃ Derivation · UNIT',body:'Walks the Correspondence Store — generating and controlling cycles — and prices what it finds. Support below the floor is reported as weak rather than asserted. For a greeting there is nothing to derive, and the unit says so: that negative result is what routes the turn to the situation instead.',ports:['IN — meaning graph','OUT — priced derivations']},
     planner:{name:'Planner',path:'System ⊃ Reasoning ⊃ Planner · UNIT',body:'Chooses the next conversational move from two inputs: the Derivation Unit\u2019s priced results <strong>and</strong> the Awareness Unit\u2019s situation statement. Unknown person + first utterance + a greeting = acknowledge and open. That is a planned move, not a canned string.',ports:['IN — derivations + situation','OUT — selected move']},
     awareness:{name:'Awareness Unit',path:'System ⊃ Awareness Unit',body:'At <strong>System level, beside the LPU</strong> — a container with four branches. <strong>Self:</strong> Identity (Table), Capabilities &amp; limits (Table), Current disposition (Register, copied from its Table at session open), Own state (Register). <strong>Place &amp; Time:</strong> Clock (Source, astride the edge), Season &amp; daypart (Register, classified against its Table), Surface &amp; channel (Register), Weather (Source feeding a Register). <strong>Surroundings:</strong> Interlocutor standing, Standing topics, Other presences (all Registers). <strong>Current Activity:</strong> Situation statement, Last act, Open gaps (Registers) — and the <strong>Composer</strong>, the one Unit inside: one writer, many readers. It represents that the system knows <strong>where it is, who it is, who and what is around it, and what is currently happening</strong>. It continuously holds a situation statement — currently: <em>“I am chatting to a person with unknown identity.”</em> The Planner and Verbalizer read it on every turn, including turns the LPU cannot answer from knowledge.',ports:['IN — session + arrivals','OUT — situation statement']},
@@ -1166,7 +1256,7 @@
     tables:{name:'Composition Definitions — Table',path:'System ⊃ Reasoning ⊃ Composition definitions · TABLE',body:'A <strong>Table</strong>: a fixed mapping, key in → value out, that never changes at runtime. Pricing ceilings, correspondence tables and composition definitions live here. When a number in the system looks arbitrary, it is read off one of these — and can be changed here, in one place.',ports:['IN — key','OUT — value']},
     clock:{name:'Clock — Source',path:'System edge ⊃ Clock · SOURCE',body:'A <strong>Source</strong>: it originates input from outside the system boundary, so it is drawn on the System\u2019s edge. The clock feeds the Awareness Unit its sense of when it is — session start, time of day, how long a turn has taken.',ports:['OUT — time signal']},
     source:{name:"The Person's Channel — Source",path:'System edge ⊃ Person · SOURCE',body:'A <strong>Source</strong>: the person\u2019s channel originates the utterance from outside the boundary and is drawn on the System\u2019s edge. Everything the system knows about this source right now is in the Awareness Unit: identity unknown, first utterance, no shared topic yet.',ports:['OUT — utterance']},
-    knowledge:{name:'Knowledge',path:'System ⊃ Knowledge',body:'The held side of the system: the <strong>Correspondence graph</strong> (Store, its cycles as relations), <strong>Classification</strong> (Table), the <strong>Lexicon</strong> (Store), the <strong>Variant Graph</strong> (Store) and the <strong>Banked stores</strong> — retrievals the Retrieval Harborer has kept, with provenance. Everything here is consulted by cord; nothing here acts.',ports:['IN — harbored retrievals','OUT — consultations']},harborer:{name:'Retrieval Harborer',path:'System ⊃ Intake & Harboring ⊃ Retrieval Harborer · UNIT',body:'Where a retrieval is given <strong>harbor</strong>: kept, not certified. Retrieval is the neutral word — kept material may later prove wrong and be struck, so the name claims only that it was retrieved. Entry is gated: provenance required, derived confidence, individually reversible. Kept retrievals travel the pathway cord up into Knowledge.',ports:['IN — returned retrieval + papers','OUT — harbored entry']},intake:{name:'Intake & Harboring',path:'System ⊃ Intake & Harboring',body:'One doorway at the System edge, a matched pair: the <strong>Intake Router</strong> governs what may be asked for and in what order; the <strong>Retrieval Harborer</strong>, behind its gate, governs what may be kept.',ports:['IN — knowledge need','OUT — harbored retrievals']},reasoning:{name:'Reasoning',path:'System ⊃ Reasoning',body:'Derivation (the cycle walks) and the Planner (move selection, reply graph), with Pricing and Composition definitions as Tables and the Decline floor as a Gate astride the pathway between them. It sits at System level — it <em>uses</em> language; it is not part of the LPU.',ports:['IN — meaning graph + situation','OUT — reply graph']},correspondence:{name:'Correspondence Graph',path:'System ⊃ Knowledge ⊃ Correspondence graph · STORE',body:'Classifications and correspondences at Wuxing addresses, the generating and controlling cycles held as its relations. A Store: consulted by Derivation via connection cord, never travelled through.',ports:['IN — harbored entries','OUT — correspondences']},surfaces:{name:'Surfaces',path:'System ⊃ Surfaces',body:'Where output leaves and is seen: the Reply, this root page, the dashboard and the trace view.',ports:['OUT — what is shown']},'unplaced-lpu':{name:'Unplaced — LPU',path:'System ⊃ LPU ⊃ Unplaced',body:'A place held inside the LPU for other aspect units, beyond the Parser and the Generator. Dashed ruling: reserved, not built. To be settled.',ports:['—']},'unplaced-sys':{name:'Unplaced — System',path:'System ⊃ Unplaced',body:'A place held at System level for further units whose territory is not yet categorised. Dashed ruling: reserved, not built. To be settled.',ports:['—']},lexicon:{name:'Lexicon',path:'System ⊃ Knowledge ⊃ Lexicon · STORE',body:'The classified word stock the Sense submodule consults — a <strong>resource</strong>, reached by a connection cord, never by nesting. When a word has no entry, the gap is located in this unit by name.',ports:['IN — lookup','OUT — entries / located gap']},
+    knowledge:{name:'Knowledge',path:'System ⊃ Knowledge',body:'What the system holds as stores: the lexicon, the variant graph, and the banked stores. The correspondence graph and the classification table moved to the Ontology Knowledge Unit in the OntologyCore.',ports:['IN — harbored retrievals','OUT — consultations']},harborer:{name:'Retrieval Harborer',path:'System ⊃ Intake & Harboring ⊃ Retrieval Harborer · UNIT',body:'Where a retrieval is given <strong>harbor</strong>: kept, not certified. Retrieval is the neutral word — kept material may later prove wrong and be struck, so the name claims only that it was retrieved. Entry is gated: provenance required, derived confidence, individually reversible. Kept retrievals travel the pathway cord up into Knowledge.',ports:['IN — returned retrieval + papers','OUT — harbored entry']},intake:{name:'Intake & Harboring',path:'System ⊃ Intake & Harboring',body:'One doorway at the System edge, a matched pair: the <strong>Intake Router</strong> governs what may be asked for and in what order; the <strong>Retrieval Harborer</strong>, behind its gate, governs what may be kept.',ports:['IN — knowledge need','OUT — harbored retrievals']},reasoning:{name:'Reasoning',path:'System ⊃ Reasoning',body:'Derivation (the cycle walks) and the Planner (move selection, reply graph), with Pricing and Composition definitions as Tables and the Decline floor as a Gate astride the pathway between them. It sits at System level — it <em>uses</em> language; it is not part of the LPU.',ports:['IN — meaning graph + situation','OUT — reply graph']},correspondence:{name:'Correspondence Graph',path:'System › OntologyCore › Ontology Knowledge Unit › Correspondence graph — 75% completed to goal',body:'Classifications and correspondences at Wuxing addresses, the generating and controlling cycles held as its relations. A Store: consulted by Derivation via connection cord, never travelled through.',ports:['IN — harbored entries','OUT — correspondences']},classification:{name:'Classification',path:'System › OntologyCore › Ontology Knowledge Unit › Classification — 60% completed to goal',body:'A <strong>Table</strong>: the fixed classification mapping the correspondence graph is filed under — key in → value out, and it never changes at runtime.',ports:['IN — key','OUT — classification']},surfaces:{name:'Surfaces',path:'System ⊃ Surfaces',body:'Where output leaves and is seen: the Reply, this root page, the dashboard and the trace view.',ports:['OUT — what is shown']},'unplaced-lpu':{name:'Unplaced — LPU',path:'System ⊃ LPU ⊃ Unplaced',body:'A place held inside the LPU for other aspect units, beyond the Parser and the Generator. Dashed ruling: reserved, not built. To be settled.',ports:['—']},'unplaced-sys':{name:'Unplaced — System',path:'System ⊃ Unplaced',body:'A place held at System level for further units whose territory is not yet categorised. Dashed ruling: reserved, not built. To be settled.',ports:['—']},lexicon:{name:'Lexicon',path:'System ⊃ Knowledge ⊃ Lexicon · STORE',body:'The classified word stock the Sense submodule consults — a <strong>resource</strong>, reached by a connection cord, never by nesting. When a word has no entry, the gap is located in this unit by name.',ports:['IN — lookup','OUT — entries / located gap']},
     'variant-graph':{name:'Variant Graph',path:'System ⊃ Knowledge ⊃ Variant Graph · STORE',body:'AnSci\u2019s own graph of surface forms: variant nodes linked to the canonical forms they resolve to — <strong>shortforms, common misspellings, apostrophe-less contractions</strong> — each edge carrying register, provenance and confidence. Populated from published lists on the web, imported as sourced data, never hand-written into code. Consulted by Token during resolution; what is merely close is computed by the matcher, never stored; confirmed resolutions can be banked here.<br><br>Populated 2026-11-16: <strong>4,200 edges</strong> (4,066 common misspellings, 66 shortforms, 68 apostrophe-less contraction forms) in <strong>ai-system/knowledge/variant-graph/variants.json</strong>, each edge sourced. The resolution code that consults it is not built yet. The resolution code that consults it is now built and wired into the parser (in Node contexts; the browser build cannot read the data file yet).',ports:['IN — surface form','OUT — canonical form']}
   };
   var selectedId='system';
@@ -1176,6 +1266,9 @@
      shared by the sidebar Inspector and the Popover panel so both modes
      show exactly the same information. */
   function decoratedPath(info,id){
+    /* a path that already carries its % completed to goal (SemanticAssessment)
+       is shown exactly as written */
+    if(info.path.indexOf('% completed to goal')>=0) return info.path;
     var nodeId=ID2NODE[id];
     if(nodeId && (nodeId in SYSTEM_MAP)){ var p=SYSTEM_MAP[nodeId]; return info.path+'  ·  '+p+'% completed to goal — '+stateOf(p)+(p===0?' (placeholder)':'')+' · set by us'; }
     return info.path;
@@ -1245,6 +1338,23 @@
   }
   if(inspSidebarBtn) inspSidebarBtn.addEventListener('click',function(e){ e.stopPropagation(); setInspectorMode('sidebar'); });
   if(inspPopoverBtn) inspPopoverBtn.addEventListener('click',function(e){ e.stopPropagation(); setInspectorMode('popover'); });
+
+  /* ===== Theme — Dark (default) / Light =====
+     Session-only, like the page's other toggles: a fresh load always
+     starts dark (data-theme="dark" on <html>), regardless of the OS
+     light/dark preference. Flipping switches the whole page via the
+     [data-theme] custom properties above; no value is persisted. */
+  var themeDarkBtn=document.getElementById('themeDarkBtn'), themeLightBtn=document.getElementById('themeLightBtn');
+  function setTheme(theme){
+    var isDark=(theme!=='light');
+    document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
+    document.documentElement.style.colorScheme=isDark?'dark':'light';
+    if(themeDarkBtn){ themeDarkBtn.classList.toggle('on',isDark); themeDarkBtn.setAttribute('aria-pressed',String(isDark)); }
+    if(themeLightBtn){ themeLightBtn.classList.toggle('on',!isDark); themeLightBtn.setAttribute('aria-pressed',String(!isDark)); }
+  }
+  if(themeDarkBtn) themeDarkBtn.addEventListener('click',function(e){ e.stopPropagation(); setTheme('dark'); });
+  if(themeLightBtn) themeLightBtn.addEventListener('click',function(e){ e.stopPropagation(); setTheme('light'); });
+  setTheme(document.documentElement.getAttribute('data-theme')||'dark');
   var infoPopClose=document.getElementById('infoPopClose');
   if(infoPopClose) infoPopClose.addEventListener('click',function(e){ e.stopPropagation(); hideInfoPop(); });
 
@@ -1265,14 +1375,16 @@
     'lpu/parser':[712,430],
     'session-and-situation':[1219,750],'awareness':[1219,268],
     'reasoning/derivation':[422,1590],'reasoning/pricing':[1190,1546],'reasoning/planner':[792,1590],
-    'lpu/generator':[860,303],'verbalizer':[1219,915],
-    'knowledge/correspondence-graph':[375,1330]
+    'lpu/semantic-assessment':[860,303],
+    'lpu/generator':[860,776],'verbalizer':[1219,915],
+    'ontology-core/ontology-knowledge-unit/correspondence-graph':[536,2248]
   };
   var NODE_BOX={
     'person':null,'lpu/parser/token':'token','lpu/parser/sense':'sense','lpu/parser/valency':'valency','lpu/parser/aspect-and-forms':'aspect',
     'lpu/parser':'parser','session-and-situation':'session','awareness':'awareness',
     'reasoning/derivation':'derivation','reasoning/pricing':null,'reasoning/planner':'planner',
-    'lpu/generator':'generator','verbalizer':'verbalizer','knowledge/correspondence-graph':'correspondence'
+    'lpu/semantic-assessment':'semantic-assessment',
+    'lpu/generator':'generator','verbalizer':'verbalizer','ontology-core/ontology-knowledge-unit/correspondence-graph':'correspondence'
   };
   var NODE_INFO={
     'person':{loc:'Outside the System — a person',text:'A person says the recorded utterance. The circle starts here, at the Person source.'},
@@ -1286,9 +1398,10 @@
     'reasoning/derivation':{loc:'Reasoning ⊃ Derivation',text:'Derivation walks the Correspondence graph and prices what it finds.'},
     'reasoning/pricing':{loc:'Reasoning ⊃ Pricing',text:'The priced result is checked against the fixed ceilings — passage to the Planner is priced here, at the decline floor.'},
     'reasoning/planner':{loc:'Reasoning ⊃ Planner',text:'The Planner selects the next move from the priced results and the situation statement.'},
+    'lpu/semantic-assessment':{loc:'LPU ⊃ SemanticAssessment',text:'SemanticAssessment says what the utterance is as a whole, packaged as a semantic object that then travels the system.'},
     'lpu/generator':{loc:'Generator Unit',text:'The selected move arrives at the Generator as a reply meaning graph and becomes surface wording.'},
     'verbalizer':{loc:'Verbalizer · uses the LPU',text:'The Verbalizer says the recorded reply — it appears in the conversation readout.'},
-    'knowledge/correspondence-graph':{loc:'Knowledge ⊃ Correspondence graph',text:'Derivation consults the Correspondence graph — and finds nothing it can use.'}
+    'ontology-core/ontology-knowledge-unit/correspondence-graph':{loc:'Ontology Knowledge Unit ⊃ Correspondence graph',text:'Derivation consults the Correspondence graph — and finds nothing it can use.'}
   };
   var PARSE_PATH=['person','lpu/parser/token','lpu/parser/sense','lpu/parser/valency','lpu/parser/aspect-and-forms','lpu/parser'];
   var RECORDED=[
@@ -1297,7 +1410,7 @@
     {say:'I was furious.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were furious when you heard the news. What did you say when you heard the news?',session:'anger',idx:1},
     {say:'I shouted at him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You shouted at him. Now that it\u2019s out — what would help you settle?',session:'anger',idx:2},
     {say:'Is winter cold?',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','reasoning/planner','lpu/generator','verbalizer']),reply:'Winter is most fully cold, and it is most fully dark.',session:null,idx:0},
-    {say:'Is the table cold?',path:PARSE_PATH.concat(['session-and-situation','reasoning/derivation','knowledge/correspondence-graph']),reply:'I can\u2019t answer that from what I know: I have nothing on table in my notes.',session:null,idx:0,stop:'decline'},
+    {say:'Is the table cold?',path:PARSE_PATH.concat(['session-and-situation','reasoning/derivation','ontology-core/ontology-knowledge-unit/correspondence-graph']),reply:'I can\u2019t answer that from what I know: I have nothing on table in my notes.',session:null,idx:0,stop:'decline'},
     {say:'What was put in the soup?',path:PARSE_PATH.concat(['session-and-situation']),reply:'I can\u2019t answer that from what I know: nothing you have told me says what the agent of \u2018put\u2019 was.',session:null,idx:0,stop:'decline'},
     {say:'I gave him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'You gave. What did you give him?',session:null,idx:0},
     {say:'Blorp zizzle frak.',path:['person','lpu/parser'],reply:'I couldn\u2019t take that sentence apart — could you put it another way?',session:null,idx:0,stop:'parse'},
@@ -1688,7 +1801,7 @@
     });
     (function(){
       var lpu=boxEl('lpu'); if(!lpu) return;
-      var kids=[boxEl('parser'),boxEl('generator'),boxEl('unplaced-lpu')].filter(Boolean);
+      var kids=[boxEl('parser'),boxEl('semantic-assessment'),boxEl('language-emotion-desire-unit'),boxEl('generator'),boxEl('unplaced-lpu')].filter(Boolean);
       var allHidden=kids.length && kids.every(function(k){ return k.classList.contains('built-hidden'); });
       lpu.classList.toggle('built-hidden',builtOnly && !!allHidden);
       var aw=boxEl('awareness'); if(!aw) return;
@@ -1764,7 +1877,7 @@
      (Parser, Generator, Unplaced) moves only its in-LPU siblings
      ('lpu') — its growth is otherwise absorbed by the LPU frame. */
   function shiftForY(y,deltas,scope){ var s=0; for(var i=0;i<deltas.length;i++){ if(deltas[i].scope===scope && y>=deltas[i].bottom-0.5) s+=deltas[i].delta; } return s; }
-  var LPU_KIDS=['parser','generator','unplaced-lpu'];
+  var LPU_KIDS=['parser','semantic-assessment','language-emotion-desire-unit','generator','unplaced-lpu'];
   function scopeForPoint(x,y){ return (x>=222&&x<=998&&y>=118&&y<=968)?'lpu':'all'; }
   function layoutContainers(){
     if(!GEO) snapshotGeo();
@@ -1802,7 +1915,7 @@
     }
     /* submodules first — the Parser's natural height depends on theirs */
     ['token','sense','valency','aspect'].forEach(deriveFlowBox);
-    ['awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','generator','parser','unplaced-lpu','unplaced-sys'].forEach(deriveFlowBox);
+    ['awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','semantic-assessment','language-emotion-desire-unit','generator','parser','unplaced-lpu','unplaced-sys','ontology-knowledge-unit','emotion-desire'].forEach(deriveFlowBox);
 
     /* geometric containers grow to enclose their (shifted) children */
     function childBottom(id){
@@ -1813,14 +1926,22 @@
     }
     var lpuTop=origTopOf('lpu'), lpuDelta=0;
     if(lpuTop!==null && ('lpu' in origH)){
-      var needLpu=Math.max(childBottom('parser'),childBottom('generator'),childBottom('unplaced-lpu'))-lpuTop+24;
+      var needLpu=Math.max(childBottom('parser'),childBottom('semantic-assessment'),childBottom('language-emotion-desire-unit'),childBottom('generator'),childBottom('unplaced-lpu'))-lpuTop+24;
       lpuDelta=Math.max(0,needLpu-origH['lpu']);
       if(lpuDelta>0){ deltas.push({id:'lpu',bottom:lpuTop+origH['lpu'],delta:lpuDelta,scope:'all'}); newH['lpu']=origH['lpu']+lpuDelta; var lpuEl=boxEl('lpu'); if(lpuEl) lpuEl.style.height=newH['lpu']+'px'; if(RECTS['lpu']) RECTS['lpu'].h=newH['lpu']; }
+    }
+    /* the OntologyCore is a geometric container too: it grows to enclose
+       the Ontology Knowledge Unit and the EmotionDesireUnit inside it */
+    var ocTop=origTopOf('ontology-core');
+    if(ocTop!==null && ('ontology-core' in origH)){
+      var needOc=Math.max(childBottom('ontology-knowledge-unit'),childBottom('emotion-desire'))-ocTop+24;
+      var ocDelta=Math.max(0,needOc-origH['ontology-core']);
+      if(ocDelta>0){ deltas.push({id:'ontology-core',bottom:ocTop+origH['ontology-core'],delta:ocDelta,scope:'all'}); newH['ontology-core']=origH['ontology-core']+ocDelta; var ocEl=boxEl('ontology-core'); if(ocEl) ocEl.style.height=newH['ontology-core']+'px'; if(RECTS['ontology-core']) RECTS['ontology-core'].h=newH['ontology-core']; }
     }
     var sysTop=origTopOf('system'), sysNewH=origH['system'];
     if(sysTop!==null && ('system' in origH)){
       var maxB=-Infinity;
-      ['lpu','awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','unplaced-sys'].forEach(function(id){ maxB=Math.max(maxB,childBottom(id)); });
+      ['lpu','awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','unplaced-sys','ontology-core'].forEach(function(id){ maxB=Math.max(maxB,childBottom(id)); });
       sysNewH=Math.max(origH['system'],maxB-sysTop+30);
       var sysEl=boxEl('system'); if(sysEl) sysEl.style.height=sysNewH+'px';
       if(RECTS['system']) RECTS['system'].h=sysNewH;
@@ -1834,7 +1955,7 @@
       var vn=0; g.el.setAttribute('d',g.d.replace(/-?\d+\.?\d*/g,function(){ var v=vs[vn++]; return Math.round(v*100)/100; }));
     }
     for(i=0;i<GEO.circles.length;i++){ g=GEO.circles[i]; g.el.setAttribute('cy',g.cy+shiftForY(g.cy,deltas,scopeForPoint(g.cx,g.cy))); }
-    var RECT_LPU=['parser','generator','unplaced-lpu','token','sense','valency','aspect'];
+    var RECT_LPU=['parser','semantic-assessment','language-emotion-desire-unit','generator','unplaced-lpu','token','sense','valency','aspect'];
     Object.keys(GEO.rects).forEach(function(k){ var rsc=RECT_LPU.indexOf(k)>=0?'lpu':'all'; RECTS[k].y=GEO.rects[k].y+shiftForY(GEO.rects[k].y,deltas,rsc); });
     Object.keys(GEO.nodepos).forEach(function(k){ var p=GEO.nodepos[k]; NODE_POS[k][1]=p[1]+shiftForY(p[1],deltas,scopeForPoint(p[0],p[1])); });
 
@@ -1847,6 +1968,20 @@
   window.addEventListener('resize',function(){ /* keep transform; user can refit */ });
   layoutContainers();
   fitSystem(); select('system',false); apply();
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  /* Footer information block: collapsed by default — clicking the
+     triangle / first line toggles the remaining lines. */
+  var block=document.getElementById('footBlock');
+  var toggle=document.getElementById('footToggle');
+  if(!block||!toggle) return;
+  toggle.addEventListener('click',function(){
+    var open=block.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded',open?'true':'false');
+  });
 })();
 </script>
 </body>

@@ -100,11 +100,17 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "lpu/parser/aspect-and-forms": {
       "order": 4
     },
-    "lpu/generator": {
+    "lpu/semantic-assessment": {
       "order": 2
     },
-    "lpu/unplaced": {
+    "lpu/language-emotion-desire-unit": {
       "order": 3
+    },
+    "lpu/generator": {
+      "order": 4
+    },
+    "lpu/unplaced": {
+      "order": 5
     },
     "session-and-situation": {
       "order": 4
@@ -124,20 +130,14 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "knowledge": {
       "order": 5
     },
-    "knowledge/correspondence-graph": {
+    "knowledge/lexicon": {
       "order": 1
     },
-    "knowledge/classification": {
+    "knowledge/variant-graph": {
       "order": 2
     },
-    "knowledge/lexicon": {
-      "order": 3
-    },
-    "knowledge/variant-graph": {
-      "order": 4
-    },
     "knowledge/banked": {
-      "order": 5
+      "order": 3
     },
     "reasoning": {
       "order": 6
@@ -211,17 +211,32 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "surfaces/trace-view": {
       "order": 4
     },
-    "unplaced": {
+    "ontology-core": {
       "order": 12
     },
-    "person": {
+    "ontology-core/ontology-knowledge-unit": {
+      "order": 1
+    },
+    "ontology-core/ontology-knowledge-unit/correspondence-graph": {
+      "order": 1
+    },
+    "ontology-core/ontology-knowledge-unit/classification": {
+      "order": 2
+    },
+    "ontology-core/emotion-desire-unit": {
+      "order": 2
+    },
+    "unplaced": {
       "order": 13
     },
-    "clock": {
+    "person": {
       "order": 14
     },
-    "weather": {
+    "clock": {
       "order": 15
+    },
+    "weather": {
+      "order": 16
     }
   }
 };
