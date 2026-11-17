@@ -198,6 +198,15 @@ export interface TurnTrace {
   steeringNote?: string;
   declineReason?: string;
   /**
+   * The schematic walk of the turn: the ordered node ids
+   * (ai-system/system-map.ts) the turn actually passed through,
+   * computed in processTurn from this trace's own evidence — the
+   * same records the dashboard reads. The root page's map walks
+   * exactly this list. A decline's path ends at the node where
+   * the turn stopped.
+   */
+  mapPath?: string[];
+  /**
    * R1 (design note §10): true when the spoken wording is the
    * probe's hand wording rather than generated from a
    * plan-built reply graph. Set true by default at trace
@@ -1252,6 +1261,69 @@ function applyInitiative(session: Session, result: TurnResult): void {
 }
 
 /**
+ * The schematic walk of a finished turn: the ordered node ids
+ * (ai-system/system-map.ts) the turn actually passed through,
+ * computed from the trace's own evidence — the same records the
+ * dashboard reads, so the map and the dashboard cannot disagree
+ * about what ran. Pathway steps only: consulting a store is a
+ * connection on the map, not a step — except where the journey's
+ * whole point was the lookup and it came back empty (the
+ * knowledge-gap decline ends at the correspondence graph it
+ * searched). A decline's path ends at the node where the turn
+ * stopped. A spoken reply ends at the Verbalizer; a planner-built
+ * reply passes the Generator on its way there, and the probe's
+ * hand-worded replies do not.
+ */
+function computeMapPath(trace: TurnTrace): string[] {
+  const path: string[] = ["person"];
+  if (trace.parseSummary === "parse failed") {
+    // The sentence layer stopped the turn inside the Parser; no
+    // submodule is named — the trace carries no stage detail.
+    path.push("lpu/parser");
+    return path;
+  }
+  path.push(
+    "lpu/parser/token",
+    "lpu/parser/sense",
+    "lpu/parser/valency",
+    "lpu/parser/aspect-and-forms",
+    "lpu/parser",
+    "session-and-situation",
+  );
+  if (trace.answeredFromRecord) {
+    path.push("reasoning/planner", "lpu/generator", "verbalizer");
+    return path;
+  }
+  if (trace.declineReason) {
+    if (trace.pricing && trace.planNote?.includes("priced decline")) {
+      path.push("reasoning/derivation", "reasoning/pricing", "reasoning/decline-floor");
+      return path;
+    }
+    if (
+      trace.declineReason.includes("in my notes") ||
+      trace.declineReason.includes("no path runs") ||
+      trace.declineReason.includes("no way to connect")
+    ) {
+      path.push("reasoning/derivation", "knowledge/correspondence-graph");
+      return path;
+    }
+    // The remaining declines stop at the record: a missing role
+    // or an unanswerable question shape — nothing further ran.
+    return path;
+  }
+  const correctionOnly = Boolean(trace.correction && trace.replyGraph && !trace.derivationPath);
+  const planned = Boolean(trace.replyGraph || trace.gapQuestion || trace.clarification);
+  const derived = Boolean(trace.derivationPath || trace.cyclePath);
+  if ((derived || planned) && !correctionOnly) path.push("awareness");
+  if (trace.derivationPath) path.push("reasoning/derivation");
+  if (trace.pricing) path.push("reasoning/pricing");
+  if (planned) path.push("reasoning/planner", "lpu/generator");
+  path.push("verbalizer");
+  if (trace.initiative) path.push("reasoning/planner", "lpu/generator", "verbalizer");
+  return path;
+}
+
+/**
  * One conversational turn: the turn body (parse → record →
  * reason → reply), then the initiative scan over the formed
  * reply (R6, §8.10).
@@ -1259,6 +1331,7 @@ function applyInitiative(session: Session, result: TurnResult): void {
 export function processTurn(session: Session, text: string): TurnResult {
   const result = processTurnInner(session, text);
   applyInitiative(session, result);
+  result.trace.mapPath = computeMapPath(result.trace);
   return result;
 }
 
