@@ -531,6 +531,19 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "Word senses and verb frames the parser consults."
     },
     {
+      "id": "knowledge/variant-graph",
+      "title": "Variant Graph",
+      "type": "Store",
+      "parent": "knowledge",
+      "state": "partial",
+      "percent": 30,
+      "path": "knowledge/variant-graph",
+      "file": null,
+      "external": false,
+      "currentCode": "—",
+      "summary": "AnSci's own graph of surface forms: variant nodes linked to the canonical forms they resolve to — shortforms, common misspellings, apostrophe-less contractions — each edge carrying register, provenance and confidence. Populated from published lists on the web, imported as sourced data, never hand-written into code. Consulted by Token during resolution; what is merely close is computed by the matcher, never stored; confirmed resolutions can be banked here."
+    },
+    {
       "id": "knowledge/banked",
       "title": "Banked stores",
       "type": "Store",
@@ -1010,6 +1023,12 @@ export const SYSTEM_MAP: SystemMap = {
       "to": "coherence",
       "kind": "connection",
       "label": "uses"
+    },
+    {
+      "from": "lpu/parser/token",
+      "to": "knowledge/variant-graph",
+      "kind": "connection",
+      "label": "consults"
     }
   ],
   "traces": {

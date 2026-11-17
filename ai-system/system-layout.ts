@@ -133,8 +133,11 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "knowledge/lexicon": {
       "order": 3
     },
-    "knowledge/banked": {
+    "knowledge/variant-graph": {
       "order": 4
+    },
+    "knowledge/banked": {
+      "order": 5
     },
     "reasoning": {
       "order": 6
