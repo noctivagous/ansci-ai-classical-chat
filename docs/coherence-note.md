@@ -54,6 +54,23 @@ level** and its properties, including:
   what a system *without* a coherence demand does instead: it
   cannot say "this doesn't fit", so it files the misfit somewhere.
 
+## Used at different stages, in both directions (owner, 2026-11-16, later)
+
+Coherence is not a single checkpoint in the turn. It **will be
+utilized in different ways, by different units, at different
+stages**:
+
+- **Analyzing what comes in** — how it makes sense at different
+  levels (the words and the sentence; the situation; the stream of
+  what has been said).
+- **Analyzing what goes out** — used by the **Verbalizer**, making
+  sure that what is said, as it is verbalized, makes sense.
+
+On the map this is drawn as it is drawn for every resource
+relation: the Verbalizer has a "uses" cord to Coherence. Further
+inbound users are expected as units are built; they will be drawn
+as they are settled, not before.
+
 ## Placement — settled 2026-11-16
 
 The owner settled it the same evening: **its own unit, consulting

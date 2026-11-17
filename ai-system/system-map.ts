@@ -762,7 +762,7 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": "—",
-      "summary": "The system's coherence demand, as a unit (the CoherenceProcessor of the worked example): analyses what arrives against who is talking, what is known of the situation, and what has been said — and says so when it doesn't make sense. Consults Awareness and Session & Situation. Design capture: docs/coherence-note.md."
+      "summary": "The system's coherence demand, as a unit (the CoherenceProcessor of the worked example): analyses what arrives against who is talking, what is known of the situation, and what has been said — and says so when it doesn't make sense. Not one checkpoint: different units use it at different stages — on what comes in, at several levels, and on what goes out (the Verbalizer uses it to check what is said as it is verbalized). Consults Awareness and Session & Situation. Design capture: docs/coherence-note.md."
     },
     {
       "id": "coherence/coherence-demand",
@@ -788,7 +788,7 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": "—",
-      "summary": "Works out what doesn't fit and what would: who is talking, what information is missing, whether the stream fits what has been said — and forms the response (e.g. an unknown person's 'I was furious' → 'Furious about what?')."
+      "summary": "Works in both directions, at several levels. Inbound: how what comes in makes sense — the words and the sentence, the situation, the stream of what has been said; what doesn't fit, and what information is missing (e.g. an unknown person's 'I was furious' → 'Furious about what?'). Outbound: used by the Verbalizer — what goes out is checked as it is verbalized, so that what is said makes sense too."
     },
     {
       "id": "surfaces",
@@ -1004,6 +1004,12 @@ export const SYSTEM_MAP: SystemMap = {
       "to": "session-and-situation",
       "kind": "connection",
       "label": "consults"
+    },
+    {
+      "from": "verbalizer",
+      "to": "coherence",
+      "kind": "connection",
+      "label": "uses"
     }
   ],
   "traces": {
