@@ -34,6 +34,15 @@ EDU also *walks* the OKU's larger graph from an emotion's phase
 emotion counteractions are such walks), reporting walked relations as
 tiered derivations, never as filed fact.
 
+## Boundary with the SenseUnit (2026-11-17)
+
+The six desires are cravings **of the sense channels**: the desire
+table's sense organs (eyes, tongue, mouth, nose, ears, mind) are the
+SenseUnit's roots, referenced here by name — the SenseUnit
+(`ontology-core/sense-unit`) owns the channels and their framework;
+this unit owns the cravings of those channels. The shared root list
+is not duplicated or re-filed here.
+
 ## Who uses it
 
 - **LEDU** (`lpu/language-emotion-desire-unit`) — language's bridge, today.

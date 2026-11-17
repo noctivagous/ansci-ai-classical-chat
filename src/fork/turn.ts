@@ -95,7 +95,11 @@ import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
 import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rivalSplits } from "./sense";
 import { assessUtterance } from "./assess";
-import { analyseInbound, analyseOutbound, compareCompositions } from "./coherence";
+import { SENSE_CHANNELS } from "./semantic-object";
+import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions } from "./coherence";
+import { applySceneUpdate } from "./senses-scening";
+import { applyQuantityMentions, currentQuantity, latestKindFor } from "./quantification";
+import { normaliseKind, pluraliseKind, renderQuantity } from "./quantification-language";
 import { authorReplyObject } from "./reply";
 import { generate } from "./generate";
 
@@ -210,6 +214,27 @@ export interface TurnTrace {
    *  (assess.ts): id and kind per object. Absent on a parse
    *  failure — no parse, no assessment. */
   semanticObjects?: { id: string; kind: string }[];
+  /** The sense channels present in this turn's objects' senses
+   *  faces (senses-scening.ts), in channel order. Absent when
+   *  every channel is none. Drives the mapPath's pass through
+   *  lpu/senses-scening-unit. */
+  sensesPresent?: string[];
+  /** The running scene this turn's fragment referenced
+   *  (session.scenes): its id and this fragment's role in it. */
+  scene?: { id: string; role: string };
+  /** The quantity ledger changes this turn produced
+   *  (quantification.ts, applied from the objects' quantity
+   *  mentions): plain-words summaries, in order — a stated
+   *  amount, a transfer, a flag. Absent when the turn carried
+   *  no quantity content the ledger wires. Drives the
+   *  mapPath's pass through lpu/quantification-language-unit. */
+  quantities?: string[];
+  /** A how-many question answered from the ledger
+   *  (quantification.ts): the holder and kind asked after,
+   *  the tracked amount read (null = a bounded unknown — the
+   *  conversation said some, never how many), and the
+   *  rendering spoken. */
+  quantityAnswer?: { holder: string; kind: string; amount: number | null; rendered: string };
   /** CoherenceAnalysis's readings of this turn's objects
    *  (coherence.ts): the annotation notes, in order. Present
    *  only when the analysis had something to say. */
@@ -630,6 +655,76 @@ function speakWithObject(session: Session, trace: TurnTrace, graph: ParsedSenten
   trace.replyObject = { id: replyObject.id, kind: replyObject.act.kind };
 }
 
+/**
+ * The how-many reader (2026-11-17): a "How many …?" question
+ * is answered from the Session's quantity ledger — the
+ * QuantificationUnit's tracked state — never re-derived from
+ * the sentences that built it. The sentence layer's parse of
+ * a how-many question is mangled (its root keeps 'How' as the
+ * agent and loses the counted noun), so the reader works from
+ * the surface the person actually said: the kind named after
+ * "many", when it names a kind the ledger tracks for the
+ * speaker, else the speaker's most recently tracked kind.
+ *
+ * Three honest outcomes: a tracked number answers ("You have
+ * two apples left." — "left" when the kind's record has been
+ * changed by events, or the question itself says "left"); a
+ * bounded unknown answers AS a bound (the conversation said
+ * some, never how many); no record at all declines, with the
+ * missing record as its ground. The wording is the probe's
+ * hand wording from the ledger record; the trace names the
+ * record it read.
+ */
+function answerHowMany(session: Session, trace: TurnTrace, text: string): TurnResult | undefined {
+  const surface = text.trim();
+  if (!/^how many\b/i.test(surface)) return undefined;
+  const holder = "you"; // the session's grain for the speaker
+  const words = surface.replace(/[?.!]/g, "").split(/\s+/);
+  const manyIdx = words.findIndex((w) => w.toLowerCase() === "many");
+  const next = manyIdx >= 0 ? words[manyIdx + 1] : undefined;
+  const AUX = new Set(["do", "does", "did", "have", "has", "had", "are", "is", "was", "were"]);
+  let kind: string | undefined;
+  if (next && !AUX.has(next.toLowerCase())) {
+    const candidate = normaliseKind(next);
+    if (currentQuantity(session, holder, candidate)) kind = candidate;
+  }
+  kind ??= latestKindFor(session, holder);
+  if (!kind) {
+    trace.declineReason =
+      "the question asks how many, and the quantity ledger holds no tracked kind for the speaker — the missing record is the decline's ground";
+    return {
+      reply: "I can't answer that from what I know: you haven't told me how many of anything you have.",
+      trace,
+    };
+  }
+  const rec = currentQuantity(session, holder, kind);
+  if (!rec) {
+    trace.declineReason =
+      `the question asks how many '${kind}', and the quantity ledger holds no record of that kind for the speaker — the missing record is the decline's ground`;
+    return {
+      reply: `I can't answer that from what I know: you haven't told me how many ${pluraliseKind(kind)} you have.`,
+      trace,
+    };
+  }
+  if (rec.amount === null) {
+    trace.quantityAnswer = { holder, kind, amount: null, rendered: `some ${pluraliseKind(kind)} (a bounded unknown)` };
+    trace.planNote =
+      "how-many answered from the quantity ledger (quantification.ts): the tracked amount is a bounded unknown, answered as a bound, not a number";
+    return {
+      reply: `You told me you have some ${pluraliseKind(kind)}, but not how many.`,
+      trace,
+    };
+  }
+  const rendered = renderQuantity(rec.amount, kind);
+  const changed = session.quantities.filter((q) => q.holder === holder && q.kind === kind).length > 1;
+  const left = changed || /\bleft\b/i.test(surface);
+  trace.quantityAnswer = { holder, kind, amount: rec.amount, rendered };
+  trace.planNote =
+    `how-many answered from the quantity ledger (quantification.ts): the current record for '${kind}' ` +
+    `(turn ${rec.turn}, tier ${rec.tier}) — computed by the ledger's records, not re-derived from the sentences`;
+  return { reply: `You have ${rendered}${left ? " left" : ""}.`, trace };
+}
+
 function processTurnInner(session: Session, text: string): TurnResult {
   session.turnCount += 1;
   const turn = session.turnCount;
@@ -679,9 +774,33 @@ function processTurnInner(session: Session, text: string): TurnResult {
   for (const o of assessed) {
     analyseInbound(o, session);
     compareCompositions(o, session);
+    analyseSenses(o);
   }
   session.objects.push(...assessed);
+  // The scene graph (2026-11-17): the fragment the assessment
+  // produced is placed into the Session's running scene, after
+  // the object is recorded — the face was computed against the
+  // scene as it stood before this turn.
+  for (const o of assessed) {
+    if (o.senses?.scene) applySceneUpdate(session, parsed, o.senses, turn);
+  }
+  // The quantity ledger (2026-11-17): the mentions the
+  // QuantificationLanguageUnit read at assessment are applied
+  // to the Session's ledger by the QuantificationUnit, after
+  // the objects are recorded — the mentions were read against
+  // the conversation as it stood before this turn.
+  const quantityNotes: string[] = [];
+  for (const o of assessed) {
+    if (o.quantities?.length) {
+      quantityNotes.push(...applyQuantityMentions(session, o.quantities, turn).applied);
+    }
+  }
+  if (quantityNotes.length) trace.quantities = quantityNotes;
   trace.semanticObjects = assessed.map((o) => ({ id: o.id, kind: o.act.kind }));
+  const sensesPresent = SENSE_CHANNELS.filter((c) => assessed.some((o) => o.senses?.channels[c]?.length));
+  if (sensesPresent.length) trace.sensesPresent = sensesPresent;
+  const sceneFace = assessed.find((o) => o.senses?.scene)?.senses.scene;
+  if (sceneFace) trace.scene = { id: sceneFace.id, role: sceneFace.role };
   const coherenceNotes = assessed.flatMap((o) =>
     o.trail.filter((a) => a.unit === "coherence/coherence-analysis").map((a) => a.note),
   );
@@ -861,6 +980,12 @@ function processTurnInner(session: Session, text: string): TurnResult {
     return answerPredicateQuestion(session, trace, subject, root, root.states?.questionKind === "why", topicsBefore);
   }
   if (root.states?.mood === "interrogative") {
+    /* The how-many reader (2026-11-17): a "How many …?"
+     * question is answered from the quantity ledger before
+     * the shape declines below — the ledger, not the
+     * sentence's shape, is what such a question asks after. */
+    const howMany = answerHowMany(session, trace, text);
+    if (howMany) return howMany;
     /* R3 (§6): this decline, like every decline, cites its
      * ground. Where the parse carries a query record over a
      * verb, the question asks for the filler of one role of
@@ -1391,8 +1516,15 @@ function computeMapPath(trace: TurnTrace): string[] {
     "lpu/parser/aspect-and-forms",
     "lpu/parser",
     "lpu/semantic-assessment",
-    "session-and-situation",
   );
+  // The Senses-Scening Unit is consulted at creation whenever
+  // the turn's object carries any channel present.
+  if (trace.sensesPresent?.length) path.push("lpu/senses-scening-unit");
+  // The QuantificationLanguageUnit likewise, on turns that
+  // recorded quantity content or answered a how-many question
+  // from the ledger.
+  if (trace.quantities?.length || trace.quantityAnswer) path.push("lpu/quantification-language-unit");
+  path.push("session-and-situation");
   if (trace.answeredFromRecord) {
     path.push("reasoning/planner", "lpu/generator", "verbalizer");
     return path;

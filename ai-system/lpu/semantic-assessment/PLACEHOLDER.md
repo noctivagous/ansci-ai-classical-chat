@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/semantic-assessment`
 - **Type:** Unit
-- **State:** partial — **55% completed to goal** (set by us, assessed by the project, not measured or computed). Slices 1–3 built 2026-11-17: `src/fork/semantic-object.ts` (the type) + `src/fork/assess.ts` (creation) — an object for every parsed utterance, aspects classified through the OntologyCore, compositions rolled up; read by Coherence and the Planner. Detail in the "ALL BUILT" section below; suite 595/595.
+- **State:** partial — **65% completed to goal** (set by us, assessed by the project, not measured or computed). Slices 1–3 built 2026-11-17: `src/fork/semantic-object.ts` (the type) + `src/fork/assess.ts` (creation) — an object for every parsed utterance, aspects classified through the OntologyCore, compositions rolled up; read by Coherence and the Planner. Detail in the "ALL BUILT" section below; suite 595/595. **Senses face added 2026-11-17:** at creation the assessment now also consults the Senses-Scening Unit (`lpu/senses-scening-unit`, over the OntologyCore's SenseUnit), and every object — person and reply alike — carries a `senses` face: per-channel entries (sight/hearing/smell/taste/touch/mind, present or none) plus the multi-sensory scene those entries bind into. **Quantity mentions added 2026-11-17:** at creation the assessment also consults the QuantificationLanguageUnit (`lpu/quantification-language-unit`, over the OKU's QuantificationUnit), and an object whose utterance carries quantity content carries the mentions (`object.quantities`); the turn loop applies them to the Session's quantity ledger after the object is recorded.
 
 ## What this unit is
 
@@ -198,6 +198,7 @@ stored by Session as a node in the stream's graph of objects.**
 | :--- | :--- | :--- | :--- |
 | SemanticAssessment | OKU — Classification table | at creation, per classifiable aspect (quality, domain, temporal) | `classify(concept, aspect)` → {element, tier, confidence, source} (`src/fork/classify.ts`) |
 | SemanticAssessment, via LEDU | EDU — the 七情六欲 framework | at creation, for emotion/desire aspects | LEDU maps the language expression → EDU names the emotion/desire and its correspondences |
+| SemanticAssessment, via the Senses-Scening Unit | SenseUnit — the channel framework （六根/六塵 channels, Xunzi discriminations, Suwen phase rows in the OKU) | at creation, for the object's `senses` face and its scene | the Senses-Scening Unit maps sensory words → the SenseUnit names the channel/discrimination and the OKU files the phase where one exists |
 | Derivation | OKU — Correspondence graph | when the Planner's question needs a path | the cycle walks Derivation already runs, now addressed through the object |
 | CoherenceAnalysis | OKU — Correspondence graph | comparing compositions (object × situation × disposition) | relation between two phases: generating / controlling / same / none |
 | Planner | OKU — both | move selection and pricing, as today | unchanged machinery, object-addressed |

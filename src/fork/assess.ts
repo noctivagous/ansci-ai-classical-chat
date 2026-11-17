@@ -26,6 +26,8 @@ import type { Session } from "./session";
 import type { AspectReading, GroundingMark, ObjectHole, SemanticObject } from "./semantic-object";
 import { classificationsOf } from "./classify";
 import { emotionAspect } from "./ledu";
+import { buildSensesFace } from "./senses-scening";
+import { computeQuantityMentions } from "./quantification-language";
 import { tierOfProvenance } from "./pricing";
 import { compositionFromRanks, type Composition } from "./composition";
 
@@ -172,6 +174,17 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
 
   const aspects = classifyAspects(parsed);
   const composition = rollUpComposition(aspects);
+  // The senses face, produced by the Senses-Scening Unit at
+  // creation (2026-11-17): computed against the session's
+  // running scene as it stands BEFORE this object is recorded;
+  // the turn loop applies the scene update afterwards.
+  const senses = buildSensesFace(parsed, session, "describe");
+  // The quantity mentions, read by the QuantificationLanguageUnit
+  // at creation (2026-11-17): stated and implied quantities in
+  // the utterance, with the OKU Numbers reading attached where
+  // filed. The turn loop applies them to the Session's ledger
+  // after the object is recorded, as it does the scene update.
+  const quantities = computeQuantityMentions(parsed);
 
   const obj: SemanticObject = {
     id: `obj-${turn}-${session.objects.length + 1}`,
@@ -182,6 +195,8 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     act: { kind, form, force: kind, ritual: kind === "greeting", streamRole },
     content: { meaning: parsed.meaning, connective: parsed.connective, holes, grounding },
     aspects,
+    senses,
+    ...(quantities.length ? { quantities } : {}),
     ...(composition ? { composition } : {}),
     confidence,
     links: { ...(prev ? { follows: prev.id } : {}) },

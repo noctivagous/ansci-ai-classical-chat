@@ -393,12 +393,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "lpu",
       "state": "partial",
-      "percent": 55,
+      "percent": 65,
       "path": "lpu/semantic-assessment",
       "file": null,
       "external": false,
       "currentCode": "src/fork/semantic-object.ts, src/fork/assess.ts",
-      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction. Slice 1 built (shadow objects): assess.ts creates an object for every parsed utterance — kind, holes, grounding, stream role — stored on the session and named in the trace; nothing reads the objects yet."
+      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction. Slice 1 built (shadow objects): assess.ts creates an object for every parsed utterance — kind, holes, grounding, stream role — stored on the session and named in the trace; nothing reads the objects yet. Every object now also carries its senses face (via the Senses-Scening Unit, 2026-11-17) and, where the utterance carries quantity content, the QuantificationLanguageUnit's quantity mentions, which the turn loop applies to the Session's quantity ledger."
     },
     {
       "id": "lpu/language-emotion-desire-unit",
@@ -412,6 +412,32 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": "src/fork/ledu.ts",
       "summary": "The LEDU: the LPU's bridge to the EmotionDesireUnit, maintained inside the LPU. Maps emotion and desire as expressed in language — 'furious', 'longing to see her' — into the EDU's 七情六欲 framework on the way in, and an object's emotion or desire aspect back into language on the way out. Uses the EDU; the mapping is language's, the framework is the EDU's. Placed 2026-11-16 at the owner's direction; nothing built."
+    },
+    {
+      "id": "lpu/senses-scening-unit",
+      "title": "Senses-Scening Unit",
+      "type": "Unit",
+      "parent": "lpu",
+      "state": "partial",
+      "percent": 45,
+      "path": "lpu/senses-scening-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/senses-scening.ts",
+      "summary": "The Senses-Scening Unit: the LPU's unit that produces the senses/scene part of a semantic object, maintained inside the LPU. It maps sensory content as expressed in language — 'salty', 'green', 'loudly', 'fragrant', 'cold', 'overripe' — through the SenseUnit's framework (channel, discrimination, the OKU's filed phase where one exists), and binds the entries across ALL channels into one described scene: the entities, their sensory qualities, and the spatial arrangement where the sentence gives one (the banana sat on the table). A scene is recorded whenever any channel has an entry; a turn with no sensory content records every channel none and no scene. Only what the sentence says enters the face — implied channels are Coherence's derived-tier annotations, never entries. SemanticAssessment consults it at creation for person and reply objects alike. Uses the SenseUnit; the mapping is language's, the framework is the SenseUnit's. Placed 2026-11-17 at the owner's direction; inbound built the same day, the outbound mapping back into wording still to build."
+    },
+    {
+      "id": "lpu/quantification-language-unit",
+      "title": "QuantificationLanguageUnit",
+      "type": "Unit",
+      "parent": "lpu",
+      "state": "partial",
+      "percent": 45,
+      "path": "lpu/quantification-language-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/quantification-language.ts",
+      "summary": "The QuantificationLanguageUnit: the LPU's bridge to the QuantificationUnit, maintained inside the LPU (the EDU/LEDU pattern). Inbound: quantity as expressed in language — numerals and number words (one..twenty, hundred, thousand; digits), quantifier words (all/some/none/each/every) as bounded quantity kinds, construction-implied counts, unit words via the UnitsMeasurement Unit — read from the parse as quantity mentions, with the OKU Numbers slice's filed reading attached where one exists; SemanticAssessment attaches the mentions to the object at creation and the turn loop applies them to the Session's ledger. Outbound: a tracked quantity rendered back into language ('two apples') — the how-many reader speaks through it. Uses the QuantificationUnit at its home inside the OKU; the mapping is language's, the framework is the QuantificationUnit's. Placed and built 2026-11-17 at the owner's direction."
     },
     {
       "id": "lpu/generator",
@@ -492,6 +518,19 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "First-class topics: the turns they were raised and last touched."
     },
     {
+      "id": "session-and-situation/open-unknowns",
+      "title": "Open unknowns",
+      "type": "Register",
+      "parent": "session-and-situation",
+      "state": "partial",
+      "percent": 50,
+      "path": "session-and-situation/open-unknowns",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/session.ts (listOpenUnknowns — a derived view over session.scenes)",
+      "summary": "The register of currently-open unknowns across the conversation's scenes: facts about established scene entities that no turn has supplied yet (the airport's city), held as explicit typed slots ON the scene graphs themselves (owner's ruling, 2026-11-17). This register is a derived view over the scenes — one source of truth, no second store. Awareness's Open gaps reads from it; it does not own the slots. Built 2026-11-17: the view and the mint/fill wiring (the Senses-Scening Unit places fragments into the running scene); one slot-kind rule filed so far (airport → city)."
+    },
+    {
       "id": "session-and-situation/corrections",
       "title": "Corrections",
       "type": "Register",
@@ -542,6 +581,32 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": "src/fork/classify.ts",
       "summary": "The classification table: (concept, aspect) assertions with provenance and confidence. 164 entries; coverage is the constraint."
+    },
+    {
+      "id": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "title": "QuantificationUnit",
+      "type": "Unit",
+      "parent": "ontology-core/ontology-knowledge-unit",
+      "state": "partial",
+      "percent": 45,
+      "path": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/quantification.ts",
+      "summary": "The QuantificationUnit: the system's authority on quantity, living INSIDE the Ontology Knowledge Unit over its Numbers slice (owner's placement, 2026-11-17 — moved into the OKU, superseding an earlier System-level seat). It is the specialist reader of the OKU Numbers slice — Suwen ch. 4's number row (eight/Wood, seven/Fire, five/Earth, nine/Metal, six/Water), banked in the ingested store — and keeps no private number lore. Its three jobs: READ quantities stated and implied (between implies two); TRACK them in a ledger held on the Session (stated amounts, event deltas as transfers/gains, each a new record, the latest standing as current); COMPUTE from the tracked state (how-many answers, and inconsistency flags — a delta larger than the tracked amount is flagged, never silently applied). The Luoshu is built in as its working apparatus (the nine palaces, the 15 invariant, the flight path) — machinery in the unit, distinct from the OKU's filed numbers; the tension stands labelled (ch. 4 files Wood/east as 8; the Luoshu places 3 in the east palace, 8 in the north-east). Language reaches it through the LPU's QuantificationLanguageUnit. Placed and built 2026-11-17 at the owner's direction."
+    },
+    {
+      "id": "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit",
+      "title": "UnitsMeasurement Unit",
+      "type": "Unit",
+      "parent": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "state": "partial",
+      "percent": 50,
+      "path": "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/units-measurement.ts",
+      "summary": "The UnitsMeasurement Unit: the QuantificationUnit's sub-unit for units of measurement (owner, 2026-11-17 — nested inside the QuantificationUnit). A quantity is a number OF something: this unit names the somethings — each unit's dimension (weight, length, volume, count, temperature) and its factor to the dimension's base unit, across three systems in one table: traditional Chinese （銖/兩/斤， 寸/尺/丈/里， 合/升/斗， and the counting measure words 個/隻/條/本/張/頭 — the units the banked classical quantities, bencao dosages above all, are stated in), Imperial (ounce/pound/stone, inch/foot/yard/mile, imperial pint/gallon), and SI (gram/kilogram, metre, litre). Conversion runs only within a dimension; across dimensions it refuses, typed. Temperature is a scale, not a factor: Fahrenheit/Celsius convert by offset and ratio, separately. Traditional factors are the MODERN STANDARDISED values （斤 = 500 g, 兩 = 50 g, 里 = 500 m, 尺 = 1/3 m, 升 = 1 L), labelled as such — historical values varied by dynasty and no dynasty table is banked. Placed and built 2026-11-17."
     },
     {
       "id": "knowledge/lexicon",
@@ -788,7 +853,7 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": "—",
-      "summary": "The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table) and the EmotionDesireUnit, both placed at the owner's direction (2026-11-16)."
+      "summary": "The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table), the EmotionDesireUnit (placed 2026-11-16) and the SenseUnit (placed 2026-11-17), at the owner's direction."
     },
     {
       "id": "ontology-core/ontology-knowledge-unit",
@@ -815,6 +880,19 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": "src/fork/edu.ts, src/fork/edu-reach.ts",
       "summary": "The EDU: the system's medium-neutral authority on emotion and desire, sitting inside the OntologyCore. Holds the 七情六欲 framework — the seven emotions and six desires, their phase and organ correspondences — and answers any medium's bridge unit: what emotion or desire is this, what does it correspond to. Language reaches it through the LPU's LEDU today; in the future an IDU will contact it for the Image Processing Unit, the same way. Placed 2026-11-16 at the owner's direction; nothing built."
+    },
+    {
+      "id": "ontology-core/sense-unit",
+      "title": "SenseUnit",
+      "type": "Unit",
+      "parent": "ontology-core",
+      "state": "partial",
+      "percent": 40,
+      "path": "ontology-core/sense-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/sense-unit.ts",
+      "summary": "The SenseUnit: the system's medium-neutral authority on the human senses, sitting inside the OntologyCore beside the EDU. Its contents are the join of three provenance-labelled lists, never silently harmonised: the channels from 六根/六塵 (eye→form, ear→sound, nose→smell, tongue→taste, body→touch, mind→mental objects), the per-channel discriminations from Xunzi (Tianlun's five 天官, Rongru's assignments), and the phase correspondences from the OKU's Suwen rows (orifices, colour/sound/flavour quality rows, the ch. 4 odour row, skin as tissue). Its data lives in the OKU, as the EDU's does; it is the specialist authority over that slice, not a private store. Recorded tensions stand labelled: taste double-filed (tongue/Fire, mouth/Earth), touch with no channel phase (its values carry phases), mind's phase unsettled. Boundary with the EDU: this unit owns the channels; the EDU owns the cravings OF the channels. Language reaches it through the LPU's Senses-Scening Unit. Placed 2026-11-17 at the owner's direction; the naming authority built the same day (channel/discrimination lookups, the overripe cross-channel implication filed as derived-tier knowledge); no larger-graph reach yet."
     },
     {
       "id": "verbalizer",
@@ -861,7 +939,7 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "coherence",
       "state": "partial",
-      "percent": 50,
+      "percent": 55,
       "path": "coherence/coherence-analysis",
       "file": null,
       "external": false,
@@ -1098,6 +1176,18 @@ export const SYSTEM_MAP: SystemMap = {
     {
       "from": "lpu/language-emotion-desire-unit",
       "to": "ontology-core/emotion-desire-unit",
+      "kind": "connection",
+      "label": "uses"
+    },
+    {
+      "from": "lpu/senses-scening-unit",
+      "to": "ontology-core/sense-unit",
+      "kind": "connection",
+      "label": "uses"
+    },
+    {
+      "from": "lpu/quantification-language-unit",
+      "to": "ontology-core/ontology-knowledge-unit/quantification-unit",
       "kind": "connection",
       "label": "uses"
     }

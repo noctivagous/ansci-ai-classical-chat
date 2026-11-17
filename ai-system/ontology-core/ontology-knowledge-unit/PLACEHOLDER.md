@@ -23,6 +23,22 @@ held, consultable knowledge.
 Both moved here from Knowledge on 2026-11-16. Knowledge keeps the lexicon,
 the variant graph and the banked stores.
 
+## Its resident unit (2026-11-17)
+
+The OKU also holds the **Numbers slice** — the classical number
+correspondences, whose first deposit is Suwen ch. 4's number row
+（其數八/七/五/九/六 for Wood/Fire/Earth/Metal/Water), banked in the
+ingested store (`src/fork/ingested.ts`,
+`INGESTED_ASSERTIONS_CH4_NUMBERS`) — and, since 2026-11-17, an active
+unit of its own living over that slice: the **QuantificationUnit**
+(`ontology-core/ontology-knowledge-unit/quantification-unit`, 45%),
+the slice's specialist reader, with the **UnitsMeasurement Unit**
+(50%) nested inside it. Language reaches them through the LPU's
+QuantificationLanguageUnit. The QuantificationUnit keeps no private
+number lore: the filed numbers live here, in the OKU; the unit holds
+the machinery (the ledger operations, the implied counts, the
+Luoshu).
+
 ## Where the working code lives today
 
 `src/fork/classify.ts` (the table and its consumers) and the foundation

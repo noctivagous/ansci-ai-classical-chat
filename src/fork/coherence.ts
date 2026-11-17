@@ -30,7 +30,8 @@ import { lookupClassification } from "./classify";
 import { CONTROLS, GENERATES, type Element } from "./sentence";
 import { isNeutralComposition } from "./composition";
 import type { Session } from "./session";
-import type { SemanticObject } from "./semantic-object";
+import { SENSE_CHANNELS, type SemanticObject } from "./semantic-object";
+import { crossChannelImplications } from "./sense-unit";
 
 const UNIT = "coherence/coherence-analysis";
 
@@ -101,6 +102,62 @@ export function analyseOutbound(reply: SemanticObject, inbound: SemanticObject |
         `— ${relationBetween(reply.composition.predominant, season.element)}`,
       data: { comparison: "reply-situation", relation: relationBetween(reply.composition.predominant, season.element), objectPredominant: reply.composition.predominant, otherPredominant: season.element },
     });
+  }
+}
+
+/**
+ * Coherence reads the senses face (2026-11-17, the
+ * Senses-Scening build's first reader). Two annotation kinds,
+ * both minimal and trail-only — no reply-behaviour change:
+ *
+ *  (a) A QUALITY QUESTION's questioned value belongs to a
+ *  channel: "Is the table cold?" asks after a touch value
+ *  (temperature). The annotation names the channel and the
+ *  value, so downstream readers see WHICH sense is being asked
+ *  about, not just that a quality is questioned.
+ *  (b) DERIVED cross-channel implications: a sight-stated value
+ *  with filed implications in the SenseUnit (overripe →
+ *  smell/taste/touch) is annotated at tier "derived". These are
+ *  annotations on the trail, explicitly NOT entries in the
+ *  senses face — stated vs derived, kept apart.
+ */
+export function analyseSenses(object: SemanticObject): void {
+  const face = object.senses;
+  if (!face) return;
+  if (object.act.kind === "question") {
+    const rootId = object.content.meaning.rootId;
+    const questioned = face.channels;
+    for (const channel of SENSE_CHANNELS) {
+      for (const entry of questioned[channel] ?? []) {
+        // The questioned value is the entry the question's root
+        // predicates; when the parse ties no entry to the root,
+        // any entry in a one-entry face is the questioned one.
+        const total = SENSE_CHANNELS.reduce((n, c) => n + (questioned[c]?.length ?? 0), 0);
+        if (entry.nodeId === rootId || total === 1) {
+          object.trail.push({
+            unit: UNIT,
+            note:
+              `senses: the questioned value '${entry.value}' belongs to the ${channel} channel` +
+              (entry.discrimination ? ` (${entry.discrimination})` : "") +
+              " — the question asks after that sense",
+            data: { senseChannel: channel, value: entry.value, discrimination: entry.discrimination },
+          });
+        }
+      }
+    }
+  }
+  for (const channel of SENSE_CHANNELS) {
+    for (const entry of face.channels[channel] ?? []) {
+      for (const impl of crossChannelImplications(entry.value)) {
+        object.trail.push({
+          unit: UNIT,
+          note:
+            `senses (derived): '${entry.value}' stated on ${channel} implies, on ${impl.channel}: ${impl.implication} — ` +
+            "a derived-tier reading, not a stated entry",
+          data: { derivedSense: impl.channel, fromValue: entry.value, fromChannel: channel, implication: impl.implication, tier: "derived" },
+        });
+      }
+    }
   }
 }
 

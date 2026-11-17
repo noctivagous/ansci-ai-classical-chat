@@ -30,6 +30,7 @@
  */
 import type { ConnectiveGraph, MeaningGraph, TokenResolution } from "./sentence";
 import type { Composition } from "./composition";
+import type { QuantityMention } from "./quantification";
 
 /** The act kinds an object can carry. Extended per slice, never
  *  renamed: slice 1 — the kinds the loop already distinguishes;
@@ -86,6 +87,85 @@ export interface AspectReading {
   source?: string;
 }
 
+/** The six sense channels (六根, the six roots): the inventory
+ *  the SenseUnit (sense.ts) is the authority over. */
+export type SenseChannel = "sight" | "hearing" | "smell" | "taste" | "touch" | "mind";
+
+export const SENSE_CHANNELS: SenseChannel[] = ["sight", "hearing", "smell", "taste", "touch", "mind"];
+
+/** One sensory entry in the senses face: a value the sentence
+ *  SAYS, on one channel. `value` is the word as said (retention);
+ *  the discrimination is what the channel distinguishes (colour,
+ *  flavour, temperature, …); element/tier/source carry the OKU's
+ *  filed reading where one exists. Implied channels/values never
+ *  appear here — they are Coherence's derived-tier trail
+ *  annotations, not entries. */
+export interface SenseEntry {
+  nodeId: string;
+  value: string;
+  discrimination?: string;
+  element?: string;
+  tier?: string;
+  source?: string;
+}
+
+/** A spatial relation in a scene fragment, with its tier kept
+ *  distinct (the spatial-faculty design, 2026-11-17):
+ *  - "said": the sentence states it (the fountain between the
+ *    bathrooms);
+ *  - "placed-by-scene": placement in the running scene gives it
+ *    (the fountain in the airport);
+ *  - "default-placed": the spatial faculty's own coarse placement
+ *    for an entity with no stated/placed location (the bathrooms
+ *    somewhere in-or-near the airport) — a region, never
+ *    coordinates or invented specifics; the exact position stays
+ *    an unknown slot on the entity.
+ *  figure/ground are lemmas (scene-graph grain); the node ids are
+ *  carried when the relation comes from this fragment's graph. */
+export interface SceneRelationRecord {
+  figure: string;
+  figureNodeId?: string;
+  relation: string;
+  ground: string;
+  groundNodeId?: string;
+  tier: "said" | "placed-by-scene" | "default-placed";
+  basis?: string;
+}
+
+/** The scene part of the senses face: this fragment's reference
+ *  to the conversation's PERSISTENT scene graph (session.ts).
+ *  The face references the running scene by id and records what
+ *  this turn adds — it is not a detached per-utterance scene. */
+export interface SceneFace {
+  /** The running scene's id in Session's scene storage. */
+  id: string;
+  /** establishes: this turn started the scene. extends: the
+   *  fragment was placed into an already-established scene.
+   *  references: a reply object naming the standing scene
+   *  (reply faces never mutate the scene graph in v1). */
+  role: "establishes" | "extends" | "references";
+  /** Node ids of this fragment's described entities. */
+  entities: string[];
+  /** Spatial relations this fragment states (tier "said"). */
+  arrangements: SceneRelationRecord[];
+  /** Relations placement gives (tier "placed-by-scene" or
+   *  "default-placed"), labelled — never recorded as said. */
+  placed: SceneRelationRecord[];
+  unknownsOpened: { of: string; kind: string }[];
+  unknownsFilled: { of: string; kind: string; value: string }[];
+}
+
+/** The senses face of a semantic object (2026-11-17): every
+ *  channel present or none (null), plus the scene the entries
+ *  bind into when the fragment carries scene content. Produced
+ *  by the Senses-Scening Unit (senses-scening.ts) over the
+ *  SenseUnit's authority (sense.ts), at assessment for person
+ *  objects and at authoring for reply objects. */
+export interface SensesFace {
+  channels: Record<SenseChannel, SenseEntry[] | null>;
+  scene?: SceneFace;
+}
+
 /** A signed annotation on the object's trail: one unit's
  *  processing of the object, attributed. The object stays the
  *  producer's; the trail is the system's record of what was done
@@ -127,6 +207,19 @@ export interface SemanticObject {
     grounding: GroundingMark[];
   };
   aspects: AspectReading[];
+  /** The senses face: per-channel sensory entries (present or
+   *  none) and the scene reference, produced by the
+   *  Senses-Scening Unit at creation (2026-11-17). */
+  senses: SensesFace;
+  /** The quantity mentions the QuantificationLanguageUnit
+   *  read from the utterance (2026-11-17): stated and implied
+   *  quantities, with the OKU Numbers reading attached where
+   *  the slice files one. Present only when the utterance
+   *  carries quantity content; the turn loop applies the
+   *  mentions to the Session's ledger after the object is
+   *  recorded (quantification.ts). Reply objects carry none
+   *  in v1. */
+  quantities?: QuantityMention[];
   /** The aspects rolled up: a ranked predominance list, the
    *  disposition format. Computed in slice 3. */
   composition?: Composition;

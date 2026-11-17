@@ -44,7 +44,7 @@ import type { Element } from "./sentence";
 import { NEUTRAL_COMPOSITION, type Composition } from "./composition";
 import { tierOfProvenance, type Tier } from "./pricing";
 import { lookupClassification, type ClassificationEntry } from "./classify";
-import type { SemanticObject } from "./semantic-object";
+import type { SemanticObject, SenseChannel } from "./semantic-object";
 
 export interface EntityRecord {
   lemma: string;
@@ -261,6 +261,128 @@ export interface InitiativeRecord {
   event?: { verb: string; eventTurn: number; role: string };
 }
 
+/**
+ * The persistent scene graph (2026-11-17): what is talked about,
+ * as a scene, kept across the conversation — NOT rebuilt per
+ * utterance. The Senses-Scening Unit (senses-scening.ts) produces
+ * fragments; fragments are placed INTO the running scene here.
+ * Entities are keyed by lemma (node ids are per-turn); an entity
+ * already in the scene is referenced, not re-minted.
+ */
+export interface SceneEntityRecord {
+  lemma: string;
+  kind: "person" | "thing";
+  firstTurn: number;
+  lastTurn: number;
+  /** Sensory qualities said of this entity, by channel. */
+  qualities: { channel: SenseChannel; value: string; turn: number }[];
+}
+
+/** An unknown slot ON a scene entity (owner's ruling, 2026-11-17):
+ *  a fact about an established entity the conversation has not
+ *  supplied (the airport's city; a default-placed entity's exact
+ *  location), explicit and typed, persistent until a later object
+ *  fills it. The slots live here, on the scene graph — the
+ *  session-and-situation/open-unknowns register is a derived view
+ *  over them (listOpenUnknowns), never a second store. */
+export interface SceneUnknownSlot {
+  /** The scene entity's lemma. */
+  of: string;
+  /** The slot kind ("city", "exact-location", …). */
+  kind: string;
+  status: "open" | "filled";
+  openedTurn: number;
+  filledTurn?: number;
+  value?: string;
+}
+
+/** A spatial relation standing in the scene graph, tiered:
+ *  "said" (the sentence stated it), "placed-by-scene" (placement
+ *  in the running scene gives it), "default-placed" (the spatial
+ *  faculty's coarse placement — a region, never coordinates).
+ *  Placements are defeasible: a later said relation for the same
+ *  figure supersedes a placed one, recorded by supersededTurn —
+ *  the supersession pattern, not an edit in place. */
+export interface SceneStandingRelation {
+  figure: string;
+  relation: string;
+  ground: string;
+  tier: "said" | "placed-by-scene" | "default-placed";
+  basis?: string;
+  turn: number;
+  supersededTurn?: number;
+}
+
+export interface SceneGraph {
+  id: string;
+  establishedTurn: number;
+  /** The scene's container/anchor place lemma, when the
+   *  establishing fragment named one (the airport). Placement
+   *  and default placement locate entities against it. */
+  container?: string;
+  entities: SceneEntityRecord[];
+  relations: SceneStandingRelation[];
+  unknowns: SceneUnknownSlot[];
+  /** The scene's event sequence, in turn order: who did what,
+   *  when — the "and then" of the owner's specimen is this
+   *  ordering, nothing more exotic. */
+  events: { turn: number; verb: string; agent?: string }[];
+}
+
+/**
+ * A quantity standing in the conversation's ledger (2026-11-17):
+ * how much of a kind a holder holds, as the QuantificationUnit
+ * (quantification.ts) tracks it. The ledger lives HERE, on the
+ * Session — the state is the conversation's, not the unit's
+ * (the scene-graph settlement, one slice over: the unit reads,
+ * updates and computes over state held on the Session/scene
+ * graphs). Records are appended, never edited: a later record
+ * for the same (holder, kind) supersedes the earlier as the
+ * current amount, and the history is the audit trail.
+ *
+ * `amount: null` is a BOUNDED UNKNOWN: the conversation said
+ * there is some ("some apples", a bare plural) without saying
+ * how much — a bound, not a number, and never silently read
+ * as one. `tier` is the record's own standing: "said" for a
+ * stated amount, "derived" for one computed by an event (a
+ * purchase, a transfer). `reading` carries the OKU Numbers
+ * slice's filed phase for the amount, where one exists.
+ */
+export interface QuantityRecord {
+  holder: string; // 'you' for the speaker
+  /** The counted kind, singular-normalised ("apple"). */
+  kind: string;
+  amount: number | null;
+  unit?: string;
+  /** The quantifier the amount came with, where the sentence
+   *  quantified without numbering ("some", "all", a bare
+   *  plural). "none" records amount 0. */
+  quantifier?: string;
+  tier: "said" | "derived";
+  turn: number;
+  /** What produced this record, in plain words. */
+  basis: string;
+  /** The OKU Numbers slice's reading of this amount (the
+   *  ch. 4 number row), where the slice files one. */
+  reading?: { number: number; element: string; source: string };
+}
+
+/**
+ * A quantity problem the ledger refused to paper over
+ * (2026-11-17): a delta larger than the tracked amount (an
+ * inconsistency — flagged, and the delta NOT applied), or a
+ * delta against a bounded-unknown amount (unbounded — the
+ * arithmetic has no ground). Flags are records, not edits:
+ * the standing amount is left as it was, and the flag says why.
+ */
+export interface QuantityFlag {
+  holder: string;
+  kind: string;
+  turn: number;
+  flag: "inconsistency" | "unbounded";
+  detail: string;
+}
+
 export interface Session {
   graph: Graph;
   turnCount: number;
@@ -284,8 +406,43 @@ export interface Session {
    *  to the one it follows, and later slices add the fills /
    *  supersedes links between them. */
   objects: SemanticObject[];
+  /** The conversation's scene graphs (senses-scening.ts), in
+   *  order. v1 tracks one running scene — the last — and
+   *  fragments are placed into it; scene switching is not yet
+   *  distinguished. */
+  scenes: SceneGraph[];
+  /** The quantity ledger (quantification.ts): every quantity
+   *  record the conversation has produced, in order. The
+   *  current amount for a (holder, kind) is its LATEST record. */
+  quantities: QuantityRecord[];
+  /** Quantity problems flagged rather than papered over
+   *  (quantification.ts): inconsistencies and unbounded deltas. */
+  quantityFlags: QuantityFlag[];
   /** The initiative moves made in this session (§8.10). */
   initiatives: InitiativeRecord[];
+}
+
+/** The running scene: the scene fragments are placed into. */
+export function currentScene(session: Session): SceneGraph | undefined {
+  return session.scenes[session.scenes.length - 1];
+}
+
+/**
+ * The open-unknowns register (session-and-situation/
+ * open-unknowns): the currently-open unknown slots across all
+ * the session's scenes, as a DERIVED VIEW over the scene graphs
+ * — the slots' only store is the scenes themselves (owner's
+ * ruling, 2026-11-17). Awareness's Open gaps reads this listing;
+ * it does not own the slots.
+ */
+export function listOpenUnknowns(session: Session): (SceneUnknownSlot & { sceneId: string })[] {
+  const out: (SceneUnknownSlot & { sceneId: string })[] = [];
+  for (const s of session.scenes) {
+    for (const u of s.unknowns) {
+      if (u.status === "open") out.push({ ...u, sceneId: s.id });
+    }
+  }
+  return out;
 }
 
 export function newSession(disposition: Composition = NEUTRAL_COMPOSITION, frameInput?: FrameInput): Session {
@@ -302,6 +459,9 @@ export function newSession(disposition: Composition = NEUTRAL_COMPOSITION, frame
     topics: [],
     supersessions: [],
     objects: [],
+    scenes: [],
+    quantities: [],
+    quantityFlags: [],
     initiatives: [],
   };
 }

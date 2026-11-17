@@ -23,6 +23,7 @@ import type { ParsedSentence } from "./sentence";
 import type { Session } from "./session";
 import type { SemanticObject } from "./semantic-object";
 import { classifyAspects, rollUpComposition } from "./assess";
+import { buildSensesFace } from "./senses-scening";
 
 export interface AuthorReplyInput {
   /** The reply graph the Planner composed (a plan outcome). */
@@ -58,6 +59,10 @@ export function authorReplyObject(input: AuthorReplyInput): SemanticObject {
     },
     content: { meaning: graph.meaning, connective: graph.connective, holes: [], grounding: [] },
     aspects,
+    // The reply object's senses face, from the reply graph by
+    // the same Senses-Scening wiring (2026-11-17) — reference
+    // mode: it names the standing scene, never mutates it.
+    senses: buildSensesFace(graph, session, "reference"),
     ...(composition ? { composition } : {}),
     confidence: 1,
     links: { ...(inbound ? { follows: inbound.id } : {}) },

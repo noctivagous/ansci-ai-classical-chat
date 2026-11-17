@@ -106,11 +106,17 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "lpu/language-emotion-desire-unit": {
       "order": 3
     },
-    "lpu/generator": {
+    "lpu/senses-scening-unit": {
       "order": 4
     },
-    "lpu/unplaced": {
+    "lpu/quantification-language-unit": {
       "order": 5
+    },
+    "lpu/generator": {
+      "order": 6
+    },
+    "lpu/unplaced": {
+      "order": 7
     },
     "session-and-situation": {
       "order": 4
@@ -126,6 +132,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     },
     "session-and-situation/corrections": {
       "order": 4
+    },
+    "session-and-situation/open-unknowns": {
+      "order": 5
     },
     "knowledge": {
       "order": 5
@@ -223,8 +232,17 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "ontology-core/ontology-knowledge-unit/classification": {
       "order": 2
     },
+    "ontology-core/ontology-knowledge-unit/quantification-unit": {
+      "order": 3
+    },
+    "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit": {
+      "order": 1
+    },
     "ontology-core/emotion-desire-unit": {
       "order": 2
+    },
+    "ontology-core/sense-unit": {
+      "order": 3
     },
     "unplaced": {
       "order": 13
