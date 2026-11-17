@@ -1,0 +1,216 @@
+// system-layout.ts — presentation only.
+//
+// Where each node sits on the displayed map: its order among its
+// siblings, and (where a node needs one) a column/row placement.
+// Move columns, swap rows of tree-node levels, reorder sections —
+// edit THIS file; the system's description in system-map.ts does not
+// change, and the correspondence check keeps the two in step: every
+// node in the map has a layout entry, and every layout entry names a
+// real node.
+
+export interface NodeLayout {
+  order: number;
+  col?: number;
+  row?: number;
+  span?: number;
+}
+
+export interface SystemLayout {
+  nodes: Record<string, NodeLayout>;
+}
+
+// <layout-data>
+export const SYSTEM_LAYOUT: SystemLayout = {
+  "nodes": {
+    "system": {
+      "order": 1
+    },
+    "configuration": {
+      "order": 1
+    },
+    "awareness": {
+      "order": 2
+    },
+    "awareness/self": {
+      "order": 1
+    },
+    "awareness/self/identity": {
+      "order": 1
+    },
+    "awareness/self/capabilities": {
+      "order": 2
+    },
+    "awareness/self/disposition": {
+      "order": 3
+    },
+    "awareness/self/own-state": {
+      "order": 4
+    },
+    "awareness/place-and-time": {
+      "order": 2
+    },
+    "awareness/place-and-time/season-daypart": {
+      "order": 1
+    },
+    "awareness/place-and-time/channel": {
+      "order": 2
+    },
+    "awareness/surroundings": {
+      "order": 3
+    },
+    "awareness/surroundings/interlocutor-standing": {
+      "order": 1
+    },
+    "awareness/surroundings/standing-topics": {
+      "order": 2
+    },
+    "awareness/surroundings/other-presences": {
+      "order": 3
+    },
+    "awareness/current-activity": {
+      "order": 4
+    },
+    "awareness/current-activity/composer": {
+      "order": 1
+    },
+    "awareness/current-activity/situation-statement": {
+      "order": 2
+    },
+    "awareness/current-activity/last-act": {
+      "order": 3
+    },
+    "awareness/current-activity/open-gaps": {
+      "order": 4
+    },
+    "lpu": {
+      "order": 3
+    },
+    "lpu/parser": {
+      "order": 1
+    },
+    "lpu/parser/token": {
+      "order": 1
+    },
+    "lpu/parser/sense": {
+      "order": 2
+    },
+    "lpu/parser/valency": {
+      "order": 3
+    },
+    "lpu/parser/aspect-and-forms": {
+      "order": 4
+    },
+    "lpu/generator": {
+      "order": 2
+    },
+    "lpu/unplaced": {
+      "order": 3
+    },
+    "session-and-situation": {
+      "order": 4
+    },
+    "session-and-situation/states-and-origins": {
+      "order": 1
+    },
+    "session-and-situation/events": {
+      "order": 2
+    },
+    "session-and-situation/topics": {
+      "order": 3
+    },
+    "session-and-situation/corrections": {
+      "order": 4
+    },
+    "knowledge": {
+      "order": 5
+    },
+    "knowledge/correspondence-graph": {
+      "order": 1
+    },
+    "knowledge/classification": {
+      "order": 2
+    },
+    "knowledge/lexicon": {
+      "order": 3
+    },
+    "knowledge/banked": {
+      "order": 4
+    },
+    "reasoning": {
+      "order": 6
+    },
+    "reasoning/derivation": {
+      "order": 1
+    },
+    "reasoning/planner": {
+      "order": 2
+    },
+    "reasoning/pricing": {
+      "order": 3
+    },
+    "reasoning/decline-floor": {
+      "order": 4
+    },
+    "reasoning/compositions": {
+      "order": 5
+    },
+    "intake": {
+      "order": 7
+    },
+    "intake/router": {
+      "order": 1
+    },
+    "intake/cskg": {
+      "order": 2
+    },
+    "intake/wikidata": {
+      "order": 3
+    },
+    "intake/web": {
+      "order": 4
+    },
+    "intake/model": {
+      "order": 5
+    },
+    "retrieval-harborer": {
+      "order": 8
+    },
+    "retrieval-harborer/pipeline": {
+      "order": 1
+    },
+    "retrieval-harborer/gate": {
+      "order": 2
+    },
+    "verbalizer": {
+      "order": 9
+    },
+    "surfaces": {
+      "order": 10
+    },
+    "surfaces/root-page": {
+      "order": 1
+    },
+    "surfaces/dashboard": {
+      "order": 2
+    },
+    "surfaces/chat": {
+      "order": 3
+    },
+    "surfaces/trace-view": {
+      "order": 4
+    },
+    "unplaced": {
+      "order": 11
+    },
+    "person": {
+      "order": 12
+    },
+    "clock": {
+      "order": 13
+    },
+    "weather": {
+      "order": 14
+    }
+  }
+};
+// </layout-data>
