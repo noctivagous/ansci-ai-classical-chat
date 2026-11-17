@@ -19,6 +19,12 @@ Sync loop: the schematic is revised in its Muse artifact first
 (fast iteration), then the new revision replaces `root/index.html`,
 the site is rebuilt, and the change is pushed.
 
+The deploy is pinned by `wrangler.jsonc`: its assets directory is
+`./dist`, so both the root page and the `/dashboard/` subtree are
+served. Without it, wrangler auto-detects the assets directory from
+the Vite `outDir` (`dist/dashboard`) and serves only the app subtree
+— the root page is then built but never uploaded.
+
 The engine is imported from `../../src/fork/` — the same TypeScript the
 test suite and evaluation runners measure. Nothing in the lab is canned.
 The disk-backed providers (WordNet extract, FrameNet bundle) are stubbed

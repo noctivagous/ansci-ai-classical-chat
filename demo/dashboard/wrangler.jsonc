@@ -1,0 +1,16 @@
+{
+  // The deploy contract for the AnSci site, stated explicitly.
+  //
+  // Without this file, `wrangler deploy` auto-detects the assets
+  // directory from the Vite config's build.outDir — which is
+  // dist/dashboard (the app is served under /dashboard/), so the
+  // schematic root page at dist/index.html was built but never
+  // uploaded. Pinning the assets directory to ./dist serves both:
+  //   /            -> dist/index.html            (schematic root page)
+  //   /dashboard/  -> dist/dashboard/index.html  (the dashboard app)
+  "name": "ansci-ai-classical-chat",
+  "compatibility_date": "2025-11-15",
+  "assets": {
+    "directory": "./dist"
+  }
+}
