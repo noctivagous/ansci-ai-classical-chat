@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/semantic-assessment`
 - **Type:** Unit
-- **State:** placeholder — **0% completed to goal** (set by us, assessed by the project, not measured or computed)
+- **State:** partial — **55% completed to goal** (set by us, assessed by the project, not measured or computed). Slices 1–3 built 2026-11-17: `src/fork/semantic-object.ts` (the type) + `src/fork/assess.ts` (creation) — an object for every parsed utterance, aspects classified through the OntologyCore, compositions rolled up; read by Coherence and the Planner. Detail in the "ALL BUILT" section below; suite 595/595.
 
 ## What this unit is
 
@@ -136,3 +136,122 @@ have an order tree or graph to it so that it retains coherence.
 
 What stays out, by the standing rule: wording and anything medium-specific —
 the object must remain renderable as language now, image or video later.
+
+## Code design — creates, carries, reads (Kavi's draft, 2026-11-16 — for the owner's ruling)
+
+One sentence: **an object is created once, travels by reference through the
+turn, accumulates signed annotations from the units that process it, and is
+stored by Session as a node in the stream's graph of objects.**
+
+### Creates — two sites
+
+1. **SemanticAssessment** (`assess(parsed, sessionView) → SemanticObject[]`,
+   living here in `ai-system/lpu/semantic-assessment/`; today the judgement
+   is scattered through `src/fork/turn.ts`). A bundle out, because one
+   utterance can carry several acts. Its steps reuse machinery that already
+   exists, gathered into one recorded answer:
+   - *kind* — from the parse shape, the sentence layer's discourse features
+     and the mood Token recorded;
+   - *holes* — from the valency/gap computation the turn loop already runs
+     (a missing role becomes a typed hole node in the content graph);
+   - *grounding* — each entity checked against the session view (entities
+     and topics already recorded): established / new / ungrounded;
+   - *stream role* — against the session view's pending state (an open
+     question makes this object its answer; a repeated opening act is an
+     opener out of place);
+   - *aspects* — classified through the OntologyCore (below);
+   - *composition* — the aspects rolled up into the ranked predominance
+     list, the disposition format.
+2. **The Planner** creates **reply objects** — the same type, kind
+   *reply-intent*, authored by the system. The Verbalizer reads a reply
+   object and renders it; it does not author objects.
+
+### Carries
+
+- The turn loop passes the object by reference from stage to stage; the
+  loop's flow becomes the object's itinerary (and the trace's mapPath gains
+  `lpu/semantic-assessment`).
+- **The trail:** each unit that processes the object appends a *signed
+  annotation* (unit, verdict, price, note) to the object's trail. The
+  object stays the speaker's; the trail is the system's, every entry
+  attributed — the provenance discipline applied to processing.
+- **Session stores objects** as its Events: the stream becomes a graph of
+  objects linked by *fills* (an answer fills a hole), *supersedes* (a
+  correction), *answers*, *elaborates*. The session's existing supersession
+  deltas become link records between objects.
+- The trace records the object's id and kind per turn.
+
+### Reads
+
+| Reader | Reads | Writes |
+| :--- | :--- | :--- |
+| CoherenceAnalysis | act, holes, grounding, stream role, composition, the stream graph | fit/demand annotations on the trail |
+| Planner | kind, holes, coherence annotations, disposition | the reply object |
+| Derivation | the content graph (via the object) | derivation results, priced, on the trail |
+| Session | the whole object | storage, links, standing updates |
+| Verbalizer | the reply object only | surface text (no object) |
+| LEDU (outbound) | a reply object's emotion/desire aspects | wording choices for the Generator |
+
+### How it uses the OntologyCore
+
+| Consumer | Core piece | When | The call in today's terms |
+| :--- | :--- | :--- | :--- |
+| SemanticAssessment | OKU — Classification table | at creation, per classifiable aspect (quality, domain, temporal) | `classify(concept, aspect)` → {element, tier, confidence, source} (`src/fork/classify.ts`) |
+| SemanticAssessment, via LEDU | EDU — the 七情六欲 framework | at creation, for emotion/desire aspects | LEDU maps the language expression → EDU names the emotion/desire and its correspondences |
+| Derivation | OKU — Correspondence graph | when the Planner's question needs a path | the cycle walks Derivation already runs, now addressed through the object |
+| CoherenceAnalysis | OKU — Correspondence graph | comparing compositions (object × situation × disposition) | relation between two phases: generating / controlling / same / none |
+| Planner | OKU — both | move selection and pricing, as today | unchanged machinery, object-addressed |
+
+**Settled (owner, 2026-11-16): the EDU's correspondence data lives in the
+OKU.** The classification table already carries emotion entries (anger →
+Wood is one); the EDU is the specialist authority that interprets the
+emotion/desire slice of the core: the OKU holds, the EDU speaks for its
+domain.
+
+**The larger-graph question (owner, 2026-11-16) — Kavi's position, for
+ruling:** the EDU makes use of the OKU's whole correspondence graph, not
+only its own slice. Its *authority* is its slice (it names emotions and
+desires and their filed correspondences — a lookup). Its *reach* is the
+graph: from an emotion's phase it can walk — what generates that phase,
+what it generates, what controls it, what it controls, and the cross-domain
+correspondences (phase → season, direction, flavour, organ, sense). The
+type specimen is classical: the Suwen's emotion counteractions
+（情志相勝， qíngzhì xiāngshèng) are the controlling cycle read through the
+emotions — grief (Metal) overcomes anger (Wood), anger overcomes
+pensiveness (Earth), pensiveness overcomes fear (Water), fear overcomes
+joy (Fire), joy overcomes worry (Metal). None of those are filed *in* the
+emotion entries; they exist only as walks on the larger graph. The guard:
+a walked consequence is a *relation with a tier* (B-derived), reported as
+such and annotated — never an edit to the filed data, and never by itself a
+claim about a person; Coherence and the Planner price what a relation is
+worth in the situation. Without the reach, the EDU would be a lookup table
+with a name — the classification table already does lookup.
+
+### Migration slices — ALL BUILT 2026-11-17 (owner's commission: "build everything, 1–4 and this too")
+
+1. Shadow objects — `semantic-object.ts` + `assess.ts`, suite gate
+   `test/fork-semantic-object.test.ts`.
+2. First readers — `coherence.ts` (inbound) + the Planner's two
+   readings in the turn loop; gate `test/fork-coherence.test.ts`.
+3. Aspect wiring — `edu.ts`, `ledu.ts`, aspects + compositions at
+   creation, composition comparisons; gate `test/fork-aspects.test.ts`.
+   The EDU's larger-graph reach (the owner's "this too") —
+   `edu-reach.ts`; gate `test/fork-edu-reach.test.ts`.
+4. Reply objects — `reply.ts` + the outbound analysis; the Planner
+   authors a reply object at every graph-composed speaking site;
+   gate `test/fork-reply-object.test.ts`.
+
+### Migration slices (the original build order, as drafted)
+
+1. **Shadow objects** — the type + `assess()` for the kinds the loop already
+   distinguishes (statement, question, correction, topic-proposal,
+   reason-query); objects created, trailed, stored and traced; *nothing
+   reads them yet*, behaviour unchanged. Gate: traces show the objects; the
+   suite stays green.
+2. **First readers** — Coherence annotations + the Planner read objects for
+   the two designed scenarios (the greeting; the feeling-statement with its
+   missing cause). This is where the greeting trace becomes buildable.
+3. **Aspect wiring** — OKU classification and the LEDU→EDU call join
+   creation; compositions computed and compared.
+4. **Reply objects** — the Planner authors them; the Verbalizer consumes
+   them; outbound coherence judges the object before wording.

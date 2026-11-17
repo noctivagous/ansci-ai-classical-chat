@@ -94,6 +94,10 @@ import { priceDerivation, tierOfProvenance, weakestTier, type PricingRecord, typ
 import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
 import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rivalSplits } from "./sense";
+import { assessUtterance } from "./assess";
+import { analyseInbound, analyseOutbound, compareCompositions } from "./coherence";
+import { authorReplyObject } from "./reply";
+import { generate } from "./generate";
 
 export interface TurnTrace {
   turn: number;
@@ -202,6 +206,18 @@ export interface TurnTrace {
    *  decline reason for unanswerable turns. */
   steeringNote?: string;
   declineReason?: string;
+  /** The semantic objects this turn's utterance was assessed as
+   *  (assess.ts): id and kind per object. Absent on a parse
+   *  failure — no parse, no assessment. */
+  semanticObjects?: { id: string; kind: string }[];
+  /** CoherenceAnalysis's readings of this turn's objects
+   *  (coherence.ts): the annotation notes, in order. Present
+   *  only when the analysis had something to say. */
+  coherence?: string[];
+  /** The reply object this turn's planner-composed reply was
+   *  authored as (reply.ts, slice 4): id and kind. Absent when
+   *  the reply is the probe's hand wording. */
+  replyObject?: { id: string; kind: string };
   /**
    * The schematic walk of the turn: the ordered node ids
    * (ai-system/system-map.ts) the turn actually passed through,
@@ -546,7 +562,7 @@ function valencyGaps(parsed: ParsedSentence, root: MeaningNode): { entry: VerbEn
  * recorded and undefined is returned — the probe's follow-up
  * stands, as it does when there is no gap.
  */
-function tryGapQuestion(trace: TurnTrace, parsed: ParsedSentence, root: MeaningNode): string | undefined {
+function tryGapQuestion(session: Session, trace: TurnTrace, parsed: ParsedSentence, root: MeaningNode): string | undefined {
   if ((root.states?.mood ?? "indicative") !== "indicative") return undefined;
   const found = valencyGaps(parsed, root);
   if (!found || !found.gaps.length) return undefined;
@@ -591,10 +607,27 @@ function tryGapQuestion(trace: TurnTrace, parsed: ParsedSentence, root: MeaningN
       `the person reporting their own event can fill it`,
   };
   trace.replyGraph = serialiseReplyGraph(outcome.graph);
+  speakWithObject(session, trace, outcome.graph, "valency gap question");
   trace.planNote =
     "the acknowledgment is the probe's wording; the follow-up question is generated from the valency gap (replyGraph)" +
     (gaps.length > 1 ? `; further unfilled required roles not asked (one gap per turn): ${gaps.slice(1).join(", ")}` : "");
   return outcome.sentence;
+}
+
+/**
+ * Slice 4: where the Planner speaks from a graph, it also
+ * authors the reply as a semantic object (reply.ts), which
+ * Coherence judges outbound (coherence.ts) before the wording
+ * is spoken; the object is stored in the stream's graph and
+ * named in the trace. Hand-worded replies (wordingNotDerived)
+ * do not come through here.
+ */
+function speakWithObject(session: Session, trace: TurnTrace, graph: ParsedSentence, move: string): void {
+  const inbound = [...session.objects].reverse().find((o) => o.producer === "person" && o.turn === trace.turn);
+  const replyObject = authorReplyObject({ graph, turn: trace.turn, session, inbound, move });
+  analyseOutbound(replyObject, inbound, session);
+  session.objects.push(replyObject);
+  trace.replyObject = { id: replyObject.id, kind: replyObject.act.kind };
 }
 
 function processTurnInner(session: Session, text: string): TurnResult {
@@ -633,6 +666,43 @@ function processTurnInner(session: Session, text: string): TurnResult {
   const root = nodeById(parsed, parsed.meaning.rootId);
   trace.parseSummary = `root '${root.lemma}' (${root.syntacticElement}${root.role ? ", " + root.role : ""}); nodes: ${parsed.meaning.nodes.map((n) => n.lemma).join(", ")}; mood: ${root.states?.mood ?? "indicative"}`;
   trace.tokenResolutions = parsed.tokenResolutions ?? [];
+
+  /* Semantic objects (slice 1 — shadow; slice 2 — first
+   * readers): SemanticAssessment's reading of this utterance as
+   * an object (assess.ts), made BEFORE this turn's own
+   * recording, so grounding and stream role read the prior
+   * stream; CoherenceAnalysis then reads the object against
+   * that same prior stream (coherence.ts) and annotates its
+   * trail. The objects are stored on the session and named in
+   * the trace. */
+  const assessed = assessUtterance(parsed, { turn, surface: text, session });
+  for (const o of assessed) {
+    analyseInbound(o, session);
+    compareCompositions(o, session);
+  }
+  session.objects.push(...assessed);
+  trace.semanticObjects = assessed.map((o) => ({ id: o.id, kind: o.act.kind }));
+  const coherenceNotes = assessed.flatMap((o) =>
+    o.trail.filter((a) => a.unit === "coherence/coherence-analysis").map((a) => a.note),
+  );
+  if (coherenceNotes.length) trace.coherence = coherenceNotes;
+
+  /* The opening greeting (slice 2): the Planner answers the
+   * greeting object with its mirror — the reply is generated
+   * from the object's own graph, so the register the person
+   * chose (Hello / Hi / Hey) is the register returned. A
+   * greeting records nothing propositional, so the turn ends
+   * here. The disposition-shaped variants (a welcoming
+   * expansion, only when first) wait on the chat-configuration
+   * ruling; the mirror is the neutral behaviour. */
+  const openingObject = assessed[0];
+  if (openingObject && openingObject.act.kind === "greeting" && openingObject.act.streamRole === "opens") {
+    speakWithObject(session, trace, parsed, "return greeting");
+    trace.planNote = "return greeting (the planner, reading the semantic object; coherence: fits)";
+    trace.replyGraph = serialiseReplyGraph(parsed);
+    trace.wordingNotDerived = false;
+    return { reply: generate(parsed), trace };
+  }
 
   /* ---- record: entities, pronoun resolutions, events, states ---- */
   const resolve = (lemma: string): string => {
@@ -759,6 +829,7 @@ function processTurnInner(session: Session, text: string): TurnResult {
         });
         trace.replyGraph = serialiseReplyGraph(outcome.graph);
         trace.wordingNotDerived = false;
+        speakWithObject(session, trace, outcome.graph, "correction");
         trace.planNote =
           "reply is the planner's correction graph, built from the supersession delta (§8.7 S12): " +
           "the acknowledgement's content is the delta and the person's own subject material, nothing else";
@@ -881,6 +952,7 @@ function processTurnInner(session: Session, text: string): TurnResult {
         };
         trace.replyGraph = serialiseReplyGraph(outcome.graph);
         trace.wordingNotDerived = false;
+        speakWithObject(session, trace, outcome.graph, "clarification question");
         trace.planNote =
           `reply is the planner's clarification question over the split classification of '${split.lemma}' (§2.3)` +
           (split.rivals.length > 2 ? `; a third tied rival (${split.rivals[2].anchor}) is recorded in the clarification record but not offered` : "") +
@@ -974,6 +1046,23 @@ function processTurnInner(session: Session, text: string): TurnResult {
 
   // (c) A fresh state: follow the generating direction toward expression.
   if (thisState?.element) {
+    /* Coherence demand (slice 2): a feeling stated at the
+     * opening with its cause unexpressed, the situation unknown
+     * — the Planner answers the demand recorded on this turn's
+     * object (coherence.ts) instead of steering: it asks after
+     * the cause. The state itself stands recorded above; only
+     * the reply changes hands. */
+    const turnObject = session.objects.find((o) => o.turn === turn && o.producer === "person");
+    const demand = turnObject?.trail.find((a) => a.data?.demand === "unexpressed-cause");
+    if (turn === 1 && thisState.holder === "you" && demand && turnObject) {
+      turnObject.trail.push({
+        unit: "reasoning/planner",
+        note: "answered the coherence demand: asked after the unexpressed cause",
+      });
+      trace.planNote = "coherence demand (unexpressed cause, situation unknown): the planner asks after the cause";
+      trace.steeringNote = "the generating steering stood down for the coherence demand";
+      return { reply: `${cap(thisState.lemma)} about what?`, trace };
+    }
     const generated = GENERATES[thisState.element];
     trace.cyclePath = `${thisState.element}→${generated} (generating)`;
     const d = derive(session.graph, thisState.concept ?? thisState.lemma);
@@ -1031,7 +1120,7 @@ function processTurnInner(session: Session, text: string): TurnResult {
     const ack = ackParts.join(" ") + ".";
     // R3: a fillable valency gap in the event replaces the
     // follow-up wording below with the generated gap question.
-    const gapSentence = tryGapQuestion(trace, parsed, root);
+    const gapSentence = tryGapQuestion(session, trace, parsed, root);
     if (gapSentence) return { reply: `${ack} ${gapSentence}`, trace };
     if (patientClass?.aspect === "food" || thisEvent.theme) {
       const el = patientClass?.element ?? "Water";
@@ -1229,6 +1318,10 @@ function applyInitiative(session: Session, result: TurnResult): void {
     if (!move) continue;
     result.reply = `${result.reply} ${move.sentence}`;
     if (!trace.replyGraph) trace.replyGraph = serialiseReplyGraph(move.graph);
+    const lastPerson = [...session.objects].reverse().find((o) => o.producer === "person");
+    const initiativeObject = authorReplyObject({ graph: move.graph, turn: trace.turn, session, inbound: lastPerson, move: `initiative (${candidate.shape})` });
+    analyseOutbound(initiativeObject, lastPerson, session);
+    session.objects.push(initiativeObject);
     if (candidate.shape === "unexpressed-state") {
       const s = candidate.state;
       trace.initiative = {
@@ -1297,6 +1390,7 @@ function computeMapPath(trace: TurnTrace): string[] {
     "lpu/parser/valency",
     "lpu/parser/aspect-and-forms",
     "lpu/parser",
+    "lpu/semantic-assessment",
     "session-and-situation",
   );
   if (trace.answeredFromRecord) {
@@ -1320,6 +1414,7 @@ function computeMapPath(trace: TurnTrace): string[] {
     // or an unanswerable question shape — nothing further ran.
     return path;
   }
+  if (trace.coherence?.length) path.push("coherence/coherence-analysis");
   const correctionOnly = Boolean(trace.correction && trace.replyGraph && !trace.derivationPath);
   const planned = Boolean(trace.replyGraph || trace.gapQuestion || trace.clarification);
   const derived = Boolean(trace.derivationPath || trace.cyclePath);
@@ -1465,6 +1560,7 @@ function answerPredicateQuestion(
         };
         trace.replyGraph = serialiseReplyGraph(outcome.graph);
         trace.wordingNotDerived = false;
+        speakWithObject(session, trace, outcome.graph, "record predication");
         trace.steeringNote =
           "answered from the session record — the standing state for this subject in the asked quality's slot; " +
           "the classification table was not consulted for this answer";
@@ -1651,6 +1747,7 @@ function answerPredicateQuestion(
           if (cohesion) trace.cohesion = cohesion;
           trace.replyGraph = serialiseReplyGraph(outcome.graph);
           trace.wordingNotDerived = false;
+          speakWithObject(session, trace, outcome.graph, "composition");
           trace.composition = {
             activeOrder: outcome.activeOrder,
             supportOrder: outcome.supportOrder,
@@ -1714,6 +1811,7 @@ function answerPredicateQuestion(
       if (cohesion) trace.cohesion = cohesion;
       trace.replyGraph = serialiseReplyGraph(outcome.graph);
       trace.wordingNotDerived = false;
+      speakWithObject(session, trace, outcome.graph, "predication");
       trace.planNote =
         `reply generated from the planner's reply graph at ${outcome.level} strength` +
         (isWhy

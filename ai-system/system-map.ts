@@ -392,25 +392,25 @@ export const SYSTEM_MAP: SystemMap = {
       "title": "SemanticAssessment",
       "type": "Unit",
       "parent": "lpu",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 55,
       "path": "lpu/semantic-assessment",
       "file": null,
       "external": false,
-      "currentCode": "—",
-      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction; nothing built."
+      "currentCode": "src/fork/semantic-object.ts, src/fork/assess.ts",
+      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction. Slice 1 built (shadow objects): assess.ts creates an object for every parsed utterance — kind, holes, grounding, stream role — stored on the session and named in the trace; nothing reads the objects yet."
     },
     {
       "id": "lpu/language-emotion-desire-unit",
       "title": "LanguageEmotionDesireUnit",
       "type": "Unit",
       "parent": "lpu",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 45,
       "path": "lpu/language-emotion-desire-unit",
       "file": null,
       "external": false,
-      "currentCode": "—",
+      "currentCode": "src/fork/ledu.ts",
       "summary": "The LEDU: the LPU's bridge to the EmotionDesireUnit, maintained inside the LPU. Maps emotion and desire as expressed in language — 'furious', 'longing to see her' — into the EDU's 七情六欲 framework on the way in, and an object's emotion or desire aspect back into language on the way out. Uses the EDU; the mapping is language's, the framework is the EDU's. Placed 2026-11-16 at the owner's direction; nothing built."
     },
     {
@@ -618,7 +618,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/planner",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/plan.ts",
+      "currentCode": "src/fork/plan.ts, src/fork/reply.ts (reply objects)",
       "summary": "Builds the reply's meaning graph from derivations and the session record; chooses the move."
     },
     {
@@ -808,12 +808,12 @@ export const SYSTEM_MAP: SystemMap = {
       "title": "EmotionDesireUnit",
       "type": "Unit",
       "parent": "ontology-core",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 50,
       "path": "ontology-core/emotion-desire-unit",
       "file": null,
       "external": false,
-      "currentCode": "—",
+      "currentCode": "src/fork/edu.ts, src/fork/edu-reach.ts",
       "summary": "The EDU: the system's medium-neutral authority on emotion and desire, sitting inside the OntologyCore. Holds the 七情六欲 framework — the seven emotions and six desires, their phase and organ correspondences — and answers any medium's bridge unit: what emotion or desire is this, what does it correspond to. Language reaches it through the LPU's LEDU today; in the future an IDU will contact it for the Image Processing Unit, the same way. Placed 2026-11-16 at the owner's direction; nothing built."
     },
     {
@@ -860,12 +860,12 @@ export const SYSTEM_MAP: SystemMap = {
       "title": "Coherence Analysis",
       "type": "Unit",
       "parent": "coherence",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 50,
       "path": "coherence/coherence-analysis",
       "file": null,
       "external": false,
-      "currentCode": "—",
+      "currentCode": "src/fork/coherence.ts",
       "summary": "Works in both directions, at several levels. Inbound: how what comes in makes sense — the words and the sentence, the situation, the stream of what has been said; what doesn't fit, and what information is missing (e.g. an unknown person's 'I was furious' → 'Furious about what?'). Outbound: used by the Verbalizer — what goes out is checked as it is verbalized, so that what is said makes sense too."
     },
     {

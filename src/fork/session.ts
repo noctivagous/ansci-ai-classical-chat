@@ -44,6 +44,7 @@ import type { Element } from "./sentence";
 import { NEUTRAL_COMPOSITION, type Composition } from "./composition";
 import { tierOfProvenance, type Tier } from "./pricing";
 import { lookupClassification, type ClassificationEntry } from "./classify";
+import type { SemanticObject } from "./semantic-object";
 
 export interface EntityRecord {
   lemma: string;
@@ -278,6 +279,11 @@ export interface Session {
   states: StateRecord[];
   topics: TopicRecord[];
   supersessions: SupersessionRecord[];
+  /** The stream's semantic objects (assess.ts), in order — the
+   *  graph of the conversation at object grain: each object links
+   *  to the one it follows, and later slices add the fills /
+   *  supersedes links between them. */
+  objects: SemanticObject[];
   /** The initiative moves made in this session (§8.10). */
   initiatives: InitiativeRecord[];
 }
@@ -295,6 +301,7 @@ export function newSession(disposition: Composition = NEUTRAL_COMPOSITION, frame
     states: [],
     topics: [],
     supersessions: [],
+    objects: [],
     initiatives: [],
   };
 }

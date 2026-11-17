@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/emotion-desire-unit` — inside the OntologyCore (owner's placement, 2026-11-16)
 - **Type:** Unit
-- **State:** placeholder — **0% completed to goal** (set by us, assessed by the project, not measured or computed)
+- **State:** partial — **50% completed to goal** (set by us, assessed by the project, not measured or computed). The naming authority built 2026-11-17: `src/fork/edu.ts` holds the 七情六欲 framework as OKU-resident data and names the canonical emotions/desires (fright and the mind's desire recorded unsettled). The larger-graph reach is built too: `src/fork/edu-reach.ts` walks the OKU's graph from an emotion's phase — cycle positions, cross-domain correspondences, and the emotion counteractions as tiered derived relations. No turn behaviour reads the reach yet; its readers arrive with their own slices.
 
 ## What this unit is
 
@@ -24,6 +24,15 @@ correspondences — and answers any medium's bridge unit:
 Per the retention rule, the EDU's answers never replace the concrete value:
 the emotion as named (anger) and the moment as read (3:50PM, the day, the
 year) are recorded alongside every classification.
+
+**Settled (owner, 2026-11-16): the EDU's correspondence data lives in the
+OKU** — the classification table and the correspondence graph hold it; the
+EDU is the specialist authority over that slice, not a private store.
+Open, with Kavi's position recorded in the SemanticAssessment design: the
+EDU also *walks* the OKU's larger graph from an emotion's phase
+(generating / controlling / cross-domain correspondences — the classical
+emotion counteractions are such walks), reporting walked relations as
+tiered derivations, never as filed fact.
 
 ## Who uses it
 
