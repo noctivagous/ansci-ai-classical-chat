@@ -96,6 +96,7 @@ import {
 } from "../wordnet";
 import type { AspectKey } from "../graph";
 import { frameSignature } from "./framenet-lex";
+import { verbnetCoverage } from "./verbnet-lex";
 import {
   EN_LEXICON,
   type Element,
@@ -361,8 +362,16 @@ export function wordnetVerb(surface: string): VerbEntry | undefined {
     // lemma (framenet-lex, Part C.4); otherwise the permissive
     // fallback — one optional patient, nothing required — which the
     // valency assessment (check.ts) reports as evidence-free rather
-    // than licensed.
+    // than licensed. Where FrameNet is silent but VerbNet covers
+    // the lemma, the entry additionally carries the VerbNet shapes
+    // (verbnetSignature) that check.ts checks the realised
+    // structure against — the frame stays permissive, the check
+    // is no longer blind.
     const sig = frameSignature(lemma);
+    // VerbNet evidence, only where FrameNet gave none: the entry
+    // keeps the permissive frame, but carries the VerbNet shapes
+    // check.ts checks the realised structure against (verbnet-lex).
+    const vn = sig ? undefined : verbnetCoverage(lemma);
     entry = {
       kind: "verb",
       lemma,
@@ -380,6 +389,7 @@ export function wordnetVerb(surface: string): VerbEntry | undefined {
       forms: { base: lemma, third: thirdForm(lemma), past, participle: irr.participle ?? past },
       source: "wordnet",
       ...(sig ? { frameSignature: { frame: sig.frame, luId: sig.luId, slots: sig.slots, required: sig.required } } : {}),
+      ...(vn ? { verbnetSignature: { classes: vn.classes, shapes: vn.shapes } } : {}),
     };
     entryCache.set(cacheKey, entry);
   }

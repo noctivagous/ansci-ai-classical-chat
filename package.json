@@ -30,6 +30,7 @@
     "fork:sense": "npm run build --silent && node scripts/fork-sense-challenge.mjs",
     "fork:anchor-audit": "npm run build --silent && node scripts/fork-anchor-audit.mjs",
     "fork:ingest": "npm run build --silent && node scripts/fork-ingest-suwen5.mjs",
+    "fork:build-cskg-bundle": "npm run build --silent && node scripts/build-cskg-bundle.mjs",
     "fork:prior-trial": "npm run build --silent && node scripts/fork-prior-trial.mjs",
     "fork:dashboard": "npm --prefix demo/dashboard run build",
     "fork:stage5-probes": "node scripts/fork-stage5-probes.mjs",

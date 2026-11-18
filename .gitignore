@@ -12,6 +12,17 @@ data/framenet/*
 !data/framenet/manifest.json
 !data/framenet/part-001.json
 !data/framenet/part-002.json
+# CSKG trimmed bundle (2026-11-17): the bundle in data/cskg/ SHIPS —
+# a trimmed, provenance-labelled subset of CSKG (CC BY-SA 4.0, see
+# data/cskg/manifest.json and NOTICE). Anything else dropped into
+# data/cskg/ stays local. The full extract it was trimmed from stays
+# under data/raw/ (ignored above) as a local install.
+data/cskg/*
+!data/cskg/cskg-trim.tsv
+!data/cskg/manifest.json
+# the trim measurement runs' working artefacts at data/ root are
+# local records, not repo content (the bundle above is the artefact)
+data/cskg-trim-measurement*.tsv
 # experience memory (§8.6 of the design doc): the user's conversation data, local-first
 data/experience/
 

@@ -313,6 +313,38 @@ export interface SceneStandingRelation {
   supersededTurn?: number;
 }
 
+/** A relation the qualitative constraint engine DERIVED over the
+ *  scene's standing placements (qualreas.ts, RCC-8 path
+ *  consistency; senses-scening.ts runs it at every scene update):
+ *  no turn stated or placed this pair directly — the algebra's
+ *  composition over the standing relations leaves only these base
+ *  relations possible. Tier "placed-by-scene": a derivation from
+ *  placements is never a said fact. Recomputed wholesale at each
+ *  update, never accumulated, and emptied when the standing
+ *  placements are inconsistent (see SceneSpatialFlag). */
+export interface SceneDerivedRelation {
+  figure: string;
+  ground: string;
+  algebra: "rcc8";
+  /** The RCC-8 base relations still possible between the pair. */
+  relations: string[];
+  tier: "placed-by-scene";
+  basis: string;
+  turn: number;
+}
+
+/** A flagged defect in the scene's spatial record: the standing
+ *  placements, read as RCC-8 constraints, contradict each other
+ *  (path consistency emptied a pair's relation set). The flag is
+ *  recorded on the scene and an open unknown slot of kind
+ *  "spatial-consistency" is opened for the figure — the flag is
+ *  never silently kept as if the placements agreed. */
+export interface SceneSpatialFlag {
+  kind: "inconsistent-placement";
+  detail: string;
+  turn: number;
+}
+
 export interface SceneGraph {
   id: string;
   establishedTurn: number;
@@ -322,6 +354,12 @@ export interface SceneGraph {
   container?: string;
   entities: SceneEntityRecord[];
   relations: SceneStandingRelation[];
+  /** Relations derived by the qualitative constraint engine over
+   *  the standing placements (SceneDerivedRelation) — recomputed
+   *  at every update; absent until the first propagation runs. */
+  derivedRelations?: SceneDerivedRelation[];
+  /** Spatial defects flagged by that engine (SceneSpatialFlag). */
+  spatialFlags?: SceneSpatialFlag[];
   unknowns: SceneUnknownSlot[];
   /** The scene's event sequence, in turn order: who did what,
    *  when — the "and then" of the owner's specimen is this

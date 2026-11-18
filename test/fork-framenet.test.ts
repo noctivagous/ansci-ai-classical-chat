@@ -12,6 +12,7 @@ import {
   frameNetAvailable, frameSignature, predictSignatureShape,
   setFrameNetEnabled, setHeldOutLemmas, signatureInventory,
 } from "../src/fork/framenet-lex";
+import { setVerbNetEnabled } from "../src/fork/verbnet-lex";
 
 const HAS_FN = frameNetAvailable();
 enableWordnetLexicon(true);
@@ -41,6 +42,10 @@ test("assessment: an excess argument under frame evidence is unsupported", { ski
 
 test("assessment: with the provider off, derived arguments are unusual-but-licensed, never supported", { skip: !HAS_FN }, () => {
   setFrameNetEnabled(false);
+  // VerbNet is a second evidence source for derived verbs
+  // (verbnet-lex.ts, 2026-11-17) and it covers "bake" — the
+  // evidence-free baseline this test pins requires it off too.
+  setVerbNetEnabled(false);
   enableWordnetLexicon(false);
   enableWordnetLexicon(true); // purge derived entries so bake re-derives without a signature
   try {
@@ -49,6 +54,7 @@ test("assessment: with the provider off, derived arguments are unusual-but-licen
     assert.ok(a.every((x) => x.state === "unusual-but-licensed" && x.basis === "evidence-free"), JSON.stringify(a));
   } finally {
     setFrameNetEnabled(true);
+    setVerbNetEnabled(true);
     enableWordnetLexicon(false);
     enableWordnetLexicon(true);
   }

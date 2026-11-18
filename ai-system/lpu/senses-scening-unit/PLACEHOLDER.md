@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/senses-scening-unit`
 - **Type:** Unit
-- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Inbound built 2026-11-17: `src/fork/senses-scening.ts` reads a parsed sentence's sensory content through the SenseUnit (`src/fork/sense-unit.ts`) and builds the semantic object's `senses` face — per-channel entries plus the multi-sensory scene — at assessment, and populates reply objects' senses faces from the reply graph by the same wiring. The outbound direction (a reply object's sensory content mapped back into wording choices for the Generator) is still to build, as with the LEDU.
+- **State:** partial — **55% completed to goal** (set by us, assessed by the project, not measured or computed). Inbound built 2026-11-17: `src/fork/senses-scening.ts` reads a parsed sentence's sensory content through the SenseUnit (`src/fork/sense-unit.ts`) and builds the semantic object's `senses` face — per-channel entries plus the multi-sensory scene — at assessment, and populates reply objects' senses faces from the reply graph by the same wiring. The outbound direction (a reply object's sensory content mapped back into wording choices for the Generator) is still to build, as with the LEDU. The qualitative constraint network over scene placements (the qualreas port) was added 2026-11-17 — see the section at the end of this file.
 
 ## What this unit is
 
@@ -237,3 +237,60 @@ wording and nothing medium-specific.
 in `src/fork/sense-unit.ts`. Before that, no unit produced a senses part:
 sensory words were classified as ordinary aspects (colour, taste,
 temperature) with no channel named and no scene bound.
+
+## The qualitative constraint network — the qualreas port (built 2026-11-17)
+
+The scene's standing placements now form a **constraint network**
+over a classical relation algebra, and the network is propagated
+at every scene update:
+
+- **Source:** qualreas (Alfred J. Reich,
+  https://github.com/alreich/qualreas) — its relation algebras
+  ship as JSON: RCC-8 (regions), Allen's interval algebra
+  (intervals), the point algebra. **License: MIT** (Copyright
+  (c) 2019 Alfred J. Reich), reproduced in the repo NOTICE file
+  and data/qualreas/manifest.json.
+- **Conversion:** scripts/import-qualreas.py (build-time) →
+  data/qualreas/manifest.json + part-001.json (6 KB): the three
+  algebras' relation inventories, converses and composition
+  tables. Only the algebra DATA is taken.
+- **Engine:** `src/fork/qualreas.ts` — our own TypeScript
+  path-consistency engine written from the classical algorithm
+  (composition-consistency over a constraint network, Allen 1983
+  lineage), crediting qualreas for data and design. Constraints
+  are sets of base relations; propagation enforces
+  C[i][j] ⊆ C[i][k] ∘ C[k][j] to a fixpoint; an emptied set is a
+  contradiction, reported with the pair that emptied.
+- **The bridge (this unit's own mapping):** the scene vocabulary
+  maps to RCC-8 relation sets — "in" → {TPP, NTPP} (proper part,
+  boundary contact unstated); "in-or-near" → {TPP, NTPP, PO, EC}
+  (RCC-8 has no distance: "near" is the coarse reading — not
+  properly outside, not containing); a "between" figure against
+  each landmark → {DC, EC} (between-ness is ternary; this is its
+  binary shadow). Verb-labelled relations (waited-at, went-to)
+  are not spatial constraints in v1 and do not enter the network.
+- **Derived relations:** pairs no standing relation relates
+  directly gain a derived record on the scene graph
+  (`scene.derivedRelations`, tier **placed-by-scene** — a
+  derivation is never a said fact), recomputed wholesale at each
+  update. Pinned end-to-end in test/fork-qualreas.test.ts: the
+  airport scene, once "The airport is in Chicago" stands, derives
+  fountain–Chicago = {NTPP, TPP} (containment through the chain)
+  and the bathrooms' looser {EC, NTPP, PO, TPP}.
+- **Inconsistency:** a placement set the algebra shows to be
+  contradictory (e.g. mutual containment: "The airport is in
+  Chicago" + "Chicago is in the airport") is **flagged**, never
+  silently kept: a `spatialFlags` record on the scene, the
+  derived relations emptied, and an open unknown slot of kind
+  **spatial-consistency** opened for the figure (the open
+  unknowns discipline — Session & Situation's register reads it
+  like any other slot).
+- **Allen, stated plainly:** the scene model carries the event
+  sequence's ORDER (turn order), not intervals, so Allen's
+  algebra is pinned at the engine level over that sequence
+  (wait → go → go derives e1 Before e3) and no Allen constraints
+  are asserted in production paths in v1. The point algebra
+  ships in the artefact unused so far.
+- **The no-coordinates rule stands:** the network holds relation
+  sets only. Nothing in this port introduces coordinates,
+  distances or timestamps into the scene graph.

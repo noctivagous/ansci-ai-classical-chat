@@ -367,12 +367,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "lpu/parser",
       "state": "partial",
-      "percent": 85,
+      "percent": 90,
       "path": "lpu/parser/valency",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/framenet-lex.ts, features.ts",
-      "summary": "What arguments each verb takes, and in which roles."
+      "currentCode": "src/fork/framenet-lex.ts, src/fork/verbnet-lex.ts, features.ts",
+      "summary": "What arguments each verb takes, and in which roles. Two evidence providers: FrameNet frame signatures (framenet-lex.ts) for derived verbs with a FrameNet LU, and — since 2026-11-17 — VerbNet 3.3 frame shapes (verbnet-lex.ts over data/verbnet/) checking the permissive frames of the derived verbs FrameNet does not reach: a realised argument structure no VerbNet frame allows is a located valency failure (valency-verbnet-disallowed), where the checker was previously blind."
     },
     {
       "id": "lpu/parser/aspect-and-forms",
@@ -419,12 +419,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "lpu",
       "state": "partial",
-      "percent": 45,
+      "percent": 55,
       "path": "lpu/senses-scening-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/senses-scening.ts",
-      "summary": "The Senses-Scening Unit: the LPU's unit that produces the senses/scene part of a semantic object, maintained inside the LPU. It maps sensory content as expressed in language — 'salty', 'green', 'loudly', 'fragrant', 'cold', 'overripe' — through the SenseUnit's framework (channel, discrimination, the OKU's filed phase where one exists), and binds the entries across ALL channels into one described scene: the entities, their sensory qualities, and the spatial arrangement where the sentence gives one (the banana sat on the table). A scene is recorded whenever any channel has an entry; a turn with no sensory content records every channel none and no scene. Only what the sentence says enters the face — implied channels are Coherence's derived-tier annotations, never entries. SemanticAssessment consults it at creation for person and reply objects alike. Uses the SenseUnit; the mapping is language's, the framework is the SenseUnit's. Placed 2026-11-17 at the owner's direction; inbound built the same day, the outbound mapping back into wording still to build."
+      "currentCode": "src/fork/senses-scening.ts, src/fork/qualreas.ts",
+      "summary": "The Senses-Scening Unit: the LPU's unit that produces the senses/scene part of a semantic object, maintained inside the LPU. It maps sensory content as expressed in language — 'salty', 'green', 'loudly', 'fragrant', 'cold', 'overripe' — through the SenseUnit's framework (channel, discrimination, the OKU's filed phase where one exists), and binds the entries across ALL channels into one described scene: the entities, their sensory qualities, and the spatial arrangement where the sentence gives one (the banana sat on the table). A scene is recorded whenever any channel has an entry; a turn with no sensory content records every channel none and no scene. Only what the sentence says enters the face — implied channels are Coherence's derived-tier annotations, never entries. SemanticAssessment consults it at creation for person and reply objects alike. Uses the SenseUnit; the mapping is language's, the framework is the SenseUnit's. Placed 2026-11-17 at the owner's direction; inbound built the same day, the outbound mapping back into wording still to build. Since 2026-11-17 the scene's standing placements also form a qualitative constraint network (qualreas.ts: RCC-8 algebra data from qualreas, MIT, and our path-consistency engine): derived relations are computed over the placements at every scene update, and an inconsistent placement set is flagged on the scene with a spatial-consistency unknown opened."
     },
     {
       "id": "lpu/quantification-language-unit",
@@ -601,12 +601,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "ontology-core/ontology-knowledge-unit/quantification-unit",
       "state": "partial",
-      "percent": 50,
+      "percent": 60,
       "path": "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit",
       "file": null,
       "external": false,
       "currentCode": "src/fork/units-measurement.ts",
-      "summary": "The UnitsMeasurement Unit: the QuantificationUnit's sub-unit for units of measurement (owner, 2026-11-17 — nested inside the QuantificationUnit). A quantity is a number OF something: this unit names the somethings — each unit's dimension (weight, length, volume, count, temperature) and its factor to the dimension's base unit, across three systems in one table: traditional Chinese （銖/兩/斤， 寸/尺/丈/里， 合/升/斗， and the counting measure words 個/隻/條/本/張/頭 — the units the banked classical quantities, bencao dosages above all, are stated in), Imperial (ounce/pound/stone, inch/foot/yard/mile, imperial pint/gallon), and SI (gram/kilogram, metre, litre). Conversion runs only within a dimension; across dimensions it refuses, typed. Temperature is a scale, not a factor: Fahrenheit/Celsius convert by offset and ratio, separately. Traditional factors are the MODERN STANDARDISED values （斤 = 500 g, 兩 = 50 g, 里 = 500 m, 尺 = 1/3 m, 升 = 1 L), labelled as such — historical values varied by dynasty and no dynasty table is banked. Placed and built 2026-11-17."
+      "summary": "The UnitsMeasurement Unit: the QuantificationUnit's sub-unit for units of measurement (owner, 2026-11-17 — nested inside the QuantificationUnit). A quantity is a number OF something: this unit names the somethings — each unit's dimension (weight, length, volume, count, temperature) and its factor to the dimension's base unit, across three systems in one table: traditional Chinese （銖/兩/斤， 寸/尺/丈/里， 合/升/斗， and the counting measure words 個/隻/條/本/張/頭 — the units the banked classical quantities, bencao dosages above all, are stated in), Imperial (ounce/pound/stone, inch/foot/yard/mile, imperial pint/gallon), and SI (gram/kilogram, metre, litre). Conversion runs only within a dimension; across dimensions it refuses, typed. Temperature is a scale, not a factor: Fahrenheit/Celsius convert by offset and ratio, separately. Traditional factors are the MODERN STANDARDISED values （斤 = 500 g, 兩 = 50 g, 里 = 500 m, 尺 = 1/3 m, 升 = 1 L), labelled as such — historical values varied by dynasty and no dynasty table is banked. Placed and built 2026-11-17. Extended the same day with the QUDT port: every SI/Imperial factor cross-checked against the QUDT units vocabulary (CC BY 4.0; all shared units agreed), and QUDT-supplied coverage added under source 'qudt' — the US liquid variants distinguished from their Imperial namesakes (us-pint/us-gallon/us-quart/us-fluid-ounce, imperial quart and fluid ounce), plus two new dimensions: area (acre) and pressure (pascal, psi). The hand table remains the authority; traditional rows untouched."
     },
     {
       "id": "knowledge/lexicon",
@@ -618,8 +618,8 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "knowledge/lexicon",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/wordnet-lex.ts, framenet-lex.ts",
-      "summary": "Word senses and verb frames the parser consults."
+      "currentCode": "src/fork/wordnet-lex.ts, framenet-lex.ts, verbnet-lex.ts",
+      "summary": "Word senses and verb frames the parser consults: the WordNet extract (wordnet-lex.ts), FrameNet frame signatures (framenet-lex.ts) and, since 2026-11-17, VerbNet 3.3 frame shapes (verbnet-lex.ts over data/verbnet/) for the derived verbs FrameNet does not reach."
     },
     {
       "id": "knowledge/variant-graph",
@@ -757,12 +757,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Source",
       "parent": "intake",
       "state": "partial",
-      "percent": 40,
+      "percent": 50,
       "path": "intake/cskg",
       "file": null,
       "external": false,
       "currentCode": "src/fork/cskg-feed.ts, cskg-ingest.ts",
-      "summary": "Relational commonsense tier. Its data is a local artifact, never shipped."
+      "summary": "Relational commonsense tier. The feeder's map is widened to 21 relations: twelve concept relations whose endpoints must classify, plus the nine-relation ATOMIC at:* family anchored by an event rule (head verb + head word) rather than the concept table. Its data is a local artifact, never shipped."
     },
     {
       "id": "intake/wikidata",

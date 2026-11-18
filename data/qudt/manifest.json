@@ -1,0 +1,22 @@
+{
+  "v": 1,
+  "source": "QUDT units vocabulary (qudt-public-repo), VOCAB_QUDT-UNITS-ALL.ttl",
+  "edition": "main (fetched 2026-11-17)",
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0). QUDT \u2014 Quantities, Units, Dimensions and Types (qudt.org).",
+  "counts": {
+    "units": 28
+  },
+  "crossCheck": {
+    "against": "the hand table in src/fork/units-measurement.ts",
+    "disagreements": [],
+    "missingFromQUDT": []
+  },
+  "parts": [
+    {
+      "file": "part-001.json",
+      "kind": "units",
+      "count": 28,
+      "bytes": 3536
+    }
+  ]
+}

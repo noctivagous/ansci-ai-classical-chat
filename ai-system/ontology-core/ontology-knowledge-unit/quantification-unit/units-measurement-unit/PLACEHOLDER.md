@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit` — inside the QuantificationUnit (owner's ruling, 2026-11-17)
 - **Type:** Unit
-- **State:** partial — **50% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/fork/units-measurement.ts` holds the three-system unit table (dimension + factor per unit) and the conversion machinery — within-dimension conversion, typed cross-dimension refusal, temperature as a separate scale conversion. What is not built: the parser does not yet route unit words in sentences through here (the sentence layer has no unit-word grain — a numeral's unit in "5 pounds of apples" is not a node the bridge can read), so the table is consulted by the bridge's vocabulary and by direct callers, not yet by ordinary turns.
+- **State:** partial — **60% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/fork/units-measurement.ts` holds the three-system unit table (dimension + factor per unit) and the conversion machinery — within-dimension conversion, typed cross-dimension refusal, temperature as a separate scale conversion. Extended 2026-11-17 by the QUDT port (cross-check + added coverage, two new dimensions — see the section at the end of this file). What is not built: the parser does not yet route unit words in sentences through here (the sentence layer has no unit-word grain — a numeral's unit in "5 pounds of apples" is not a node the bridge can read), so the table is consulted by the bridge's vocabulary and by direct callers, not yet by ordinary turns.
 
 ## What this unit is
 
@@ -35,9 +35,11 @@ One table, three systems:
   the bencao dosages above all — so this unit is what will make
   those quantities readable and comparable.
 - **Imperial** — ounce/pound/stone; inch/foot/yard/mile; the
-  imperial pint/gallon (the US pint and gallon are different
-  units and are **not** filed, so the table never confuses
-  them); Fahrenheit as a temperature scale.
+  imperial pint/gallon/quart/fluid-ounce; Fahrenheit as a
+  temperature scale. The US liquid units are different units
+  from their Imperial namesakes and are filed **separately**
+  (us-pint, us-gallon, us-quart, us-fluid-ounce — QUDT port,
+  below), so the table never confuses them.
 - **SI** — gram/kilogram; millimetre/centimetre/metre/
   kilometre; millilitre/litre; Celsius as a temperature scale.
 
@@ -73,3 +75,48 @@ with a typed `temperature-scale` refusal pointing at
 `src/fork/units-measurement.ts` (built 2026-11-17). Before that,
 unit words in the banked material sat in the record as words
 attached to numbers — comparable by nobody.
+
+## The QUDT cross-check and additions (built 2026-11-17)
+
+- **Source:** the QUDT units vocabulary (QUDT — Quantities,
+  Units, Dimensions and Types, qudt.org;
+  github.com/qudt/qudt-public-repo, file
+  VOCAB_QUDT-UNITS-ALL.ttl), fetched 2026-11-17. **License:
+  CC BY 4.0** — attribution in the repo NOTICE file and in
+  data/qudt/manifest.json.
+- **Conversion:** scripts/import-qudt.py (build-time) →
+  data/qudt/manifest.json + part-001.json: the curated SI +
+  Imperial subset (28 units), each factor re-based from QUDT's
+  SI-coherent base to this table's base units (gram, metre,
+  litre, square metre, pascal), with the raw QUDT multiplier
+  kept alongside so the re-basing is inspectable.
+- **The cross-check:** every unit the hand table already filed
+  (17 units: the SI rows and ounce/pound/stone, inch/foot/yard/
+  mile, imperial pint/gallon) was compared against QUDT's
+  multiplier. **Result: zero disagreements** — every hand factor
+  matched QUDT exactly (within 1e-9 relative). No hand value was
+  changed; the record stands in data/qudt/manifest.json
+  (`crossCheck.disagreements: []`). Temperature was checked as a
+  scale, not a factor: QUDT files DEG_F as multiplier 5/9 with
+  offset 459.67 (to Kelvin), consistent with convertTemperature's
+  arithmetic.
+- **Coverage QUDT added** (each entry carries `source: "qudt"`
+  in the table): us-gallon (3.785411784 L), us-quart, us-pint,
+  us-fluid-ounce — the US liquid variants, distinguished from
+  the Imperial gallon/pint on purpose; the imperial quart and
+  fluid-ounce; and two **new dimensions**: **area** (acre =
+  4046.8564224 m²) and **pressure** (pascal, psi =
+  6894.757293168361 Pa). US dry measures (dry gallon/pint,
+  bushel, peck) exist in QUDT and were **not** filed — the table
+  files liquid measure only, and says so here rather than
+  silently omitting them. The US fluid ounce is filed at QUDT's
+  precision (0.0295735296 L).
+- **Authority discipline:** the hand table remains the
+  authority where it already has entries — QUDT cross-checked
+  it, it did not overwrite it. Traditional Chinese rows are
+  untouched: QUDT carries no traditional Chinese units, and
+  none were invented to fill the gap.
+- **Drift pin:** test/fork-units-qudt.test.ts asserts the
+  table's factors agree with the shipped data/qudt artefact,
+  so the code table and the converted artefact cannot drift
+  apart unnoticed.

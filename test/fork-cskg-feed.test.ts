@@ -4,9 +4,11 @@
  * FIXTURE TESTS for the mapping. These tests feed hand-written
  * triples in the loader's shape through mapTriple and check the
  * mapping — which relations become which fork links, and which
- * triples drop, with which named reason. Live ingestion over the
- * real extract is tested separately in fork-cskg-ingest.test.ts,
- * which passes whether or not the data artifact is installed.
+ * triples drop, with which named reason. ATOMIC (at:*) fixtures
+ * cover the event-rule anchoring: one that anchors, and both
+ * unanchored failure modes. Live ingestion over the real extract
+ * is tested separately in fork-cskg-ingest.test.ts, which passes
+ * whether or not the data artifact is installed.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -71,9 +73,83 @@ test("RelatedTo survives only when both ends are classified", () => {
 });
 
 test("an unmapped relation drops with its own named reason", () => {
-  const r = mapTriple({ subject: "rain", relation: "/r/MadeOf", object: "flood" });
+  const r = mapTriple({ subject: "rain", relation: "/r/Antonym", object: "flood" });
   assert.equal(r.ok, false);
   if (!r.ok) assert.equal(r.reason, "unmapped-relation");
+});
+
+test("the five widened relations map to their kinds", () => {
+  const capable = mapTriple({ subject: "fish", relation: "/r/CapableOf", object: "sea" });
+  assert.ok(capable.ok && capable.link.kind === "capability");
+  const part = mapTriple({ subject: "salt", relation: "/r/PartOf", object: "sea" });
+  assert.ok(part.ok && part.link.kind === "part");
+  const property = mapTriple({ subject: "soup", relation: "/r/HasProperty", object: "hot" });
+  assert.ok(property.ok && property.link.kind === "property");
+  assert.equal(property.link.toElement, "Fire");
+  const desire = mapTriple({ subject: "horse", relation: "/r/Desires", object: "apple" });
+  assert.ok(desire.ok && desire.link.kind === "desire");
+  const material = mapTriple({ subject: "bread", relation: "/r/MadeOf", object: "egg" });
+  assert.ok(material.ok && material.link.kind === "material");
+  // The widened relations keep the concept route: an unclassifiable
+  // end still drops as unclassified, not as unmapped.
+  const dropped = mapTriple({ subject: "onion", relation: "/r/MadeOf", object: "crying" });
+  assert.equal(dropped.ok, false);
+  if (!dropped.ok) assert.equal(dropped.reason, "unclassified-endpoint");
+});
+
+test("an ATOMIC effect anchors by the event rule, and says so", () => {
+  const r = mapTriple({
+    subject: "personx gives persony a hug",
+    relation: "at:xEffect",
+    object: "feels tired",
+  });
+  assert.ok(r.ok);
+  assert.equal(r.link.kind, "consequence");
+  assert.equal(r.link.provenance, "cskg");
+  // The testimony is the phrase pair, not a concept pair.
+  assert.equal(r.link.from, "personx gives persony a hug");
+  assert.equal(r.link.to, "feels tired");
+  // The anchoring record names the verb that placed the event side
+  // and the head word whose classification placed the other side.
+  assert.equal(r.link.anchoring?.rule, "event-rule");
+  assert.equal(r.link.anchoring?.verb, "give");
+  assert.equal(r.link.anchoring?.headWord, "tired");
+  assert.equal(r.link.anchoring?.headVia, "table");
+  assert.equal(r.link.toElement, "Earth");
+  assert.equal(r.link.resolution, undefined, "event-rule links carry anchoring, not resolution");
+});
+
+test("ATOMIC kinds: need is an ordered prerequisite, want is desire, react is reaction, attr is attribution", () => {
+  const need = mapTriple({ subject: "personx works hard", relation: "at:xNeed", object: "sleep" });
+  assert.ok(need.ok && need.link.kind === "prerequisite" && need.link.ordered === true);
+  const want = mapTriple({ subject: "personx sees the apple", relation: "at:xWant", object: "eats the apple" });
+  assert.ok(want.ok && want.link.kind === "desire");
+  const react = mapTriple({ subject: "personx sees the rain", relation: "at:oReact", object: "fear" });
+  assert.ok(react.ok && react.link.kind === "reaction");
+  const attr = mapTriple({ subject: "personx gives persony a hug", relation: "at:xAttr", object: "warm" });
+  assert.ok(attr.ok && attr.link.kind === "attribution");
+  // A head word may also anchor through the WordNet climb.
+  const intent = mapTriple({ subject: "personx helps persony", relation: "at:xIntent", object: "to rest" });
+  assert.ok(intent.ok && intent.link.kind === "intent");
+  assert.equal(intent.link.anchoring?.headVia, "wordnet-climb");
+});
+
+test("an ATOMIC triple drops as unanchored when either condition fails", () => {
+  // Condition (ii): known event verb, but no classifiable head word
+  // ('happy' is in neither the curated table nor climb reach).
+  const noHead = mapTriple({ subject: "personx eats the soup", relation: "at:xEffect", object: "very happy" });
+  assert.equal(noHead.ok, false);
+  if (!noHead.ok) {
+    assert.equal(noHead.reason, "unanchored-endpoint");
+    assert.match(noHead.detail, /very happy/);
+  }
+  // Condition (i): no verb the system knows in the event phrase.
+  const noVerb = mapTriple({ subject: "personx zqxwv the blorp", relation: "at:xEffect", object: "tired" });
+  assert.equal(noVerb.ok, false);
+  if (!noVerb.ok) {
+    assert.equal(noVerb.reason, "unanchored-endpoint");
+    assert.match(noVerb.detail, /no head verb/);
+  }
 });
 
 test("an endpoint can resolve through the WordNet climb, and says so", () => {

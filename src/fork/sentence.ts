@@ -277,6 +277,15 @@ export interface VerbEntry {
    *  entries (their frames are the lexicon's own) and on derived
    *  entries with no FrameNet LU (evidence-free, permissive). */
   frameSignature?: { frame: string; luId: number; slots: string[]; required: string[] };
+  /** VerbNet coverage backing this entry's valency CHECK, when the
+   *  verbnet-lex provider found the lemma in VerbNet 3.3 and no
+   *  FrameNet signature was supplied (verbnet-lex.ts): the classes
+   *  the verb belongs to and the argument shapes its frames allow
+   *  (post-verbal bare-NP count + prepositional-argument presence,
+   *  per frame). The entry's slots stay the permissive fallback —
+   *  VerbNet evidence CHECKS the realised structure in check.ts
+   *  rather than replacing the frame in v1. */
+  verbnetSignature?: { classes: string[]; shapes: { np: number; pp: boolean }[] };
 }
 
 export interface SimpleEntry {

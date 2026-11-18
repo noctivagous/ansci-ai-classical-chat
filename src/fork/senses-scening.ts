@@ -61,6 +61,27 @@
  * softness) are Coherence's derived-tier trail annotations,
  * filed in the SenseUnit (crossChannelImplications) — never
  * entries here.
+ *
+ * QUALITATIVE CONSTRAINT NETWORK (the qualreas port, 2026-11-17):
+ * the scene's standing placements now also form a constraint
+ * network over the RCC-8 relation algebra (qualreas.ts — the
+ * algebra data is qualreas's, MIT; the path-consistency engine
+ * is ours). The scene vocabulary maps onto RCC-8 relation SETS
+ * by the bridge below (SCENE_RCC8): "in" is proper-part, either
+ * tangential or not ({TPP, NTPP} — the scene does not say
+ * whether the figure touches the container's boundary);
+ * "in-or-near" is part, overlap or external contact
+ * ({TPP, NTPP, PO, EC} — RCC-8 has no distance, so "near" is
+ * the coarse reading: not properly outside, not containing);
+ * a "between" figure stands separate from each landmark
+ * ({DC, EC}). At every scene update the network is propagated
+ * (sceneSpatialCheck): pairs no turn related directly gain a
+ * DERIVED relation record (scene.derivedRelations, tier
+ * "placed-by-scene" — a derivation is never a said fact), and
+ * a placement set the algebra shows to be inconsistent is
+ * FLAGGED on the scene (spatialFlags) with an open
+ * "spatial-consistency" unknown slot — never silently kept.
+ * Relations only: no coordinates enter, ever.
  */
 import type { ParsedSentence, MeaningNode } from "./sentence";
 import type { Session, SceneGraph } from "./session";
@@ -74,6 +95,8 @@ import {
   type SensesFace,
 } from "./semantic-object";
 import { senseReadingForWord, unknownSlotsFor } from "./sense-unit";
+import { ConstraintNetwork, loadAlgebra } from "./qualreas";
+import type { SceneDerivedRelation } from "./session";
 
 /**
  * The bridge vocabulary: words for discriminations the SenseUnit
@@ -430,6 +453,79 @@ export function buildSensesFace(
   };
 }
 
+/* ---------------- the qualitative constraint network ----------------
+ * The bridge from the scene's relation vocabulary to RCC-8
+ * relation sets. This mapping is the Senses-Scening Unit's own
+ * (the scene vocabulary is coarse by design); the algebra and
+ * its composition tables are qualreas's data (qualreas.ts). */
+
+export const SCENE_RCC8: Record<string, string[]> = {
+  in: ["TPP", "NTPP"],
+  "in-or-near": ["TPP", "NTPP", "PO", "EC"],
+};
+
+/** A "between" figure against one landmark: separate regions,
+ *  possibly touching — between-ness itself is ternary and RCC-8
+ *  is binary, so this is the binary shadow it casts. */
+export const SCENE_RCC8_BETWEEN: string[] = ["DC", "EC"];
+
+export interface SceneSpatialCheck {
+  consistent: boolean;
+  /** Derived relations for entity pairs no standing relation
+   *  relates directly (turn stamped by the caller). */
+  derived: Omit<SceneDerivedRelation, "turn">[];
+  /** Pairs whose relation set the standing placements empty. */
+  conflicts: { figure: string; ground: string }[];
+}
+
+/**
+ * Read a scene graph's standing (non-superseded) spatial
+ * relations as an RCC-8 constraint network and propagate it.
+ * Pure: reads the scene, changes nothing.
+ */
+export function sceneSpatialCheck(scene: SceneGraph): SceneSpatialCheck {
+  const algebra = loadAlgebra("rcc8");
+  if (!algebra) return { consistent: true, derived: [], conflicts: [] };
+  const net = new ConstraintNetwork(algebra);
+  const direct = new Set<string>();
+  const pairKey = (a: string, b: string) => [a, b].sort().join("|");
+  for (const r of scene.relations) {
+    if (r.supersededTurn) continue;
+    const set = r.relation === "between" ? SCENE_RCC8_BETWEEN : SCENE_RCC8[r.relation];
+    if (!set) continue; // verb-labelled relations (waited-at, went-to) are not spatial constraints here
+    if (!net.assert(r.figure, set, r.ground)) {
+      return { consistent: false, derived: [], conflicts: [{ figure: r.figure, ground: r.ground }] };
+    }
+    direct.add(pairKey(r.figure, r.ground));
+  }
+  if (!net.propagate()) {
+    const c = net.conflict ?? { a: "?", b: "?" };
+    return { consistent: false, derived: [], conflicts: [{ figure: c.a, ground: c.b }] };
+  }
+  const derived: SceneSpatialCheck["derived"] = [];
+  const ents = scene.entities.map((e) => e.lemma);
+  for (let i = 0; i < ents.length; i++) {
+    for (let j = i + 1; j < ents.length; j++) {
+      const a = ents[i];
+      const b = ents[j];
+      if (direct.has(pairKey(a, b))) continue;
+      const set = net.relation(a, b);
+      if (set.size > 0 && set.size < algebra.relations.length) {
+        derived.push({
+          figure: a,
+          ground: b,
+          algebra: "rcc8",
+          relations: [...set].sort(),
+          tier: "placed-by-scene",
+          basis:
+            "derived by RCC-8 path consistency over the scene's standing placements (qualreas algebra data; senses-scening bridge)",
+        });
+      }
+    }
+  }
+  return { consistent: true, derived, conflicts: [] };
+}
+
 const TIER_RANK: Record<SceneRelationRecord["tier"], number> = {
   "said": 3,
   "placed-by-scene": 2,
@@ -580,5 +676,29 @@ export function applySceneUpdate(session: Session, parsed: ParsedSentence, face:
     const a = parsed.meaning.edges.find((e) => e.from === root.id && e.relation === "agent");
     const ag = a ? nodeById(parsed, a.to) : undefined;
     scene.events.push({ turn, verb: root.lemma, agent: ag ? entityLemma(ag) : undefined });
+  }
+
+  // Qualitative constraint propagation over the standing
+  // placements (qualreas RCC-8): derived relations are recomputed
+  // wholesale; an inconsistent placement set is flagged on the
+  // scene and opened as a "spatial-consistency" unknown — never
+  // silently kept as if the placements agreed.
+  const spatial = sceneSpatialCheck(scene);
+  if (spatial.consistent) {
+    scene.derivedRelations = spatial.derived.map((d) => ({ ...d, turn }));
+  } else {
+    scene.derivedRelations = [];
+    for (const c of spatial.conflicts) {
+      (scene.spatialFlags ??= []).push({
+        kind: "inconsistent-placement",
+        detail:
+          `the standing placements contradict each other: no RCC-8 relation remains ` +
+          `possible between '${c.figure}' and '${c.ground}'`,
+        turn,
+      });
+      if (!scene.unknowns.some((u) => u.of === c.figure && u.kind === "spatial-consistency")) {
+        scene.unknowns.push({ of: c.figure, kind: "spatial-consistency", status: "open", openedTurn: turn });
+      }
+    }
   }
 }

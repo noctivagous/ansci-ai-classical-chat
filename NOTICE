@@ -52,9 +52,10 @@ data.
 
 CSKG spike layer (loaded locally from data/raw/cskg/, src/cskg/)
 ----------------------------------------------------------------
-The CSKG data is NOT shipped in this repository: the files under
-data/raw/cskg/ are gitignored local downloads. The src/cskg/ package is
-a self-contained spike (2026-11-09) that loads
+The FULL CSKG extract is NOT shipped in this repository: the files
+under data/raw/cskg/ are gitignored local downloads. (A trimmed
+subset for the fork feeder DOES ship — see the next section.) The
+src/cskg/ package is a self-contained spike (2026-11-09) that loads
 
   CSKG: The CommonSense Knowledge Graph
   Ilievski, Szekely & Zhang, ESWC 2021
@@ -68,6 +69,115 @@ the Creative Commons Attribution-ShareAlike 4.0 International License
 CC BY 4.0. AnSci treats it as CC BY-SA 4.0. The component sources keep
 their own terms (see the CSKG documentation); the loader preserves each
 edge's source dataset so provenance survives into the chat's answers.
+
+CSKG fork feeder bundle (data/cskg/, src/fork/cskg-ingest.ts)
+--------------------------------------------------------------
+The bundle in data/cskg/ IS shipped in this repository: a trimmed
+subset of the CSKG graph described in the section above, produced
+2026-11-17 by running the fork feeder's own mapping rules
+(src/fork/cskg-feed.ts — 21 relations: twelve concept relations
+under the both-ends-classified rule, nine ATOMIC relations under
+event-rule anchoring) over the locally installed full extract and
+keeping what the feeder keeps: 80,466 edges of the extract's
+6,001,531. The generation record — source, stage counts, per-source
+and per-relation counts — stands in data/cskg/manifest.json; the
+staged measurement procedure is recorded as Run 2 of the CSKG trim
+measurement (2026-11-17).
+
+The bundle is distributed under the same terms AnSci treats CSKG
+under: the Creative Commons Attribution-ShareAlike 4.0 International
+License (CC BY-SA 4.0). Attribution: Ilievski, Szekely & Zhang,
+"CSKG: The CommonSense Knowledge Graph", ESWC 2021, USC Information
+Sciences Institute; data: Zenodo record 4331372. ShareAlike applies
+to the bundle data: redistributions of the bundle, modified or not,
+carry CC BY-SA 4.0. Each edge keeps its source code (AT, CN, CN|WN,
+WN) so the component sources' provenance survives; the component
+sources keep their own terms (see the CSKG documentation). The full
+extract remains a local install (scripts/install.mjs downloads it
+from Zenodo) and is the source a future re-trim would run against.
+
+VerbNet valency layer (data/verbnet/, src/verbnet.ts, src/fork/verbnet-lex.ts)
+------------------------------------------------------------------------------
+The VerbNet table in this repository is derived from
+
+  VerbNet 3.3
+  © University of Colorado
+  https://verbs.colorado.edu/verbnet/
+
+converted by scripts/import-verbnet.py from the official
+verbnet-3.3.tar.gz distribution: per verb lemma, its VerbNet class
+membership(s); per class, its thematic-role inventory and its frames
+reduced to argument shapes (post-verbal bare-NP roles, prepositional
+arguments, clausal/lexical flags). Frame semantics, selectional
+restrictions, examples and WordNet sense keys are not converted.
+
+VerbNet is distributed under the VerbNet 3.0 License, stated on the
+Colorado downloads page to apply to all VerbNet 3.X versions:
+
+  "This software and database is being provided to you, the LICENSEE,
+  by the University of Colorado under the following license. By
+  obtaining, using and/or copying this software and database, you
+  agree that you have read, understood, and will comply with these
+  terms and conditions.: Permission to use, copy, modify and
+  distribute this software and database and its documentation for
+  any purpose and without fee or royalty is hereby granted, provided
+  that you agree to comply with the following copyright notice and
+  statements, including the disclaimer, and that the same appear on
+  ALL copies of the software, database and documentation, including
+  modifications that you make for internal use or for distribution.
+  VerbNet 3.0 (or 3.X) Copyright 2009 by University of Colorado.
+  All rights reserved."
+
+The name of University of Colorado or CU may not be used in
+advertising or publicity pertaining to distribution of the software
+and/or database.
+
+qualreas relation algebras (data/qualreas/, src/fork/qualreas.ts)
+-----------------------------------------------------------------
+The relation-algebra data in this repository (RCC-8, Allen's
+interval algebra, the point algebra: relation inventories,
+converses and composition tables) is taken from
+
+  qualreas — Qualitative Reasoning: Spatio-Temporal Reasoning
+  using Relation Algebras and Constraint Networks
+  Copyright (c) 2019 Alfred J. Reich
+  https://github.com/alreich/qualreas
+
+converted by scripts/import-qualreas.py from the project's algebra
+JSON files. qualreas is distributed under the MIT License:
+
+  "Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following
+  conditions: The above copyright notice and this permission
+  notice shall be included in all copies or substantial portions
+  of the Software."
+
+Only the algebra DATA is taken; the path-consistency engine in
+src/fork/qualreas.ts is AnSci's own TypeScript, written from the
+classical algorithm and crediting qualreas for data and design.
+
+QUDT units vocabulary (data/qudt/, src/fork/units-measurement.ts)
+-----------------------------------------------------------------
+Part of the UnitsMeasurement table is derived from
+
+  QUDT — Quantities, Units, Dimensions and Types
+  https://www.qudt.org/ — https://github.com/qudt/qudt-public-repo
+
+licensed under the Creative Commons Attribution 4.0 International
+License (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
+
+The conversion (scripts/import-qudt.py) cross-checked the table's
+hand-authored SI and Imperial factors against QUDT's conversion
+multipliers — every shared unit agreed — and supplied the entries
+marked source "qudt" in src/fork/units-measurement.ts (the US liquid
+variants, the imperial quart and fluid ounce, the acre, pascal and
+psi). The shipped artefact of the conversion is data/qudt/; the
+cross-check record stands in data/qudt/manifest.json.
 
 Everything else in this repository — the ontology graph, seed data, reasoner
 and chat — is original AnSci work (see README.md). ConceptNet is a planned

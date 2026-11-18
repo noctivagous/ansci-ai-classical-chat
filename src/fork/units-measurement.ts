@@ -34,10 +34,25 @@
  * filed for them and convert() refuses them with a typed
  * refusal pointing at convertTemperature(), which does the
  * scale arithmetic honestly.
+ *
+ * QUDT CROSS-CHECK AND ADDITIONS (the QUDT port, 2026-11-17):
+ * the SI + Imperial factors below were cross-checked against
+ * the QUDT units vocabulary (qudt.org, CC BY 4.0; conversion
+ * by scripts/import-qudt.py, artefact in data/qudt/) — every
+ * shared unit agreed exactly, and the cross-check record
+ * stands in data/qudt/manifest.json. Coverage QUDT adds —
+ * the US liquid variants distinguished from the Imperial ones
+ * (us-pint, us-gallon, us-quart, us-fluid-ounce, fluid-ounce),
+ * the acre (a new AREA dimension) and pascal/psi (a new
+ * PRESSURE dimension) — is filed with source "qudt" on the
+ * entry. The hand table remains the authority: QUDT values
+ * were compared, never copied over hand entries, and the
+ * traditional Chinese rows are untouched (QUDT carries no
+ * traditional Chinese units; they stay hand-authored).
  */
 
 export type UnitSystem = "traditional" | "imperial" | "si";
-export type Dimension = "weight" | "length" | "volume" | "count" | "temperature";
+export type Dimension = "weight" | "length" | "volume" | "count" | "temperature" | "area" | "pressure";
 
 export interface UnitDef {
   /** The unit's canonical id ("liang", "pound", "kilogram"). */
@@ -54,6 +69,11 @@ export interface UnitDef {
    *  counts, as the tradition uses it. */
   counts?: string;
   note?: string;
+  /** Provenance of an imported entry: "qudt" marks the rows the
+   *  QUDT vocabulary supplied (CC BY 4.0; data/qudt/). Absent on
+   *  the hand-authored rows, which remain the authority wherever
+   *  both file the same unit. */
+  source?: "qudt";
 }
 
 const TRADITIONAL_PROVENANCE =
@@ -90,8 +110,20 @@ export const UNITS: UnitDef[] = [
   { id: "yard", names: ["yard", "yards", "yd"], system: "imperial", dimension: "length", factor: 0.9144 },
   { id: "mile", names: ["mile", "miles", "mi"], system: "imperial", dimension: "length", factor: 1609.344 },
   /* --- imperial: volume (base: litre) --- */
-  { id: "pint", names: ["pint", "pints", "pt"], system: "imperial", dimension: "volume", factor: 0.56826125, note: "the imperial pint (20 imperial fl oz); the US pint is a different unit and is not filed" },
-  { id: "gallon", names: ["gallon", "gallons", "gal"], system: "imperial", dimension: "volume", factor: 4.54609, note: "the imperial gallon; the US gallon is a different unit and is not filed" },
+  { id: "pint", names: ["pint", "pints", "pt"], system: "imperial", dimension: "volume", factor: 0.56826125, note: "the imperial pint (20 imperial fl oz); the US pint is a different unit, filed separately as us-pint (QUDT)" },
+  { id: "gallon", names: ["gallon", "gallons", "gal"], system: "imperial", dimension: "volume", factor: 4.54609, note: "the imperial gallon; the US gallon is a different unit, filed separately as us-gallon (QUDT)" },
+  { id: "quart", names: ["quart", "quarts", "qt"], system: "imperial", dimension: "volume", factor: 1.1365225, source: "qudt", note: "the imperial quart (2 imperial pints); QUDT unit:QT_UK" },
+  { id: "fluid-ounce", names: ["fluid ounce", "fluid ounces", "fl oz"], system: "imperial", dimension: "volume", factor: 0.0284130625, source: "qudt", note: "the imperial fluid ounce (1/20 imperial pint); QUDT unit:OZ_VOL_UK" },
+  /* --- US liquid measure (base: litre) — different units from
+   *     their Imperial namesakes, distinguished on purpose --- */
+  { id: "us-gallon", names: ["us gallon", "us gallons", "gallon (us)", "gallons (us)"], system: "imperial", dimension: "volume", factor: 3.785411784, source: "qudt", note: "the US liquid gallon (231 cubic inches) — NOT the imperial gallon; QUDT unit:GAL_US" },
+  { id: "us-quart", names: ["us quart", "us quarts", "quart (us)"], system: "imperial", dimension: "volume", factor: 0.946352946, source: "qudt", note: "the US liquid quart (1/4 US gallon); QUDT unit:QT_US" },
+  { id: "us-pint", names: ["us pint", "us pints", "pint (us)"], system: "imperial", dimension: "volume", factor: 0.473176473, source: "qudt", note: "the US liquid pint (1/8 US gallon) — NOT the imperial pint; QUDT unit:PINT_US" },
+  { id: "us-fluid-ounce", names: ["us fluid ounce", "us fluid ounces", "fl oz (us)"], system: "imperial", dimension: "volume", factor: 0.0295735296, source: "qudt", note: "the US fluid ounce (1/128 US gallon), at QUDT's filed precision; QUDT unit:OZ_VOL_US" },
+  /* --- imperial: area (base: square metre) --- */
+  { id: "acre", names: ["acre", "acres"], system: "imperial", dimension: "area", factor: 4046.8564224, source: "qudt", note: "the international acre (4840 square yards); QUDT unit:AC" },
+  /* --- imperial: pressure (base: pascal) --- */
+  { id: "psi", names: ["psi", "pound per square inch", "pounds per square inch"], system: "imperial", dimension: "pressure", factor: 6894.757293168361, source: "qudt", note: "pounds-force per square inch; QUDT unit:PSI" },
   /* --- imperial: temperature (a scale, no factor) --- */
   { id: "fahrenheit", names: ["fahrenheit", "°f", "degrees fahrenheit"], system: "imperial", dimension: "temperature", note: "a temperature SCALE: converts by offset and ratio (convertTemperature), never by a factor" },
   /* --- SI: weight (base: gram) --- */
@@ -105,6 +137,8 @@ export const UNITS: UnitDef[] = [
   /* --- SI: volume (base: litre) --- */
   { id: "millilitre", names: ["millilitre", "millilitres", "milliliter", "milliliters", "ml", "毫升"], system: "si", dimension: "volume", factor: 0.001 },
   { id: "litre", names: ["litre", "litres", "liter", "liters", "l", "公升"], system: "si", dimension: "volume", factor: 1 },
+  /* --- SI: pressure (base: pascal) --- */
+  { id: "pascal", names: ["pascal", "pascals", "pa"], system: "si", dimension: "pressure", factor: 1, source: "qudt", note: "the SI unit of pressure; QUDT unit:PA" },
   /* --- SI: temperature (a scale, no factor) --- */
   { id: "celsius", names: ["celsius", "°c", "degrees celsius", "centigrade"], system: "si", dimension: "temperature", note: "a temperature SCALE: converts by offset and ratio (convertTemperature), never by a factor" },
 ];

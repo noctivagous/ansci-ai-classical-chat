@@ -64,6 +64,30 @@ export function checkSentence(parsed: ParsedSentence): Violation[] {
       });
     }
 
+    /* Wood→Earth, VerbNet check (verbnet-lex): a derived verb the
+     * permissive frame would license blindly, checked against the
+     * argument shapes its VerbNet frames allow. Only excess is
+     * judged — more bare objects than any frame's post-verbal NP
+     * count, or a prepositional argument where no frame has one.
+     * Fewer arguments than a frame shows is not a failure:
+     * VerbNet frames list alternations, not obligations. */
+    if (frame.verbnetSignature) {
+      const vn = frame.verbnetSignature;
+      const bareCount = args.filter((e) => ["patient", "theme", "recipient"].includes(e.relation)).length;
+      const hasPrep = args.some((e) => ["location", "goal"].includes(e.relation));
+      const maxNp = Math.max(...vn.shapes.map((s) => s.np));
+      if (bareCount > maxNp || (hasPrep && !vn.shapes.some((s) => s.pp))) {
+        out.push({
+          name: "valency-verbnet-disallowed",
+          cycle: "Wood→Earth",
+          message:
+            `'${node.lemma}' is VerbNet-covered (${vn.classes.join(", ")}): its frames allow at most ` +
+            `${maxNp} bare object(s)${vn.shapes.some((s) => s.pp) ? " and prepositional arguments" : " and no prepositional argument"}; ` +
+            `this use realises ${bareCount} bare object(s)${hasPrep ? " and a prepositional argument" : ""}`,
+        });
+      }
+    }
+
     /* Metal→Wood: agreement + negation carrier (EN only; ZH has no agreement morphology — the edge is dormant there). */
     if (parsed.connective.language === "en" && node.states) {
       const st = node.states;
@@ -186,7 +210,15 @@ export function checkSentence(parsed: ParsedSentence): Violation[] {
  * The demotion that matters: a permissive derived verb's arguments
  * used to be silently "supported" by a frame that licensed anything.
  * They are now unusual-but-licensed — visible as unlicensed, never
- * counted as frame-supported. */
+ * counted as frame-supported.
+ *
+ * VerbNet (verbnet-lex.ts, 2026-11-17) is a second evidence source
+ * for exactly the evidence-free verbs: where VerbNet covers the
+ * lemma, the assessment's basis is "verbnet" and the realised
+ * object structure is judged against the verb's frame shapes —
+ * supported when some frame allows it, unsupported when none does
+ * (excess only; VerbNet frames list alternations, not obligations,
+ * so an unfilled shape is never a failure here). */
 
 export type ValencyState = "supported" | "unusual-but-licensed" | "unsupported";
 
@@ -195,7 +227,7 @@ export interface ValencyAssessment {
   role: string;
   filler?: string;
   state: ValencyState;
-  basis: "framenet" | "hand-lexicon" | "evidence-free" | "construction";
+  basis: "framenet" | "verbnet" | "hand-lexicon" | "evidence-free" | "construction";
   frame?: string;
 }
 
@@ -213,15 +245,29 @@ export function assessValency(parsed: ParsedSentence): ValencyAssessment[] {
     const frame = entry as VerbEntry;
     const basis: ValencyAssessment["basis"] = frame.frameSignature
       ? "framenet"
-      : frame.source === "wordnet"
-        ? "evidence-free"
-        : "hand-lexicon";
+      : frame.verbnetSignature
+        ? "verbnet"
+        : frame.source === "wordnet"
+          ? "evidence-free"
+          : "hand-lexicon";
     const licensed = new Set<string>([
       "agent",
       ...frame.slots,
       ...(frame.prepSlot ? [frame.prepSlot.slot] : []),
     ]);
     const args = edges.filter((e) => e.from === node.id && ARG_RELATIONS_CHECK.has(e.relation));
+    /* VerbNet basis: the realised object structure is judged as
+     * one whole against the verb's frame shapes (the same excess
+     * rule as the binary checker's valency-verbnet-disallowed). */
+    let vnDisallowed = false;
+    if (basis === "verbnet" && frame.verbnetSignature) {
+      const vn = frame.verbnetSignature;
+      const bareCount = args.filter((e) => ["patient", "theme", "recipient"].includes(e.relation)).length;
+      const hasPrep = args.some((e) => ["location", "goal"].includes(e.relation));
+      vnDisallowed =
+        bareCount > Math.max(...vn.shapes.map((s) => s.np)) ||
+        (hasPrep && !vn.shapes.some((s) => s.pp));
+    }
     for (const e of args) {
       const filler = byId.get(e.to);
       if (filler?.role === "excess") {
@@ -229,6 +275,16 @@ export function assessValency(parsed: ParsedSentence): ValencyAssessment[] {
           verb: node.lemma, role: e.relation, filler: filler.lemma,
           state: basis === "evidence-free" ? "unusual-but-licensed" : "unsupported",
           basis, ...(frame.frameSignature ? { frame: frame.frameSignature.frame } : {}),
+        });
+        continue;
+      }
+      if (basis === "verbnet") {
+        // The subject is presupposed by every VerbNet frame; the
+        // object structure is what the shapes judge.
+        out.push({
+          verb: node.lemma, role: e.relation, filler: filler?.lemma,
+          state: e.relation !== "agent" && vnDisallowed ? "unsupported" : "supported",
+          basis,
         });
         continue;
       }
