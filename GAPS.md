@@ -34,10 +34,67 @@ their closing evidence; and the lexicon-state family of §5
 struck there. Items the later work did not touch stand as the
 sweep left them.
 
+A reconciliation pass the same day (2026-11-18, later still)
+merges this file with a parallel copy that had been edited in
+another worktree. That copy carried the ladder (below), the §2
+bar, the §7 adjudication and the §8 programme and pre-ruling
+records, but predated the Social Unit and classification builds
+and the lexicon-state fix; this file carried those closures but
+had never received the ladder, the bar or the adjudication.
+The merged file below is the single record; both parent copies
+are superseded.
+
 The summary that prompted this file, from the anchor-expansion
 recap: the coverage slices "widen what the classification machinery
 reaches; they don't deepen what it knows." The gaps below are the
 depth that widening does not buy.
+
+## The ladder
+
+The chatbot effort is tiered (owner's framing, 2026-11-18:
+fluency and open-domain knowledge are wanted; the bar in §2 is
+the first rung, not the destination). The rungs:
+
+- **0 — Demonstrator** (the starting point: a derivation engine, no social
+  layer).
+- **1 — Presence** (the §2 bar: the Social Unit built; a
+  situated conversational presence over the knowledge the graph
+  already has, declining located-ly beyond it).
+- **2 — Breadth** (more world in the graph: classification
+  slices B–D, category anchors, the §1 commonsense relations
+  grown deliberately, the CSKG reply question settled — the
+  system declines less because it knows more; proceeds in
+  parallel with rung 1).
+- **3 — Discourse** (conversation with memory and repair: the
+  Interlocutor's picture actually used — returning visitors
+  recognised, conversation state carried — clarification
+  dialogues that resolve, follow-ups, topic continuity; the
+  Coherence container built out from 0%).
+- **4 — Fluency** (surface realisation beyond the Verbalizer's
+  40%: varied, natural English and Chinese, register held
+  across a conversation, gated by native-speaker judgment on
+  the Chinese side, §7).
+- **5 — Open domain** (governed intake: the model/web/Wikidata
+  intakes, today at 0%, commissioned and admitted under the
+  provenance and testimony discipline — knowledge acquired
+  beyond the shipped bundles without breaking the evidence
+  rules; the hardest rung, because it must be earned through
+  the intake machinery rather than bolted on. The discipline
+  governs standing, not permission: *banked intake* and *live
+  consultation with declared standing* are both legitimate —
+  an answer may come from Wikidata at need, attributed on its
+  face, without being banked in the data store first. Only
+  unattributed assertion is prohibited. Full statement: §8.)
+
+Standing on the ladder: rung 0 is measured; rung 1 is built
+and pushed (Social Unit S1–S6), its acceptance run — the
+sealed probe set of §2 — still the owner's to commission;
+rung 2's classification slices A–D are built and pushed, while
+its §1 items (commonsense relations, the CSKG reply question,
+the intakes) are untouched; rungs 3–5 are located in the
+sections below and essentially untouched, one rung-3 piece
+excepted: Interlocutor persistence was built ahead as S6, on
+synthetic-returner gates.
 
 ## 1. World knowledge
 
@@ -124,6 +181,27 @@ depth that widening does not buy.
   then built in slices S1–S6 under a sequence authorization
   and pushed to main; on the map the Social Unit stands at
   95%, the Interlocutor at 75%, Conversation at 70%.
+  *The bar (adopted 2026-11-18):* the owner's programme for a
+  usable chatbot is — set the bar, design the Social Unit,
+  build it in slices, then run the sealed probe set against
+  this section's checklist. The bar is this checklist, stated:
+  a visitor conversation works when the system (1) opens and
+  closes — greets, acknowledges, takes leave — as social moves;
+  (2) says who it is and what it can do; (3) thanks and is
+  thanked without derailing; (4) takes statements that are not
+  about the speaker without attributing them to the speaker;
+  (5) answers from its graph under testimony discipline, its
+  conversational claims tied to their source; (6) asks what was
+  meant when it does not understand, as a move distinct from
+  declining; (7) declines located-ly where it cannot answer —
+  naming the gap, never surfacing a parse failure as a reply;
+  (8) meets a false premise with a designed stance, neither
+  agreeing nor contradicting by parser accident; (9) keeps the
+  Interlocutor's picture — first contact or returning, identity
+  known or unknown, what the conversation has established; and
+  (10) holds turn-taking across a multi-turn exchange. The bar
+  is not fluency, not open-domain knowledge, and not the
+  chatbot era's success criteria.
   *Probe coverage note (2026-11-18):* the sealed probe set (next
   item) carries probes for most of this unit's contents, but of
   the Interlocutor's parts, "first contact or returning" is the
@@ -476,26 +554,58 @@ visible in the record.
   flagged), lexicalised frames excluded, and VerbNet's own sense
   splits can flag ordinary English (the "ferment" case).
 - **Sealed-run divergences (from §7's expected-graph run,
-  2026-11-18) — unadjudicated.** Against expectations authored
-  blind and sealed before the run, G0 accuracy on the 20 scored
-  holdout items is 76.1%. The divergences group into three
-  shapes: (1) whole-root-predicate substitution — 3 items
-  (H-004, H-047, H-070) carry 66 of the 99 divergences: the
-  expected root predicate's whole bundle is absent and the
-  subject/topic noun carries a predicate bundle instead (rain
-  for flood, tea for food, people for take); (2) wh-question
-  role/person shape — 3 items (H-007, H-008, H-012): the
-  wh-word stands as agent, the pronoun's entity atom is lost,
-  subjectPerson reads unmarked; (3) aspect-value shape — 5
-  items: expected bounded/ongoing aspect atoms lost, `aspect =
-  unmarked` added on the same predicate; with tense on
-  did-questions contradicted past → present on 2 of them.
-  Each is author expectation ≠ parser output; neither side is
-  adjudicated here.
-  *Closes when:* the shapes are adjudicated item by item
-  against the design record — parser defect, author error, or
-  a determination the record never made (§7) — and the parser
-  defects among them are fixed or located as their own gaps.
+  2026-11-18) — adjudicated the same day.** Against
+  expectations authored blind and sealed before the run, G0
+  accuracy on the 20 scored holdout items is 76.1%.
+  Adjudication against the design record and the parser code
+  (full report: the §7 adjudication of 2026-11-18) returned:
+  **93 of the 99 divergence records are parser defects, 4 are
+  author errors, 2 are record gaps** — and every one of the 61
+  accuracy-side atoms (lost or contradicted) is a parser
+  defect, so the 76.1% stands exactly as scored: nothing is
+  given back. The 93 reduce to **eight mechanisms**:
+  (1) *rain* sits in the hand lexicon only as a verb, captures
+  the verb slot, and no recovery exists when the subject chunk
+  fails on it (H-004); (2) the WordNet verb-fallback scan starts
+  one token early when the subject chunk fails on a wh-word and
+  upgrades the subject noun (*people*) to verb ahead of the
+  real verb (H-070) — against its own comment's stated intent;
+  (3) noun–noun compounds are not absorbed, so "ginger tea"
+  chunks as "ginger" and the inverted copular branch roots on
+  "tea", never consuming the complement (H-047); (4) the
+  wh-branch attempts its subject chunk at the *be*-carrier
+  token and, failing, assigns the wh-word the agent slot and
+  drops the pronoun — the inverted-subject recovery the main
+  path has is missing here (H-007, H-008, H-012); (5) the
+  wh-branch builds root states by hand and never calls the
+  aspect bundle, so progressive aspect is lost in wh-questions
+  (same items); (6) on *did*-questions the carrier fixes tense
+  in the design ("the carrier takes the tense, the verb stays
+  in base form") but the main path reads tense and bounded-ness
+  off the verb's base form, reporting present/unmarked (H-003,
+  H-062); (7) a table-owned lemma's classification never
+  reaches an English noun/adjective node — the climb excludes
+  table-owned lemmas ("the table owns it") and no node path
+  applies the table, so every table-owned noun entering via
+  WordNet lands unclassified (garden, ginger, cold — and rain,
+  over-determined under (1)); (8) *that* is classified as a
+  determiner before any lexicon lookup and a lone determiner
+  cannot chunk, so a *that* object is silently dropped (H-062;
+  the parser has the determiner/pronoun reclassification
+  precedent for *her* and none for *that*). The author errors
+  are the three of-PP modifier connectives (the record
+  determines `modifier`; the author's variant named the right
+  question with the wrong relation) and one prep atom the
+  builders' own fixture carries. The record gaps are the two
+  extra `aux = is` atoms: the record contradicts itself on what
+  `states.aux` is (see §7). One value stays undecided inside
+  mechanism (7): *cold*'s correct element — the table's
+  mechanical primary says Water/temperature, the sense-keyed
+  design says Metal/illness; that the parser's `none` is wrong
+  is not in dispute.
+  *Closes when:* the eight mechanisms are fixed, each as its
+  own slice, and a re-run of the sealed set (a new run against
+  the unchanged seal) shows them gone.
 
 ## 6. Lexical and token layer
 
@@ -552,7 +662,12 @@ visible in the record.
   objects — what the graph does when a verb's object fits no
   FrameNet slot (~12 items); when-clause link type (5);
   feel + adjective complement shape (5); bare temporal
-  adjuncts; time/season/location query shapes. A further 7
+  adjuncts; time/season/location query shapes; and (added by
+  the adjudication) the definition of `states.aux` — the
+  record contradicts itself, one text defining it as the
+  carrier for negated/perfect clauses while the weather branch
+  and the main path set it for progressive *be* and the
+  generator reads it as the *be*-carrier. A further 7
   items were exposed before authoring (named in the baseline
   and stage-5 records, or present in the tooling's own
   fixture), declared in the manifest and excluded.
@@ -560,17 +675,15 @@ visible in the record.
   the design record — as design, not reverse-engineered from
   parser output — and a re-authored set scores a materially
   larger share of the corpus.
-- **Sealed-run divergences, unadjudicated (§5's to settle).**
-  The run's 99 non-preserved atoms group into shapes, the
-  largest being whole-root-predicate substitution (3 items,
-  66 divergences: the expected root predicate's bundle absent,
-  a different node — in all three the subject/topic noun —
-  carrying a predicate bundle instead), wh-question
-  role/person shape (3 items), and aspect-value shape (5
-  items: expected bounded/ongoing atoms lost, `unmarked`
-  added). Each divergence is author expectation ≠ parser
-  output; which side is wrong is not yet adjudicated. They are
-  recorded as a located item in §5.
+- **Sealed-run divergences — adjudicated (§5 holds the
+  detail).** Of the run's 99 non-preserved atoms, adjudication
+  found 93 to be parser defects in eight mechanisms, 4 author
+  errors, and 2 record gaps (the `states.aux` definition
+  split, now in the item above). All 61 accuracy-side atoms
+  are parser defects, so the 76.1% stands as scored. They are
+  recorded as a located item in §5, closing when the eight
+  mechanisms are fixed and a re-run against the unchanged seal
+  shows them gone.
 - **The evidence is evaluator-shaped.** Probes and benchmarks
   were designed and scored inside this loop; precision has been
   measured against ratified thresholds on the classification
@@ -590,6 +703,38 @@ visible in the record.
 
 ## 8. Standing decisions this file does not settle
 
+- The chatbot programme (ruled 2026-11-18): the bar stated in
+  §2 is adopted; the Social Unit's design is commissioned in
+  the main AnSci build chat (the chat that maintains the
+  schematic map), the build follows in slices, and the sealed
+  probe set is run only after the build, its report read
+  against §2's checklist. The programme is tiered — the bar is
+  the first rung, not the destination (owner's framing,
+  2026-11-18: fluency and open-domain knowledge are wanted;
+  the effort is characterised by its ladder). The rungs are
+  stated at the top of this file, under "The ladder". The
+  discipline does not prohibit intake — the intakes stand on
+  the map because they are planned, and the
+  owner states plainly (2026-11-18) that web and Wikidata
+  intake will be needed. What the rule governs is standing,
+  not permission, and standing has two legitimate modes
+  (owner's correction, 2026-11-18 — a single admission gate
+  was too restrictive): *banked intake*, where outside
+  knowledge is admitted into the graph with its provenance and
+  thereafter speaks with the standing of its partition; and
+  *live consultation with declared standing*, where the system
+  consults an outside source at need and the reply carries the
+  source and its standing on its face — attributed, checkable,
+  visibly not the graph's own knowledge. What remains
+  prohibited is only the third mode: unattributed assertion —
+  outside knowledge presented as the system's own held
+  knowledge, or with no source at all. A claim must never
+  carry more standing than it has; how it earns its standing
+  may vary.
+  *Status (2026-11-18, later):* the programme ran as ruled —
+  the Social Unit was designed, built in slices S1–S6 and
+  pushed; the sealed probe run is the step that remains, on
+  the owner's commission.
 - Slice A build: commissioned 2026-11-18 in the fork chat, the
   five design decisions ruled as recommended (§4). The classes
   with no P2 leg stay T5 under ruling 3 — a future ruling, not
@@ -605,6 +750,64 @@ visible in the record.
   merge (`e6f14ab`). Slice D batch 1 was reviewed and ratified
   by the owner before its build; batch 2 takes its own
   commission.
+- Slice C design decisions — PRE-RULED (owner's "rec",
+  2026-11-18, ahead of the slice): (1) recognised-but-
+  unclassified is a formal climb outcome, a third result kind
+  visible to join/turn and decline diagnosis — not trace-only;
+  (2) the slice's scope is the climb outcome, the audited stop
+  list and the re-measurement splitting B into B-recognised /
+  B-unknown — reply use is deferred to the Social Unit track;
+  (3) function categories only, stops keyed by synset id, each
+  subtree audit-dumped for judgment, scaffolding ancestors
+  never counting; (4) the outcome records every category stop
+  on the path, nearest marked primary. Its category list is
+  certified against what B leaves. (Commissioned under the
+  sequence authorization below; built on these rulings, §3.)
+- Slice D rulings — PRE-RULED (owner's "rec", 2026-11-18,
+  ahead of the slice): (1) review is TIERED — in-loop review
+  with a recorded rationale for every proposed mapping; the
+  owner personally reviews contested items (proposal conflicts
+  with a registered heuristic, or proposer confidence low) and
+  audits a blind sample of each batch, a batch bouncing if its
+  sample error rate exceeds the bar; (2) overlay mappings carry
+  their own provenance (derived tier, qualified in replies),
+  confidence capped at 0.80, reviewer and rationale recorded
+  per entry; (3) the overlay is FILL-ONLY — it speaks only
+  where the curated table and the climb are silent, never
+  overriding either (corrections of already-classified words
+  remain table curation's work); (4) scope is the
+  real-vocabulary leftovers, high-occurrence first, batched
+  with a per-batch gate; test-suite vocabulary is out of
+  scope. The slice's SIZE is not ruled and cannot be until the
+  re-measurement after A–C lands; it is read off that
+  measurement when the slice starts. (Commissioned under the
+  sequence authorization below; batch 1 built on these
+  rulings, §3 — with one recorded deviation: the blind sample
+  was unblinded at the owner's request and explained item by
+  item, so batch 1's evidence is the explained spot-check plus
+  the owner's item rulings, not a blind audit.)
+- Parallel tracks (ruled 2026-11-18): the Social Unit track
+  (rung 1) and the classification track (rung 2) run
+  concurrently in separate worktrees, neither waiting for the
+  other; slices stay sequential within each track. Under this
+  ruling the Social Unit's five design decisions were ruled as
+  recommended (§2), build slice S1 is commissioned, and Slice B
+  is commissioned as the classification track's next slice —
+  both commissions in the main build chat. Social Unit slices
+  S2–S6 still await their own commissions in turn.
+  *Status (2026-11-18, later):* both tracks ran to completion
+  under this ruling and the later sequence commissions —
+  Social Unit S1–S6 and classification A–D are built and
+  pushed (§2, §3).
+- Sequence authorization (owner, 2026-11-18): the
+  classification track runs B → C → D in order WITHOUT further
+  commissions — as each slice's gates pass, the next proceeds
+  on its pre-ruled design (C and D above), with a report at
+  each slice boundary. Two limits stand: D's batches still
+  pause for the owner's contested-item and blind-sample review
+  (that is the tiered-review ruling, not a commission), and
+  pushes remain per-word — the authorization covers building,
+  not pushing. The Social Unit track is unaffected.
 - CSKG reply integration (§1): not taken.
 - Found-ahead candidates (§2): ruled on 2026-11-18 — grounding
   in conversation, clarification behaviour and false-premise
@@ -617,7 +820,12 @@ visible in the record.
   map placement, the Slice A rulings, the §5 correction, and
   the three slice records (§5 construction family, §6
   inflection, §7 expected graphs) with their code, tests and
-  run records.
+  run records. A further batch followed (Social Unit S1–S6,
+  classification A–D, ProblemSolving placeholder, lexicon-state
+  fix with its GAPS reconciliation) and was pushed the same
+  day, main reaching `37fe145`. This merged file — the ladder,
+  the §2 bar, the §7 adjudication and the §8 records above
+  reconciled with those closures — awaits its own push word.
 
 ## Appendix — the gaps as a tree, with task lists
 
@@ -719,10 +927,14 @@ AnSci — GAPS
 │          family 100% on the stage-5 holdout)
 │   ├─ [ ] Run the H3 sense experiment — needs materials + judges
 │   │      (priority order is an axiom under test, no discourse test set)
-│   ├─ [ ] Adjudicate the sealed-run divergences (76.1% accuracy):
-│          root-predicate substitution ×3 · wh-question role shape
-│          ×3 · aspect-value shape ×5 — parser defect, author error,
-│          or a determination the record never made, item by item
+│   ├─ [x] Adjudicate the sealed-run divergences (done 2026-11-18:
+│          93 of 99 records are parser defects in 8 mechanisms;
+│          4 author errors; 2 record gaps; the 76.1% stands)
+│   ├─ [ ] Fix the eight adjudicated parser mechanisms, each as its
+│          own slice (verb-slot capture · fallback-scan off-by-one ·
+│          noun–noun compounds · wh-branch subject recovery ·
+│          wh-branch aspect · did-question tense · table-owned
+│          classification seam · that-object drop)
 │   └─ [ ] Valency residue: sense-split the union-of-classes check,
 │          add obligations, admit lexicalised frames (ferment case)
 │
@@ -743,7 +955,7 @@ AnSci — GAPS
 │   ├─ [ ] Write the missing design determinations so a re-authored
 │          set can score more of the corpus (53 of 80 indeterminate:
 │          unslottable objects · when-clauses · feel+adjective ·
-│          bare temporals · query shapes)
+│          bare temporals · query shapes · states.aux definition)
 │   ├─ [ ] WP2's independent-human benchmark (the full WP2 claim;
 │          human-shaped, cannot be supplied inside this loop)
 │   ├─ [ ] Get judgment from outside this loop (evaluator-shaped evidence;
@@ -753,6 +965,9 @@ AnSci — GAPS
 │          (bars never drop as density scales — applied, not yet proven)
 │
 └─ 8. Standing decisions (not gaps — decisions owed)
+    ├─ [x] Rule the chatbot programme (ruled 2026-11-18, §8: bar
+           adopted · Social Unit designed + built S1–S6 · sealed
+           probe run after the build, on the owner's commission)
     ├─ [x] Commission the Slice A build (commissioned 2026-11-18,
            fork chat; five decisions ruled as recommended)
     ├─ [x] Commission slices B, C, D in turn (commissioned as a
