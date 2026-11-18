@@ -906,6 +906,93 @@ export function planRecordPredication(input: PlanRecordPredicationInput): { sent
   return { sentence: generate(graph), graph };
 }
 
+/**
+ * Build the reply graph for the THANKS RECEIPT (Social Unit S2,
+ * 2026-11-18): the predication construction in its bare form,
+ * predicating "welcome" of the person who thanked — the move's
+ * own grammar, authored by the Planner like every other move.
+ * No pricing: no derivation backs a ritual receipt, and none is
+ * fabricated.
+ *
+ * The graph is CONSTRUCTED, not parsed from a canonical string,
+ * deliberately: parsing "You are welcome." is unstable in a
+ * running process — the sentence layer's WordNet provider
+ * registers a verb entry for "welcome" when a parse merely
+ * probes it (wordnetVerb's register side effect), so a second
+ * parse of the same string reads "welcome" as a verb and the
+ * copula is lost ("You welcome."). That probe-poisoning is a
+ * located sentence-layer gap, recorded in the S2 report; the
+ * receipt does not route through it.
+ */
+export function planThanksReceipt(): { sentence: string; graph: ParsedSentence } {
+  const subject: MeaningNode = {
+    id: "reply-subject",
+    lemma: "you",
+    form: "you",
+    syntacticElement: "Earth",
+  };
+  const quality: MeaningNode = {
+    id: "reply-predicate",
+    lemma: "welcome",
+    form: "welcome",
+    syntacticElement: "Fire",
+    role: "predicate",
+    states: { copulaTense: "present", mood: "indicative", subjectPerson: "2sg" },
+  };
+  const graph: ParsedSentence = {
+    meaning: {
+      nodes: [subject, quality],
+      edges: [{ from: subject.id, to: quality.id, relation: "predicate", cycle: cycleOf("Earth", "Fire") }],
+      rootId: quality.id,
+      entryElement: "Fire",
+    },
+    connective: { language: "en", tokens: [], next: [], spans: [] },
+    realizes: {},
+    scopeAttachments: [],
+  };
+  return { sentence: generate(graph), graph };
+}
+
+/**
+ * Build the reply graph for the IDENTITY self-answer (Social
+ * Unit S3, 2026-11-18): the predication construction in its
+ * bare form, predicating the system's name — as it stands in
+ * Awareness Self's Identity table, passed in by the caller —
+ * of the system itself. The Verbalizer generates "I am
+ * <name>." from this graph; the table's kindLine rides as the
+ * record's own sentence beside it (the turn loop composes the
+ * two). No pricing: a self-fact is presented from record, not
+ * derived, and no tier is fabricated for it.
+ */
+export function planSelfIdentity(name: string): { sentence: string; graph: ParsedSentence } {
+  const subject: MeaningNode = {
+    id: "reply-subject",
+    lemma: "i",
+    form: "I",
+    syntacticElement: "Earth",
+  };
+  const predicate: MeaningNode = {
+    id: "reply-predicate",
+    lemma: name.toLowerCase(),
+    form: name,
+    syntacticElement: "Earth",
+    role: "predicate",
+    states: { copulaTense: "present", mood: "indicative", subjectPerson: "1sg" },
+  };
+  const graph: ParsedSentence = {
+    meaning: {
+      nodes: [subject, predicate],
+      edges: [{ from: subject.id, to: predicate.id, relation: "predicated-as", cycle: cycleOf("Earth", "Earth") }],
+      rootId: predicate.id,
+      entryElement: "Earth",
+    },
+    connective: { language: "en", tokens: [], next: [], spans: [] },
+    realizes: {},
+    scopeAttachments: [],
+  };
+  return { sentence: generate(graph), graph };
+}
+
 /* ------------------------------------------------------------------ */
 /* Questions (slice R3: §2.3's transform run on a gap)                */
 /* ------------------------------------------------------------------ */

@@ -621,6 +621,33 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       verbItem = it;
       break;
     }
+    // Lexical do (Social Unit S3's located fix, 2026-11-18): a
+    // do-form the clause did not take as its auxiliary, sitting
+    // in verb position after the subject chunk, is the clause's
+    // lexical verb — "What can you do?" (can is the auxiliary,
+    // do the verb) and "What do you do?" (the first do is the
+    // inverted auxiliary, the second the verb). Until this pass
+    // those sentences failed with "no verb found": EN_AUX
+    // classifies every do-form as an auxiliary, so the lexical
+    // verb was invisible. Do-support questions with a real verb
+    // never reach here (their verb fills the slot), and the item
+    // already taken as the clause's auxiliary is never re-read —
+    // position plus the already-taken auxiliary are the
+    // evidence, as everywhere in this parser.
+    if (!verbItem) {
+      for (let k = scanFrom; k < items.length; k++) {
+        const it = items[k];
+        if (it.kind !== "aux" || (it.lower !== "do" && it.lower !== "does" && it.lower !== "did")) continue;
+        if (auxItem && it.index === auxItem.index) continue;
+        const derived = wordnetVerb(it.lower);
+        if (!derived) continue;
+        it.entry = derived;
+        it.kind = "verb";
+        it.formTag = it.lower === "did" ? "past" : "base";
+        verbItem = it;
+        break;
+      }
+    }
   }
   const first = items[contentStart];
 

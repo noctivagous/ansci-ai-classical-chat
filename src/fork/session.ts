@@ -455,6 +455,13 @@ export interface Session {
    *  2026-11-18): the standing picture of the person being talked
    *  with, written only by the unit's reading. */
   interlocutor: InterlocutorRegister;
+  /** The cross-conversation Interlocutor store (Social Unit
+   *  S6), when the embedding supplies one. Absent, nothing
+   *  persists and every conversation is self-contained —
+   *  the S1–S5 behaviour exactly. The store is consulted
+   *  only once an identity is stated (interlocutor-store.ts
+   *  carries the discipline). */
+  interlocutorStore?: import("./interlocutor-store").InterlocutorStore;
   /** The Social Unit's Conversation register (social.ts, S1):
    *  the conversation's phase and what is pending. */
   conversation: ConversationRegister;
@@ -525,7 +532,11 @@ export function listSurvivingNeeds(session: Session): (Need & { objectId: string
   return out;
 }
 
-export function newSession(disposition: Composition = NEUTRAL_COMPOSITION, frameInput?: FrameInput): Session {
+export function newSession(
+  disposition: Composition = NEUTRAL_COMPOSITION,
+  frameInput?: FrameInput,
+  opts?: { interlocutorStore?: import("./interlocutor-store").InterlocutorStore },
+): Session {
   const graph = buildForkGraph();
   return {
     graph,
@@ -533,6 +544,7 @@ export function newSession(disposition: Composition = NEUTRAL_COMPOSITION, frame
     disposition,
     role: NEUTRAL_COMPOSITION,
     ...(frameInput ? { frame: buildFrame(graph, frameInput) } : {}),
+    ...(opts?.interlocutorStore ? { interlocutorStore: opts.interlocutorStore } : {}),
     entities: [],
     events: [],
     states: [],

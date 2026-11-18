@@ -94,38 +94,38 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Container",
       "parent": "awareness",
       "state": "partial",
-      "percent": 15,
+      "percent": 25,
       "path": "awareness/self",
       "file": null,
       "external": false,
       "currentCode": "—",
-      "summary": "The system's picture of itself."
+      "summary": "The system's picture of itself. Its Identity and Capabilities & limits tables are built (2026-11-18, Social Unit S3) and read through the Social Unit; Disposition and Own state stand as they were."
     },
     {
       "id": "awareness/self/identity",
       "title": "Identity",
       "type": "Table",
       "parent": "awareness/self",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 75,
       "path": null,
-      "file": "identity.ts",
+      "file": null,
       "external": false,
-      "currentCode": "none",
-      "summary": "Who the system is. Not yet written anywhere."
+      "currentCode": "src/fork/identity.ts",
+      "summary": "Who the system is, as data: the name (AnSci) and the kind line, in visitor language. Built 2026-11-18 (Social Unit S3): the Social Unit requests these facts for a self-query and holds no copy. The text is configuration — its final wording is the owner's."
     },
     {
       "id": "awareness/self/capabilities",
       "title": "Capabilities & limits",
       "type": "Table",
       "parent": "awareness/self",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 75,
       "path": null,
-      "file": "capabilities.ts",
+      "file": null,
       "external": false,
-      "currentCode": "none",
-      "summary": "What the system can and cannot do, in its own terms. Not yet written."
+      "currentCode": "src/fork/capabilities.ts",
+      "summary": "What the system can and cannot do, in its own terms: two lists of plain first-person sentences, the limits as candid as the capabilities. Built 2026-11-18 (Social Unit S3): the Social Unit requests these facts for a capability self-query and holds no copy. The text is configuration — its final wording is the owner's."
     },
     {
       "id": "awareness/self/disposition",
@@ -302,12 +302,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "awareness",
       "state": "partial",
-      "percent": 20,
+      "percent": 95,
       "path": "awareness/social-unit",
       "file": null,
       "external": false,
       "currentCode": "src/fork/social.ts (S1) + assess.ts (social kinds)",
-      "summary": "Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Designed 2026-11-18 (ansci-social-unit-design.md; placement inside Awareness confirmed, rulings 1a-5a). S1 built: the social reading annotates assessed objects in shadow — no reply changes — and the two registers live in the Session. Slices S2-S6 (moves through the Planner, self-facts, clarification, premise stance, persistence) are not yet commissioned in turn."
+      "summary": "Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Designed 2026-11-18 (ansci-social-unit-design.md; placement inside Awareness confirmed, rulings 1a-5a). S1 built: the social reading annotates assessed objects and the two registers live in the Session. S2 built: the Planner discharges the greeting-return, farewell-return and thanks-receipt demands as authored moves, obligations are tracked, and the phase is consulted before initiative. S3 built: self-facts live in Awareness Self's Identity and Capabilities tables and self-queries — identity and capability — are answered from that record through the unit. Remaining: clarification (S4), the premise stance (S5); cross-conversation persistence (S6) is deferred by ruling 5a. S4 built: the clarification move end to end — all four trigger classes wired (token, sense, referent, whole utterance), the pending register live with the fill reading, attempt counting and the best-reading fallback, and clarified senses remembered for the conversation. S5 built: the premise stance — Coherence supplies a contradiction degree (record or graph), the unit owns the three-beat response and the insistence handling (supposition framing, disagreements recorded, the premise never adopted). S6 remains deferred under ruling 5a (no identified returners exist). S6 built (owner's commission, ahead of ruling 5a's deployment precondition, on synthetic-returner gates): identity-keyed persistence across conversations — the durable core only, consulted only on a stated identity, recognition never performed before it. All six slices are now built; what remains is the sealed probe acceptance run, the holder's to commission."
     },
     {
       "id": "awareness/social-unit/interlocutor",
@@ -315,12 +315,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Register",
       "parent": "awareness/social-unit",
       "state": "partial",
-      "percent": 30,
+      "percent": 75,
       "path": null,
       "file": "interlocutor-standing.ts",
       "external": false,
       "currentCode": "src/fork/social.ts (register) + src/fork/session.ts (held)",
-      "summary": "The system's standing picture of the person it is talking with: identity known or unknown, first contact or returning, and the picture the conversation itself accumulates. S1 (2026-11-18): contact, a stated-name identity, pointers to the content established with them, and the social state (greeted / thanked / leave taken), updated only from speaker-attributed content. Returning-contact persistence is slice S6, deferred. This is the register formerly at awareness/surroundings/interlocutor-standing, moved into the Social Unit by the owner's direction (2026-11-18)."
+      "summary": "The system's standing picture of the person it is talking with: identity known or unknown, first contact or returning, and the picture the conversation itself accumulates. S1 (2026-11-18): contact, a stated-name identity, pointers to the content established with them, and the social state (greeted / thanked / leave taken), updated only from speaker-attributed content. Returning-contact persistence is slice S6, deferred. This is the register formerly at awareness/surroundings/interlocutor-standing, moved into the Social Unit by the owner's direction (2026-11-18). S6 (2026-11-18): the register persists across conversations through the identity-keyed store — prior conversations and their established topics load at the moment the identity is stated, and the durable core is rewritten at each turn's end."
     },
     {
       "id": "awareness/social-unit/conversation",
@@ -328,12 +328,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Container",
       "parent": "awareness/social-unit",
       "state": "partial",
-      "percent": 15,
+      "percent": 70,
       "path": "awareness/social-unit/conversation",
       "file": null,
       "external": false,
       "currentCode": "src/fork/social.ts (phase & pending register)",
-      "summary": "Conversation lives inside the Social Unit: greeting and leave-taking, identity and capabilities as socially presented, thanks, acknowledgement, turn-taking. S1 (2026-11-18): the phase machine and pending register live in the Session and the reading tracks them; the moves themselves — authored through the Planner — are slice S2 on. The design adds two moves to this container: clarification and the premise stance (slices S4, S5)."
+      "summary": "Conversation lives inside the Social Unit: greeting and leave-taking, identity and capabilities as socially presented, thanks, acknowledgement, turn-taking. S1 (2026-11-18): the phase machine and pending register live in the Session and the reading tracks them. S2 (2026-11-18): the moves are authored through the Planner — greeting and farewell mirrors, the thanks receipt — obligations are tracked in the register and discharged by the unit, and the phase is consulted before initiative. The design adds two moves to this container: clarification and the premise stance (slices S4, S5). S4 (2026-11-18): the pending register is live — clarifications open it, the next turn is read against it first, attempts are counted, and clarified sense readings are held for the conversation. S5 (2026-11-18): the stance-repair pending is live, and the register holds the conversation's premise disagreements in plain renderings."
     },
     {
       "id": "lpu",

@@ -26,7 +26,7 @@
  * The analysis runs BEFORE the object is stored, so the session
  * it reads is the prior stream.
  */
-import { lookupClassification } from "./classify";
+import { CLASSIFICATIONS, lookupClassification } from "./classify";
 import { CONTROLS, GENERATES, type Element } from "./sentence";
 import { isNeutralComposition } from "./composition";
 import type { Session } from "./session";
@@ -291,4 +291,84 @@ export function analyseInbound(object: SemanticObject, session: Session): void {
       }
     }
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* The premise degree (Social Unit S5, design §8; ruling 4a)          */
+/* ------------------------------------------------------------------ */
+
+export interface PremiseCheck {
+  degree: "contradiction" | "absence";
+  source?: "record" | "graph";
+  establishedQuality?: string;
+  establishedNegated?: boolean;
+  ground?: string;
+}
+
+/**
+ * The one rung of the degree scale this programme consumes
+ * (design §8): is an utterance's presupposed predication —
+ * subject + quality, as a why-question carries it —
+ * CONTRADICTED by something established, or merely absent?
+ * Coherence supplies the degree; the Social Unit owns the
+ * response pattern (the stance), and the counter-fact comes
+ * from the record or the graph, never from the unit.
+ *
+ * Contradiction is positive in both sources:
+ *  - record: a standing state of the subject, from an earlier
+ *    turn, occupying the asked quality's slot (the R5/R7.5
+ *    aspect-slot discipline) with a different value, or the
+ *    asked quality itself under negation;
+ *  - graph: a path runs from the subject to another quality
+ *    of the same aspect, over the same edge family the
+ *    question-answerer itself uses — so what the check finds
+ *    is exactly what the system would answer with on the
+ *    corrected ground.
+ * Anything else is absence: §7c's context-request territory,
+ * not the stance's.
+ */
+export function premiseDegree(session: Session, subjectLemma: string, qualityLemma: string): PremiseCheck {
+  const askedAspect = lookupClassification(qualityLemma)?.aspect;
+  const occupiesSlot = (lemma: string): boolean =>
+    askedAspect !== undefined ? lookupClassification(lemma)?.aspect === askedAspect : lemma === qualityLemma;
+  const occupant = [...session.states]
+    .reverse()
+    .find((s) => s.holder === subjectLemma && s.turn < session.turnCount && occupiesSlot(s.lemma));
+  if (occupant && (occupant.lemma !== qualityLemma || occupant.negated)) {
+    return {
+      degree: "contradiction",
+      source: "record",
+      establishedQuality: occupant.lemma,
+      ...(occupant.negated && occupant.lemma === qualityLemma ? { establishedNegated: true } : {}),
+      ground:
+        `the record holds '${subjectLemma}' as '${occupant.lemma}'${occupant.negated && occupant.lemma === qualityLemma ? " under negation" : ""} ` +
+        `from turn ${occupant.turn} — the asked quality's slot is occupied by another value`,
+    };
+  }
+  if (askedAspect !== undefined) {
+    const graph = session.graph;
+    const subjectNode = graph.nodeByName(subjectLemma);
+    if (subjectNode) {
+      const seen = new Set<string>();
+      for (const entry of CLASSIFICATIONS) {
+        if (entry.aspect !== askedAspect || entry.concept === qualityLemma || seen.has(entry.concept)) continue;
+        seen.add(entry.concept);
+        const target = graph.nodeByName(entry.concept);
+        if (!target) continue;
+        const path = graph.findPath(subjectNode.id, target.id, {
+          edgeTypes: ["ELEMENT_OF", "HAS_ELEMENT", "POLARITY_OF", "HAS_QUALITY", "CORRESPONDS_TO"],
+          confidenceThreshold: 0,
+        });
+        if (path) {
+          return {
+            degree: "contradiction",
+            source: "graph",
+            establishedQuality: entry.concept,
+            ground: `a path runs from '${subjectLemma}' to '${entry.concept}' in the graph (${path.text}) — the aspect's established value is the other one`,
+          };
+        }
+      }
+    }
+  }
+  return { degree: "absence" };
 }

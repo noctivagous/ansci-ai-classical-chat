@@ -56,11 +56,22 @@ export function authorReplyObject(input: AuthorReplyInput): InformationObject {
       kind: "reply",
       form: root?.states?.mood ?? "indicative",
       force: move,
-      ritual: inbound?.act.kind === "greeting",
+      // Ritual inbounds (Social Unit S2): the greeting's mirror
+      // was the first; the farewell mirror and the thanks
+      // receipt are ritual exchanges of the same kind — recorded
+      // as ritual, never banked as reports.
+      ritual:
+        inbound?.act.kind === "greeting" || inbound?.act.kind === "leave-taking" || inbound?.act.kind === "thanks",
       streamRole:
-        inbound && (inbound.act.kind === "question" || inbound.act.kind === "greeting" || inbound.act.kind === "reason-query")
-          ? "answers"
-          : "continues",
+        inbound && inbound.act.kind === "leave-taking"
+          ? "closes"
+          : inbound &&
+              (inbound.act.kind === "question" ||
+                inbound.act.kind === "greeting" ||
+                inbound.act.kind === "reason-query" ||
+                inbound.act.kind === "thanks")
+            ? "answers"
+            : "continues",
     },
     content: { meaning: graph.meaning, connective: graph.connective, holes: [], grounding: [] },
     aspects,

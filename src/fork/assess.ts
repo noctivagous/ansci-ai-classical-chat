@@ -141,15 +141,30 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   );
   // A self-query asks about the system itself: an interrogative
   // predication of "you" by a question word ("Who are you?",
-  // "What are you?"). Capability phrasings ("What can you do?")
-  // do not parse today — the sentence layer draws no modal
-  // shape for them — so S1 recognises the identity shape only;
-  // the gap is the sentence layer's, recorded in the S1 report.
+  // "What are you?").
   const isSelfQuery = Boolean(
     interrogative &&
       parsed.meaning.edges.some((e) => e.relation === "predicated-as") &&
       parsed.meaning.nodes.some((n) => n.lemma.toLowerCase() === "you") &&
       parsed.meaning.nodes.some((n) => n.questionWord && (n.lemma.toLowerCase() === "who" || n.lemma.toLowerCase() === "what")),
+  );
+  // The capability self-query (Social Unit S3, 2026-11-18):
+  // "What can you do?" — an interrogative whose verb root is
+  // the lexical "do", whose agent is "you", whose clause
+  // carries the modal "can", and whose questioned slot is
+  // "what". S1 could not recognise it because the sentence
+  // layer drew no shape for it at all; S3's parse fix (the
+  // lexical-do pass in parse.ts) draws the shape, and this
+  // recognition reads it. The modal is required: "What do you
+  // do?" asks after an occupation, not a capability, and stays
+  // an ordinary question.
+  const isCapabilityQuery = Boolean(
+    interrogative &&
+      root?.role === "verb" &&
+      root.lemma.toLowerCase() === "do" &&
+      (root.states?.aux === "can" || root.states?.modal === "can") &&
+      parsed.meaning.nodes.some((n) => n.lemma.toLowerCase() === "you") &&
+      parsed.meaning.nodes.some((n) => n.questionWord && n.lemma.toLowerCase() === "what"),
   );
 
   const kind: SemanticObject["act"]["kind"] = parsed.discourseAct
@@ -160,7 +175,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         ? "leave-taking"
         : isThanks
           ? "thanks"
-          : isSelfQuery
+          : isSelfQuery || isCapabilityQuery
             ? "self-query"
             : parsed.query || interrogative
               ? "question"
@@ -239,7 +254,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
       force: kind,
       ritual: kind === "greeting" || kind === "leave-taking" || kind === "thanks",
       streamRole,
-      ...(kind === "self-query" ? { selfQuery: "identity" as const } : {}),
+      ...(kind === "self-query" ? { selfQuery: (isCapabilityQuery ? "capability" : "identity") as "identity" | "capability" } : {}),
     },
     content: { meaning: parsed.meaning, connective: parsed.connective, holes, grounding },
     aspects,

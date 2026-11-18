@@ -144,7 +144,12 @@ test("R7.5 (f): a negated standing state occupies its slot and is predicated as 
 test("R7.5 (g): a why-question whose presupposition the record contradicts is answered from the record", () => {
   const s = newSession();
   const [, , t3] = run(s, ["The soup is cold.", "The soup is cool.", "Why is the soup cold?"]);
-  assert.equal(t3.reply, "The soup is cool.");
+  // The record answer stands exactly as R7.5 built it; since
+  // Social Unit S5 (2026-11-18) the reply also carries the
+  // premise stance's third beat — the conversation re-offered
+  // on the corrected ground — because this shape IS the
+  // stance's record-contradiction case (design §8).
+  assert.equal(t3.reply, "The soup is cool. Did you mean why the soup is cool?");
   assert.equal(t3.trace.answeredFromRecord?.state.lemma, "cool");
   assert.equal(t3.trace.derivationPath, undefined, "no causal form is built from a derivation the record does not support");
 });

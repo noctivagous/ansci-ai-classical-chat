@@ -93,7 +93,7 @@ import { classifiedOrigin, holderOf, recordEntity, resolvePronoun, supersedeReco
 import { renderComposition } from "./composition";
 import { priceDerivation, tierOfProvenance, weakestTier, type PricingRecord, type Tier } from "./pricing";
 import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
-import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
+import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, planSelfIdentity, planThanksReceipt, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rivalSplits } from "./sense";
 import { assessInformation } from "./assess";
 import { SENSE_CHANNELS } from "./semantic-object";
@@ -105,8 +105,8 @@ import {
   seedQuantityNeeds,
   seedSceneNeeds,
 } from "./info-object";
-import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
-import { readSocial } from "./social";
+import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, premiseDegree, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
+import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, requestCapabilities, requestIdentity } from "./social";
 import { assessNormalcy, normalcyFlagOf } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
 import { applySceneUpdate } from "./senses-scening";
@@ -382,6 +382,28 @@ export interface TurnTrace {
     rivals: { element: Element; anchor: string; confidence: number; support: number }[];
     ground: string;
   };
+  /** Social Unit S4: this turn was read against a standing
+   *  clarification pending — what the fill reading found and
+   *  did (filled by a named candidate, abandoned for a usable
+   *  new turn, a failed attempt, or the attempt-limit
+   *  fallback). */
+  clarificationFill?: {
+    point: string;
+    outcome: "filled" | "abandoned" | "attempt-failed" | "fallback";
+    detail: string;
+  };
+  /** Social Unit S5: the premise stance — a presupposition
+   *  Coherence's premise degree found contradicted (by the
+   *  record or the graph), the stance taken on it, or an
+   *  insistence met on a standing stance-repair pending. */
+  stance?: {
+    subject: string;
+    presupposed: string;
+    established: string;
+    source: "record" | "graph";
+    outcome: "stated" | "insistence-met-as-supposition" | "insistence-not-adopted";
+    ground: string;
+  };
   /**
    * R5 (§8.7 S3): the cohesion a planner reply earned against
    * the session record, when a marker was realised — the
@@ -421,6 +443,10 @@ export interface TurnResult {
 }
 
 const CONTROLLER_OF: Record<Element, Element> = { Wood: "Metal", Fire: "Water", Earth: "Wood", Metal: "Fire", Water: "Earth" };
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function nodeById(p: ParsedSentence, id: string): MeaningNode {
   return p.meaning.nodes.find((n) => n.id === id)!;
@@ -871,7 +897,7 @@ function answerHowMany(session: Session, trace: TurnTrace, text: string): TurnRe
   return { reply: `You have ${rendered}${left ? " left" : ""}.`, trace };
 }
 
-function processTurnInner(session: Session, text: string): TurnResult {
+function processTurnInner(session: Session, text: string, opts?: { clarificationFallback?: boolean }): TurnResult {
   session.turnCount += 1;
   const turn = session.turnCount;
   const trace: TurnTrace = {
@@ -895,6 +921,58 @@ function processTurnInner(session: Session, text: string): TurnResult {
    * it asks after, which would erase the absence measured. */
   const topicsBefore: TopicRecord[] = session.topics.map((t) => ({ ...t }));
 
+  /* The pending-fill reading (Social Unit S4, design §7): a
+   * standing clarification is read against this turn FIRST,
+   * before the turn is taken as itself.
+   *
+   * - A candidate-less pending (the context request, §7c; the
+   *   rephrase request, §7d) is answered by the continuation
+   *   itself: the pending closes and the turn proceeds.
+   * - A fill naming an offered candidate resolves the point:
+   *   for a token (§7a) the chosen word stands in the original
+   *   sentence, which is then processed as this turn; for a
+   *   sense (§7b) the chosen reading becomes the
+   *   conversation's settled reading for the lemma and the
+   *   fragment is consumed as the answer.
+   * - A turn that neither fills nor (judged after assessment,
+   *   below) stands as a usable turn of its own is a failed
+   *   attempt — counted there, where the judgement can be
+   *   made. */
+  const standingAtEntry = session.conversation.pending;
+  if (standingAtEntry?.kind === "clarification") {
+    if (!standingAtEntry.candidates?.length) {
+      trace.clarificationFill = {
+        point: standingAtEntry.point ?? "clarification",
+        outcome: "filled",
+        detail: "a candidate-less clarification (context request or rephrase request) is answered by the continuation itself; the pending closes and the turn proceeds as itself",
+      };
+      closePending(session);
+    } else {
+      const fill = matchPendingFill(standingAtEntry, text);
+      if (fill && standingAtEntry.point?.startsWith("token:") && standingAtEntry.originalText) {
+        const surface = standingAtEntry.point.slice("token:".length);
+        trace.clarificationFill = {
+          point: standingAtEntry.point,
+          outcome: "filled",
+          detail: `the fill named '${fill.term}' for the token '${surface}'; the original sentence is processed with that reading`,
+        };
+        text = standingAtEntry.originalText.replace(new RegExp(`\\b${escapeRegExp(surface)}\\b`, "i"), fill.term);
+        closePending(session);
+      } else if (fill && standingAtEntry.point?.startsWith("sense:")) {
+        const lemma = standingAtEntry.point.slice("sense:".length);
+        noteClarifiedSense(session, lemma, { anchor: fill.reading, element: fill.element ?? "" });
+        trace.clarificationFill = {
+          point: standingAtEntry.point,
+          outcome: "filled",
+          detail: `the fill named the '${fill.reading}' reading of '${lemma}'; it is the conversation's settled reading now`,
+        };
+        closePending(session);
+        trace.planNote = `clarification filled: '${lemma}' is read as in ${fill.reading} for this conversation (Social Unit S4, the pending-fill reading)`;
+        return { reply: `Noted — as in ${fill.reading}.`, trace };
+      }
+    }
+  }
+
   let parsed: ParsedSentence;
   try {
     parsed = parse(text, "en");
@@ -903,7 +981,14 @@ function processTurnInner(session: Session, text: string): TurnResult {
       (err as { tokenResolutions?: TokenResolution[] }).tokenResolutions ?? [];
     trace.parseSummary = "parse failed";
     trace.declineReason = "the sentence could not be taken apart by the sentence layer";
-    return { reply: "I couldn't take that sentence apart — could you put it another way?", trace };
+    // S4 (design §7d): the whole-utterance clarification — a
+    // rephrase request that never names the failure (the trace
+    // above keeps the located gap), with the pending opened so
+    // the next turn is read as its answer. Before S4 the reply
+    // named the failure ("I couldn't take that sentence
+    // apart — …"); the designed form asks without naming it.
+    openClarification(session, { openedBy: `turn:${turn}`, point: "utterance", question: "Could you put that another way?" });
+    return { reply: "Could you put that another way?", trace };
   }
   const root = nodeById(parsed, parsed.meaning.rootId);
   trace.parseSummary = `root '${root.lemma}' (${root.syntacticElement}${root.role ? ", " + root.role : ""}); nodes: ${parsed.meaning.nodes.map((n) => n.lemma).join(", ")}; mood: ${root.states?.mood ?? "indicative"}`;
@@ -1010,6 +1095,70 @@ function processTurnInner(session: Session, text: string): TurnResult {
   );
   if (socialNotes.length) trace.social = socialNotes;
 
+  /* The pending-fill reading, second stage (Social Unit S4,
+   * design §7): a standing candidate clarification this turn
+   * did not fill (the first stage, above, reads the fill). A
+   * turn that is itself usable — a clause, a question, a
+   * social act — abandons the pending: the conversation has
+   * moved on and the point is not chased. A turn that is
+   * neither a fill nor usable is a failed attempt: counted in
+   * the register, re-asked once, and at the second failure the
+   * system proceeds on its best reading and says it is doing
+   * so — there is no third clarification on the same point. */
+  {
+    const pending = session.conversation.pending;
+    if (pending?.kind === "clarification" && pending.candidates?.length && !opts?.clarificationFallback) {
+      const first = assessed[0];
+      const firstRoot = first?.content.meaning.nodes.find((n) => n.id === first.content.meaning.rootId);
+      const usable =
+        !!first &&
+        (first.act.kind !== "statement" || firstRoot?.role === "verb" || firstRoot?.role === "predicate" || first.aspects.length > 0);
+      if (usable) {
+        trace.clarificationFill = {
+          point: pending.point ?? "clarification",
+          outcome: "abandoned",
+          detail: "the turn did not fill the standing clarification but stands as a usable turn of its own; the pending is abandoned and the turn proceeds as itself",
+        };
+        closePending(session);
+      } else {
+        const attempts = noteClarificationAttempt(session);
+        if (attempts >= 2 && pending.point?.startsWith("sense:")) {
+          const lemma = pending.point.slice("sense:".length);
+          noteClarifiedSense(session, lemma, { anchor: pending.bestReading ?? "", element: pending.bestElement ?? "" });
+          trace.clarificationFill = {
+            point: pending.point,
+            outcome: "fallback",
+            detail: `two failed attempts; the system proceeds on its best reading ('${pending.bestReading}') and says so — the reading stands as the conversation's settled one`,
+          };
+          closePending(session);
+          trace.planNote = "clarification fallback (S4): two attempts failed to separate the readings; the best reading stands, and the reply says so";
+          return { reply: `I'll take '${lemma}' in the ${pending.bestReading} sense, then.`, trace };
+        }
+        if (attempts >= 2 && pending.point?.startsWith("token:")) {
+          const surface = pending.point.slice("token:".length);
+          const best = pending.bestReading ?? "";
+          trace.clarificationFill = {
+            point: pending.point,
+            outcome: "fallback",
+            detail: `two failed attempts; the system proceeds on its best reading ('${best}' for '${surface}') and says so — the original sentence is then processed on that reading`,
+          };
+          closePending(session);
+          trace.planNote = "clarification fallback (S4): two attempts failed; the reply states the best reading and the original sentence is processed on it";
+          const onBest = (pending.originalText ?? "").replace(new RegExp(`\\b${escapeRegExp(surface)}\\b`, "i"), best);
+          const inner = processTurnInner(session, onBest, { clarificationFallback: true });
+          return { reply: `I'll take '${surface}' as ${best}. ${inner.reply}`, trace };
+        }
+        trace.clarificationFill = {
+          point: pending.point ?? "clarification",
+          outcome: "attempt-failed",
+          detail: `the turn neither filled the clarification nor stands as a usable turn of its own; attempt ${attempts} of 2 — the question is re-asked once`,
+        };
+        trace.planNote = "clarification re-asked (S4): the attempt did not fill it; one re-ask, no third";
+        return { reply: pending.question ?? "Could you put that another way?", trace };
+      }
+    }
+  }
+
   /* The greeting (slice 2; envelope build 2026-11-17): the
    * Planner answers the greeting object with its mirror — the
    * reply is generated from the object's own graph, so the
@@ -1037,6 +1186,9 @@ function processTurnInner(session: Session, text: string): TurnResult {
   const openingObject = assessed[0];
   if (openingObject && openingObject.act.kind === "greeting") {
     speakWithObject(session, trace, parsed, "return greeting");
+    // S2: the authored mirror discharges the Social Unit's
+    // greeting-return demand (the unit records the discharge).
+    dischargeDemand(session, "greeting-return");
     trace.planNote =
       openingObject.act.streamRole === "opens"
         ? "return greeting (the planner, reading the semantic object; coherence: fits)"
@@ -1044,6 +1196,261 @@ function processTurnInner(session: Session, text: string): TurnResult {
     trace.replyGraph = serialiseReplyGraph(parsed);
     trace.wordingNotDerived = false;
     return { reply: generate(parsed), trace };
+  }
+
+  /* The leave-taking (Social Unit S2, 2026-11-18): the Planner
+   * answers the leave-taking object with its mirror, exactly as
+   * the greeting — the reply is generated from the object's own
+   * graph, so the register the person chose (Goodbye / Bye /
+   * Farewell) is the register returned — and the authoring
+   * discharges the unit's farewell-return demand, which
+   * completes the closing in this turn (social.ts). A
+   * leave-taking records nothing propositional, so the turn
+   * ends here. Before S2 this act fell through to the statement
+   * steering and was answered "Ok. Noted." — the free-
+   * conversation probe's finding, closed at its location. */
+  if (openingObject && openingObject.act.kind === "leave-taking") {
+    speakWithObject(session, trace, parsed, "return farewell");
+    dischargeDemand(session, "farewell-return");
+    trace.planNote =
+      "return farewell (the planner, reading the leave-taking object; the mirror returns the register the person chose; the Social Unit's farewell-return demand is discharged and the conversation is closed)";
+    trace.replyGraph = serialiseReplyGraph(parsed);
+    trace.wordingNotDerived = false;
+    return { reply: generate(parsed), trace };
+  }
+
+  /* Thanks (Social Unit S2, 2026-11-18): the receipt move. The
+   * Planner authors the receipt's graph as a bare predication
+   * (plan.ts's planThanksReceipt — constructed, not parsed,
+   * for the reason recorded there) and the Verbalizer
+   * generates from it; no wording is looked up. Thanks is
+   * ritual (design §1 item 3): recorded as ritual, never as
+   * content, and the pending thread — whatever the conversation
+   * was about — survives a thanks untouched, so the turn ends
+   * here like the other ritual exchanges. The authoring
+   * discharges the unit's thanks-receipt demand. */
+  if (openingObject && openingObject.act.kind === "thanks") {
+    const receipt = planThanksReceipt();
+    speakWithObject(session, trace, receipt.graph, "thanks receipt");
+    dischargeDemand(session, "thanks-receipt");
+    trace.planNote =
+      "thanks receipt (the planner, answering the thanks object with the receipt move; ritual — the pending thread is untouched; the Social Unit's thanks-receipt demand is discharged)";
+    trace.replyGraph = serialiseReplyGraph(receipt.graph);
+    trace.wordingNotDerived = false;
+    return { reply: receipt.sentence, trace };
+  }
+
+  /* The self-query (Social Unit S3, 2026-11-18): answered from
+   * record, never derived and never declined. The Social Unit
+   * requests the facts from Awareness Self's tables (social.ts
+   * — the unit is the Planner's one address for "who are we,
+   * socially", ruling 2a) and the Planner presents them:
+   *
+   *  - identity: the name is predicated of the system as a
+   *    reply object (planSelfIdentity; the Verbalizer words
+   *    it), and the Identity table's kindLine rides beside it
+   *    as the record's own sentence;
+   *  - capability: the Capabilities & limits table presented
+   *    as stored — its capabilities, then its first limit, the
+   *    material one — the list IS the answer, so this branch
+   *    composes from the table and authors no reply object
+   *    (reply.ts's boundary: objects exist where the Planner
+   *    composes from a graph).
+   *
+   * Either way the authoring discharges the unit's self-answer
+   * demand. Before S3 both shapes fell into the question path
+   * and declined ("I have nothing on you in my notes…") — the
+   * system could not say who it was; bar item 2, closed at its
+   * location. The capability shape additionally needed the
+   * sentence layer to draw it at all (parse.ts's lexical-do
+   * pass) before assessment could recognise it. */
+  if (openingObject && openingObject.act.kind === "self-query") {
+    const which = openingObject.act.selfQuery ?? "identity";
+    if (which === "capability") {
+      const facts = requestCapabilities();
+      dischargeDemand(session, "self-answer");
+      trace.planNote =
+        "self answer (capability): the Social Unit requested the facts from Awareness Self's Capabilities & limits table and the Planner presents them as stored — the capabilities, then the first limit";
+      trace.wordingNotDerived = true;
+      return { reply: [...facts.capabilities, facts.limits[0]].join(" "), trace };
+    }
+    const facts = requestIdentity();
+    const authored = planSelfIdentity(facts.name);
+    speakWithObject(session, trace, authored.graph, "self answer (identity)");
+    dischargeDemand(session, "self-answer");
+    trace.planNote =
+      "self answer (identity): the Social Unit requested the facts from Awareness Self's Identity table; the Planner predicates the name from record and the table's kindLine rides beside the generated sentence";
+    trace.replyGraph = serialiseReplyGraph(authored.graph);
+    trace.wordingNotDerived = false;
+    return { reply: `${authored.sentence} ${facts.kindLine}`, trace };
+  }
+
+  /* The return acknowledgement (Social Unit S6): this turn
+   * stated the interlocutor's identity, and the store held a
+   * record under it — the contact is a returning one, and the
+   * acknowledgement says so. Recognition is performed only
+   * here, on the stated identity, never before it and never
+   * from a guess (design §5); a first conversation under a
+   * name, and every conversation without one, takes the
+   * ordinary statement path below. */
+  if (
+    assessed[0]?.act.kind === "statement" &&
+    session.interlocutor.contact === "returning" &&
+    session.interlocutor.identity?.learnedAt === assessed[0].id
+  ) {
+    trace.planNote =
+      "return acknowledgement (S6): the identity stated this turn keys a stored record — the reply acknowledges the return; nothing from the earlier conversation is imported as content, only the picture (contact, established topics) is loaded";
+    return { reply: `Welcome back, ${session.interlocutor.identity.name}.`, trace };
+  }
+
+  /* The token clarification (Social Unit S4, design §7a and
+   * the §3.3 table): a token the machinery resolved only
+   * weakly, or not at all, is asked about — not guessed. The
+   * located source is the parse's own token record: a
+   * resolution standing as "unresolved", or a matcher
+   * correction whose recorded confidence fell below the
+   * matcher's own undiscounted distance-2 score (0.60) with a
+   * rival candidate at the same distance. Only genuine rivals
+   * count: a candidate that is the token itself in another
+   * case ("How" → "how" at distance 0 — the record of a
+   * capital the dictionary lacks, not a doubt) names no
+   * choice, and a whole utterance with no resolvable content
+   * is the gibberish repair's ground, not this trigger's.
+   * The candidates offered are the ones that parse in this
+   * sentence — the resolver's own retry test, applied at the
+   * turn. An
+   * unresolved token with no candidates leaves as the
+   * rephrase request (§3.3). The asking turn records nothing
+   * of the sentence's content: the sentence is processed when
+   * the fill arrives, or on the best reading at the attempt
+   * limit. */
+  const gibberishTurn = Boolean(
+    assessed[0] && normalcyFlagOf(assessed[0], "gibberish") && assessed[0].act.kind === "statement" && assessed[0].aspects.length === 0,
+  );
+  if (!opts?.clarificationFallback && !gibberishTurn) {
+    for (const r of parsed.tokenResolutions ?? []) {
+      const isUnresolved = r.outcome === "unresolved";
+      const applied = r.replacement[0];
+      const appliedDistance = applied ? r.candidates?.find((c) => c.term === applied)?.distance : undefined;
+      // Genuine rival readings only: a candidate that is the
+      // token itself in another case ("How" → "how", distance
+      // 0) is not a reading the person could choose between —
+      // the record carries it because the capitalised form is
+      // not in the resolver's dictionary, not because the word
+      // is in doubt. Rivals are distinct words at a real
+      // distance.
+      const genuine = (r.candidates ?? []).filter((c) => c.distance >= 1 && c.term.toLowerCase() !== r.surface.toLowerCase());
+      const rivals = genuine.filter((c) => applied && c.term.toLowerCase() !== applied.toLowerCase() && appliedDistance !== undefined && c.distance === appliedDistance);
+      const isWeak = (r.outcome === "corrected" || r.outcome === "segmented") && r.confidence < 0.6 && rivals.length > 0;
+      if (!isUnresolved && !isWeak) continue;
+      if (isUnresolved && !(r.candidates?.length)) {
+        openClarification(session, { openedBy: assessed[0]?.id ?? `turn:${turn}`, point: `token:${r.surface}`, question: "Could you put that another way?" });
+        trace.planNote = `token clarification (S4, §7a/§3.3): the token '${r.surface}' is unresolved and no candidates exist — the reply is the rephrase request; the located gap stays in the trace`;
+        return { reply: "Could you put that another way?", trace };
+      }
+      if (isUnresolved && !genuine.length) continue;
+      const terms = [
+        ...new Set((isUnresolved ? genuine.map((c) => c.term) : [applied, ...genuine.map((c) => c.term)]).filter((t): t is string => !!t)),
+      ];
+      const offered = terms
+        .filter((t) => {
+          try {
+            parse(text.replace(new RegExp(`\\b${escapeRegExp(r.surface)}\\b`, "i"), t), "en");
+            return true;
+          } catch {
+            return false;
+          }
+        })
+        .slice(0, 3);
+      if (offered.length < 2) continue;
+      const question =
+        offered.length === 2
+          ? `Did you mean ${offered[0]}, or ${offered[1]}?`
+          : `Did you mean ${offered.slice(0, -1).join(", ")}, or ${offered[offered.length - 1]}?`;
+      openClarification(session, {
+        openedBy: assessed[0]?.id ?? `turn:${turn}`,
+        point: `token:${r.surface}`,
+        question,
+        candidates: offered.map((t) => ({ term: t, reading: t })),
+        originalText: text,
+        bestReading: isUnresolved ? offered[0] : (applied ?? offered[0]),
+      });
+      trace.planNote = `token clarification (S4, §7a): the token '${r.surface}' stands ${isUnresolved ? "unresolved" : `resolved only weakly (confidence ${r.confidence})`} with rival candidates — the reply asks, naming them; the sentence is processed when the fill arrives`;
+      return { reply: question, trace };
+    }
+  }
+
+  /* Insistence (Social Unit S5, design §8): a standing
+   * stance-repair pending, and this turn insists on the very
+   * premise the stance met — by asserting it, or by asking
+   * the same why-question again. The premise is re-read as a
+   * supposition and never adopted: an assertion of it is not
+   * recorded as a state (the disagreement is its record), and
+   * a repeated question is answered under the supposition
+   * framing. No second stance, no escalation. (The check
+   * lives here, ahead of recording and question routing,
+   * because either can carry the turn elsewhere — a repeated
+   * why-question over a recorded state routes to the
+   * explanation paths, and an assertion would supersede the
+   * very state the stance rests on.) */
+  {
+    const pending = session.conversation.pending;
+    if (pending?.kind === "stance-repair" && pending.premise) {
+      const premise = pending.premise;
+      // The predication, in either shape the parser draws it:
+      // the copula's predicated-as edge, or a verb-rooted
+      // reading where the quality stands as the root and the
+      // subject as its agent.
+      const pred = parsed.meaning.edges.find((e) => e.relation === "predicated-as" || e.relation === "predicate");
+      const copulaSubj = pred ? parsed.meaning.nodes.find((n) => n.id === pred.from) : undefined;
+      const copulaQual = pred ? parsed.meaning.nodes.find((n) => n.id === pred.to) : undefined;
+      const rootNode = parsed.meaning.nodes.find((n) => n.id === parsed.meaning.rootId);
+      const agentNode = parsed.meaning.edges
+        .filter((e) => e.from === parsed.meaning.rootId && e.relation === "agent")
+        .map((e) => parsed.meaning.nodes.find((n) => n.id === e.to))
+        .find(Boolean);
+      const predSubj = copulaSubj ?? (rootNode?.lemma.toLowerCase() === premise.quality ? agentNode : undefined);
+      const predQual = copulaQual ?? (rootNode?.lemma.toLowerCase() === premise.quality ? rootNode : undefined);
+      const assertsPremise =
+        predSubj?.lemma.toLowerCase() === premise.subject && predQual?.lemma.toLowerCase() === premise.quality;
+      const repeatsQuestion =
+        rootNode?.states?.mood === "interrogative" &&
+        rootNode?.states?.questionKind === "why" &&
+        assertsPremise;
+      if (repeatsQuestion) {
+        recordDisagreement(session, `${premise.subject} is ${premise.quality}`, `${premise.subject} is ${premise.established}`);
+        closePending(session);
+        trace.stance = {
+          subject: premise.subject,
+          presupposed: premise.quality,
+          established: premise.established,
+          source: premise.source ?? "graph",
+          outcome: "insistence-met-as-supposition",
+          ground: "the premise was met by the stance on an earlier turn and the same why-question is asked again; it is re-read as a supposition and the disagreement is recorded",
+        };
+        trace.planNote =
+          "insistence (S5): the premise is re-read as a supposition — the answer is framed under it, the premise is not adopted, and the disagreement stands in the record";
+        return {
+          reply: `Supposing ${premise.subject} were ${premise.quality} — I have nothing that would make ${premise.subject} ${premise.quality}. As I have it, ${premise.subject} is ${premise.established}.`,
+          trace,
+        };
+      }
+      if (assertsPremise && assessed[0]?.act.kind === "statement") {
+        recordDisagreement(session, `${premise.subject} is ${premise.quality}`, `${premise.subject} is ${premise.established}`);
+        closePending(session);
+        trace.stance = {
+          subject: premise.subject,
+          presupposed: premise.quality,
+          established: premise.established,
+          source: premise.source ?? "graph",
+          outcome: "insistence-not-adopted",
+          ground: "the turn asserts the premise the stance already met; the assertion is not recorded — the disagreement is",
+        };
+        trace.planNote =
+          "insistence by assertion (S5): the premise is not adopted and not recorded as a state; the disagreement stands in the record and the ground is restated briefly";
+        return { reply: `${cap(premise.subject)} is ${premise.established}, as I have it.`, trace };
+      }
+    }
   }
 
   /* ---- gibberish repair (the Normalcy arc, Part 3e): a whole
@@ -1311,7 +1718,15 @@ function processTurnInner(session: Session, text: string): TurnResult {
    * interrogative returns above have already run, so this point
    * is reached only by statement turns.) ---- */
   {
-    const splits = rivalSplits(parsed);
+    const allSplits = rivalSplits(parsed);
+    // Social Unit S4: a lemma whose reading this conversation
+    // has already settled through clarification is not asked
+    // about again — the split stands in the trace of the sense
+    // pass, but the conversational point is closed.
+    const splits = allSplits.filter((s) => !session.conversation.clarifiedSenses[s.lemma.toLowerCase()]);
+    if (allSplits.length && !splits.length) {
+      trace.planNote = `the split classification of '${allSplits[0].lemma}' stands, but the conversation has already settled its reading ('${session.conversation.clarifiedSenses[allSplits[0].lemma.toLowerCase()].anchor}') through clarification — no second asking (Social Unit S4)`;
+    }
     if (splits.length) {
       const split = splits[0];
       const node = nodeById(parsed, split.nodeId);
@@ -1332,6 +1747,33 @@ function processTurnInner(session: Session, text: string): TurnResult {
         trace.replyGraph = serialiseReplyGraph(outcome.graph);
         trace.wordingNotDerived = false;
         speakWithObject(session, trace, outcome.graph, "clarification question");
+        // Social Unit S4 (design §7b): the asking opens the
+        // pending — the next turn is read as its fill first.
+        // The candidates offered for matching are each rival's
+        // anchor plus its sense's own lemmas (read off the
+        // rival's path), so a fill may name the reading in any
+        // of the words the senses themselves carry.
+        {
+          const senseLemmas = (path: string): string[] => {
+            const m = path.match(/\[n sense \d+: ([^\]]+)\]/);
+            return m ? m[1].split("/").map((w) => w.trim().toLowerCase()) : [];
+          };
+          const offered = split.rivals.slice(0, 2).flatMap((r) =>
+            [...new Set([r.anchor.toLowerCase(), ...senseLemmas(r.path)])]
+              .filter((t) => t !== split.lemma.toLowerCase())
+              .map((t) => ({ term: t, reading: r.anchor, element: r.element })),
+          );
+          const baselineRival = split.rivals.find((r) => r.element === split.baseline) ?? split.rivals[0];
+          openClarification(session, {
+            openedBy: assessed[0]?.id ?? `turn:${turn}`,
+            point: `sense:${split.lemma}`,
+            question: outcome.sentence,
+            candidates: offered,
+            originalText: text,
+            bestReading: baselineRival.anchor,
+            bestElement: baselineRival.element,
+          });
+        }
         trace.planNote =
           `reply is the planner's clarification question over the split classification of '${split.lemma}' (§2.3)` +
           (split.rivals.length > 2 ? `; a third tied rival (${split.rivals[2].anchor}) is recorded in the clarification record but not offered` : "") +
@@ -1715,6 +2157,15 @@ function applyInitiative(session: Session, result: TurnResult): void {
   const turn = session.turnCount;
   if (trace.personPresented) return;
   if (trace.declineReason || trace.correction) return;
+  // Social Unit S2 (design §6): the Planner consults the
+  // Conversation phase before initiative — no initiative in
+  // closing or closed. (A farewell turn's own reply passes
+  // through here: without this guard an initiative could append
+  // itself to the goodbye.)
+  {
+    const phase = conversationPhase(session);
+    if (phase === "closing" || phase === "closed") return;
+  }
   if (result.reply.trimEnd().endsWith("?")) return;
   const last = session.initiatives[session.initiatives.length - 1];
   if (last && turn - last.turn < 5) return;
@@ -1902,6 +2353,18 @@ function settleTurnEnvelopes(session: Session, trace: TurnTrace): void {
  */
 export function processTurn(session: Session, text: string): TurnResult {
   const result = processTurnInner(session, text);
+  // Social Unit S5: a stance-repair pending from an earlier
+  // turn that this turn neither repaired nor insisted on
+  // lapses — the repair window is the turn that follows the
+  // stance, and the conversation has moved on.
+  const standingPending = session.conversation.pending;
+  if (standingPending?.kind === "stance-repair" && (standingPending.openedTurn ?? 0) < session.turnCount) {
+    closePending(session);
+  }
+  // Social Unit S6: the durable core is persisted at the end
+  // of every turn — a no-op unless the session carries a
+  // store and the interlocutor has stated an identity.
+  persistInterlocutor(session);
   settleTurnEnvelopes(session, result.trace);
   applyInitiative(session, result);
   result.trace.mapPath = computeMapPath(result.trace);
@@ -1947,6 +2410,41 @@ function answerPredicateQuestion(
   const predicateLemma = predicateNodeInParse.lemma;
   const turnObject = session.objects.find((o) => o.turn === session.turnCount && o.producer === "person");
 
+  /* Insistence on a standing stance (Social Unit S5, design
+   * §8): the same why-question asked again over a premise the
+   * stance has already met. The premise is re-read as a
+   * supposition and answered under that framing — never
+   * adopted, never debated — and the disagreement is recorded
+   * in the session record. One stance per premise: this is
+   * not a second stance, it is the first one's second half. */
+  {
+    const pending = session.conversation.pending;
+    if (
+      isWhy &&
+      pending?.kind === "stance-repair" &&
+      pending.premise?.subject === subjectLemma &&
+      pending.premise?.quality === predicateLemma
+    ) {
+      const established = pending.premise.established;
+      recordDisagreement(session, `${subjectLemma} is ${predicateLemma}`, `${subjectLemma} is ${established}`);
+      closePending(session);
+      trace.stance = {
+        subject: subjectLemma,
+        presupposed: predicateLemma,
+        established,
+        source: pending.premise.source ?? "graph",
+        outcome: "insistence-met-as-supposition",
+        ground: "the premise was met by the stance on an earlier turn and is now insisted on; it is re-read as a supposition and the disagreement is recorded",
+      };
+      trace.planNote =
+        "insistence (S5): the premise is re-read as a supposition — the answer is framed under it, the premise is not adopted, and the disagreement stands in the record";
+      return {
+        reply: `Supposing ${subjectLemma} were ${predicateLemma} — I have nothing that would make ${subjectLemma} ${predicateLemma}. As I have it, ${subjectLemma} is ${established}.`,
+        trace,
+      };
+    }
+  }
+
   /* The unanchored definite (the Normalcy arc, Part 3d ii): the
    * question's subject is a definite noun phrase ("the table")
    * whose referent stands in NEITHER the scene graph NOR the
@@ -1986,6 +2484,11 @@ function answerPredicateQuestion(
       session.turnCount === 1
         ? `What ${subjectLemma}? You just started talking.`
         : `What ${subjectLemma}? Nothing so far has mentioned one.`;
+    // Social Unit S4 (design §7c): this context request is the
+    // unit's move, and it opens the pending — the next turn is
+    // read against it first (a candidate-less pending: the
+    // continuation itself is the answer the move asks for).
+    openClarification(session, { openedBy: turnObject?.id ?? `turn:${trace.turn}`, point: `referent:${subjectLemma}`, question: reply });
     return { reply, trace };
   }
 
@@ -2139,6 +2642,31 @@ function answerPredicateQuestion(
             ? "; the turn asked why, and the record contradicts the question's presupposition — the standing state is the answer, " +
               "and no causal form is built from a derivation the record does not support"
             : "");
+        if (isWhy && !matchesAsked) {
+          // Social Unit S5 (design §8): the record contradicts
+          // the why-question's presupposition, and the stance
+          // completes the pattern this answer already half
+          // walks — the ground stated (the predication above),
+          // the question not answered as posed, and now the
+          // third beat: the conversation re-offered on the
+          // corrected ground. The stance-repair pending opens
+          // so an insistence is met as a supposition, never
+          // adopted (one stance per premise).
+          const establishedPhrase = occupant.negated ? `not ${occupant.lemma}` : occupant.lemma;
+          openStanceRepair(session, {
+            openedBy: `turn:${trace.turn}`,
+            premise: { subject: subjectLemma, quality: predicateLemma, established: establishedPhrase, source: "record" },
+          });
+          trace.stance = {
+            subject: subjectLemma,
+            presupposed: predicateLemma,
+            established: establishedPhrase,
+            source: "record",
+            outcome: "stated",
+            ground: `the record holds '${subjectLemma}' as '${establishedPhrase}' from turn ${occupant.turn} — the why-question presupposes '${predicateLemma}'`,
+          };
+          return { reply: `${outcome.sentence} Did you mean why ${subjectNodeInParse.det ? `${subjectNodeInParse.det} ` : ""}${subjectLemma} is ${establishedPhrase}?`, trace };
+        }
         return { reply: outcome.sentence, trace };
       }
     }
@@ -2199,6 +2727,54 @@ function answerPredicateQuestion(
         })
       : null;
   if (!path) {
+    // Social Unit S5 (design §8): before a why-question
+    // declines as a don't-know, Coherence's premise degree is
+    // consulted. If the presupposed predication is positively
+    // contradicted — the graph establishes the asked aspect's
+    // other value — the reply is the stance, not a decline:
+    // the question is not answered as posed, the established
+    // ground is stated in plain words as the system's own
+    // knowledge, and the conversation is re-offered on the
+    // corrected ground. (An is-question carries no
+    // presupposition and keeps the decline; mere absence is
+    // §7c's territory, not this stance's.)
+    if (isWhy) {
+      const check = premiseDegree(session, subjectLemma, predicateLemma);
+      if (check.degree === "contradiction" && check.establishedQuality) {
+        const established = check.establishedNegated ? `not ${check.establishedQuality}` : check.establishedQuality;
+        openStanceRepair(session, {
+          openedBy: `turn:${trace.turn}`,
+          premise: { subject: subjectLemma, quality: predicateLemma, established, source: check.source ?? "graph" },
+        });
+        trace.stance = {
+          subject: subjectLemma,
+          presupposed: predicateLemma,
+          established,
+          source: check.source ?? "graph",
+          outcome: "stated",
+          ground: check.ground ?? "",
+        };
+        trace.planNote =
+          "premise stance (S5): Coherence's premise degree is contradiction — the reply states the established ground and re-offers the conversation on it; the question is not answered as posed and does not decline as a don't-know";
+        // The question's own recording of the presupposed
+        // quality is set aside (T-R7.5's discipline, applied
+        // here): left standing, it would enter the record as
+        // if established, and a later turn would answer from
+        // the false premise itself.
+        const freshIdx = session.states.findIndex(
+          (s) => s.turn === session.turnCount && s.holder === subjectLemma && s.lemma === predicateLemma,
+        );
+        if (freshIdx >= 0) {
+          session.states.splice(freshIdx, 1);
+          trace.stance.ground +=
+            `; the question's own recording of '${predicateLemma}' for '${subjectLemma}' at this turn was set aside — the presupposed quality does not stand as a state beside the stance`;
+        }
+        return {
+          reply: `${cap(subjectNodeInParse.form)} is ${established}, as I have it. Did you mean why ${subjectNodeInParse.det ? `${subjectNodeInParse.det} ` : ""}${subjectLemma} is ${established}?`,
+          trace,
+        };
+      }
+    }
     if (!missing.length) missing.push(`no path runs from ${subjectLemma} to ${predicateLemma} in what I know`);
     trace.declineReason = missing.join("; ");
     return {
