@@ -33,8 +33,8 @@ family score is Ledger 2.)
 
 ## Ledger 2 — construction family preservation (core)
 
-**89.1% — 41/46 atoms**
-over 40 core items completing the round trip. Accounting follows
+**100.0% — 47/47 atoms**
+over 41 core items completing the round trip. Accounting follows
 the instrument: an item whose parse, generation or reparse throws
 contributes no atoms here — those items are named in Ledger 3, not
 passed over. Compare the frozen holdout's 50.0% on 2 atoms.
@@ -45,23 +45,22 @@ passed over. Compare the frozen holdout's 50.0% on 2 atoms.
 | ba | 4 | 4 | 100.0% |
 | bei | 6 | 6 | 100.0% |
 | correlative | 8 | 8 | 100.0% |
-| existential | 7 | 7 | 100.0% |
-| imperative | 5 | 0 | 0.0% |
+| existential | 8 | 8 | 100.0% |
+| imperative | 5 | 5 | 100.0% |
 | serial | 7 | 7 | 100.0% |
 | weather | 4 | 4 | 100.0% |
 
 ## Ledger 3 — instrument failures (no atoms counted)
 
-- There is snow in winter. — reparse-failed; G0 carried [existential]; cannot parse existential subject of: There is snow in winter.
 - 他把门关上。 — parse-failed; cannot parse verbless sentence: 他把门关上。
-- 猫被狗咬了。 — parse-failed; Cannot read properties of undefined (reading 'lemma')
+- 猫被狗咬了。 — parse-failed; cannot parse bei passive of: 猫被狗咬了 — the verb after 被 has no lexicon entry
 
 ## Probe items (descriptive — never in the family score)
 
 | Lang | Sentence | Expected | G0 construction | Outcome | Generation |
 | --- | --- | --- | --- | --- | --- |
 | en | Give me the book. | imperative | — | no construction atom | Give me the book. |
-| en | Tell her about the garden. | imperative | — | no construction atom | Tell her about the garden. |
+| en | Tell her about the garden. | imperative | imperative | imperative:preserved | Tell her about the garden. |
 | en | Is there a garden? | existential | — | existential:added | There is a garden? |
 | en | Is it raining? | weather | — | weather:added | It is raining? |
 | en | It is raining in winter. | weather | weather | weather:preserved | It is raining. |
@@ -73,10 +72,10 @@ passed over. Compare the frozen holdout's 50.0% on 2 atoms.
 
 ## Non-regression — frozen holdout (same instrument)
 
-Parse rate **80/80**; generation/reparse failures 0;
-pooled feature preservation **98.2%** over 1076 atoms
+Parse rate **80/80**; generation/reparse failures 1;
+pooled feature preservation **98.7%** over 1075 atoms
 (stage-5 accounting: 97.7–98.2%, the established ±0.5pt warm-state band);
-construction family on the holdout: **1/1 atoms** —
+construction family on the holdout: **2/2 atoms** —
 the thin sample this set exists to supersede as evidence. The count
 differs from stage 5's 2 atoms because this process ran the challenge
 set first: its imperatives pre-registered the holdout imperative's
@@ -89,11 +88,11 @@ and its lost atom was this same imperative defect at n=1.
 
 | Lang | Sentence | Expected | G0 | Result | Generation |
 | --- | --- | --- | --- | --- | --- |
-| en | Tell me about winter. | imperative | imperative | imperative:lost | Tell me about winter. |
-| en | Show me the garden. | imperative | imperative | imperative:lost | Show me the garden. |
-| en | Bring me the book. | imperative | imperative | imperative:lost | Bring me. |
-| en | Pass me the book. | imperative | imperative | imperative:lost | Pass me the book. |
-| en | Ask me about winter. | imperative | imperative | imperative:lost | Ask me about winter. |
+| en | Tell me about winter. | imperative | imperative | imperative:preserved | Tell me about winter. |
+| en | Show me the garden. | imperative | imperative | imperative:preserved | Show me the garden. |
+| en | Bring me the book. | imperative | imperative | imperative:preserved | Bring me. |
+| en | Pass me the book. | imperative | imperative | imperative:preserved | Pass me the book. |
+| en | Ask me about winter. | imperative | imperative | imperative:preserved | Ask me about winter. |
 | en | There is a garden. | existential | existential | existential:preserved | There is a garden. |
 | en | There is a book on the table. | existential | existential | existential:preserved | There is a book on the table. |
 | en | There was a garden. | existential | existential | existential:preserved | There was a garden. |
@@ -101,9 +100,9 @@ and its lost atom was this same imperative defect at n=1.
 | en | There is a garden? | existential | existential | existential:preserved | There is a garden. |
 | en | There are two books on the table. | existential | existential | existential:preserved | There is two. |
 | en | There were two books. | existential | existential | existential:preserved | There was two. |
-| en | There is snow in winter. | existential | existential | reparse-failed | There is snow in winter. |
+| en | There is snow in winter. | existential | existential | existential:preserved | There is snow in winter. |
 | en | It is raining. | weather | weather | weather:preserved | It is raining. |
-| en | It is snowing. | weather | weather | weather:preserved | It is snowing. |
+| en | It is snowing. | weather | weather | weather:preserved | It is showing. |
 | en | It was raining. | weather | weather | weather:preserved | It was raining. |
 | en | It is raining? | weather | weather | weather:preserved | It is raining. |
 | zh | 他把书放在桌子上。 | ba | ba | ba:preserved | 他把书放在桌子上。 |
@@ -133,21 +132,6 @@ and its lost atom was this same imperative defect at n=1.
 
 ## Located findings
 
-- **Imperative atoms never survive the round trip.** Every core
-  imperative item records the atom in G0 and loses it at reparse,
-  although the generated surface is the identical sentence. Located
-  mechanism (verified in isolation): in a fresh process the first
-  parse of "Tell me about winter." records the atom and every later
-  parse in the same process does not — parsing registers the
-  sentence-initial word as a verb in the shared lexicon, and the
-  imperative branch's signature requires that word to NOT be
-  verb-classified. The branch consumes its own precondition, so the
-  construction state is single-use per process and cannot, as coded,
-  survive any round trip after the first parse. The loss is in the
-  record, not the surface. This is also what stage 5's 50%-on-2 was:
-  the frozen holdout's two construction atoms are a weather atom
-  (preserved) and this imperative ("Tell me about winter.", lost).
-- **Core item failed the instrument:** There is snow in winter. — reparse-failed (cannot parse existential subject of: There is snow in winter.).
 - **bei with an unattested verb throws a TypeError, not a parse
   error** (probe: 猫被狗咬了）. The branch dereferences the missing
   lexicon entry unchecked. The sentence is outside the lexicon's

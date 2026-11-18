@@ -27,6 +27,30 @@
  * steps are data, registered the way the classification
  * table registers entries — a new acronym is a new entry,
  * not new code.
+ *
+ * For issues of how to proceed in a general situation, the
+ * unit will also carry an evaluation mechanism based on
+ * the 64 hexagrams, making use of OntologyCore (owner's
+ * addition, 2026-11-18): the hexagrams stand in the
+ * ontology the Ontology Knowledge Unit holds, and the
+ * evaluation reads them there — this unit keeps no
+ * hexagram copy of its own. The router's need vocabulary
+ * gains a how-to-proceed kind when that mechanism is
+ * built; at placeholder grade nothing routes to it and no
+ * evaluation runs.
+ *
+ * The unit's divisions (owner's, settled 2026-11-18) are
+ * six placeholder subunits on the map — external,
+ * abstract, internal, internal-system, external-system,
+ * and the user's problems — seats a problem moves between,
+ * not bins: a problem record will carry its current seat
+ * and its history, its bearer (the system / the user / a
+ * third party / the matter itself), and its subject. The
+ * hexagram evaluation is the abstract division's
+ * instrument; the user's problems feed back to internal,
+ * where solving is taken up. No division machinery exists
+ * yet — the seats stand on the map and in the unit's
+ * PLACEHOLDER, awaiting their own slices.
  */
 
 import type { SemanticObject } from "./semantic-object";

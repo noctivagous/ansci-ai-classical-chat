@@ -178,6 +178,24 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "reasoning/problem-solving": {
       "order": 6
     },
+    "reasoning/problem-solving/external": {
+      "order": 1
+    },
+    "reasoning/problem-solving/abstract": {
+      "order": 2
+    },
+    "reasoning/problem-solving/internal": {
+      "order": 3
+    },
+    "reasoning/problem-solving/internal-system": {
+      "order": 4
+    },
+    "reasoning/problem-solving/external-system": {
+      "order": 5
+    },
+    "reasoning/problem-solving/user-problems": {
+      "order": 6
+    },
     "coherence": {
       "order": 7
     },

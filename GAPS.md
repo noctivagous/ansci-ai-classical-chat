@@ -25,6 +25,15 @@ stated against the programme's final (stage-5) accounting, and
 the items it had wrongly carried as open are struck there with
 their closing evidence. The sweep's other checks stand.
 
+A further pass the same day (2026-11-18, later) reconciles this
+file with the work that landed after the sweep: the Social Unit
+programme (S1–S6) and the classification slices A–D were built
+and pushed, and their items are struck or re-stated below with
+their closing evidence; and the lexicon-state family of §5
+(probe-poisoning and its three recorded faces) was fixed and is
+struck there. Items the later work did not touch stand as the
+sweep left them.
+
 The summary that prompted this file, from the anchor-expansion
 recap: the coverage slices "widen what the classification machinery
 reaches; they don't deepen what it knows." The gaps below are the
@@ -60,17 +69,21 @@ depth that widening does not buy.
 
 ## 2. Conversation
 
-- **There is no social layer.** A free-conversation probe
-  (2026-11-16, 16 ordinary visitor inputs through the real turn
-  loop) found: "Hello." → "Noted. What happened next?"; "How are
-  you?" → decline; "Who are you?" / "What can you do?" → decline or
-  parse failure; "The cat sat on the mat." attributed to the
-  speaker. What exists is a derivation engine, a narrow
-  quality-question answerer, and one emotion-statement steering
-  routine. The surface is a parser demonstrator, not a chat.
-  *Closes when:* a conversational layer is designed and built as
-  its own programme — greetings, identity, thanks, leave-taking,
-  and statements that are not about the speaker.
+- ~~**There is no social layer.**~~ **Closed 2026-11-18** by
+  the Social Unit programme (below): designed against the
+  GAPS §2 checklist and built in slices S1–S6, pushed to main
+  (`67341f9`). The 2026-11-16 probe's findings are the record
+  of what it replaced: "Hello." → "Noted. What happened
+  next?"; "How are you?" → decline; "Who are you?" / "What
+  can you do?" → decline or parse failure; "The cat sat on
+  the mat." attributed to the speaker. What the programme
+  built is the conversational layer this item asked for —
+  greetings, identity, thanks, leave-taking as social moves,
+  self-answers from the Self tables, clarification, the
+  premise stance, and the Interlocutor's picture. What
+  remains of the item is its acceptance evidence: the sealed
+  probe set (next-but-one item) is still unrun, and that run
+  is the owner's to commission.
 - **No Social Unit.** The conversational layer above has no home
   in the architecture. The user's placement (2026-11-18): a Social
   Unit *inside the Awareness Unit*, alongside self, surroundings
@@ -100,6 +113,17 @@ depth that widening does not buy.
   *Closes when:* the Social Unit is designed (its contents, its
   seam with the turn loop and the reply planner, what it may and
   may not originate) and placed on the system map.
+  *Status (2026-11-18, later):* **the closes-condition is
+  met.** The design was delivered and its five decisions ruled
+  as recommended — placement inside Awareness confirmed
+  (ruling 1a), self-facts requested from the Self tables (2a),
+  support-free sense ties routed to clarification (3a),
+  Coherence supplying the contradiction degree (4a),
+  Interlocutor persistence identity-keyed (5a, timing later
+  superseded by the owner's direct commission). The unit was
+  then built in slices S1–S6 under a sequence authorization
+  and pushed to main; on the map the Social Unit stands at
+  95%, the Interlocutor at 75%, Conversation at 70%.
   *Probe coverage note (2026-11-18):* the sealed probe set (next
   item) carries probes for most of this unit's contents, but of
   the Interlocutor's parts, "first contact or returning" is the
@@ -126,6 +150,12 @@ depth that widening does not buy.
   *Closes when:* nothing here closes by itself — the set is run
   only on the owner's commission, and its report is read against
   this section's checklist (the tree appendix).
+  *Note (2026-11-18, later):* still unrun. One confound the run
+  would have faced is now removed: the parser's lexicon-state
+  family (§5) made a sentence's parse depend on what the same
+  process had parsed before it, which over 128 sequential
+  probes would have made results uninterpretable; that family
+  is closed.
 - **Found ahead of the checklist — gaps of record (accepted
   2026-11-18).** 18 of the sealed probes test things this
   section did not name. They cluster where conversation meets
@@ -141,6 +171,13 @@ depth that widening does not buy.
     *Closes when:* a reply's use of provided or held knowledge
     is checkable against its source, in conversation as it is
     for derivation.
+    *Status (2026-11-18, later):* still open in its general
+    form. The premise stance (below) and the record-first
+    answers cover the cases where the system's own record or
+    graph supplies the ground; a general conversational form
+    of testimony discipline — any reply's use of provided
+    knowledge checkable against its source — has not been
+    built as such.
   - *Clarification behaviour.* The decline discipline locates a
     gap and stops; nothing in the conversation layer asks the
     interlocutor what was meant instead of guessing or stopping
@@ -148,12 +185,24 @@ depth that widening does not buy.
     the era itself under-assessed). *Closes when:*
     asking-for-clarification exists as a designed move, distinct
     from a decline, with its own conditions.
+    *Status (2026-11-18, later):* **closed** by Social Unit
+    slice S4 (pushed in `67341f9`): the clarification move
+    exists with its own conditions — the addressability test,
+    four trigger classes, one question per turn, candidates
+    offered, at most two attempts per point, then a stated
+    fallback reading.
   - *False-premise inputs.* No designed stance exists toward a
     partner who asserts something false and invites agreement
     (2 probes). Agreement would break testimony discipline; flat
     contradiction is not a social move either. *Closes when:*
     the response to a false premise is a designed behaviour, not
     an accident of the parser.
+    *Status (2026-11-18, later):* **closed** by Social Unit
+    slice S5 (pushed in `67341f9`): on a contradiction degree
+    from Coherence, the stance states the established ground,
+    re-offers the question under it, and on insistence answers
+    under supposition framing without adopting the premise;
+    the disagreement is recorded.
   - *Also found ahead, not drafted:* relevance / maintaining
     context (5 probes), informativeness (5), error recovery (2),
     question-asking balance (2), recognising the interlocutor's
@@ -173,6 +222,15 @@ depth that widening does not buy.
   the person — is thin.
   *Closes when:* those units are built in their own slices; the
   map's percentages are the tracker.
+  *Status (2026-11-18, later):* partly answered by the Social
+  Unit programme: identity and capabilities stand at 75%
+  (S3's tables, requested by the unit, never copied), the
+  self container at 25%, and the person-side picture exists
+  as the Interlocutor (75%) with Conversation at 70%. What
+  remains open in this item is unchanged in kind: Coherence's
+  fuller degree levels and boundary specifics (S5 consumed
+  the contradiction degree only), Session & Situation's
+  open-unknowns, and the Verbalizer.
 
 ## 3. Classification coverage (measured 2026-11-18)
 
@@ -191,6 +249,20 @@ report: the coverage measurement of 2026-11-18.
   Slice A's design was presented and corrected in the fork chat;
   its five decisions were ruled on 2026-11-18, all as recommended
   (§4), and the build is commissioned there.
+  *Status (2026-11-18, later):* **all four slices built and
+  pushed** in the five-batch merge (`e6f14ab`). On the same
+  instrument and population, Slice A alone moved D from 432
+  (15.2%) to 517 (18.2%), all of it in the climb sub-kind;
+  Slice C's split of the post-B remainder reads B-recognised
+  343 / B-unknown 1,767, and the merged tree's sense census
+  stands at 729 / 183 / 64 (≥3-sense lemmas with any / ≥2 /
+  distinct-element candidates). The B bucket is therefore
+  much reduced but not empty: what remains in it is the
+  B-unknown population, addressed per-word only where a
+  defensible rationale exists (Slice D batch 1 banked 29;
+  its remaining population takes its own commission). The
+  two items below — the gold sense sample and the verb
+  route — are untouched by the slices and stand open.
 - **Sense correctness inside "works" is unproven.** A token that
   climbs to one anchor counts as working whether or not that is
   the sense a sentence meant. The measurable proxy (bucket C,
@@ -213,6 +285,11 @@ reaches 82 of its 95 measured animal tokens:
   tokens are unreached, including silkworm and centipede
   (taxonomy-shape gaps: their WordNet ancestry does not pass a
   class the design may stop at).
+  *Status (2026-11-18, later):* Slice A was built and pushed
+  with the stops and exclusions as ruled; under ruling 3 these
+  classes **stay T5 as located gaps for a future ruling** —
+  the item stands open in exactly that form, not as unworked
+  build scope.
 - **Class assignment is correlative, not anatomical.** Early
   Chinese glossaries (Erya, Shuowen jiezi) placed aquatic animals
   by habitat and general form, with fluid boundaries between
@@ -240,6 +317,12 @@ reaches 82 of its 95 measured animal tokens:
   stop's shape is the build audit's to choose between the two
   pre-approved shapes. The build is commissioned in the fork
   chat.
+  *Status (2026-11-18, later):* the build landed as ruled —
+  the audit's dump settled the mollusk shape (deeper stops at
+  bivalve and gastropod; no mollusk stop), and the closes
+  condition above is met: the corrected design was accepted,
+  and its named gaps were ruled on or left T5 by the rulings
+  themselves.
 
 ## 5. Parser depth (the depth programme's residue)
 
@@ -286,34 +369,86 @@ visible in the record.
   constructions preserve at 100%. The family's whole measured
   loss is the imperative defect stated next; one further core
   item's round trip crashed at reparse, also stated.
-- **Imperative construction state is single-use per process.**
-  0/5 on the new set: every imperative records the atom at
-  parse and loses it at reparse, although the generated
-  surface is the identical sentence. Parsing registers the
-  sentence-initial word as a verb in the shared lexicon, and
-  the imperative branch's signature requires that word to NOT
-  be verb-classified — the branch consumes its own
-  precondition. (Stage 5's lost holdout atom was this same
-  case: "Tell me about winter.")
-  *Closes when:* the branch's signature no longer depends on
-  a lexicon state its own parse destroys.
-- **Existential reparse crash on a mass-noun subject.** "There
-  is snow in winter." parses, and generates its identical
-  surface, which then fails to reparse in the instrument's
-  process ("cannot parse existential subject") — the
-  existential chunking is lexicon-state-sensitive, so under
-  the instrument's accounting the item contributes no atoms
-  at all.
-  *Closes when:* a generated existential reparses in any
-  lexicon state the parser itself can produce.
-- **bei with an unattested verb crashes.** 猫被狗咬了 — its
-  verb is not a ZH lexicon entry — throws a TypeError from
-  the bei branch's unchecked dereference instead of failing
-  as a parse error. The sentence is outside the lexicon's
-  territory, but the failure mode is a crash where the
-  parser elsewhere fails cleanly.
-  *Closes when:* the branch guards the missing entry and
-  the sentence fails as a parse error.
+  *Re-run (2026-11-18, later), after the lexicon-state fix
+  below:* **47/47 completed round trips at 100%** — every
+  family at 100%, imperative 5/5 — and the instrument's
+  failure list is down to two parse failures, both honest:
+  the ba resultative 他把门关上 (pre-existing, unchanged)
+  and the bei item below, which now fails as a located parse
+  error instead of crashing. The set's imperative probe
+  "Tell her about the garden.", documented in the set itself
+  as not parsing in a cold process, now parses cold: its
+  blocker was the "her" re-read, whose can-head test counted
+  an entry-less default-classified item ("about" — §6's
+  adverb hole wearing a "proper" classification) as evidence
+  a noun phrase could follow; the test now requires an entry
+  for that. The root — "about" carrying no preposition
+  classification of its own — remains §6's item.
+- ~~**Lexicon state: probe registration (probe-poisoning).**
+  The WordNet provider registered every entry it derived —
+  including entries derived by a mere probe, when the parser
+  asked "could this word be a verb here?" and went on to use
+  a different reading — and parse classification read the
+  registry. A registered derived verb could displace the
+  same surface's derived noun or adjective, so a word's
+  classification depended on what the process had parsed
+  before: "You are welcome." parses as a predication first
+  and as "You welcome." second (found during Social Unit
+  S2, recorded in its report; the Planner's thanks receipt
+  was built around it). The three items below are this
+  family's other faces.~~ **Closed 2026-11-18.** Two halves:
+  in wordnet-lex.ts, derivation no longer registers —
+  registration is adoption, through `registerDerivedEntry`,
+  called only where a caller assigns the entry to an item,
+  a node, or a clause root; in parse.ts, classification
+  never takes a derived entry from the registry, re-deriving
+  in the parser's fixed precedence, so classification is a
+  function of the sentence and the shipped lexicon, never
+  of parse history. One consumer had silently relied on the
+  poisoning: the initiative scan excluded the S5 record
+  arc's candidate state only because its lemma had been
+  probe-registered as a verb; the fix there is at the turn
+  layer — initiative now stands down on stance turns, whose
+  replies are complete designed moves (the stance already
+  restates the ground the candidate would volunteer).
+  Evidence: `test/fork-lexicon-state.test.ts` (6 tests,
+  including parse-twice stability), the construction-family
+  re-run above, and the full gates in
+  `docs/fork/lexicon-state-report.md`. Nobody outside this
+  loop has checked the fix.
+- ~~**Imperative construction state is single-use per
+  process.** 0/5 on the new set: every imperative records
+  the atom at parse and loses it at reparse, although the
+  generated surface is the identical sentence. Parsing
+  registers the sentence-initial word as a verb in the
+  shared lexicon, and the imperative branch's signature
+  requires that word to NOT be verb-classified — the branch
+  consumes its own precondition. (Stage 5's lost holdout
+  atom was this same case: "Tell me about winter.")~~
+  **Closed 2026-11-18** by the lexicon-state fix above:
+  classification no longer reads derived registrations, so
+  the signature's precondition survives its own parse. The
+  construction-family set reads imperative **5/5 at 100%**;
+  "Tell me about winter." round-trips with its construction
+  intact.
+- ~~**Existential reparse crash on a mass-noun subject.**
+  "There is snow in winter." parses, and generates its
+  identical surface, which then fails to reparse in the
+  instrument's process ("cannot parse existential subject")
+  — the existential chunking is lexicon-state-sensitive,
+  so under the instrument's accounting the item contributes
+  no atoms at all.~~ **Closed 2026-11-18** by the same fix:
+  "snow" is noun-classified on every parse, the generated
+  existential reparses, and the family reads **8/8 at
+  100%**.
+- ~~**bei with an unattested verb crashes.** 猫被狗咬了 —
+  its verb is not a ZH lexicon entry — throws a TypeError
+  from the bei branch's unchecked dereference instead of
+  failing as a parse error.~~ **Closed 2026-11-18:** the
+  branch guards the missing entry and the sentence fails
+  as a located parse error ("cannot parse bei passive of:
+  猫被狗咬了 — the verb after 被 (bèi, "by") has no lexicon
+  entry"), as this item's closes-condition required.
 - **Aspect.** Aspect & Forms stands at 90% on the map (feature
   bundles, irregular forms selected, both languages) and the
   aspect family scored 100% on the stage-5 holdout; the
@@ -459,8 +594,17 @@ visible in the record.
   five design decisions ruled as recommended (§4). The classes
   with no P2 leg stay T5 under ruling 3 — a future ruling, not
   this build, settles them.
+  *Status (2026-11-18, later):* built, gated, and pushed in
+  the five-batch merge (`e6f14ab`); the full record is
+  `docs/fork/slice-a-report.md`.
 - Slices B, C, D: accepted in shape and order (2026-11-18), each
   awaiting its own commission.
+  *Status (2026-11-18, later):* commissioned as a sequence
+  (B → C → D without further commissions, D's batches pausing
+  for the owner), built, gated, and pushed in the five-batch
+  merge (`e6f14ab`). Slice D batch 1 was reviewed and ratified
+  by the owner before its build; batch 2 takes its own
+  commission.
 - CSKG reply integration (§1): not taken.
 - Found-ahead candidates (§2): ruled on 2026-11-18 — grounding
   in conversation, clarification behaviour and false-premise
@@ -490,51 +634,64 @@ AnSci — GAPS
 │          (model · web · Wikidata intakes all 0%, router 30%)
 │
 ├─ 2. Conversation
-│   ├─ [ ] Build the social layer the probe found absent
-│   │      (Hello → "Noted. What happened next?"; How are you? → decline)
-│   ├─ [ ] Design the SOCIAL UNIT — inside Awareness (user placement)
-│   │   ├─ [ ] Contents: greeting / leave-taking · identity as presented
+│   ├─ [x] Build the social layer the probe found absent
+│   │      (built 2026-11-18: Social Unit programme S1–S6,
+│   │       pushed in 67341f9; acceptance = the sealed run below)
+│   ├─ [x] Design the SOCIAL UNIT — inside Awareness (user placement)
+│   │   ├─ [x] Contents: greeting / leave-taking · identity as presented
 │   │   │        thanks · acknowledgement · turn-taking
-│   │   ├─ [ ] Hold conversation inside it
-│   │   ├─ [ ] Hold the Interlocutor: interlocutor-standing moves here
+│   │   ├─ [x] Hold conversation inside it
+│   │   ├─ [x] Hold the Interlocutor: interlocutor-standing moves here
 │   │   │        from surroundings (Register, 10%, code "almost none") —
 │   │   │        identity known/unknown, first contact or returning,
 │   │   │        the picture the conversation itself accumulates
-│   │   ├─ [ ] Define its seam with the turn loop and reply planner
+│   │   ├─ [x] Define its seam with the turn loop and reply planner
 │   │   └─ [x] Place it on the system map (2026-11-18: Social Unit,
 │              the Interlocutor moved in, Conversation — map check
 │              passes); confirm Awareness placement at design time
+│              (confirmed: ruling 1a, design as ruled)
 │   ├─ [ ] Run the sealed conversation probe set — 128 probes,
 │   │        sealed 2026-11-18, held outside the repo; commission
 │   │        only, and report against this checklist. Note: no
 │   │        probe evidences "first contact or returning"
 │   ├─ [ ] Grounding in conversation — testimony discipline has
-│   │        no conversational form (found ahead; accepted 2026-11-18)
-│   ├─ [ ] Clarification behaviour — asking what was meant, as a
-│   │        designed move distinct from a decline (found ahead)
-│   ├─ [ ] False-premise inputs — a designed stance toward a false
-│   │        assertion inviting agreement (found ahead)
+│   │        no conversational form (found ahead; accepted 2026-11-18;
+│   │        premise/record cases covered by S5, general form open)
+│   ├─ [x] Clarification behaviour — asking what was meant, as a
+│   │        designed move distinct from a decline (found ahead;
+│   │        built as Social Unit S4, pushed in 67341f9)
+│   ├─ [x] False-premise inputs — a designed stance toward a false
+│   │        assertion inviting agreement (found ahead; built as
+│   │        Social Unit S5, pushed in 67341f9)
 │   └─ [ ] Build out the situated self the planner plans with
-│          (Awareness 35% · self 15% · identity/capabilities 0% ·
-│           Coherence fuller levels unbuilt · Verbalizer 40%)
+│          (identity/capabilities now 75% · Interlocutor 75% ·
+│           Conversation 70% · Coherence fuller levels unbuilt ·
+│           Verbalizer 40%)
 │
 ├─ 3. Classification coverage  (measured 2026-11-18)
-│   ├─ [ ] Slice A — animal pilot, class-level climb stop
-│          (design presented + corrected; five decisions open, §4)
-│   ├─ [ ] Slice B — stuff categories, registered-rules only
-│   ├─ [ ] Slice C — recognised-but-unclassified climb outcome
-│   ├─ [ ] Slice D — per-word overlay mappings, sized after A–C
+│   ├─ [x] Slice A — animal pilot, class-level climb stop
+│          (built + pushed 2026-11-18 in e6f14ab; §4)
+│   ├─ [x] Slice B — stuff categories, registered-rules only
+│          (built + pushed 2026-11-18 in e6f14ab)
+│   ├─ [x] Slice C — recognised-but-unclassified climb outcome
+│          (built + pushed 2026-11-18 in e6f14ab)
+│   ├─ [x] Slice D — per-word overlay mappings, sized after A–C
+│          (batch 1 built + pushed 2026-11-18 in e6f14ab;
+│           further batches take their own commission)
 │   ├─ [ ] Create a gold sense sample so "works" can be audited
 │   │      (correctness inside D is currently unproven)
 │   └─ [ ] Give verbs a classification route
 │          (202 tokens parse-only; the climb is nouns/adjectives only)
 │
 ├─ 4. Slice A's own located gaps
-│   ├─ [ ] Rule on the classes with no P2 leg, or leave T5
-│   │      (amphibian · arachnid · worm · cnidarian — 13 of 95 tokens)
+│   ├─ [x] Rule on the classes with no P2 leg, or leave T5
+│   │      (ruled 2026-11-18, ruling 3a: left T5 as located gaps
+│   │       — amphibian · arachnid · worm · cnidarian, 13 of 95
+│   │       tokens; a future ruling may revisit)
 │   ├─ [ ] Fix the taxonomy-shape gaps (silkworm · centipede)
-│   └─ [ ] Judge class assignment by the tradition's own method
-│          (Erya / Shuowen: habitat + form, correlative —
+│   └─ [x] Judge class assignment by the tradition's own method
+│          (done in the design as corrected, 2026-11-18 —
+│           Erya / Shuowen: habitat + form, correlative —
 │           never anatomical; fish/creature boundaries are fluid)
 │
 ├─ 5. Parser depth  (depth programme complete — stage-5 accounting)
@@ -544,14 +701,18 @@ AnSci — GAPS
 │          (closed by stage 5: parse 80/80, generation failures 0)
 │   ├─ [x] Test the construction family properly (done 2026-11-18:
 │          89.1% over 46 atoms on a dedicated set; 7 of 8
-│          constructions at 100%)
-│   ├─ [ ] Fix the imperative construction state (single-use per
-│          process — the branch's signature is consumed by its own
-│          parse; 0/5 on the set)
-│   ├─ [ ] Fix the existential reparse crash (mass-noun subject:
-│          the generated surface will not reparse)
-│   ├─ [ ] Guard the bei branch against unattested verbs (a
-│          TypeError crash instead of a parse error)
+│          constructions at 100% — re-run after the lexicon-state
+│          fix: 47/47 completed round trips, all families at 100%)
+│   ├─ [x] Fix the lexicon-state family: probe registration
+│          (probe-poisoning) — registration is adoption now, and
+│          classification never reads a derived entry from the
+│          registry (closed 2026-11-18; §5)
+│   ├─ [x] Fix the imperative construction state (single-use per
+│          process — closed by the lexicon-state fix; 5/5 on the set)
+│   ├─ [x] Fix the existential reparse crash (mass-noun subject —
+│          closed by the lexicon-state fix; family 8/8)
+│   ├─ [x] Guard the bei branch against unattested verbs (guarded
+│          2026-11-18: a located parse error instead of a TypeError)
 │   ├─ [ ] Answer the suppressed family (declared ontology failure,
 │          F.5 — 66.7% on 3 atoms)
 │   ├─ [ ] Finish aspect per the challenge set (unit at 90%;
@@ -594,7 +755,8 @@ AnSci — GAPS
 └─ 8. Standing decisions (not gaps — decisions owed)
     ├─ [x] Commission the Slice A build (commissioned 2026-11-18,
            fork chat; five decisions ruled as recommended)
-    ├─ [ ] Commission slices B, C, D in turn
+    ├─ [x] Commission slices B, C, D in turn (commissioned as a
+           sequence 2026-11-18; built + pushed in e6f14ab)
     ├─ [ ] Decide CSKG reply integration (see §1)
     ├─ [x] Rule on the found-ahead candidates (ruled 2026-11-18, §2)
     └─ [x] Give the word to push GAPS.md itself (given 2026-11-18;

@@ -2078,6 +2078,11 @@ function initiativeCandidates(session: Session, trace: TurnTrace, turn: number):
     if (s.negated) continue;
     if (!s.element) continue;
     if (s.origin.kind !== "classified" || !s.origin.path || s.origin.support === undefined || !s.origin.tier) continue;
+    // The registry read is sound for this question since the
+    // lexicon-state fix (2026-11-18): registration is adoption,
+    // so a verb entry stands here only when some parse actually
+    // adopted the lemma as a verb — a verb-carried state —
+    // never because a probe once derived one.
     const entry = EN_LEXICON[s.lemma] as VerbEntry | undefined;
     if (entry && entry.kind === "verb") continue;
     const generated = GENERATES[s.element];
@@ -2195,6 +2200,16 @@ function applyInitiative(session: Session, result: TurnResult): void {
     const phase = conversationPhase(session);
     if (phase === "closing" || phase === "closed") return;
   }
+  // Social Unit S5: a stance turn's reply is a designed move,
+  // complete in itself — the stance already restates the
+  // established ground, which is the very content an
+  // unexpressed-state candidate would volunteer, so an
+  // appended move could only repeat it. (Before the
+  // lexicon-state fix this case was masked: the candidate
+  // state's lemma had usually been probe-registered as a
+  // verb by the time the scan ran, and the scan excluded it
+  // for that accidental reason.)
+  if (trace.stance) return;
   if (result.reply.trimEnd().endsWith("?")) return;
   const last = session.initiatives[session.initiatives.length - 1];
   if (last && turn - last.turn < 5) return;

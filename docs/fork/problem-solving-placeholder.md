@@ -83,6 +83,60 @@ was taken.
   ledger: "You have five apples."); a plain statement
   turn unrouted, the unit absent from its path.
 
+## Amendment (2026-11-18, later): the hexagram evaluation
+
+The owner added a further mechanism to the placeholder
+the same day: for issues of how to proceed in a general
+situation, the unit will evaluate the situation based on
+the 64 hexagrams, making use of OntologyCore. The
+hexagrams stand in the ontology the Ontology Knowledge
+Unit holds (they are content of the system's graph, not a
+store of this unit's), so the evaluation reads them
+there; the unit keeps no copy of its own. Recorded in the
+unit's PLACEHOLDER, in its map summary, and in the header
+of `src/fork/problem-solving.ts`. Nothing was wired: no
+need kind routes to it yet, and no evaluation runs — the
+router's vocabulary gains a how-to-proceed kind when the
+mechanism is built, as its own slice.
+
+## Amendment (2026-11-18, later): the six divisions
+
+The owner named the unit's internal divisions — external
+problems, abstract (philosophical) problems, internal
+problems (error, lack of information, lack of how to do),
+internal-system problems, external-system problems, and
+the user's problems (which feed back to internal) — as
+generic subunits applicable to any dimension of what the
+AI encounters: itself, the user, a person in a story
+provided, a math problem. Five rulings were put and
+accepted as recommended (the owner's "." — accept all
+recommendations):
+
+1. The divisions are **seats with movement** — a problem
+   carries a current seat and a history, not a single
+   classification; the user's → internal feed is one
+   standing route.
+2. **Abstract is a seat of its own** (problems whose
+   matter is ideas), and the hexagram evaluation is its
+   instrument — the amendment above now has its precise
+   home.
+3. The **bearer is recorded per problem** (the system /
+   the user / a third party / the matter itself),
+   independent of seat — the divisions are relational,
+   which is what makes them generic.
+4. The **six are the set for now**; a seventh must pass
+   the same generality test.
+5. The six are **placed as placeholder subunits** on the
+   map, the seat/bearer/subject shape recorded in the
+   unit's PLACEHOLDER — no wiring.
+
+Placed accordingly: six child nodes under
+`reasoning/problem-solving` (map now 89 nodes), each with
+its directory and PLACEHOLDER, layout orders 1–6 in the
+owner's listing order; the parent PLACEHOLDER records the
+settled shape and holds the list. No problem is seated,
+moved, or solved by any division yet.
+
 ## What this does not do
 
 No problem is solved by the unit: no approach graph is

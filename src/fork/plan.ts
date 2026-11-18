@@ -915,14 +915,15 @@ export function planRecordPredication(input: PlanRecordPredicationInput): { sent
  * fabricated.
  *
  * The graph is CONSTRUCTED, not parsed from a canonical string,
- * deliberately: parsing "You are welcome." is unstable in a
- * running process — the sentence layer's WordNet provider
- * registers a verb entry for "welcome" when a parse merely
- * probes it (wordnetVerb's register side effect), so a second
- * parse of the same string reads "welcome" as a verb and the
- * copula is lost ("You welcome."). That probe-poisoning is a
- * located sentence-layer gap, recorded in the S2 report; the
- * receipt does not route through it.
+ * deliberately: the Planner authors its moves, it does not
+ * borrow a parse. (When this was built, parsing "You are
+ * welcome." was also unstable in a running process — the
+ * probe-poisoning recorded in the S2 report: a probe of
+ * "welcome" registered a verb entry, and a second parse read
+ * it as one. That lexicon-state gap was closed 2026-11-18 —
+ * registration is adoption now, and classification never
+ * reads a derived entry from the registry — but the receipt
+ * never routed through a parse and still does not.)
  */
 export function planThanksReceipt(): { sentence: string; graph: ParsedSentence } {
   const subject: MeaningNode = {

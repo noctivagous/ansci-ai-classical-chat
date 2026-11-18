@@ -36,6 +36,26 @@
  * lemma, see them unchanged. Every key the provider writes is tracked
  * and removed again when the provider is disabled.
  *
+ * REGISTRATION IS ADOPTION (2026-11-18, the lexicon-state fix):
+ * deriving an entry does NOT register it. The wordnet* functions
+ * below derive, cache and return — a caller that merely PROBES
+ * (asks "could this surface be a verb here?") leaves the shared
+ * lexicon untouched. A caller that ADOPTS the entry — assigns it
+ * to an item, a node, a clause root — registers it explicitly
+ * through registerDerivedEntry. Before this discipline, every
+ * probe registered, and a registered derived verb could displace
+ * the same surface's derived noun or adjective in EN_LEXICON, so
+ * a later parse classified the word differently from an earlier
+ * one: probe-poisoning ("You are welcome." reparsing as "You
+ * welcome."), the imperative construction going single-use (its
+ * signature requires the initial word NOT classified as a verb,
+ * and the first parse's probe registered exactly that), and the
+ * existential reparse crash ("snow" flipped to its verb entry).
+ * Parse classification (parse.ts) likewise never takes a derived
+ * entry from the registry: it re-derives in the parser's fixed
+ * precedence, so a word's classification is a function of the
+ * sentence and the shipped lexicon, never of parse history.
+ *
  * SEMANTIC CLIMBING (climbClassification): a concept the curated table
  * (classify.ts) does not know can still earn a semantic address by
  * climbing WordNet hypernyms (hypernym + instance relations) until a
@@ -428,8 +448,27 @@ export function wordnetVerb(surface: string): VerbEntry | undefined {
     };
     entryCache.set(cacheKey, entry);
   }
-  register(entry, [entry.forms.base, entry.forms.third, entry.forms.past, entry.forms.participle, ingForm(lemma)]);
+  // No registration here: derivation is not adoption (see the
+  // header). The caller that adopts this entry registers it.
   return entry;
+}
+
+/**
+ * Register a derived entry a consumer has ADOPTED — assigned to
+ * an item, a node, or a clause root — under the keys the
+ * providers have always used: a verb under its five forms, a
+ * noun or adjective under its lemma and the surface it was
+ * adopted from. Registration exists for the by-lemma consumers
+ * (generate.ts, check.ts, turn.ts); it is not a classification
+ * source, and probing never calls this.
+ */
+export function registerDerivedEntry(entry: LexEntry, surface?: string): void {
+  if (entry.kind === "verb") {
+    const f = (entry as VerbEntry).forms;
+    register(entry, [f.base, f.third, f.past, f.participle, ingForm(entry.lemma)]);
+  } else {
+    register(entry, surface ? [entry.lemma, surface.toLowerCase()] : [entry.lemma]);
+  }
 }
 
 export function wordnetNoun(surface: string): SimpleEntry | undefined {
@@ -450,7 +489,8 @@ export function wordnetNoun(surface: string): SimpleEntry | undefined {
     };
     entryCache.set(cacheKey, entry);
   }
-  register(entry, [lemma, surface.toLowerCase()]);
+  // No registration here: derivation is not adoption (see the
+  // header). The caller that adopts this entry registers it.
   return entry;
 }
 
@@ -472,7 +512,8 @@ export function wordnetAdjective(surface: string): SimpleEntry | undefined {
     };
     entryCache.set(cacheKey, entry);
   }
-  register(entry, [lemma, surface.toLowerCase()]);
+  // No registration here: derivation is not adoption (see the
+  // header). The caller that adopts this entry registers it.
   return entry;
 }
 

@@ -44,7 +44,7 @@ import {
   cycleOf,
   type LexEntry,
 } from "./sentence";
-import { wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { registerDerivedEntry, wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
 import { resolveTokenList, type TokenClass } from "./token-resolve";
 import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
@@ -170,7 +170,17 @@ function enItems(tokens: string[]): EnItem[] {
     else if (EN_AUX.has(lower)) item.kind = "aux";
     else if (lower === "n't" || lower === "not") item.kind = "neg";
     else {
-      const entry = EN_LEXICON[lower];
+      // Only HAND entries classify from the registry. A derived
+      // entry sitting in EN_LEXICON was registered by an earlier
+      // adoption (wordnet-lex.ts: registration is adoption), and
+      // taking it here would make this word's classification a
+      // function of parse history — the lexicon-state family:
+      // probe-poisoning, the single-use imperative, the
+      // existential reparse crash (2026-11-18). A derived entry
+      // is therefore treated as a registry miss and re-derived
+      // below, in the fixed precedence, every time.
+      const registered = EN_LEXICON[lower];
+      const entry = registered && !("source" in registered && registered.source === "wordnet") ? registered : undefined;
       if (entry) {
         item.entry = entry;
         item.kind = entry.kind;
@@ -191,11 +201,13 @@ function enItems(tokens: string[]): EnItem[] {
         if (noun) {
           item.entry = noun;
           item.kind = "noun";
+          registerDerivedEntry(noun, lower);
         } else {
           const adj = wordnetAdjective(lower);
           if (adj) {
             item.entry = adj;
             item.kind = "adjective";
+            registerDerivedEntry(adj, lower);
           }
         }
       }
@@ -223,7 +235,14 @@ function enItems(tokens: string[]): EnItem[] {
     const it = items[k];
     if (it.lower !== "her" || it.kind !== "det") continue;
     const next = items[k + 1];
-    const canHeadChunk = next && (next.kind === "noun" || next.kind === "pronoun" || next.kind === "proper" || next.kind === "adjective");
+    // A "proper" item with no entry is an unknown word wearing
+    // the default classification (e.g. "about", whose adverb
+    // synsets the extract does not carry) — it is not evidence
+    // a noun phrase follows, and counting it suppressed the
+    // pronoun re-read in "Tell her about winter." (2026-11-18:
+    // her stayed a determiner, the imperative signature's
+    // pronoun test failed, and the sentence fell through).
+    const canHeadChunk = next && (next.kind === "noun" || next.kind === "pronoun" || (next.kind === "proper" && next.entry !== undefined) || next.kind === "adjective");
     if (!canHeadChunk) {
       const entry = EN_LEXICON["her"];
       if (entry) { it.entry = entry; it.kind = "pronoun"; }
@@ -358,6 +377,7 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
     const lastAdj = adjectives[adjectives.length - 1];
     const nounEntry = wordnetNoun(lastAdj.lower);
     if (nounEntry) {
+      registerDerivedEntry(nounEntry, lastAdj.lower);
       head = { ...lastAdj, kind: "noun", entry: nounEntry };
       adjectives.pop();
       j = lastAdj.index;
@@ -528,6 +548,7 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     const impItem = items[contentStart];
     if (impItem && impItem.kind !== "verb" && !items.some((i) => i.kind === "be") && !items.some((i) => i.kind === "aux")) {
       const impVerb = wordnetVerb(impItem.lower);
+      if (impVerb) registerDerivedEntry(impVerb);
       const impChunk = enChunk(items, contentStart);
       if (impVerb && impChunk && impChunk.chunk.head === impItem && impChunk.next === contentStart + 1 && items[impChunk.next]?.kind === "pronoun") {
         const root = b.node({ lemma: impVerb.lemma, form: impItem.text, syntacticElement: "Wood", role: "verb" }, [impItem.index]);
@@ -618,6 +639,7 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       it.entry = derived;
       it.kind = "verb";
       it.formTag = formTag;
+      registerDerivedEntry(derived);
       verbItem = it;
       break;
     }
@@ -644,6 +666,7 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
         it.entry = derived;
         it.kind = "verb";
         it.formTag = it.lower === "did" ? "past" : "base";
+        registerDerivedEntry(derived);
         verbItem = it;
         break;
       }
@@ -1452,6 +1475,12 @@ function parseZh(text: string): ParsedSentence {
     const agentless = items[beiIdx + 1]?.entry?.kind === "verb";
     const agent = agentless ? undefined : nounNode(items[beiIdx + 1], "agent");
     const verbItem = items[agentless ? beiIdx + 1 : beiIdx + 2];
+    // An unattested verb (outside the ZH lexicon's territory)
+    // fails as a parse error, not as a crash on the missing
+    // entry (GAPS §5, guarded 2026-11-18).
+    if (!verbItem?.entry || verbItem.entry.kind !== "verb") {
+      throw new Error(`cannot parse bei passive of: ${tokens.join("")} — the verb after 被 has no lexicon entry`);
+    }
     const verb = verbItem.entry as VerbEntry;
     const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
     root.states = { voice: "passive", construction: "bei", mood: interrogative ? "interrogative" : "indicative" };
