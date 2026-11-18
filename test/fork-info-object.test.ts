@@ -87,6 +87,13 @@ const roundTrip = (o: unknown): unknown => JSON.parse(JSON.stringify(o)) as unkn
 /* ---------------- 1. the wall ---------------- */
 
 test("the wall: stripped cores deep-equal the pre-envelope baseline (apples)", () => {
+  // Baseline regenerated 2026-11-18 for the ProblemSolving
+  // router (owner's commission): each apples object now
+  // carries the router's trail annotation — verified at
+  // regeneration as the ONLY delta (33 added lines, nothing
+  // else moved). The wall's claim is unchanged: wrapping
+  // adds exactly the envelope, and the cores are otherwise
+  // what the machinery produces.
   const s = newSession();
   run(s, ["I have 5 apples.", "Sally bought 3 of them.", "How many do I have left?"]);
   const infos = persons(s);

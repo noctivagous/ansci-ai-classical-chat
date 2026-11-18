@@ -107,6 +107,7 @@ import {
 } from "./info-object";
 import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, premiseDegree, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
 import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, requestCapabilities, requestIdentity } from "./social";
+import { routeProblemSolving } from "./problem-solving";
 import { assessNormalcy, normalcyFlagOf } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
 import { applySceneUpdate } from "./senses-scening";
@@ -239,6 +240,12 @@ export interface TurnTrace {
   /** The running scene this turn's fragment referenced
    *  (session.scenes): its id and this fragment's role in it. */
   scene?: { id: string; role: string };
+  /** The ProblemSolving router's record for this turn
+   *  (problem-solving.ts): the needs attached to the turn's
+   *  objects and the ground the routing stood on — the
+   *  person's instruction, or the assessment of the object.
+   *  Drives the mapPath's pass through reasoning/problem-solving. */
+  problemSolving?: { needs: string[]; ground: string };
   /** The quantity ledger changes this turn produced
    *  (quantification.ts, applied from the objects' quantity
    *  mentions): plain-words summaries, in order — a stated
@@ -850,6 +857,19 @@ function speakWithObject(session: Session, trace: TurnTrace, graph: ParsedSenten
 function answerHowMany(session: Session, trace: TurnTrace, text: string): TurnResult | undefined {
   const surface = text.trim();
   if (!/^how many\b/i.test(surface)) return undefined;
+  // The ProblemSolving router (2026-11-18): a how-many
+  // question is the person asking for a solving — the need
+  // is attached to the question's object and routed to the
+  // ProblemSolving Unit, on the instruction ground. (The
+  // ledger answers below, as it does today; the route is
+  // the recognition, recorded ahead of the unit's engines.)
+  {
+    const turnObject = session.objects.find((o) => o.turn === session.turnCount && o.producer === "person");
+    if (turnObject && !trace.problemSolving) {
+      routeProblemSolving(turnObject, ["quantification"], "a how-many question — solving asked for by the person");
+      trace.problemSolving = { needs: ["quantification"], ground: "a how-many question — solving asked for by the person" };
+    }
+  }
   const holder = "you"; // the session's grain for the speaker
   const words = surface.replace(/[?.!]/g, "").split(/\s+/);
   const manyIdx = words.findIndex((w) => w.toLowerCase() === "many");
@@ -1077,6 +1097,15 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
   for (const o of assessed) {
     if (o.quantities?.length) {
       quantityNotes.push(...applyQuantityMentions(session, o.quantities, turn).applied);
+      // The ProblemSolving router (2026-11-18): the object
+      // carries quantity content — assessed by the AI from
+      // the object itself, no instruction needed — so the
+      // need is attached to the object and routed to the
+      // ProblemSolving Unit (reasoning/problem-solving),
+      // whose seat is a placeholder: the route is recorded,
+      // and the ledger's own machinery remains the solver.
+      routeProblemSolving(o, ["quantification"], "the object carries quantity content, assessed from the object");
+      trace.problemSolving = { needs: ["quantification"], ground: "the object carries quantity content, assessed from the object" };
     }
   }
   for (const o of assessed) seedQuantityNeeds(o, session, turn);
@@ -2257,6 +2286,10 @@ function computeMapPath(trace: TurnTrace): string[] {
   // recorded quantity content or answered a how-many question
   // from the ledger.
   if (trace.quantities?.length || trace.quantityAnswer) path.push("lpu/quantification-language-unit");
+  // The ProblemSolving Unit likewise, on turns its router
+  // routed (problem-solving.ts): the needs were attached to
+  // the turn's objects, on the instruction or the assessment.
+  if (trace.problemSolving) path.push("reasoning/problem-solving");
   path.push("session-and-situation");
   /* NormalcyAssessment sits between Session & Situation and
    * CoherenceAnalysis in the settled placement: its node joins

@@ -765,6 +765,19 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "The frozen composition definitions; the live copy is held in Awareness."
     },
     {
+      "id": "reasoning/problem-solving",
+      "title": "ProblemSolving Unit",
+      "type": "Unit",
+      "parent": "reasoning",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "reasoning/problem-solving",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/problem-solving.ts",
+      "summary": "A general-purpose problem-solving unit inside Reasoning (owner's commission, 2026-11-18) — not limited to mathematics. A router in the turn asks 'does this need problem-solving?': on the person's instruction (a how-many question is its first wired case), or assessed by the AI from the object itself (quantity content is its first wired signal) — and attaches the needs to the object, routed here. The unit's repertoire is the standard acronym cycles people use (OODA — Observe, Orient, Decide, Act; PDCA — Plan, Do, Check, Act; the rest as registered), each held as a small graph of steps with the cycle edge that closes it. Placeholder: the seat, the router and the approach graphs are wired; no approach engine runs yet."
+    },
+    {
       "id": "intake",
       "title": "Intake",
       "type": "Container",

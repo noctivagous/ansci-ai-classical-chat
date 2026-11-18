@@ -175,6 +175,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "reasoning/compositions": {
       "order": 5
     },
+    "reasoning/problem-solving": {
+      "order": 6
+    },
     "coherence": {
       "order": 7
     },

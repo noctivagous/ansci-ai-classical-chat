@@ -172,6 +172,17 @@
         {
           "unit": "lpu/semantic-assessment",
           "note": "assessed as statement"
+        },
+        {
+          "unit": "reasoning/problem-solving",
+          "note": "routed to the ProblemSolving Unit — the router asked \"does this need problem-solving?\" and the answer is yes (the object carries quantity content, assessed from the object); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
+          "data": {
+            "needs": [
+              "quantification"
+            ],
+            "routedTo": "reasoning/problem-solving",
+            "ground": "the object carries quantity content, assessed from the object"
+          }
         }
       ]
     },
@@ -347,6 +358,17 @@
         {
           "unit": "lpu/semantic-assessment",
           "note": "assessed as statement"
+        },
+        {
+          "unit": "reasoning/problem-solving",
+          "note": "routed to the ProblemSolving Unit — the router asked \"does this need problem-solving?\" and the answer is yes (the object carries quantity content, assessed from the object); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
+          "data": {
+            "needs": [
+              "quantification"
+            ],
+            "routedTo": "reasoning/problem-solving",
+            "ground": "the object carries quantity content, assessed from the object"
+          }
         }
       ]
     },
@@ -481,6 +503,17 @@
         {
           "unit": "lpu/semantic-assessment",
           "note": "assessed as question"
+        },
+        {
+          "unit": "reasoning/problem-solving",
+          "note": "routed to the ProblemSolving Unit — the router asked \"does this need problem-solving?\" and the answer is yes (a how-many question — solving asked for by the person); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
+          "data": {
+            "needs": [
+              "quantification"
+            ],
+            "routedTo": "reasoning/problem-solving",
+            "ground": "a how-many question — solving asked for by the person"
+          }
         }
       ]
     }
