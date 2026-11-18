@@ -137,8 +137,8 @@
   @media (max-width:640px){.viewport{min-height:0}}
   .viewport.dragging{cursor:grabbing}
   .viewport.dragging .box,.viewport.dragging .sec-item,.viewport.dragging .srctab,.viewport.dragging .configreg{cursor:grabbing}
-  .world{position:absolute;left:0;top:0;width:1640px;height:2150px;transform-origin:0 0}
-  .world svg.wires{position:absolute;inset:0;width:1640px;height:2150px;overflow:visible;pointer-events:none}
+  .world{position:absolute;left:0;top:0;width:3400px;height:1950px;transform-origin:0 0}
+  .world svg.wires{position:absolute;inset:0;width:3400px;height:1950px;overflow:visible;pointer-events:none}
   .world svg.wires path{fill:none;stroke:var(--wire);stroke-width:2.2;opacity:.75}
   .world svg.wires path.dash{stroke-dasharray:7 6;opacity:.5}
   .world svg.wires path.tracepath{stroke:var(--trace);stroke-width:3;opacity:0;stroke-dasharray:none}
@@ -482,6 +482,11 @@
       <button type="button" class="vt-btn on" id="themeDarkBtn" aria-pressed="true">Dark</button>
       <button type="button" class="vt-btn" id="themeLightBtn" aria-pressed="false">Light</button>
     </div>
+    <span class="h-note">Walk:</span>
+    <div class="view-toggle" role="group" aria-label="Walk execution mode — run or step by step">
+      <button type="button" class="vt-btn on" id="walkRunBtn" aria-pressed="true">Run</button>
+      <button type="button" class="vt-btn" id="walkStepBtn" aria-pressed="false">Step by step</button>
+    </div>
     <span class="h-note">% completed to goal — set by us, assessed by the project, not measured or computed.</span>
     <a class="btn dashboard" href="/dashboard/" style="margin-left:auto;min-height:36px;padding:7px 12px">Dashboard&nbsp;→&nbsp;/dashboard/</a>
   </div>
@@ -514,6 +519,9 @@
         <button class="tbtn wide" data-focus="parser">Parser</button>
         <button class="tbtn wide" data-focus="awareness">Awareness</button>
       </div>
+      <div class="group"><span class="lbl">Walk</span>
+        <button class="tbtn wide" id="stepBtn" disabled>Step ▸</button>
+      </div>
       <div class="spacer"></div>
       <div class="group"><span class="lbl">Chat</span>
         <button class="tbtn wide" id="resetBtn">Reset conversation</button>
@@ -522,72 +530,73 @@
 
     <div class="viewport" id="viewport" aria-label="Zoomable system schematic">
       <div class="world" id="world">
-        <svg class="wires" viewBox="0 0 1640 2150" aria-hidden="true">
+        <svg class="wires" viewBox="0 0 3400 1950" aria-hidden="true">
           <path class="tracepath" id="tracePath" d="" />
-          <path class="pw1" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 297 L 250 297 L 250 427 L 722 427 L 722 700 L 1210 700 L 1210 1514 L 980 1514 L 980 330 L 968 330" />
-          <path class="pw2" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 118 303 L 244 303 L 244 433 L 716 433 L 716 706 L 1204 706 L 1204 1520 L 974 1520 L 974 336 L 962 336" />
-          <path class="pw1" data-endpoints="awareness,system" d="M 968 303 L 1440 303" /><path class="pw2" data-endpoints="awareness,system" d="M 968 309 L 1440 309" />
-          <path class="pw1" data-endpoints="harborer,knowledge" d="M 1090 1797 L 1180 1797 L 1180 1445" /><path class="pw2" data-endpoints="harborer,knowledge" d="M 1090 1803 L 1186 1803 L 1186 1451" />
-          <circle class="cdot" data-endpoints="system" cx="250" cy="300" r="4"/><circle class="cdot" data-endpoints="awareness" cx="968" cy="306" r="4"/><circle class="cdot" data-endpoints="knowledge" cx="1183" cy="1448" r="4"/>
-          <path class="conn" data-endpoints="planner,correspondence" d="M 792 1660 L 792 1730 L 300 1730 L 300 2197" />
-          <path class="conn" data-endpoints="derivation,correspondence" d="M 422 1660 L 422 1718 L 480 1718 L 480 2197" />
-          <path class="conn" data-endpoints="awareness,session" d="M 1219 628 L 1219 652" />
-          <path class="conn" data-endpoints="config,awareness" d="M 745 57 L 745 100 L 1150 100 L 1150 118" />
-          <path class="conn" data-endpoints="sense,lexicon" d="M 599 516 L 599 1470 L 900 1470 L 900 1514" />
-          <path class="conn" data-endpoints="token,variant-graph" d="M 373 516 L 373 1470 L 1245 1470 L 1245 1514" />
-          <circle class="cdot" data-endpoints="variant-graph" cx="1245" cy="1510" r="4"/>
-          <path class="conn" data-endpoints="coherence,awareness" d="M 1432 982 L 1432 373 L 1410 373" />
-          <path class="conn" data-endpoints="coherence,session" d="M 1424 982 L 1424 750 L 1410 750" />
-          <path class="conn uses" data-endpoints="verbalizer,coherence" d="M 1219 968 L 1219 982" />
-          <circle class="cdot" data-endpoints="correspondence" cx="300" cy="2197" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="480" cy="2197" r="4"/>
-          <circle class="cdot" data-endpoints="session" cx="1219" cy="650" r="4"/><circle class="cdot" data-endpoints="awareness" cx="1150" cy="116" r="4"/><circle class="cdot" data-endpoints="planner" cx="900" cy="1510" r="4"/>
-          <circle class="cdot" data-endpoints="coherence,awareness" cx="1412" cy="373" r="4"/><circle class="cdot" data-endpoints="coherence,session" cx="1412" cy="750" r="4"/><circle class="cdot uses" data-endpoints="verbalizer,coherence" cx="1219" cy="980" r="4"/>
-          <path class="conn uses" data-endpoints="verbalizer,generator" d="M 1030 905 C 1000 870, 995 830, 972 793" />
-          <circle class="cdot uses" data-endpoints="generator" cx="969" cy="790" r="5"/>
-          <path class="conn uses" data-endpoints="language-emotion-desire-unit,emotion-desire" d="M 968 540 L 1012 540 L 1012 2396 L 666 2396" />
-          <circle class="cdot uses" data-endpoints="emotion-desire" cx="663" cy="2396" r="4"/>
-          <path class="conn uses" data-endpoints="senses-scening-unit,sense-unit" d="M 968 776 L 1020 776 L 1020 2330" />
-          <circle class="cdot uses" data-endpoints="sense-unit" cx="1020" cy="2327" r="4"/>
-          <path class="conn uses" data-endpoints="quantification-language-unit,quantification-unit" d="M 968 1248 L 1020 1248 L 1020 2307" />
-          <circle class="cdot uses" data-endpoints="quantification-unit" cx="1020" cy="2304" r="4"/>
-          <path class="conn uses" data-endpoints="normalcy-assessment,normalcy-unit" d="M 968 1012 L 1020 1012 L 1020 2476" />
-          <circle class="cdot uses" data-endpoints="normalcy-unit" cx="1020" cy="2473" r="4"/>
+          <path class="pw1" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 180 489 L 252 489 L 252 433 L 706 433 L 706 474 L 1460 474 L 1460 753 L 1655 753 L 1655 520 L 2042 520 L 2042 450 L 2674 450 L 2674 268 L 2889 268" />
+          <path class="pw2" data-endpoints="system,lpu,parser,session,planner,awareness" d="M 180 495 L 258 495 L 258 439 L 712 439 L 712 480 L 1466 480 L 1466 759 L 1661 759 L 1661 526 L 2048 526 L 2048 456 L 2680 456 L 2680 274 L 2895 274" />
+          <path class="pw1" data-endpoints="awareness,system" d="M 2889 118 L 2889 90" /><path class="pw2" data-endpoints="awareness,system" d="M 2895 118 L 2895 90" />
+          <path class="pw1" data-endpoints="harborer,knowledge" d="M 2640 1083 L 2674 1083 L 2674 104 L 2500 104 L 2500 118" /><path class="pw2" data-endpoints="harborer,knowledge" d="M 2640 1089 L 2680 1089 L 2680 110 L 2506 110 L 2506 118" />
+          <circle class="cdot" data-endpoints="system" cx="258" cy="433" r="4"/><circle class="cdot" data-endpoints="awareness" cx="2892" cy="104" r="4"/><circle class="cdot" data-endpoints="knowledge" cx="2503" cy="122" r="4"/>
+          <path class="conn" data-endpoints="planner,correspondence" d="M 1960 374 L 1960 308 L 1460 308 L 1460 1100 L 536 1100 L 536 1173" />
+          <path class="conn" data-endpoints="derivation,correspondence" d="M 1490 406 L 1466 406 L 1466 1112 L 700 1112 L 700 1173" />
+          <path class="conn" data-endpoints="awareness,session" d="M 2706 753 L 1853 753" />
+          <path class="conn" data-endpoints="config,awareness" d="M 2750 78 L 2750 115" />
+          <path class="conn" data-endpoints="sense,lexicon" d="M 599 380 L 599 816 L 1460 816 L 1460 240 L 1694 240" />
+          <path class="conn" data-endpoints="token,variant-graph" d="M 373 380 L 373 822 L 1454 822 L 1454 248 L 2060 248" />
+          <circle class="cdot" data-endpoints="variant-graph" cx="2063" cy="248" r="4"/>
+          <circle class="cdot" data-endpoints="lexicon" cx="1697" cy="240" r="4"/>
+          <path class="conn" data-endpoints="coherence,awareness" d="M 3090 1208 L 3090 700 L 3087 700" />
+          <path class="conn" data-endpoints="coherence,session" d="M 2706 1280 L 2680 1280 L 2680 765 L 1478 765" />
+          <path class="conn uses" data-endpoints="verbalizer,coherence" d="M 2895 1188 L 2895 1205" />
+          <circle class="cdot" data-endpoints="correspondence" cx="536" cy="1173" r="4"/><circle class="cdot" data-endpoints="correspondence" cx="700" cy="1173" r="4"/>
+          <circle class="cdot" data-endpoints="session" cx="1853" cy="753" r="4"/><circle class="cdot" data-endpoints="awareness" cx="2750" cy="115" r="4"/><circle class="cdot" data-endpoints="planner" cx="2042" cy="450" r="4"/>
+          <circle class="cdot" data-endpoints="coherence,awareness" cx="3087" cy="700" r="4"/><circle class="cdot" data-endpoints="coherence,session" cx="1475" cy="765" r="4"/><circle class="cdot uses" data-endpoints="verbalizer,coherence" cx="2895" cy="1205" r="4"/>
+          <path class="conn uses" data-endpoints="verbalizer,generator" d="M 1418 592 L 1460 592 L 1460 1420 L 2680 1420 L 2680 1090 L 2703 1090" />
+          <circle class="cdot uses" data-endpoints="generator" cx="1415" cy="592" r="5"/>
+          <path class="conn uses" data-endpoints="language-emotion-desire-unit,emotion-desire" d="M 1186 320 L 1194 320 L 1194 720 L 1422 720 L 1422 1688 L 457 1688 L 457 1670" />
+          <circle class="cdot uses" data-endpoints="emotion-desire" cx="457" cy="1670" r="4"/>
+          <path class="conn uses" data-endpoints="senses-scening-unit,sense-unit" d="M 1418 330 L 1429 330 L 1429 1613 L 1381 1613" />
+          <circle class="cdot uses" data-endpoints="sense-unit" cx="1381" cy="1613" r="4"/>
+          <path class="conn uses" data-endpoints="quantification-language-unit,quantification-unit" d="M 1186 646 L 1196 646 L 1196 726 L 1436 726 L 1436 1400 L 1365 1400" />
+          <circle class="cdot uses" data-endpoints="quantification-unit" cx="1365" cy="1400" r="4"/>
+          <path class="conn uses" data-endpoints="normalcy-assessment,normalcy-unit" d="M 846 789 L 846 820 L 1443 820 L 1443 1752 L 1381 1752" />
+          <circle class="cdot uses" data-endpoints="normalcy-unit" cx="1381" cy="1752" r="4"/>
         </svg>
 
         <!-- speaker (outside system) -->
-        <div class="ext" style="left:8px;top:196px;width:172px">
+        <div class="ext" style="left:8px;top:430px;width:172px">
           <span class="who">◉ A person</span><br>
           <span style="color:var(--muted);font-size:11px">identity unknown · first utterance · no shared topic yet</span><br>
           <span class="bubble" id="helloBubble">…</span>
         </div>
         <!-- reply (outside system) -->
-        <div class="ext reply-out" style="left:1428px;top:238px;width:196px;text-align:right">
+        <div class="ext reply-out" style="left:3130px;top:1060px;width:196px;text-align:right">
           <span class="who">▣ Surface — reply out</span><br>
           <span class="bubble reply" id="replyBubble" style="opacity:.28">…</span><br>
           <span style="color:var(--muted);font-size:11px" id="replyNote">— no reply yet —</span>
         </div>
 
-        <span class="flowtag" style="left:206px;top:282px">utterance in</span>
-        <span class="cordlabel uses" data-endpoints="verbalizer,generator" style="left:976px;top:880px">uses &#8594;</span>
-        <span class="cordlabel uses" data-endpoints="language-emotion-desire-unit,emotion-desire" style="left:1004px;top:760px;writing-mode:vertical-rl">uses &#8595;</span>
-        <span class="cordlabel uses" data-endpoints="senses-scening-unit,sense-unit" style="left:1004px;top:1060px;writing-mode:vertical-rl">uses &#8595;</span>
-        <span class="cordlabel uses" data-endpoints="quantification-language-unit,quantification-unit" style="left:1004px;top:1560px;writing-mode:vertical-rl">uses &#8595;</span>
-        <span class="cordlabel uses" data-endpoints="normalcy-assessment,normalcy-unit" style="left:1004px;top:2060px;writing-mode:vertical-rl">uses &#8595;</span>
-        <span class="cordlabel uses" data-endpoints="verbalizer,coherence" style="left:1230px;top:969px">uses &#8595;</span>
-        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:430px;top:1708px">planner consults &#8595; correspondence graph</span>
-        <span class="cordlabel" data-endpoints="coherence,awareness" style="left:1446px;top:392px;writing-mode:vertical-rl">coherence consults &#8593; awareness</span>
-        <span class="cordlabel" data-endpoints="coherence,session" style="left:1458px;top:600px;writing-mode:vertical-rl">coherence consults &#8593; session &amp; situation</span>
-        <span class="cordlabel" data-endpoints="sense,lexicon" style="left:612px;top:880px">sense consults &#8595; lexicon</span>
-        <span class="cordlabel" data-endpoints="token,variant-graph" style="left:386px;top:880px">token consults &#8595; variant graph</span>
-        <span class="cordlabel" data-endpoints="awareness,session" style="left:1230px;top:632px">awareness reads &#8593; session</span>
-        <span class="flowtag" style="left:1150px;top:306px">situation feed · dashed</span>
-        <span class="flowtag" style="left:1440px;top:412px">reply out</span>
+        <span class="flowtag" style="left:196px;top:470px">utterance in</span>
+        <span class="cordlabel uses" data-endpoints="verbalizer,generator" style="left:1426px;top:566px">uses &#8594;</span>
+        <span class="cordlabel uses" data-endpoints="language-emotion-desire-unit,emotion-desire" style="left:1404px;top:1300px;writing-mode:vertical-rl">uses &#8595;</span>
+        <span class="cordlabel uses" data-endpoints="senses-scening-unit,sense-unit" style="left:1411px;top:700px;writing-mode:vertical-rl">uses &#8595;</span>
+        <span class="cordlabel uses" data-endpoints="quantification-language-unit,quantification-unit" style="left:1418px;top:1000px;writing-mode:vertical-rl">uses &#8595;</span>
+        <span class="cordlabel uses" data-endpoints="normalcy-assessment,normalcy-unit" style="left:1425px;top:1560px;writing-mode:vertical-rl">uses &#8595;</span>
+        <span class="cordlabel uses" data-endpoints="verbalizer,coherence" style="left:2906px;top:1189px">uses &#8595;</span>
+        <span class="cordlabel" data-endpoints="planner,correspondence" style="left:880px;top:1076px">planner consults &#8595; correspondence graph</span>
+        <span class="cordlabel" data-endpoints="coherence,awareness" style="left:3102px;top:880px;writing-mode:vertical-rl">coherence consults &#8593; awareness</span>
+        <span class="cordlabel" data-endpoints="coherence,session" style="left:2646px;top:940px;writing-mode:vertical-rl">coherence consults &#8593; session &amp; situation</span>
+        <span class="cordlabel" data-endpoints="sense,lexicon" style="left:700px;top:790px">sense consults &#8595; lexicon</span>
+        <span class="cordlabel" data-endpoints="token,variant-graph" style="left:400px;top:796px">token consults &#8595; variant graph</span>
+        <span class="cordlabel" data-endpoints="awareness,session" style="left:2050px;top:728px">awareness reads &#8593; session</span>
+        <span class="flowtag" style="left:2700px;top:96px">situation feed · dashed</span>
+        <span class="flowtag" style="left:3100px;top:1020px">reply out</span>
 
-        <div class="srctab" data-id="clock" style="left:660px;top:40px">SOURCE · CLOCK ◷</div>
-        <div class="configreg" data-id="config" style="left:902px;top:34px"><span class="cfg-l">Configuration register</span><strong>Configuration: Chat</strong> — first configuration of a general-purpose system</div>
-        <div class="srctab" data-id="source" style="left:102px;top:283px">SOURCE · PERSON'S CHANNEL</div>
+        <div class="srctab" data-id="clock" style="left:2402px;top:40px">SOURCE · CLOCK ◷</div>
+        <div class="configreg" data-id="config" style="left:2590px;top:34px"><span class="cfg-l">Configuration register</span><strong>Configuration: Chat</strong> — first configuration of a general-purpose system</div>
+        <div class="srctab" data-id="source" style="left:30px;top:386px">SOURCE · PERSON'S CHANNEL</div>
         <!-- ============ SYSTEM ============ -->
-        <div class="box system frame" data-id="system" style="left:190px;top:56px;width:1250px;height:2280px">
+        <div class="box system frame" data-id="system" style="left:190px;top:90px;width:2924px;height:1773px">
           <div class="bhead">
             <div><div class="bname">The System</div><div class="bsub">ANSCI · outermost bounding box · everything the root page shows lives in here</div></div>
             <span class="btag" style="color:var(--accent)">Root · general-purpose</span>
@@ -597,7 +606,7 @@
         </div>
 
         <!-- ============ AWARENESS UNIT (System level) ============ -->
-        <div class="box aware frame" data-id="awareness" style="left:1030px;top:118px;width:378px;height:510px">
+        <div class="box aware frame" data-id="awareness" style="left:2706px;top:118px;width:378px;height:909px">
           <div class="bhead">
             <div><div class="bname">Awareness Unit</div><div class="bsub">System level · sibling of the LPU · four branches, contents typed</div></div>
             <span class="btag" style="color:var(--amber)">Unit · container</span>
@@ -632,7 +641,7 @@
         </div>
 
         <!-- Session & Situation (System level) -->
-        <div class="box unit frame sec" data-id="session" style="left:1030px;top:652px;width:378px;height:196px">
+        <div class="box unit frame sec" data-id="session" style="left:1472px;top:565px;width:378px;height:388px">
           <div class="bhead">
             <div><div class="bname">Session &amp; Situation</div><div class="bsub">System level · general machinery — a record of an ongoing interaction, usable by any configuration; Chat is its first use</div></div>
             <span class="btag" style="color:var(--muted)">Registers</span>
@@ -649,7 +658,7 @@
         </div>
 
                 <!-- Verbalizer (System level) — USES the LPU; does not contain it, is not inside it -->
-        <div class="box unit t-surface" data-id="verbalizer" style="left:1030px;top:862px;width:378px;height:106px">
+        <div class="box unit t-surface" data-id="verbalizer" style="left:2706px;top:1047px;width:378px;height:141px">
           <div class="bhead">
             <div><div class="bname">Verbalizer</div><div class="bsub">System level · a resource user, not a container</div></div>
             <span class="btag" style="color:var(--muted)">Unit · Surface</span>
@@ -660,7 +669,7 @@
         </div>
 
         <!-- ============ COHERENCE (System level) — its own unit, consulting Awareness and Session & Situation ============ -->
-        <div class="box unit frame sec" data-id="coherence" style="left:1030px;top:982px;width:378px;height:216px">
+        <div class="box unit frame sec" data-id="coherence" style="left:2706px;top:1208px;width:378px;height:263px">
           <div class="bhead">
             <div><div class="bname">Coherence</div><div class="bsub">System level · its own unit · the system's coherence demand — consults Awareness and Session &amp; Situation by cord (see the consults cords on its right edge)</div></div>
             <span class="btag" style="color:var(--muted)">Unit</span>
@@ -674,7 +683,7 @@
         </div>
 
         <!-- ============ KNOWLEDGE (System level) ============ -->
-        <div class="box frame sec" data-id="knowledge" style="left:222px;top:1214px;width:1186px;height:230px">
+        <div class="box frame sec" data-id="knowledge" style="left:1472px;top:118px;width:1186px;height:180px">
           <div class="bhead">
             <div><div class="bname">Knowledge</div><div class="bsub">System level · what the rest of the system consults — held things only; nothing here acts</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -689,7 +698,7 @@
         </div>
 
         <!-- ============ REASONING (System level) ============ -->
-        <div class="box frame sec" data-id="reasoning" style="left:222px;top:1458px;width:1186px;height:230px">
+        <div class="box frame sec" data-id="reasoning" style="left:1472px;top:318px;width:1186px;height:227px">
           <div class="bhead">
             <div><div class="bname">Reasoning</div><div class="bsub">System level · derivation and planning — outside the LPU; language is a resource it uses</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -707,7 +716,7 @@
         </div>
 
         <!-- ============ INTAKE & HARBORING (System edge) ============ -->
-        <div class="box frame sec" data-id="intake" style="left:222px;top:1702px;width:1186px;height:200px">
+        <div class="box frame sec" data-id="intake" style="left:1472px;top:973px;width:1186px;height:196px">
           <div class="bhead">
             <div><div class="bname">Intake &amp; Harboring</div><div class="bsub">System edge · one doorway: the Router governs what may be asked for, the Harborer what may be kept</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -722,7 +731,7 @@
         </div>
 
         <!-- ============ SURFACES + SYSTEM UNPLACED ============ -->
-        <div class="box frame sec" data-id="surfaces" style="left:222px;top:1916px;width:760px;height:140px">
+        <div class="box frame sec" data-id="surfaces" style="left:1472px;top:1189px;width:760px;height:166px">
           <div class="bhead">
             <div><div class="bname">Surfaces</div><div class="bsub">Where output leaves and is seen</div></div>
             <span class="btag" style="color:var(--muted)">Surfaces</span>
@@ -733,13 +742,13 @@
             <div class="sec-item"><span class="aw-type">Surface</span><span class="aw-name">Dashboard · Trace view</span><span class="aw-note">/dashboard/ and the trace, as surfaces</span></div>
           </div>
         </div>
-        <div class="box placeholder" data-id="unplaced-sys" style="left:998px;top:1916px;width:410px;height:140px">
+        <div class="box placeholder" data-id="unplaced-sys" style="left:2256px;top:1189px;width:410px;height:114px">
           <div class="bhead"><div><div class="bname">Unplaced</div><div class="bsub">System level</div></div><span class="btag" style="color:var(--muted)">—</span></div>
           <div class="bbody">Further units — territory not yet categorised. A place held, not a thing built. To be settled.</div>
         </div>
 
         <!-- ============ ONTOLOGY CORE (System level) — container holding the EmotionDesireUnit ============ -->
-        <div class="box frame sec" data-id="ontology-core" style="left:222px;top:2072px;width:1186px;height:400px">
+        <div class="box frame sec" data-id="ontology-core" style="left:222px;top:1048px;width:1186px;height:785px">
           <div class="bhead">
             <div><div class="bname">OntologyCore</div><div class="bsub">System level · container · the system's ontological heart — what the world is made of and how its kinds correspond</div></div>
             <span class="btag" style="color:var(--muted)">Container</span>
@@ -747,7 +756,7 @@
         </div>
 
         <!-- Ontology Knowledge Unit (inside OntologyCore — first child; holds the Correspondence graph and the Classification table) -->
-        <div class="box unit t-unit frame sec" data-id="ontology-knowledge-unit" style="left:252px;top:2140px;width:1126px;height:176px">
+        <div class="box unit t-unit frame sec" data-id="ontology-knowledge-unit" style="left:252px;top:1116px;width:1126px;height:415px">
           <div class="bhead">
             <div><div class="bname">Ontology Knowledge Unit</div><div class="bsub">Inside OntologyCore · the OntologyCore's knowledge unit — contains the correspondence graph and the classification table</div></div>
             <span class="btag" style="color:var(--muted)">Unit</span>
@@ -781,7 +790,7 @@
         </div>
 
         <!-- EmotionDesireUnit (inside OntologyCore) -->
-        <div class="box unit t-unit" data-id="emotion-desire" style="left:252px;top:2330px;width:410px;height:132px">
+        <div class="box unit t-unit" data-id="emotion-desire" style="left:252px;top:1547px;width:410px;height:123px">
           <div class="bhead">
             <div><div class="bname">Emotion<wbr>Desire<wbr>Unit</div><div class="bsub">Inside OntologyCore · medium-neutral authority on emotion and desire</div></div>
             <span class="btag" style="color:var(--muted)">Unit</span>
@@ -792,7 +801,7 @@
         </div>
 
         <!-- SenseUnit (inside OntologyCore — beside the EmotionDesireUnit) -->
-        <div class="box unit t-unit" data-id="sense-unit" style="left:678px;top:2330px;width:700px;height:132px">
+        <div class="box unit t-unit" data-id="sense-unit" style="left:678px;top:1547px;width:700px;height:132px">
           <div class="bhead">
             <div><div class="bname">SenseUnit</div><div class="bsub">Inside OntologyCore · medium-neutral authority on the human senses</div></div>
             <span class="btag" style="color:var(--muted)">Unit</span>
@@ -803,7 +812,7 @@
         </div>
 
         <!-- NormalcyUnit (inside OntologyCore — after the SenseUnit, in its own row) -->
-        <div class="box unit t-unit" data-id="normalcy-unit" style="left:252px;top:2476px;width:1126px;height:132px">
+        <div class="box unit t-unit" data-id="normalcy-unit" style="left:252px;top:1695px;width:1126px;height:114px">
           <div class="bhead">
             <div><div class="bname">NormalcyUnit</div><div class="bsub">Inside OntologyCore · medium-neutral authority on the normal shape of a communication</div></div>
             <span class="btag" style="color:var(--muted)">Unit</span>
@@ -814,7 +823,7 @@
         </div>
 
                 <!-- ============ LPU ============ -->
-        <div class="box lpu frame" data-id="lpu" style="left:222px;top:118px;width:776px;height:1042px">
+        <div class="box lpu frame" data-id="lpu" style="left:222px;top:118px;width:1226px;height:902px">
           <div class="bhead">
             <div><div class="bname">LPU — Language Processing Unit</div><div class="bsub">Inside the System · contains the Parser and the Generator, and one held place — Derivation, Planner and the Lexicon are not in here: they sit at System level and use the LPU by cord</div></div>
             <span class="btag" style="color:var(--teal)">Unit · container</span>
@@ -824,7 +833,7 @@
         </div>
 
         <!-- ============ PARSER UNIT ============ -->
-        <div class="box unit parser frame t-unit" data-id="parser" style="left:252px;top:196px;width:470px;height:468px">
+        <div class="box unit parser frame t-unit" data-id="parser" style="left:252px;top:196px;width:470px;height:471px">
           <div class="bhead">
             <div><div class="bname">Parser Unit</div><div class="bsub">Inside the LPU · sentence in → meaning graph out · four submodules inside</div></div>
             <span class="btag" style="color:var(--accent)">Unit</span>
@@ -858,7 +867,7 @@
         </div>
 
         <!-- SemanticAssessment (sibling of Parser, inside LPU — between Parser and Generator) -->
-        <div class="box unit t-unit" data-id="semantic-assessment" style="left:752px;top:196px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="semantic-assessment" style="left:738px;top:196px;width:216px;height:216px">
           <div class="bhead">
             <div><div class="bname">Semantic<wbr>Assessment</div><div class="bsub">Inside the LPU · between Parser and Generator</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -869,7 +878,7 @@
         </div>
 
         <!-- LanguageEmotionDesireUnit (inside LPU — the LPU's bridge to the EmotionDesireUnit) -->
-        <div class="box unit t-unit" data-id="language-emotion-desire-unit" style="left:752px;top:432px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="language-emotion-desire-unit" style="left:970px;top:196px;width:216px;height:247px">
           <div class="bhead">
             <div><div class="bname">Language<wbr>Emotion<wbr>Desire<wbr>Unit</div><div class="bsub">Inside the LPU · bridge to the EmotionDesireUnit</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -880,7 +889,7 @@
         </div>
 
         <!-- Senses-Scening Unit (inside LPU — produces the senses/scene part of a semantic object; uses the SenseUnit) -->
-        <div class="box unit t-unit" data-id="senses-scening-unit" style="left:752px;top:668px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="senses-scening-unit" style="left:1202px;top:196px;width:216px;height:268px">
           <div class="bhead">
             <div><div class="bname">Senses-<wbr>Scening<wbr>Unit</div><div class="bsub">Inside the LPU · senses &amp; scene of a semantic object</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -891,7 +900,7 @@
         </div>
 
         <!-- NormalcyAssessment (inside LPU — the LPU's bridge to the NormalcyUnit) -->
-        <div class="box unit t-unit" data-id="normalcy-assessment" style="left:752px;top:904px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="normalcy-assessment" style="left:738px;top:484px;width:216px;height:305px">
           <div class="bhead">
             <div><div class="bname">Normalcy<wbr>Assessment</div><div class="bsub">Inside the LPU · bridge to the NormalcyUnit</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -902,7 +911,7 @@
         </div>
 
         <!-- QuantificationLanguageUnit (inside LPU — the LPU's bridge to the QuantificationUnit) -->
-        <div class="box unit t-unit" data-id="quantification-language-unit" style="left:752px;top:1140px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="quantification-language-unit" style="left:970px;top:484px;width:216px;height:324px">
           <div class="bhead">
             <div><div class="bname">Quantification<wbr>Language<wbr>Unit</div><div class="bsub">Inside the LPU · bridge to the QuantificationUnit</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -913,7 +922,7 @@
         </div>
 
         <!-- Generator (sibling of Parser, inside LPU) -->
-        <div class="box unit t-unit" data-id="generator" style="left:752px;top:1376px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="generator" style="left:1202px;top:484px;width:216px;height:216px">
           <div class="bhead">
             <div><div class="bname">Generator Unit</div><div class="bsub">Inside the LPU · sibling of the Parser</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -923,7 +932,7 @@
           <div class="port out" data-port>OUT</div>
         </div>
 
-<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:1612px;width:716px;height:168px">
+<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:828px;width:1166px;height:168px">
           <div class="bhead"><div><div class="bname">Unplaced · Unit</div><div class="bsub">Inside the LPU</div></div><span class="btag" style="color:var(--muted)">—</span></div>
           <div class="bbody">Other aspect units of the LPU, beyond the Parser and the Generator — a place held, not a thing built. To be settled.</div>
         </div>
@@ -1067,7 +1076,7 @@
     var k=clampK(Math.min((vw-pad*2)/r.w,(vh-pad*2)/r.h));
     view.k=k; view.x=(vw-r.w*k)/2-r.x*k; view.y=(vh-r.h*k)/2-r.y*k; apply();
   }
-  function fitSystem(){ var r=(typeof RECTS!=='undefined'&&RECTS.system)?RECTS.system:{x:190,y:56,w:1250,h:2030}; fitRect(r,30); }
+  function fitSystem(){ var r=(typeof RECTS!=='undefined'&&RECTS.system)?RECTS.system:{x:190,y:90,w:2924,h:1773}; fitRect(r,30); }
   /* ===== node registry — mirrors ai-system/system-map.ts =====
      Every node's id is its schematic path; percent is % completed to goal — set by us, assessed by the project, not measured or computed.
      State is read off the percent: 0 placeholder, 1–99 partial, 100 functional.
@@ -1101,15 +1110,15 @@
      renderer re-orders each container's items to match `order` below. */
   var SYSTEM_LAYOUT={
     rects:{
-    system:{x:190,y:56,w:1250,h:2280}, lpu:{x:222,y:118,w:776,h:1042}, parser:{x:252,y:196,w:470,h:468},
-    awareness:{x:1030,y:118,w:378,h:510}, 'semantic-assessment':{x:752,y:196,w:216,h:216}, 'language-emotion-desire-unit':{x:752,y:432,w:216,h:216}, 'senses-scening-unit':{x:752,y:668,w:216,h:216}, 'normalcy-assessment':{x:752,y:904,w:216,h:216}, 'quantification-language-unit':{x:752,y:1140,w:216,h:216}, generator:{x:752,y:1376,w:216,h:216},
-    'ontology-core':{x:222,y:2072,w:1186,h:400}, 'ontology-knowledge-unit':{x:252,y:2140,w:1126,h:176}, 'quantification-unit':{x:264,y:2307,w:1102,h:252}, 'units-measurement-unit':{x:276,y:2432,w:1078,h:118}, 'emotion-desire':{x:252,y:2330,w:410,h:132}, 'sense-unit':{x:678,y:2330,w:700,h:132}, 'normalcy-unit':{x:252,y:2476,w:1126,h:132}, 'open-unknowns':{x:1040,y:895,w:358,h:62},
-    planner:{x:640,y:1514,w:330,h:64}, derivation:{x:240,y:1514,w:330,h:64},
-    lexicon:{x:900,y:1270,w:270,h:120}, 'variant-graph':{x:1118,y:1270,w:270,h:120}, correspondence:{x:262,y:2201,w:549,h:95}, classification:{x:818,y:2201,w:549,h:95},
-    session:{x:1030,y:652,w:378,h:196}, router:{x:240,y:1758,w:370,h:120}, harborer:{x:1020,y:1758,w:370,h:120}, intake:{x:222,y:1702,w:1186,h:200},
-    gate:{x:640,y:1582,w:330,h:56}, tables:{x:240,y:1582,w:330,h:56}, clock:{x:660,y:40,w:170,h:34}, config:{x:902,y:34,w:520,h:44}, source:{x:102,y:283,w:220,h:34}, composer:{x:1048,y:540,w:342,h:64},
-    verbalizer:{x:1030,y:862,w:378,h:106}, coherence:{x:1030,y:982,w:378,h:216}, 'coherence-demand':{x:1042,y:1062,w:172,h:118}, 'coherence-analysis':{x:1224,y:1062,w:172,h:118}, knowledge:{x:222,y:1214,w:1186,h:230}, reasoning:{x:222,y:1458,w:1186,h:230},
-    surfaces:{x:222,y:1916,w:760,h:140}, 'unplaced-lpu':{x:252,y:1612,w:716,h:168}, 'unplaced-sys':{x:998,y:1916,w:410,h:140},
+    system:{x:190,y:90,w:2924,h:1773}, lpu:{x:222,y:118,w:1226,h:902}, parser:{x:252,y:196,w:470,h:471},
+    awareness:{x:2706,y:118,w:378,h:909}, 'semantic-assessment':{x:738,y:196,w:216,h:216}, 'language-emotion-desire-unit':{x:970,y:196,w:216,h:247}, 'senses-scening-unit':{x:1202,y:196,w:216,h:268}, 'normalcy-assessment':{x:738,y:484,w:216,h:305}, 'quantification-language-unit':{x:970,y:484,w:216,h:324}, generator:{x:1202,y:484,w:216,h:216},
+    'ontology-core':{x:222,y:1048,w:1186,h:785}, 'ontology-knowledge-unit':{x:252,y:1116,w:1126,h:415}, 'quantification-unit':{x:264,y:1283,w:1098,h:239}, 'units-measurement-unit':{x:276,y:1393,w:1070,h:114}, 'emotion-desire':{x:252,y:1547,w:410,h:123}, 'sense-unit':{x:678,y:1547,w:700,h:132}, 'normalcy-unit':{x:252,y:1695,w:1126,h:114}, 'open-unknowns':{x:1482,y:808,w:358,h:62},
+    planner:{x:1890,y:374,w:330,h:64}, derivation:{x:1490,y:374,w:330,h:64},
+    lexicon:{x:2150,y:174,w:270,h:120}, 'variant-graph':{x:2368,y:174,w:270,h:120}, correspondence:{x:262,y:1177,w:549,h:95}, classification:{x:818,y:1177,w:549,h:95},
+    session:{x:1472,y:565,w:378,h:388}, router:{x:1490,y:1029,w:370,h:120}, harborer:{x:2270,y:1029,w:370,h:120}, intake:{x:1472,y:973,w:1186,h:196},
+    gate:{x:1890,y:442,w:330,h:56}, tables:{x:1490,y:442,w:330,h:56}, clock:{x:2402,y:40,w:170,h:34}, config:{x:2590,y:34,w:520,h:44}, source:{x:30,y:386,w:220,h:34}, composer:{x:2724,y:540,w:342,h:64},
+    verbalizer:{x:2706,y:1047,w:378,h:141}, coherence:{x:2706,y:1208,w:378,h:263}, 'coherence-demand':{x:2718,y:1288,w:172,h:118}, 'coherence-analysis':{x:2900,y:1288,w:172,h:118}, knowledge:{x:1472,y:118,w:1186,h:180}, reasoning:{x:1472,y:318,w:1186,h:227},
+    surfaces:{x:1472,y:1189,w:760,h:166}, 'unplaced-lpu':{x:252,y:828,w:1166,h:168}, 'unplaced-sys':{x:2256,y:1189,w:410,h:114},
     token:{x:264,y:262,w:218,h:118}, sense:{x:490,y:262,w:218,h:118}, valency:{x:264,y:388,w:218,h:118}, aspect:{x:490,y:388,w:218,h:118}
     },
     order:{
@@ -1281,6 +1290,7 @@
     if(!drag.moved){
       if(Math.sqrt(dx*dx+dy*dy)<5) return;
       drag.moved=true; viewport.classList.add('dragging');
+      userTakeCamera();
       try{ viewport.setPointerCapture(drag.id); }catch(err){}
     }
     view.x=drag.vx+dx; view.y=drag.vy+dy; apply();
@@ -1304,6 +1314,7 @@
   },true);
   viewport.addEventListener('wheel',function(e){
     e.preventDefault();
+    userTakeCamera();
     var r=viewport.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
     var k2=clampK(view.k*(e.deltaY<0?1.12:0.89));
     view.x=mx-(mx-view.x)*(k2/view.k); view.y=my-(my-view.y)*(k2/view.k); view.k=k2; apply();
@@ -1465,18 +1476,18 @@
      Sessions (anger, normalcy, apples, owed) must be followed in order: a later turn said
      first is treated as unrecorded. */
   var NODE_POS={
-    'person':[118,300],
+    'person':[104,492],
     'lpu/parser/token':[373,321],'lpu/parser/sense':[599,321],'lpu/parser/valency':[373,447],'lpu/parser/aspect-and-forms':[599,447],
     'lpu/parser':[712,430],
-    'session-and-situation':[1219,750],'awareness':[1219,268],
-    'reasoning/derivation':[422,1590],'reasoning/pricing':[1190,1546],'reasoning/planner':[792,1590],
-    'lpu/semantic-assessment':[860,303],
-    'lpu/senses-scening-unit':[860,776],
-    'lpu/normalcy-assessment':[860,1012],
-    'lpu/quantification-language-unit':[860,1248],
-    'lpu/generator':[860,1484],'verbalizer':[1219,915],
-    'ontology-core/ontology-knowledge-unit/correspondence-graph':[536,2248],
-    'coherence/coherence-analysis':[1310,1121]
+    'session-and-situation':[1661,759],'awareness':[2895,268],
+    'reasoning/derivation':[1672,450],'reasoning/pricing':[2440,406],'reasoning/planner':[2042,450],
+    'lpu/semantic-assessment':[846,304],
+    'lpu/senses-scening-unit':[1310,330],
+    'lpu/normalcy-assessment':[846,636],
+    'lpu/quantification-language-unit':[1078,646],
+    'lpu/generator':[1310,592],'verbalizer':[2895,1100],
+    'ontology-core/ontology-knowledge-unit/correspondence-graph':[536,1224],
+    'coherence/coherence-analysis':[2986,1347]
   };
   var NODE_BOX={
     'person':null,'lpu/parser/token':'token','lpu/parser/sense':'sense','lpu/parser/valency':'valency','lpu/parser/aspect-and-forms':'aspect',
@@ -1588,8 +1599,8 @@
     stopPopLoc.textContent=turn.live?('Walk stopped · '+step.loc):((turn.stop==='parse'?'Walk stopped — parse failure · ':'Walk stopped — decline · ')+step.loc);
     stopPopBody.textContent=turn.popText||turn.reply;
     var x=step.at[0]+20, y=step.at[1]+20;
-    if(x+252>1620) x=step.at[0]-272;
-    if(y+170>2142) y=step.at[1]-180;
+    if(x+252>3380) x=step.at[0]-272;
+    if(y+170>1942) y=step.at[1]-180;
     stopPop.style.left=Math.max(8,x)+'px'; stopPop.style.top=Math.max(8,y)+'px';
     stopPop.hidden=false;
   }
@@ -1731,9 +1742,100 @@
       if(j===i) li.scrollIntoView({block:'nearest'});
     });
   }
+  /* ----- camera follow + walk execution mode (Run / Step by step) -----
+     The camera lives in this walk layer, so recorded walks and live
+     walks (the sibling engine) share it. On every segment the view
+     animates concurrently with the ball — same duration, ease-in-out
+     cubic — to the destination step's framing; at walk start it moves
+     to step 0's framing, and at walk end it returns to the view saved
+     when the walk began. A user drag or wheel grab holds the camera
+     until the next segment begins. In Step by step mode the walk
+     waits at each step for the Step button or Space / ArrowRight. */
+  var walkMode='run', stepWaiting=false, camAnim=null, camHold=false, returnView=null;
+  var stepBtn=document.getElementById('stepBtn');
+  var walkRunBtn=document.getElementById('walkRunBtn'), walkStepBtn=document.getElementById('walkStepBtn');
+  function easeInOutCubic(p){ return p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2; }
+  function camReducedMotion(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function cancelCamAnim(){ if(camAnim){ cancelAnimationFrame(camAnim.raf); camAnim=null; } }
+  function frameTargetForStep(step){
+    var rect=null;
+    if(step.box && RECTS[step.box]) rect=RECTS[step.box];
+    else if(step.nid==='person') rect={x:step.at[0]-170,y:step.at[1]-130,w:340,h:260};
+    else rect={x:step.at[0]-150,y:step.at[1]-110,w:300,h:220};
+    var vw=viewport.clientWidth, vh=viewport.clientHeight, sr=RECTS.system;
+    var kFit=clampK(Math.min((vw-60)/sr.w,(vh-60)/sr.h));
+    var kT=clampK(Math.min((vw-160)/rect.w,(vh-160)/rect.h));
+    kT=Math.min(kT,1.25); kT=Math.max(kT,kFit);
+    /* zoom hysteresis: a small zoom change becomes a pan at the
+       current zoom instead, so the view never pumps between steps */
+    if(Math.abs(kT-view.k)<=0.07) kT=view.k;
+    var cx=rect.x+rect.w/2, cy=rect.y+rect.h/2;
+    return {x:vw/2-cx*kT, y:vh/2-cy*kT, k:kT};
+  }
+  function animateCameraTo(target,dur){
+    cancelCamAnim();
+    if(camHold) return;
+    if(camReducedMotion() || !(dur>0)){ view.x=target.x; view.y=target.y; view.k=target.k; apply(); return; }
+    var from={x:view.x,y:view.y,k:view.k}, t0=null;
+    var anim={raf:0}; camAnim=anim;
+    function frame(ts){
+      if(camAnim!==anim) return;
+      if(!t0) t0=ts;
+      var p=Math.min(1,(ts-t0)/dur);
+      if(p>=1){ view.x=target.x; view.y=target.y; view.k=target.k; }
+      else { var e=easeInOutCubic(p); view.x=from.x+(target.x-from.x)*e; view.y=from.y+(target.y-from.y)*e; view.k=from.k+(target.k-from.k)*e; }
+      apply();
+      if(p<1) anim.raf=requestAnimationFrame(frame);
+      else if(camAnim===anim) camAnim=null;
+    }
+    anim.raf=requestAnimationFrame(frame);
+  }
+  /* the user's hand wins: a drag or wheel grab cancels the in-flight
+     camera move at once and holds the camera until the next segment */
+  function userTakeCamera(){ cancelCamAnim(); if(walking) camHold=true; }
+  function afterStep(){
+    if(!walking) return;
+    if(walkMode==='step'){ stepWaiting=true; if(stepBtn) stepBtn.disabled=false; }
+    else segTimer=setTimeout(walkNext,1050);
+  }
+  function advanceStep(){
+    if(!walking || !stepWaiting) return;
+    stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
+    walkNext();
+  }
+  function setWalkMode(mode){
+    walkMode=mode;
+    var isRun=(mode==='run');
+    if(walkRunBtn){ walkRunBtn.classList.toggle('on',isRun); walkRunBtn.setAttribute('aria-pressed',String(isRun)); }
+    if(walkStepBtn){ walkStepBtn.classList.toggle('on',!isRun); walkStepBtn.setAttribute('aria-pressed',String(!isRun)); }
+    if(!walking) return;
+    if(isRun){
+      /* resume the automatic walk from the step it is waiting at */
+      if(stepWaiting){ stepWaiting=false; if(stepBtn) stepBtn.disabled=true; segTimer=setTimeout(walkNext,350); }
+    } else {
+      /* an in-flight segment still lands; its completion reads the
+         current mode in afterStep() and then waits */
+      clearTimeout(segTimer);
+    }
+  }
+  if(walkRunBtn) walkRunBtn.addEventListener('click',function(){ setWalkMode('run'); });
+  if(walkStepBtn) walkStepBtn.addEventListener('click',function(){ setWalkMode('step'); });
+  if(stepBtn) stepBtn.addEventListener('click',function(){ advanceStep(); });
+  document.addEventListener('keydown',function(e){
+    if(!walking || !stepWaiting) return;
+    if(e.key!==' ' && e.key!=='ArrowRight') return;
+    var t=e.target;
+    if(t && (t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.tagName==='SELECT' || t.tagName==='BUTTON' || t.isContentEditable)) return;
+    e.preventDefault(); advanceStep();
+  });
   function animateTo(i,done){
     var from=walkSteps[cur].at, to=walkSteps[i].at, t0=null;
     var dur=Math.max(420, Math.hypot(to[0]-from[0],to[1]-from[1])*1.15);
+    /* the camera travels with the ball over the same duration,
+       starting fresh from wherever the view currently is — a user
+       grab holds the camera only until this segment begins */
+    camHold=false;
+    animateCameraTo(frameTargetForStep(walkSteps[i]),dur);
     function frame(ts){
       if(!walking) return;
       if(!t0) t0=ts;
@@ -1746,15 +1848,20 @@
   }
   function walkNext(){
     if(!walking) return;
+    stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
     if(cur>=walkSteps.length-1){ finishWalk(); return; }
-    animateTo(cur+1,function(){ if(walking) segTimer=setTimeout(walkNext,1050); });
+    animateTo(cur+1,function(){ if(walking) afterStep(); });
   }
   function setFormEnabled(on){
     chatInput.disabled=!on; sayBtn.disabled=!on;
     chipGroups.querySelectorAll('.chip').forEach(function(c){ c.disabled=!on; });
   }
   function finishWalk(){
-    walking=false; setFormEnabled(true);
+    walking=false; stepWaiting=false; if(stepBtn) stepBtn.disabled=true; setFormEnabled(true);
+    /* the walk is over — the camera eases back to the view saved when
+       the walk began (unless the user's hand is holding it) */
+    var rv=returnView; returnView=null;
+    if(rv) animateCameraTo(rv,800); else fitSystem();
     var turn=currentTurn, lastStep=walkSteps[walkSteps.length-1];
     /* a stopped turn — and only a stopped turn — turns red: the stopping
        node (still lit from the final step), the ports on it, and the
@@ -1780,12 +1887,19 @@
     }
     refreshChips();
   }
-  function cancelWalk(notice){
+  function cancelWalk(notice,skipCamReturn){
     if(raf) cancelAnimationFrame(raf);
     clearTimeout(segTimer);
+    stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
+    var wasWalking=walking;
     if(walking && pendingSys) setSysNotice(pendingSys,notice);
     walking=false; pendingSys=null; currentTurn=null;
     setFormEnabled(true);
+    if(!skipCamReturn){
+      cancelCamAnim();
+      var rv=returnView; returnView=null;
+      if(wasWalking){ if(rv) animateCameraTo(rv,800); else fitSystem(); }
+    }
   }
   /* ----- live say — the engine answers, the page walks its path ----- */
   function liveSay(utter){
@@ -1814,9 +1928,16 @@
         return;
       }
       buildLog();
+      /* walk start: cancel any in-flight camera return, save the
+         current view as the return view, and move the camera to
+         step 0's framing as the walk begins */
+      cancelCamAnim();
+      returnView={x:view.x,y:view.y,k:view.k};
+      camHold=false; stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
       walking=true; setFormEnabled(false);
       cur=-1; showStep(0);
-      segTimer=setTimeout(walkNext,1050);
+      animateCameraTo(frameTargetForStep(walkSteps[0]),750);
+      afterStep();
     }
     if(result && typeof result.then==='function'){
       result.then(begin,function(){ setSysNotice(sys,'The live engine could not answer that, so nothing was walked.'); });
@@ -1849,9 +1970,16 @@
     replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— walking… —';
     walkSteps=buildWalkSteps(turn);
     buildLog();
+    /* walk start: cancel any in-flight camera return, save the
+       current view as the return view, and move the camera to
+       step 0's framing as the walk begins */
+    cancelCamAnim();
+    returnView={x:view.x,y:view.y,k:view.k};
+    camHold=false; stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
     walking=true; setFormEnabled(false);
     cur=-1; showStep(0);
-    segTimer=setTimeout(walkNext,1050);
+    animateCameraTo(frameTargetForStep(walkSteps[0]),750);
+    afterStep();
   }
   if(chatForm) chatForm.addEventListener('submit',function(e){ e.preventDefault(); say(chatInput.value); chatInput.value=''; });
   function resetConversation(){
@@ -1952,7 +2080,11 @@
     /* 4 — a chat walk in progress is cancelled; recorded paths are
        re-filtered against visible nodes on the next Say */
     hideStopPop(); hideInfoPop();
-    cancelWalk('Walk interrupted — the view changed. Say it again to walk it in this view.');
+    /* the view toggle's own refit wins: any camera animation is
+       cancelled and the saved return view dropped before the walk is
+       cancelled, so no camera return runs */
+    cancelCamAnim(); returnView=null;
+    cancelWalk('Walk interrupted — the view changed. Say it again to walk it in this view.',true);
     packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
     logEl.innerHTML='';
     /* if the inspected node is now hidden, fall back to the System */
@@ -1994,7 +2126,7 @@
      focus zoom and the chat walks stay registered with the drawing. */
   var GEO=null;
   function snapshotGeo(){
-    GEO={els:[],boxH:[],paths:[],circles:[],rects:JSON.parse(JSON.stringify(SYSTEM_LAYOUT.rects)),nodepos:JSON.parse(JSON.stringify(NODE_POS)),worldH:2150};
+    GEO={els:[],boxH:[],paths:[],circles:[],rects:JSON.parse(JSON.stringify(SYSTEM_LAYOUT.rects)),nodepos:JSON.parse(JSON.stringify(NODE_POS)),worldH:1950};
     document.querySelectorAll('#world > *').forEach(function(el){
       if(el.id==='packet'||el.id==='stopPop'||el.id==='infoPop'||el.tagName==='svg') return;
       if(el.style.top||el.style.left) GEO.els.push({el:el,top:parseFloat(el.style.top)||0});
@@ -2011,7 +2143,7 @@
      ('lpu') — its growth is otherwise absorbed by the LPU frame. */
   function shiftForY(y,deltas,scope){ var s=0; for(var i=0;i<deltas.length;i++){ if(deltas[i].scope===scope && y>=deltas[i].bottom-0.5) s+=deltas[i].delta; } return s; }
   var LPU_KIDS=['parser','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','normalcy-assessment','quantification-language-unit','generator','unplaced-lpu'];
-  function scopeForPoint(x,y){ return (x>=222&&x<=998&&y>=118&&y<=968)?'lpu':'all'; }
+  function scopeForPoint(x,y){ return (x>=222&&x<=1448&&y>=118&&y<=1020)?'lpu':'all'; }
   function layoutContainers(){
     if(!GEO) snapshotGeo();
     var i,g;
@@ -2022,7 +2154,7 @@
     for(i=0;i<GEO.circles.length;i++) GEO.circles[i].el.setAttribute('cy',GEO.circles[i].cy);
     world.style.height=GEO.worldH+'px';
     var svg=document.querySelector('#world svg.wires');
-    if(svg){ svg.style.height=GEO.worldH+'px'; svg.setAttribute('viewBox','0 0 1640 '+GEO.worldH); }
+    if(svg){ svg.style.height=GEO.worldH+'px'; svg.setAttribute('viewBox','0 0 3400 '+GEO.worldH); }
     Object.keys(GEO.rects).forEach(function(k){ RECTS[k]={x:GEO.rects[k].x,y:GEO.rects[k].y,w:GEO.rects[k].w,h:GEO.rects[k].h}; });
     Object.keys(GEO.nodepos).forEach(function(k){ NODE_POS[k]=GEO.nodepos[k].slice(); });
 
@@ -2095,7 +2227,7 @@
     /* the world (and its wire layer) grows with the System frame */
     var worldH=(sysTop!==null?sysTop:56)+sysNewH+64;
     world.style.height=worldH+'px';
-    if(svg){ svg.style.height=worldH+'px'; svg.setAttribute('viewBox','0 0 1640 '+worldH); }
+    if(svg){ svg.style.height=worldH+'px'; svg.setAttribute('viewBox','0 0 3400 '+worldH); }
   }
 
   window.addEventListener('resize',function(){ /* keep transform; user can refit */ });
