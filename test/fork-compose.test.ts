@@ -187,34 +187,64 @@ test("compose: conclusions over differing subjects are unrealisable, named — n
 });
 
 test("turn wiring: a season question composes its profile set, both orderings in the trace", () => {
+  // RE-PIN (the Normalcy arc, 2026-11-17): this test's scenario
+  // was "Is winter cold?" — the asked quality is winter's
+  // CLASSIFYING quality, so the definitional answer (Part 3b)
+  // now preempts composition for it; that route is pinned in
+  // the next test. The composing scenario here is the
+  // non-classifying season question ("Is summer hot?" — 'hot'
+  // is a synonym of the profile's filed 'warm', not the filed
+  // name, so the Classification does not settle it by
+  // definition and the composition runs).
   const s = newSession();
-  const r = processTurn(s, "Is winter cold?");
-  assert.equal(r.reply, "Winter is most fully cold, and it is most fully dark.");
+  const r = processTurn(s, "Is summer hot?");
+  assert.equal(r.reply, "Summer is most fully hot, and it is most fully bright.");
   assert.equal(r.trace.wordingNotDerived, false);
   assert.ok(r.trace.replyGraph, "the trace carries the composed reply graph");
   const comp = r.trace.composition;
   assert.ok(comp, "the trace carries the composition record");
   assert.equal(comp!.activeOrder, "support");
-  assert.deepEqual(comp!.supportOrder, ["cold", "dark"]);
-  assert.deepEqual(comp!.relationOrder, ["cold", "dark"], "no earlier state stands in the record — the orders coincide, and both are recorded");
+  assert.deepEqual(comp!.supportOrder, ["hot", "bright"]);
+  assert.deepEqual(comp!.relationOrder, ["hot", "bright"], "no earlier state stands in the record — the orders coincide, and both are recorded");
   assert.deepEqual(
     comp!.members.map((m) => [m.quality, m.pricing.level]),
     [
-      ["cold", "plain"],
-      ["dark", "plain"],
+      ["hot", "plain"],
+      ["bright", "plain"],
     ],
   );
-  assert.match(comp!.members[1].derivationPath, /winter —ELEMENT_OF→ Water —POLARITY_OF→ Yin —HAS_QUALITY→ dark/);
+  assert.match(comp!.members[1].derivationPath, /summer —ELEMENT_OF→ Fire —POLARITY_OF→ Yang —HAS_QUALITY→ bright/);
   assert.deepEqual(comp!.dropped, []);
   const g = JSON.parse(r.trace.replyGraph!);
   assert.equal(g.edges.filter((e: { relation: string }) => e.relation === "links")?.[0]?.marker, "and");
 });
 
-test("turn wiring: the asked quality leads the set when it is the light aspect's", () => {
+test("turn wiring: a classifying season question is answered definitionally — composition does not apply", () => {
+  // The Normalcy arc (Part 3b): "Is winter cold?" asks whether
+  // a kind has its classifying quality; NormalcyAssessment's
+  // obviousness flag carries the determination and the reply
+  // cites the definition. The flag is internal — the reply
+  // carries no verdict about oddity.
+  const s = newSession();
+  const r = processTurn(s, "Is winter cold?");
+  assert.equal(r.reply, "That's its definition: winter is cold.");
+  assert.equal(r.trace.composition, undefined, "no composition stands behind a definitional answer");
+  assert.equal(r.trace.definitionalAnswer?.subject, "winter");
+  assert.equal(r.trace.definitionalAnswer?.quality, "cold");
+  assert.deepEqual(r.trace.normalcy?.flags.map((f) => f.kind), ["obviousness"]);
+});
+
+test("turn wiring: the light aspect's classifying quality is answered definitionally too", () => {
+  // RE-PIN (the Normalcy arc): was the composition ordering
+  // pin for "Is autumn dark?" — 'dark' is autumn's classifying
+  // quality for the light aspect (its profile is yin-dominant
+  // there), so the definitional answer preempts composition
+  // for this question as for winter/cold.
   const s = newSession();
   const r = processTurn(s, "Is autumn dark?");
-  assert.equal(r.reply, "Autumn is fully dark, and it is fully cold.");
-  assert.deepEqual(r.trace.composition?.supportOrder, ["dark", "cold"]);
+  assert.equal(r.reply, "That's its definition: autumn is dark.");
+  assert.equal(r.trace.composition, undefined);
+  assert.equal(r.trace.definitionalAnswer?.quality, "dark");
 });
 
 test("turn wiring: a why-question keeps the single-conclusion causal path — composition does not apply", () => {

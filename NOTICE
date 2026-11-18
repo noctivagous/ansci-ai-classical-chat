@@ -179,6 +179,64 @@ variants, the imperial quart and fluid ounce, the acre, pascal and
 psi). The shipped artefact of the conversion is data/qudt/; the
 cross-check record stands in data/qudt/manifest.json.
 
+wordfreq frequency table (data/wordfreq/, src/wordfreq.ts)
+----------------------------------------------------------
+The word-frequency table in this repository is derived from
+
+  wordfreq — https://github.com/rspeer/wordfreq
+  Robyn Speer and contributors
+
+converted by scripts/import-wordfreq.py from the installed wordfreq
+package (version 3.1.1): the English "best" word list, trimmed to
+words at Zipf frequency 2.0 or above (95,641 words), each word with
+its Zipf value. The wordfreq CODE is under the Apache License 2.0
+(version 3.x; earlier releases MIT). The frequency DATA files are
+redistributable under the Creative Commons Attribution-ShareAlike
+4.0 International License (CC BY-SA 4.0), per the wordfreq
+documentation: https://github.com/rspeer/wordfreq — the data
+redistributes the wordfreq contributors' work and data from
+multiple sources, including the SUBTLEX frequency lists (Marc
+Brysbaert and colleagues), whose credit the wordfreq documentation
+asks redistributors to carry; it is carried here. ShareAlike
+applies to the table data: redistributions of the table, modified
+or not, carry CC BY-SA 4.0.
+
+The table is descriptive knowledge about words' currency, read by
+the NormalcyUnit (src/fork/normalcy-unit.ts) as labelled facts;
+no value in it sets a price, a threshold, or a reply anywhere in
+the system.
+
+The Glasgow Norms (data/glasgow/, src/glasgow.ts)
+------------------------------------------------
+The Glasgow Norms table in this repository is the dataset of
+
+  Scott, G. G., Keitel, A., Becirspahic, M., Yao, B., & Sereno,
+  S. C. (2019). The Glasgow Norms: A repository of semantic,
+  lexical and phonological norms for 5,553 English words.
+  Behavior Research Methods, 51, 1258–1270.
+  https://doi.org/10.3758/s13428-018-1099-3
+
+converted by scripts/import-glasgow.py from the article's
+supplementary material (ESM 2), distributed with the article
+under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0): https://creativecommons.org/licenses/by/4.0/ — the
+article is Open Access under CC BY 4.0, and the norms are its
+supplementary material. The WHOLE table is imported: 5,553 words
+× nine dimensions (arousal, valence, dominance, concreteness,
+imageability, familiarity, age of acquisition, semantic size,
+gender association), each dimension a mean with its standard
+deviation and rater count.
+
+The norms are descriptive knowledge about words, read by the
+NormalcyUnit (src/fork/normalcy-unit.ts) as labelled facts with
+their provenance. Familiarity serves NormalcyAssessment in this
+arc; the other dimensions are prepared as labelled access for
+their consumer units under the same rule — no value in the table
+sets a price, fires a flag, or decides a reply anywhere in the
+system. Gender association is guarded knowledge: its values
+change no price, flag, referent or pronoun decision, or reply
+in v1 (pinned by test).
+
 Everything else in this repository — the ontology graph, seed data, reasoner
 and chat — is original AnSci work (see README.md). ConceptNet is a planned
 base net (design doc §4) and is not yet bundled; when it lands, its

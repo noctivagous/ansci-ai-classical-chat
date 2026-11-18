@@ -52,6 +52,7 @@ import {
   type SemanticObject,
 } from "./semantic-object";
 import type { Session } from "./session";
+import type { NormalcyFlag } from "./normalcy-unit";
 
 /** The need kinds v1 knows — one per seeding signal above. */
 export type NeedKind =
@@ -104,6 +105,16 @@ export interface Envelope {
    *  node ids where the map has them. */
   route: string[];
   needs: Need[];
+  /** NormalcyAssessment's flags (normalcy-assessment.ts): the
+   *  bridge's readings of the COMMUNICATION — obviousness,
+   *  self-redundancy, gibberish — filed here because the
+   *  envelope is where what the utterance's journey shows
+   *  lives; the core inside stays descriptive and untouched,
+   *  exactly as for needs. Absent when the bridge filed none.
+   *  Priced by CoherenceAnalysis (each flag's `priced` field)
+   *  and never spoken: no reply text carries a flag or a
+   *  verdict about oddity. */
+  normalcy?: NormalcyFlag[];
 }
 
 /**

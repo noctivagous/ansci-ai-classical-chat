@@ -44,11 +44,17 @@ test("the greeting's mirror is a reply object answering the greeting object", ()
 });
 
 test("a derived predication answer is a reply object too", () => {
+  // RE-PIN (the Normalcy arc, Part 3b): the scenario was "Is
+  // winter cold?" — a classifying question, now answered by
+  // the hand-worded definitional route, which (like every
+  // hand-worded reply) carries no reply object; that boundary
+  // is the next test's. The derived-answer pin moves to the
+  // salt derivation.
   const s = newSession();
-  const [r] = run(s, ["Is winter cold?"]);
+  const [r] = run(s, ["Is the salt cold?"]);
   assert.ok(r.trace.replyObject);
   const reply = s.objects.find((o) => o.producer === "system");
-  assert.equal(reply?.act.force, "composition"); // a season question is answered by the composition site
+  assert.equal(reply?.act.force, "predication"); // a derived predication, authored by the Planner
   assert.equal(reply?.act.streamRole, "answers");
 });
 

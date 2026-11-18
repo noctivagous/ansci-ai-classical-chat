@@ -104,7 +104,9 @@ import {
   seedQuantityNeeds,
   seedSceneNeeds,
 } from "./info-object";
-import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, priceSurvivingNeeds } from "./coherence";
+import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
+import { assessNormalcy, normalcyFlagOf } from "./normalcy-assessment";
+import { assessMissingRoles } from "./check";
 import { applySceneUpdate } from "./senses-scening";
 import { applyQuantityMentions, currentQuantity, latestKindFor } from "./quantification";
 import { normaliseKind, pluraliseKind, renderQuantity } from "./quantification-language";
@@ -258,6 +260,42 @@ export interface TurnTrace {
    *  turn declines, the located decline (the decline is AT
    *  these needs). */
   survivingNeeds?: { kind: string; slot: string }[];
+  /**
+   * NormalcyAssessment's priced flags for this turn (the
+   * Normalcy arc, 2026-11-17): the bridge's readings of the
+   * communication (normalcy-assessment.ts), priced by
+   * CoherenceAnalysis by kind (coherence.ts), and recorded
+   * here as an AWARENESS-SIDE note — the internal thought.
+   * Internal only, by the hard rule: no reply text carries a
+   * flag, a standing, or a verdict about oddity.
+   */
+  normalcy?: {
+    flags: { kind: string; strength?: string; detail: string; standing?: string }[];
+    awarenessNote: string;
+  };
+  /** The record answer in the "You said so." family (Part 3a):
+   *  the question was settled by the speaker's own earlier
+   *  statement, named here — its turn and the flag's reading. */
+  saidSo?: { stateTurn: number; ground: string };
+  /** The definitional answer (Part 3b): the question asked
+   *  whether a kind has its classifying quality, and the
+   *  Classification answered, cited as definition. */
+  definitionalAnswer?: { subject: string; quality: string; ground: string };
+  /** The unanchored-definite question (Part 3d ii): a definite
+   *  noun phrase whose referent stands in neither the scene
+   *  graph nor the Session record, asked after instead of
+   *  answered past. */
+  unanchoredDefinite?: { lemma: string; ground: string };
+  /** The gibberish repair (Part 3e): the turn arrived with no
+   *  resolvable content (the joint Normalcy+Coherence flag),
+   *  and the reply is the repair question. */
+  gibberishRepair?: { detail: string };
+  /** A hand-worded answer's discharge record: the sites whose
+   *  replies are the probe's wording (the record answer, the
+   *  definitional answer) name who answered and on what
+   *  evidence, so the settlement discharges the question's
+   *  answer need exactly as the ledger's how-many hook does. */
+  handAnswered?: { by: string; evidence: string };
   /**
    * The schematic walk of the turn: the ordered node ids
    * (ai-system/system-map.ts) the turn actually passed through,
@@ -578,15 +616,76 @@ function detectCohesion(
 function valencyGaps(parsed: ParsedSentence, root: MeaningNode): { entry: VerbEntry; gaps: string[] } | undefined {
   const entry = EN_LEXICON[root.lemma] as VerbEntry | undefined;
   if (!entry || entry.kind !== "verb") return undefined;
-  const required = new Set([
-    ...(entry.frameSignature?.required ?? entry.required),
-    ...(entry.prepSlot?.required ? [entry.prepSlot.slot] : []),
-  ]);
-  const filled = new Set<string>(parsed.meaning.edges.filter((e) => e.from === root.id).map((e) => e.relation));
-  const suppressed = new Set(root.states?.suppressedRoles ?? []);
+  /* The missing-core-role mode (check.ts, the Normalcy arc):
+   * the askable missing roles of this verb, on its frame
+   * evidence — the hand lexicon's obligations outright, a
+   * FrameNet core role only when the construction is underway,
+   * a VerbNet constituent shortfall likewise; ambiguous
+   * evidence (a possibly elliptical or intransitive use) files
+   * its gap as not askable, and it is not asked. The gaps are
+   * returned in frame order, as before. */
+  const askable = new Set(
+    assessMissingRoles(parsed)
+      .filter((m) => m.verb === root.lemma && m.askable)
+      .map((m) => m.role),
+  );
+  if (!askable.size) return { entry, gaps: [] };
   const frameOrder = [...entry.slots, ...(entry.prepSlot ? [entry.prepSlot.slot] : [])];
-  const gaps = frameOrder.filter((r) => required.has(r) && !filled.has(r) && !suppressed.has(r) && r !== "agent");
+  const gaps = frameOrder.filter((r) => askable.has(r));
+  for (const role of askable) if (!gaps.includes(role)) gaps.push(role);
   return { entry, gaps };
+}
+
+/**
+ * The directed-target gap (the Normalcy arc, Part 3d): a verb
+ * whose frame carries exactly one elaboration beyond its agent
+ * — a prepositional RECIPIENT, the person the act is directed
+ * at ("shout at …") — reported with that target absent. The
+ * role is not a required role (the R3 discipline asks after
+ * obligations), and the specimen files the bare report as a
+ * coherence gap of its own shape: an act of directing, with no
+ * one it was directed at. Narrow by construction: the verb
+ * must have NO bare object slots (any other elaboration the
+ * frame offers takes the turn out of this shape), the slot
+ * must be the recipient, unfilled and unsuppressed. The
+ * question is hand-formed from the frame's own material (the
+ * verb's past form, the slot's preposition, the role's
+ * question word) because the role-question transform cannot
+ * strand the preposition ("Who did you shout?" drops the
+ * "at" the frame files).
+ */
+function directedTargetGap(
+  parsed: ParsedSentence,
+  root: MeaningNode,
+): { role: string; question: string; ground: string } | undefined {
+  const entry = EN_LEXICON[root.lemma] as VerbEntry | undefined;
+  if (!entry || entry.kind !== "verb" || !entry.prepSlot || entry.prepSlot.required) return undefined;
+  if (entry.slots.length) return undefined;
+  const slot = entry.prepSlot.slot;
+  if (slot !== "recipient") return undefined;
+  if (root.states?.suppressedRoles?.includes(slot)) return undefined;
+  if (parsed.meaning.edges.some((e) => e.from === root.id && e.relation === slot)) return undefined;
+  const prep = entry.prepSlot.preps[0];
+  const word = ROLE_QUESTION_WORD[slot];
+  if (!prep || !word) return undefined;
+  return {
+    role: slot,
+    question: `${cap(pastOf(entry.lemma))} ${prep} ${word}?`,
+    ground:
+      `the verb '${entry.lemma}' carries one elaboration beyond its agent — its directed target ` +
+      `(${prep} + recipient) — and the report gives none: an act of directing with no one it was directed at`,
+  };
+}
+
+/**
+ * The acknowledgement (the Normalcy arc, Part 3c): the reply
+ * for a coherent statement turn that no substantive reader
+ * claims — no open need, no gap, no steering relation. The
+ * wording is the family's: a fuller note when the turn opens
+ * the conversation, the plain receipt after.
+ */
+function acknowledgementFor(turn: number): string {
+  return turn === 1 ? "Ok. Noted." : "Ok.";
 }
 
 /**
@@ -815,10 +914,37 @@ function processTurnInner(session: Session, text: string): TurnResult {
    * turn's settlement (processTurn) prices what survives. */
   const assessed = assessInformation(parsed, { turn, surface: text, session });
   for (const o of assessed) {
+    /* NormalcyAssessment (2026-11-17): the LPU's bridge to the
+     * NormalcyUnit reads the object here — after Session &
+     * Situation's situation consult (inside assessInformation)
+     * and before CoherenceAnalysis — and files its flags on the
+     * envelope; Coherence then prices them by kind, with its
+     * other readings of the object. */
+    assessNormalcy(parsed, o, session);
     analyseInbound(o, session);
     compareCompositions(o, session);
     analyseSenses(o);
+    priceNormalcyFlags(o);
     noteHandled(o, "coherence/coherence-analysis");
+  }
+  {
+    const normalcyFlags = assessed.flatMap((o) =>
+      (informationOf(o)?.envelope.normalcy ?? []).map((f) => ({
+        kind: f.kind,
+        ...(f.strength ? { strength: f.strength } : {}),
+        detail: f.detail,
+        ...(f.priced ? { standing: f.priced.standing } : {}),
+      })),
+    );
+    if (normalcyFlags.length) {
+      trace.normalcy = {
+        flags: normalcyFlags,
+        awarenessNote:
+          `internal thought: that was odd — ${normalcyFlags.map((f) => f.kind).join(", ")} ` +
+          "(NormalcyAssessment's flag, priced by CoherenceAnalysis; an internal register only — " +
+          "the outward reply does not carry it)",
+      };
+    }
   }
   session.objects.push(...assessed);
   // The scene graph (2026-11-17): the fragment the assessment
@@ -895,6 +1021,26 @@ function processTurnInner(session: Session, text: string): TurnResult {
     trace.replyGraph = serialiseReplyGraph(parsed);
     trace.wordingNotDerived = false;
     return { reply: generate(parsed), trace };
+  }
+
+  /* ---- gibberish repair (the Normalcy arc, Part 3e): a whole
+   * utterance with no resolvable content — the joint
+   * Normalcy+Coherence gibberish flag is priced on this turn's
+   * object, and no classified aspect was extracted from it —
+   * gets the puzzled, tentative repair question, before any
+   * recording or steering can mistake its guessed fragments
+   * for an event. The flag itself is never spoken as a
+   * verdict; the reply ASKS. ---- */
+  {
+    const gib = assessed[0] ? normalcyFlagOf(assessed[0], "gibberish") : undefined;
+    if (gib && assessed[0].act.kind === "statement" && assessed[0].aspects.length === 0) {
+      trace.gibberishRepair = { detail: gib.detail };
+      trace.planNote =
+        "gibberish repair: the utterance arrived with no resolvable content (NormalcyAssessment's " +
+        "gibberish flag, priced by CoherenceAnalysis) — the reply is the repair question, and nothing " +
+        "from the utterance's guessed fragments is recorded or steered on";
+      return { reply: "What is that? Gibberish?", trace };
+    }
   }
 
   /* ---- record: entities, pronoun resolutions, events, states ---- */
@@ -1262,6 +1408,20 @@ function processTurnInner(session: Session, text: string): TurnResult {
       trace.steeringNote = "the generating steering stood down for the coherence demand";
       return { reply: `${cap(thisState.lemma)} about what?`, trace };
     }
+    /* The acknowledgement move (the Normalcy arc, Part 3c) for
+     * a state reported of a THIRD PERSON: the generating
+     * steering below speaks to the holder in the second person
+     * ("You were hot. What did you say or do?") — right for the
+     * speaker's own states, a misaddress for a state the
+     * speaker reports of something else ("The soup is hot.").
+     * A reported state is a telling: it is acknowledged, and
+     * steering stands down. */
+    if (thisState.holder !== "you") {
+      trace.steeringNote =
+        "statement acknowledged (the acknowledgement move): the state is reported of " +
+        `${thisState.holder}, not of the speaker — a telling, not a feeling to steer from`;
+      return { reply: acknowledgementFor(turn), trace };
+    }
     const generated = GENERATES[thisState.element];
     trace.cyclePath = `${thisState.element}→${generated} (generating)`;
     const d = derive(session.graph, thisState.concept ?? thisState.lemma);
@@ -1308,11 +1468,18 @@ function processTurnInner(session: Session, text: string): TurnResult {
     }
   }
 
-  // (f) A plain event: acknowledge it from the situation; if its patient
-  // is classified food, the generating closure asks after the next step.
+  // (f) A plain event. The gaps are asked first (R3's rule, and
+  // the directed-target shape of Part 3d): a fillable gap is
+  // the one follow-up a plain telling calls for. With no gap,
+  // the ACKNOWLEDGEMENT move (the Normalcy arc, Part 3c) speaks:
+  // a coherent statement with no open need and no gap gets the
+  // plain receipt, and the steering machinery stands down —
+  // the pre-arc follow-ups here ("What goes in next?", "What
+  // was in it?") asked after every telling as a matter of
+  // routine, which is exactly the not-quite-normal behaviour
+  // the owner's specimen corrects (the apples telling: "Ok.").
   if (thisEvent) {
     const patient = thisEvent.patient ?? thisEvent.theme;
-    const patientClass = patient ? lookupClassification(patient) : undefined;
     const ackParts = [`You ${pastOf(thisEvent.verb)}`];
     if (thisEvent.theme && thisEvent.location) ackParts.push(`the ${thisEvent.theme} in the ${thisEvent.location}`);
     else if (patient) ackParts.push(`the ${patient}`);
@@ -1321,25 +1488,30 @@ function processTurnInner(session: Session, text: string): TurnResult {
     // follow-up wording below with the generated gap question.
     const gapSentence = tryGapQuestion(session, trace, parsed, root);
     if (gapSentence) return { reply: `${ack} ${gapSentence}`, trace };
-    if (patientClass?.aspect === "food" || thisEvent.theme) {
-      const el = patientClass?.element ?? "Water";
-      trace.cyclePath = `${el}→${GENERATES[el]} (generating closure)`;
-      const d = patient ? derive(session.graph, patient) : undefined;
-      trace.derivationPath = d?.conclusions[0]?.path;
-      if (d) recordPricing(trace, d, d.conclusions[0]);
-      noteSteeringScope(trace);
-      trace.generatingMargin = true;
-      return { reply: `${ack} What goes in next?`, trace };
+    const directed = directedTargetGap(parsed, root);
+    if (directed) {
+      trace.personPresented = "gap";
+      trace.gapQuestion = { verb: root.lemma, role: directed.role, ground: directed.ground };
+      trace.planNote =
+        "the follow-up question is hand-formed from the frame's directed-target material " +
+        "(the role-question transform cannot strand the preposition); the acknowledgment is the probe's wording";
+      return { reply: `${ack} ${directed.question}`, trace };
     }
     // R5: a steering note already written (the venting skip
     // above) is the more specific account of this turn; the
-    // generic note stands only where nothing else was said.
-    if (!trace.steeringNote) trace.steeringNote = "event recorded as a topic; no state yet for the cycles to steer by";
-    return { reply: `${ack} What was in it?`, trace };
+    // acknowledgement note stands only where nothing else was said.
+    if (!trace.steeringNote) {
+      trace.steeringNote =
+        "statement acknowledged (the acknowledgement move): the event stands recorded, no need or gap " +
+        "stands open, and no steering relation claims the turn — the steering machinery stands down";
+    }
+    return { reply: acknowledgementFor(turn), trace };
   }
 
-  trace.steeringNote = "statement recorded; nothing in it for the cycles to steer by";
-  return { reply: "Noted. What happened next?", trace };
+  trace.steeringNote =
+    "statement acknowledged (the acknowledgement move): recorded, with nothing in it for the cycles " +
+    "to steer by and no need or gap standing open";
+  return { reply: acknowledgementFor(turn), trace };
 }
 
 /* ------------------------------------------------------------------ */
@@ -1601,6 +1773,12 @@ function computeMapPath(trace: TurnTrace): string[] {
   // from the ledger.
   if (trace.quantities?.length || trace.quantityAnswer) path.push("lpu/quantification-language-unit");
   path.push("session-and-situation");
+  /* NormalcyAssessment sits between Session & Situation and
+   * CoherenceAnalysis in the settled placement: its node joins
+   * the path whenever the bridge filed (and Coherence priced)
+   * a flag this turn — including for the record and
+   * definitional answers the flags ground, which return below. */
+  if (trace.normalcy) path.push("lpu/normalcy-assessment");
   if (trace.answeredFromRecord) {
     path.push("reasoning/planner", "lpu/generator", "verbalizer");
     return path;
@@ -1666,6 +1844,17 @@ function settleTurnEnvelopes(session: Session, trace: TurnTrace): void {
         noteHandled(info, "lpu/quantification-language-unit");
       }
     }
+    /* The hand-worded answers (the Normalcy arc): the record
+     * answer ("You said so.") and the definitional answer are
+     * the probe's wording, not a planner graph's, but they
+     * ANSWER the question all the same — the settlement
+     * discharges the answer need on the evidence the trace
+     * names, exactly as the quantity hook above does. */
+    if (trace.handAnswered) {
+      if (dischargeAnswerNeed(info, trace.handAnswered.by, trace.handAnswered.evidence)) {
+        noteHandled(info, trace.handAnswered.by);
+      }
+    }
     for (const need of priceSurvivingNeeds(info)) survivors.push({ kind: need.kind, slot: need.slot });
   }
   if (survivors.length) trace.survivingNeeds = survivors;
@@ -1721,6 +1910,105 @@ function answerPredicateQuestion(
 ): TurnResult {
   const subjectLemma = subjectNodeInParse.lemma;
   const predicateLemma = predicateNodeInParse.lemma;
+  const turnObject = session.objects.find((o) => o.turn === session.turnCount && o.producer === "person");
+
+  /* The unanchored definite (the Normalcy arc, Part 3d ii): the
+   * question's subject is a definite noun phrase ("the table")
+   * whose referent stands in NEITHER the scene graph NOR the
+   * Session record. The evidence is read as it stood when the
+   * question ARRIVED: the grounding marks on this turn's own
+   * object (computed at assessment, against the prior stream)
+   * say the phrase arrived new — the scene and entity records
+   * cannot be consulted here, because by this site they
+   * already hold the question's own mention of the phrase.
+   * The Classification knows no such kind and the graph holds
+   * no node for it. (The Classification check is what spares a
+   * classified kind used definitely — "Is the salt cold?"
+   * asks after a kind the system knows, and the ordinary
+   * routes below answer it.) The reply asks after the referent
+   * instead of declining past it; the question's own answer
+   * need stays open — the turn asks back. NOT a Normalcy
+   * dimension: this is a comprehension gap, and no flag rides
+   * on it. */
+  if (
+    !isWhy &&
+    subjectNodeInParse.det === "the" &&
+    turnObject &&
+    turnObject.content.grounding?.find((g) => g.nodeId === subjectNodeInParse.id)?.status === "new" &&
+    !lookupClassification(subjectLemma) &&
+    !session.graph.nodeByName(subjectLemma)
+  ) {
+    trace.unanchoredDefinite = {
+      lemma: subjectLemma,
+      ground:
+        `the definite subject '${subjectLemma}' has no referent in the scene graph or the Session record ` +
+        `(its grounding mark on this turn's object is 'new', and the Classification holds no such kind)`,
+    };
+    trace.planNote =
+      "unanchored definite: the question presupposes a referent the conversation has not established — " +
+      "the reply asks after the referent; the question's answer need stays open";
+    const reply =
+      session.turnCount === 1
+        ? `What ${subjectLemma}? You just started talking.`
+        : `What ${subjectLemma}? Nothing so far has mentioned one.`;
+    return { reply, trace };
+  }
+
+  /* The record answer (the Normalcy arc, Part 3a): the Session
+   * record already settles this question — the speaker stated
+   * this very predication earlier in the conversation, and
+   * NormalcyAssessment's self-redundancy flag on this turn's
+   * object says so. The answer comes FROM THE RECORD, in the
+   * "You said so." family, and outranks the graph and testimony
+   * routes below: for a question about what was said, the
+   * record is the authority. The flag was priced by
+   * CoherenceAnalysis and is never spoken — the reply names
+   * the settlement, not the oddity. */
+  {
+    const flag = turnObject ? normalcyFlagOf(turnObject, "self-redundancy") : undefined;
+    /* Where an earned cohesion relation holds for this question
+     * (a topic RETURNED to after turns away), the said-so move
+     * stands down for the R7.5 record answer below: the marker
+     * is carried by the planner's record graph, which is the
+     * machinery that can carry it, and that answer is from the
+     * record too. The plain restatement — no relation earned —
+     * is the said-so family's ground. */
+    const cohesionHere = !isWhy ? detectCohesion(session, topicsBefore, subjectLemma, predicateLemma) : undefined;
+    if (
+      !isWhy &&
+      !cohesionHere &&
+      flag?.data?.settledBy === "statement" &&
+      flag.data.subject === subjectLemma &&
+      flag.data.quality === predicateLemma
+    ) {
+      /* The question's own fresh recording of the asked quality
+       * is set aside, exactly as at the R7.5 site: the record
+       * answered, and the asked quality does not stand as a new
+       * state beside the statement that settled it. (A
+       * why-question never reaches here: it asks for the
+       * derivation, and R7.5's standing doctrine — the record
+       * answers a why-question only against its presupposition —
+       * is untouched.) */
+      const freshIdx = session.states.findIndex(
+        (s) => s.turn === session.turnCount && s.holder === subjectLemma && s.lemma === predicateLemma,
+      );
+      if (freshIdx >= 0) session.states.splice(freshIdx, 1);
+      trace.saidSo = {
+        stateTurn: Number(flag.data.stateTurn),
+        ground:
+          flag.detail +
+          (freshIdx >= 0
+            ? "; the question's own recording of the asked quality at this turn was set aside — the statement that settled it is the one that stands"
+            : ""),
+      };
+      trace.handAnswered = { by: "session-and-situation", evidence: flag.detail };
+      trace.planNote =
+        "answered from the Session record: the speaker stated this predication earlier in the " +
+        "conversation (NormalcyAssessment's self-redundancy flag, priced by CoherenceAnalysis) — " +
+        "the record outranks the graph for a question about what was said";
+      return { reply: "You said so.", trace };
+    }
+  }
 
   /* R7.5 (§11.4's second clause; the rule is T-R7.5, stated
    * there exactly): the record answers first. When a standing
@@ -1818,6 +2106,44 @@ function answerPredicateQuestion(
             : "");
         return { reply: outcome.sentence, trace };
       }
+    }
+  }
+
+  /* The definitional answer (the Normalcy arc, Part 3b): the
+   * question asks whether a kind has its CLASSIFYING quality —
+   * NormalcyAssessment's obviousness flag on this turn's object
+   * already made exactly that determination (the same standard
+   * the flag carries: the OKU Classification settles the
+   * predication without testimony), so the move and the flag
+   * agree by construction. The answer comes from the
+   * Classification and cites that it holds by definition; the
+   * flag itself — raised and priced internally — is never
+   * spoken. A why-question is not this shape (it asks for the
+   * derivation, and the derivation below answers it), and a
+   * negated asking is not either. */
+  {
+    const flag = turnObject ? normalcyFlagOf(turnObject, "obviousness") : undefined;
+    if (
+      flag &&
+      !isWhy &&
+      !predicateNodeInParse.states?.negated &&
+      flag.data?.subject === subjectLemma &&
+      flag.data?.quality === predicateLemma
+    ) {
+      trace.definitionalAnswer = {
+        subject: subjectLemma,
+        quality: predicateLemma,
+        ground: String(flag.data.ground ?? flag.detail),
+      };
+      trace.handAnswered = { by: "ontology-core/normalcy-unit", evidence: flag.detail };
+      trace.planNote =
+        "answered from the OKU Classification: the asked quality is the subject kind's classifying " +
+        "quality (NormalcyAssessment's obviousness determination, priced by CoherenceAnalysis) — " +
+        "the reply cites the definition; the flag is not spoken";
+      trace.steeringNote =
+        "answered from the classification — the predication holds by the kind's definition; " +
+        "no derivation or testimony was needed";
+      return { reply: `That's its definition: ${subjectNodeInParse.form} is ${predicateLemma}.`, trace };
     }
   }
 

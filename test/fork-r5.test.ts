@@ -47,18 +47,20 @@ test("R5-1 return: a topic left for two turns and reactivated earns the return m
 test("R5-1b negative control: a continuously active topic earns no marker", () => {
   const s = newSession();
   const [, t2] = run(s, ["The soup is cold.", "Is the soup cold?"]);
-  // R7.5 re-pin: the record answers (the standing cold state
-  // occupies the slot) — the control's point stands: no
-  // cohesion relation held, so no marker is earned, on the
-  // record graph as on the derivation's before it.
-  assert.equal(t2.reply, "The soup is cold.");
-  assert.equal(t2.trace.answeredFromRecord?.state.lemma, "cold");
+  // Normalcy-arc re-pin (Part 3a): the speaker stated the very
+  // predication asked after, and no cohesion relation holds
+  // (the topic never left), so the record answer is the
+  // said-so move — hand-worded, no reply graph, and the
+  // control's point stands plainer than before: no cohesion
+  // relation held, so no marker is earned or carried. (Where
+  // a return relation DOES hold, the said-so move stands down
+  // for the record graph that carries the marker — R5-1
+  // above.)
+  assert.equal(t2.reply, "You said so.");
+  assert.equal(t2.trace.saidSo?.stateTurn, 1);
+  assert.equal(t2.trace.answeredFromRecord, undefined, "the said-so move, not the R7.5 record graph, answered");
   assert.equal(t2.trace.cohesion, undefined, "no cohesion record where no relation held");
-  const graph = JSON.parse(t2.trace.replyGraph ?? "{}");
-  assert.ok(
-    !graph.edges.some((e: { relation: string; marker?: string }) => e.relation === "links" && e.marker),
-    "no marker edge in the reply graph",
-  );
+  assert.equal(t2.trace.replyGraph, undefined, "the said-so reply is hand-worded — no graph, no marker edge");
 });
 
 /* ---------------- R5-2: contrast, with R5-1b as its control ---------------- */

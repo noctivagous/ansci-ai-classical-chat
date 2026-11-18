@@ -330,3 +330,160 @@ export function assessValency(parsed: ParsedSentence): ValencyAssessment[] {
   }
   return out;
 }
+
+/* ---------------- Missing-core-role mode (the Normalcy arc) ----------------
+ * assessValency above classifies what IS realised and notes a
+ * missing slot in passing. This mode is the dedicated instrument
+ * for the missing side: for every verb, the core roles its frame
+ * evidence names that the turn does not fill — and, the judgement
+ * the C.4 doctrine leaves open, whether the gap may be ASKED
+ * about (the turn loop's filler-asking reads `askable`).
+ *
+ * The evidence bases, in the assessValency order:
+ *   hand-lexicon — the curated `required` list is the system's
+ *     own obligation judgement: an unfilled required role is
+ *     askable outright (the specimen's "I gave him.": give's
+ *     theme, with the recipient realised).
+ *   framenet — the signature's `required` set is the frame's
+ *     CORE elements, and FrameNet core does not mean obligatory
+ *     (null instantiation licenses omission). The mode therefore
+ *     asks only when the construction is UNDERWAY — at least one
+ *     core object of the frame is realised, so the verb is in
+ *     its ditransitive/transitive construction and the missing
+ *     core role is a hole in a structure the speaker started
+ *     ("I sent him." — recipient realised, theme missing). When
+ *     NO core object is realised, the use may be a legitimately
+ *     elliptical or intransitive one the frame licenses ("I
+ *     donated."), the evidence is ambiguous, and the mode
+ *     abstains: askable false, with the ground stated.
+ *   verbnet — for a verb VerbNet covers and FrameNet does not
+ *     (its entry's frame is the permissive fallback): every
+ *     frame shape demands a minimum of post-verbal constituents
+ *     (bare NPs plus a prepositional argument). When the turn
+ *     realises some but fewer than EVERY shape's minimum, one
+ *     object is missing from a structure the speaker started;
+ *     the missing role is named from the entry's object slots.
+ *     When nothing is realised, the mode abstains as above.
+ *   evidence-free — a WordNet-derived verb with no frame
+ *     evidence at all: the mode files nothing. No evidence, no
+ *     gap — a gap asserted without evidence would be the
+ *     system's invention, not its reading.
+ *
+ * Suppressed roles are the construction's, never gaps; a role
+ * the turn fills with a question word is the turn's own query,
+ * not a gap; the agent is never a gap (the speaker is the agent
+ * of their own report). */
+
+export interface MissingRole {
+  verb: string;
+  role: string;
+  basis: "hand-lexicon" | "framenet" | "verbnet";
+  /** Whether the turn loop may ask after this role. */
+  askable: boolean;
+  /** The judgement, in words — evidence and, on an abstention,
+   *  why the evidence does not settle it. */
+  ground: string;
+  frame?: string;
+}
+
+const OBJECT_RELATIONS = ["patient", "theme", "recipient", "location", "goal"];
+
+export function assessMissingRoles(parsed: ParsedSentence): MissingRole[] {
+  const out: MissingRole[] = [];
+  const { nodes, edges } = parsed.meaning;
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const lexicon = parsed.connective.language === "en" ? EN_LEXICON : ZH_LEXICON;
+  for (const node of nodes) {
+    if (node.syntacticElement !== "Wood" || node.role !== "verb") continue;
+    const entry = lexicon[node.lemma];
+    if (!entry || entry.kind !== "verb") continue;
+    const frame = entry as VerbEntry;
+    const args = edges.filter((e) => e.from === node.id && ARG_RELATIONS_CHECK.has(e.relation));
+    const filled = (role: string): boolean =>
+      args.some((e) => e.relation === role && !byId.get(e.to)?.questionWord);
+    const suppressed = (role: string): boolean => Boolean(node.states?.suppressedRoles?.includes(role));
+    const realisedObjects = OBJECT_RELATIONS.filter((r) => filled(r));
+
+    if (frame.frameSignature) {
+      const core = frame.frameSignature.required;
+      for (const slot of core) {
+        if (slot === "agent" || suppressed(slot) || filled(slot)) continue;
+        const underway = realisedObjects.length > 0;
+        out.push({
+          verb: node.lemma,
+          role: slot,
+          basis: "framenet",
+          frame: frame.frameSignature.frame,
+          askable: underway,
+          ground: underway
+            ? `the frame '${frame.frameSignature.frame}' files '${slot}' as a core element, and the turn realises ` +
+              `${realisedObjects.join(", ")} — the construction is underway and this core role is a hole in it`
+            : `the frame '${frame.frameSignature.frame}' files '${slot}' as a core element, but the turn realises no ` +
+              `core object at all — a legitimately elliptical or intransitive use the frame licenses cannot be ` +
+              `ruled out, so the evidence is ambiguous and the gap is not asked`,
+        });
+      }
+    } else if (frame.verbnetSignature) {
+      const vn = frame.verbnetSignature;
+      const minimum = Math.min(...vn.shapes.map((s) => s.np + (s.pp ? 1 : 0)));
+      const realised = realisedObjects.length;
+      if (realised >= 1 && realised < minimum) {
+        const role = [...frame.slots, "theme", "patient"].find((r) => r !== "agent" && !filled(r) && !suppressed(r));
+        if (role) {
+          out.push({
+            verb: node.lemma,
+            role,
+            basis: "verbnet",
+            askable: true,
+            ground:
+              `VerbNet (${vn.classes.join(", ")}) files no frame for '${node.lemma}' with fewer than ${minimum} ` +
+              `post-verbal constituent(s), and the turn realises ${realised} — one object of a structure the ` +
+              `speaker started is missing`,
+          });
+        }
+      } else if (realised === 0 && minimum >= 2) {
+        out.push({
+          verb: node.lemma,
+          role: frame.slots[0] ?? "theme",
+          basis: "verbnet",
+          askable: false,
+          ground:
+            `VerbNet (${vn.classes.join(", ")}) files no frame for '${node.lemma}' with fewer than ${minimum} ` +
+            `post-verbal constituent(s), but the turn realises none — an intransitive or elliptical use cannot ` +
+            `be ruled out, so the evidence is ambiguous and the gap is not asked`,
+        });
+      }
+    } else if (frame.source !== "wordnet") {
+      for (const slot of frame.required) {
+        if (slot === "agent" || suppressed(slot) || filled(slot)) continue;
+        out.push({
+          verb: node.lemma,
+          role: slot,
+          basis: "hand-lexicon",
+          askable: true,
+          ground:
+            `the hand lexicon files '${slot}' as a required role of '${node.lemma}' — the lexicon's own ` +
+            `obligation judgement — and the turn does not fill it`,
+        });
+      }
+    }
+    // A required prep slot is a core role by whichever basis the
+    // entry's frame carries; the bases above have no prep-slot
+    // record of their own, so it is filed once, under the
+    // entry's basis.
+    if (frame.prepSlot?.required) {
+      const slot = frame.prepSlot.slot;
+      if (slot !== "agent" && !suppressed(slot) && !filled(slot)) {
+        out.push({
+          verb: node.lemma,
+          role: slot,
+          basis: frame.frameSignature ? "framenet" : frame.verbnetSignature ? "verbnet" : "hand-lexicon",
+          askable: true,
+          ground: `the frame files the ${slot} (a prepositional role) as required, and the turn does not fill it`,
+          ...(frame.frameSignature ? { frame: frame.frameSignature.frame } : {}),
+        });
+      }
+    }
+  }
+  return out;
+}

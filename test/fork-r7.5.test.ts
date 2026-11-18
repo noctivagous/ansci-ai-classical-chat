@@ -53,12 +53,18 @@ test("R7.5 (a): after two corrections, the question is answered from the record 
 /* ---------------- (b) match control ---------------- */
 
 test("R7.5 (b): a standing state that IS the asked quality answers from the record, plainly", () => {
+  // Normalcy-arc re-pin (Part 3a): the standing state IS the
+  // asked quality AND the speaker stated it themselves — the
+  // record answer is now the said-so move ("You said so."),
+  // which outranks the R7.5 record graph for a question about
+  // what was said. The R7.5 route still answers where the
+  // occupant is not the speaker's own statement of the asked
+  // predication — (a), (f), (g) and the contrast pin below.
   const s = newSession();
   const [, t2] = run(s, ["The soup is cold.", "Is the soup cold?"]);
-  assert.equal(t2.reply, "The soup is cold.");
-  assert.equal(t2.trace.answeredFromRecord?.state.lemma, "cold");
-  assert.equal(t2.trace.answeredFromRecord?.state.turn, 1);
-  assert.equal(t2.trace.answeredFromRecord?.supersessions.length, 0, "no corrections stand behind this state");
+  assert.equal(t2.reply, "You said so.");
+  assert.equal(t2.trace.saidSo?.stateTurn, 1, "the record answer names the stating turn");
+  assert.equal(t2.trace.answeredFromRecord, undefined, "the said-so move answered, not the record graph");
   assert.equal(t2.trace.pricing, undefined, "the table derivation is not what answers — no price is carried");
   assert.equal(t2.trace.derivationPath, undefined);
   assert.deepEqual(
@@ -100,14 +106,21 @@ test("R7.5 (d): no standing state — today's behaviour byte-identical (salt)", 
 /* ---------------- (e) the replacement is the asked quality ---------------- */
 
 test("R7.5 (e): a superseded subject whose replacement is the asked quality answers from the record with the replacement", () => {
+  // Normalcy-arc re-pin (Part 3a): the replacement state is
+  // the asked quality and the speaker stated it (turn 2), so
+  // the said-so move answers — the record's settlement is
+  // still the replacement, and the supersession chain stands
+  // in the session record exactly as before; what changed is
+  // only which record route speaks.
   const s = newSession();
   const [, , t3] = run(s, ["The soup is cold.", "The soup is hot.", "Is the soup hot?"]);
-  assert.equal(t3.reply, "The soup is hot.");
-  assert.equal(t3.trace.answeredFromRecord?.state.lemma, "hot");
-  assert.equal(t3.trace.answeredFromRecord?.state.turn, 2);
+  assert.equal(t3.reply, "You said so.");
+  assert.equal(t3.trace.saidSo?.stateTurn, 2, "the stating turn named is the replacement's turn");
+  assert.equal(t3.trace.answeredFromRecord, undefined);
   assert.deepEqual(
-    t3.trace.answeredFromRecord?.supersessions.map((d) => `${d.replaced.lemma} → ${d.replacing.lemma}`),
+    s.supersessions.filter((d) => d.holder === "soup").map((d) => `${d.replaced.lemma} → ${d.replacing.lemma}`),
     ["cold → hot"],
+    "the supersession chain stands in the record",
   );
   assert.deepEqual(
     s.states.filter((st) => st.holder === "soup").map((st) => st.lemma),

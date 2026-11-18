@@ -259,11 +259,19 @@ test("trace: §9.3's flag names the steering branch's basis", () => {
 // before/after. R2 note: the "Is summer hot?" entry changed
 // origin once more (single predication → the composed season
 // set, §7.1/§8.7 S13), itemised in
-// docs/fork/transcripts/T-R2-results.md. Every other entry is
-// byte-identical to the pre-R0 capture.
+// docs/fork/transcripts/T-R2-results.md. Normalcy-arc note
+// (2026-11-17): three further entries changed under the
+// acknowledgement move (Part 3c) — a plain event telling with
+// no open need and no gap now gets the plain receipt instead
+// of the steering follow-up ("What was in it?" / "What goes
+// in next?"): anger-news turn 1 and soup turns 1 and 3, each
+// itemised inline below. Every other entry is byte-identical
+// to the pre-R0 capture.
 const EXPECTED_REPLIES: Record<string, string[]> = {
   "anger-news": [
-    "You heard the news. What was in it?",
+    // Normalcy arc: was "You heard the news. What was in it?" —
+    // a plain telling, acknowledged.
+    "Ok. Noted.",
     "You were furious when you heard the news. What did you say when you heard the news?",
     "You shouted at him. Now that it's out — what would help you settle?",
   ],
@@ -289,13 +297,18 @@ const EXPECTED_REPLIES: Record<string, string[]> = {
     "Winter is dark, because it is most fully dark.",
   ],
   soup: [
-    "You made the soup. What goes in next?",
+    // Normalcy arc: was "You made the soup. What goes in
+    // next?" — a plain telling, acknowledged (the food closure
+    // no longer asks after every telling).
+    "Ok. Noted.",
     "The soup needs more salt. How does it taste so far?",
-    "You put the salt in the soup. What goes in next?",
+    // Normalcy arc: was "You put the salt in the soup. What
+    // goes in next?" — a fully specified telling, acknowledged.
+    "Ok.",
   ],
 };
 
-test("R0 acceptance: the four scenarios' reply text is identical to before R0, except the itemised R1.5 winter-cold origin changes and R2's itemised summer set change", () => {
+test("R0 acceptance: the four scenarios' reply text is identical to before R0, except the itemised R1.5 winter-cold origin changes, R2's itemised summer set change, and the Normalcy arc's itemised acknowledgement changes", () => {
   for (const scenario of SCENARIOS) {
     const s = newSession();
     const replies = run(s, scenario.turns).map((r) => r.reply);

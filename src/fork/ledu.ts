@@ -21,8 +21,26 @@
 import { lookupClassification } from "./classify";
 import { canonicalEmotion } from "./edu";
 import { emotionReach, type EmotionReach } from "./edu-reach";
+import { affectPriorFor, type GlasgowFact } from "./normalcy-unit";
 import { tierOfProvenance } from "./pricing";
 import type { AspectReading } from "./semantic-object";
+
+/** The affect PRIOR for a word (the Glasgow scope extension,
+ *  2026-11-17): the NormalcyUnit's labelled valence / arousal /
+ *  dominance facts, read by this bridge alongside its EDU
+ *  derivations. The prior is word-level affect KNOWLEDGE about
+ *  the communication — it informs the reading's record
+ *  (SemanticAssessment files the consultation on the object's
+ *  trail where an emotion reading stands) and it directs
+ *  nothing: the EDU's derivation in emotionAspect above is
+ *  authoritative, and a word's Glasgow values alone never
+ *  create an emotion reading where the EDU derives none
+ *  (pinned in test/fork-glasgow-priors.test.ts: 'murder' is
+ *  rated strongly negative in the norms and reads as no
+ *  emotion here). */
+export function emotionPriorFor(word: string): { valence?: GlasgowFact; arousal?: GlasgowFact; dominance?: GlasgowFact } | undefined {
+  return affectPriorFor(word);
+}
 
 /** The EDU's larger-graph reach, for a word of language: the
  *  word's canonical emotion, walked over the OKU's graph

@@ -95,6 +95,41 @@ import {
   type SensesFace,
 } from "./semantic-object";
 import { senseReadingForWord, unknownSlotsFor } from "./sense-unit";
+import { concretenessOf, semanticSizeOf, type GlasgowFact } from "./normalcy-unit";
+
+/**
+ * The placement priors for an entity (the Glasgow scope
+ * extension, 2026-11-17): the NormalcyUnit's labelled
+ * concreteness and semantic-size facts for the entity's word,
+ * read by the placement machinery below when it weighs a
+ * DEFAULT placement. Labelled knowledge about the word — the
+ * machinery's standards decide what the facts weigh:
+ *
+ *  - CONCRETENESS is weighed at the default-placement site: a
+ *    word the norms rate on the ABSTRACT side of the filed
+ *    scale (mean below the scale's own midpoint, 4 on its
+ *    7-point scale) names something that is not a placeable
+ *    candidate — the faculty does not default-place it, and
+ *    no exact-location unknown opens for it. Where the norms
+ *    file no fact, the prior is silent and the standing
+ *    default stands.
+ *  - SEMANTIC SIZE is consulted in the same bundle and
+ *    deliberately weighed at nothing in v1: felt magnitude is
+ *    available here, but no size-predication or placement
+ *    standard of this unit's reads it yet — preparation, not
+ *    consumption (pinned as placement-invariant in
+ *    test/fork-glasgow-priors.test.ts).
+ */
+export function placementPriorsFor(lemma: string): { concreteness?: GlasgowFact; semanticSize?: GlasgowFact } {
+  return { concreteness: concretenessOf(lemma), semanticSize: semanticSizeOf(lemma) };
+}
+
+/** The placement machinery's concreteness weighing: the word
+ *  is rated abstract-side of its filed scale's midpoint. */
+function abstractRated(lemma: string): boolean {
+  const fact = placementPriorsFor(lemma).concreteness;
+  return fact !== undefined && fact.mean < 4;
+}
 import { ConstraintNetwork, loadAlgebra } from "./qualreas";
 import type { SceneDerivedRelation } from "./session";
 
@@ -386,8 +421,12 @@ export function buildSensesFace(
       } else if (container && betweenGrounds.has(lemma)) {
         // A between landmark: TWO distinct entities, each
         // default-placed (proximity default) — the landmark has
-        // a stated relation but no location in the scene.
+        // a stated relation but no location in the scene. The
+        // concreteness prior is weighed per landmark: an
+        // abstract-rated one is not a placeable candidate and
+        // is not default-placed (placementPriorsFor, above).
         for (const lm of betweenLandmarks(lemma)) {
+          if (abstractRated(lm)) continue;
           placed.push({
             figure: lm, relation: "in-or-near", ground: container,
             tier: "default-placed", basis: "spatial faculty default placement: no stated location; coarse region only",
@@ -399,12 +438,18 @@ export function buildSensesFace(
         // with no stated spatial relation at all. (An entity
         // standing in a said arrangement — Chicago, as the
         // ground the airport is in — already has its spatial
-        // fact; the faculty does not also place it.)
-        placed.push({
-          figure: lemma, figureNodeId: n.id, relation: "in-or-near", ground: container,
-          tier: "default-placed", basis: "spatial faculty default placement: no stated location; coarse region only",
-        });
-        unknownsOpened.push({ of: lemma, kind: "exact-location" });
+        // fact; the faculty does not also place it.) The
+        // concreteness prior is weighed here: an entity the
+        // norms rate abstract-side is not a placeable
+        // candidate — it is mentioned, not placed, and no
+        // exact-location unknown opens for it.
+        if (!abstractRated(lemma)) {
+          placed.push({
+            figure: lemma, figureNodeId: n.id, relation: "in-or-near", ground: container,
+            tier: "default-placed", basis: "spatial faculty default placement: no stated location; coarse region only",
+          });
+          unknownsOpened.push({ of: lemma, kind: "exact-location" });
+        }
       }
     }
     // Filed unknown-slot rules for entities this turn brings in

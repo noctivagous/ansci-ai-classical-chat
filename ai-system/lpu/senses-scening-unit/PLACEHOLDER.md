@@ -294,3 +294,22 @@ at every scene update:
 - **The no-coordinates rule stands:** the network holds relation
   sets only. Nothing in this port introduces coordinates,
   distances or timestamps into the scene graph.
+
+## The imageability slot (recorded 2026-11-17, the Glasgow scope extension)
+
+This unit's earlier "Imaging-Scening" framing (vision only) was
+superseded by the multi-sensory scene above, and **no
+imaging-scening unit exists in the registry** — imaging is not a
+node, and none was invented for this preparation. What exists,
+prepared for a future imaging consumer, is the LABELLED ACCESS
+PATH to the Glasgow Norms' imageability dimension:
+`imageabilityOf(word)` in `src/fork/normalcy-unit.ts` returns a
+word's imageability fact (published mean on its 7-point scale,
+with provenance) — which words are imageable, as knowledge. The
+slot where a future imaging feed would attach is HERE, at the
+unit that owns the scene's sensory content: were an imaging
+reading ever built, it would consult that access path the way
+the placement machinery consults the concreteness prior
+(`placementPriorsFor` in `src/fork/senses-scening.ts`). In v1
+the path is deliberately UNCONSUMED: nothing reads imageability
+in any production path, and no behaviour depends on it.

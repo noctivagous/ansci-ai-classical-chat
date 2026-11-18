@@ -97,7 +97,11 @@ test("negative control: a fully specified event generates no gap question", () =
   const [t1] = run(s, ["I read the book."]);
   clean(t1);
   assert.equal(t1.trace.gapQuestion, undefined);
-  assert.equal(t1.reply, "You read the book. What was in it?");
+  // RE-PIN (the Normalcy arc, Part 3c): the reply is the plain
+  // acknowledgement — was "You read the book. What was in
+  // it?", the steering follow-up the arc retires. The
+  // control's point stands: no gap question is generated.
+  assert.equal(t1.reply, "Ok. Noted.");
 });
 
 test("negative control: a fully specified question is answered and asks nothing", () => {
@@ -161,8 +165,14 @@ test("planClarification: a disjunctive question over the two rival contents", ()
 /* ---------------- declines cite their ground ---------------- */
 
 test("decline, missing classification: the surface names what is missing", () => {
+  // RE-PIN (the Normalcy arc, Part 3d ii): the scenario was
+  // "Is the table cold?" — the definite cold open no longer
+  // declines; the unanchored-definite move asks after the
+  // referent (pinned in fork-normalcy.test.ts). The indefinite
+  // form keeps this test's ground exactly: an unclassified
+  // subject, declined with the missing piece named.
   const s = newSession();
-  const [t1] = run(s, ["Is the table cold?"]);
+  const [t1] = run(s, ["Is a table cold?"]);
   clean(t1);
   assert.match(t1.reply, /I have nothing on table in my notes/);
   assert.match(t1.trace.declineReason ?? "", /nothing on table/);
@@ -255,5 +265,9 @@ test("clarification: decisive context asks nothing and the turn proceeds", () =>
   const [t1] = run(s, ["I found rest in the garden."]);
   clean(t1);
   assert.equal(t1.trace.clarification, undefined);
-  assert.match(t1.reply, /^You found the rest in the garden\./);
+  // RE-PIN (the Normalcy arc, Part 3c): the turn proceeds to
+  // the plain acknowledgement — was the event echo "You found
+  // the rest in the garden." The control's point stands: no
+  // clarification is asked where the context is decisive.
+  assert.equal(t1.reply, "Ok. Noted.");
 });

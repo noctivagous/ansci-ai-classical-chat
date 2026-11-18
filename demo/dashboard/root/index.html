@@ -548,8 +548,10 @@
           <circle class="cdot uses" data-endpoints="emotion-desire" cx="663" cy="2396" r="4"/>
           <path class="conn uses" data-endpoints="senses-scening-unit,sense-unit" d="M 968 776 L 1020 776 L 1020 2330" />
           <circle class="cdot uses" data-endpoints="sense-unit" cx="1020" cy="2327" r="4"/>
-          <path class="conn uses" data-endpoints="quantification-language-unit,quantification-unit" d="M 968 1012 L 1020 1012 L 1020 2307" />
+          <path class="conn uses" data-endpoints="quantification-language-unit,quantification-unit" d="M 968 1248 L 1020 1248 L 1020 2307" />
           <circle class="cdot uses" data-endpoints="quantification-unit" cx="1020" cy="2304" r="4"/>
+          <path class="conn uses" data-endpoints="normalcy-assessment,normalcy-unit" d="M 968 1012 L 1020 1012 L 1020 2476" />
+          <circle class="cdot uses" data-endpoints="normalcy-unit" cx="1020" cy="2473" r="4"/>
         </svg>
 
         <!-- speaker (outside system) -->
@@ -570,6 +572,7 @@
         <span class="cordlabel uses" data-endpoints="language-emotion-desire-unit,emotion-desire" style="left:1004px;top:760px;writing-mode:vertical-rl">uses &#8595;</span>
         <span class="cordlabel uses" data-endpoints="senses-scening-unit,sense-unit" style="left:1004px;top:1060px;writing-mode:vertical-rl">uses &#8595;</span>
         <span class="cordlabel uses" data-endpoints="quantification-language-unit,quantification-unit" style="left:1004px;top:1560px;writing-mode:vertical-rl">uses &#8595;</span>
+        <span class="cordlabel uses" data-endpoints="normalcy-assessment,normalcy-unit" style="left:1004px;top:2060px;writing-mode:vertical-rl">uses &#8595;</span>
         <span class="cordlabel uses" data-endpoints="verbalizer,coherence" style="left:1230px;top:969px">uses &#8595;</span>
         <span class="cordlabel" data-endpoints="planner,correspondence" style="left:430px;top:1708px">planner consults &#8595; correspondence graph</span>
         <span class="cordlabel" data-endpoints="coherence,awareness" style="left:1446px;top:392px;writing-mode:vertical-rl">coherence consults &#8593; awareness</span>
@@ -799,6 +802,17 @@
           <div class="port out" data-port>OUT</div>
         </div>
 
+        <!-- NormalcyUnit (inside OntologyCore — after the SenseUnit, in its own row) -->
+        <div class="box unit t-unit" data-id="normalcy-unit" style="left:252px;top:2476px;width:1126px;height:132px">
+          <div class="bhead">
+            <div><div class="bname">NormalcyUnit</div><div class="bsub">Inside OntologyCore · medium-neutral authority on the normal shape of a communication</div></div>
+            <span class="btag" style="color:var(--muted)">Unit</span>
+          </div>
+          <div class="bbody">Files the norm dimensions — obviousness, self-redundancy, gibberish — and serves the labelled word knowledge the bridges read: wordfreq frequency and the Glasgow Norms' nine dimensions, shipped in the repo as data bundles. The tables inform; they never direct — no table number sets a price, fires a flag, or decides a reply.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
                 <!-- ============ LPU ============ -->
         <div class="box lpu frame" data-id="lpu" style="left:222px;top:118px;width:776px;height:1042px">
           <div class="bhead">
@@ -876,8 +890,19 @@
           <div class="port out" data-port>OUT</div>
         </div>
 
+        <!-- NormalcyAssessment (inside LPU — the LPU's bridge to the NormalcyUnit) -->
+        <div class="box unit t-unit" data-id="normalcy-assessment" style="left:752px;top:904px;width:216px;height:216px">
+          <div class="bhead">
+            <div><div class="bname">Normalcy<wbr>Assessment</div><div class="bsub">Inside the LPU · bridge to the NormalcyUnit</div></div>
+            <span class="btag" style="color:var(--teal)">Unit</span>
+          </div>
+          <div class="bbody">Reads each assessed information object — its parse, its surface, the Session as it stood before the turn — and files normalcy flags on the envelope: obviousness, self-redundancy, gibberish. Coherence prices the flags by kind; a flag is an internal thought, never spoken.</div>
+          <div class="port in" data-port>IN</div>
+          <div class="port out" data-port>OUT</div>
+        </div>
+
         <!-- QuantificationLanguageUnit (inside LPU — the LPU's bridge to the QuantificationUnit) -->
-        <div class="box unit t-unit" data-id="quantification-language-unit" style="left:752px;top:904px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="quantification-language-unit" style="left:752px;top:1140px;width:216px;height:216px">
           <div class="bhead">
             <div><div class="bname">Quantification<wbr>Language<wbr>Unit</div><div class="bsub">Inside the LPU · bridge to the QuantificationUnit</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -888,7 +913,7 @@
         </div>
 
         <!-- Generator (sibling of Parser, inside LPU) -->
-        <div class="box unit t-unit" data-id="generator" style="left:752px;top:1140px;width:216px;height:216px">
+        <div class="box unit t-unit" data-id="generator" style="left:752px;top:1376px;width:216px;height:216px">
           <div class="bhead">
             <div><div class="bname">Generator Unit</div><div class="bsub">Inside the LPU · sibling of the Parser</div></div>
             <span class="btag" style="color:var(--teal)">Unit</span>
@@ -898,7 +923,7 @@
           <div class="port out" data-port>OUT</div>
         </div>
 
-<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:1376px;width:716px;height:168px">
+<div class="box placeholder" data-id="unplaced-lpu" style="left:252px;top:1612px;width:716px;height:168px">
           <div class="bhead"><div><div class="bname">Unplaced · Unit</div><div class="bsub">Inside the LPU</div></div><span class="btag" style="color:var(--muted)">—</span></div>
           <div class="bbody">Other aspect units of the LPU, beyond the Parser and the Generator — a place held, not a thing built. To be settled.</div>
         </div>
@@ -1054,21 +1079,21 @@
     'awareness/place-and-time':70,'awareness/place-and-time/season-daypart':85,'awareness/place-and-time/channel':40,
     'awareness/surroundings':25,'awareness/surroundings/interlocutor-standing':10,'awareness/surroundings/standing-topics':75,'awareness/surroundings/other-presences':0,
     'awareness/current-activity':30,'awareness/current-activity/composer':0,'awareness/current-activity/situation-statement':15,'awareness/current-activity/last-act':35,'awareness/current-activity/open-gaps':55,
-    'lpu':80,'lpu/parser':85,'lpu/parser/token':95,'lpu/parser/sense':70,'lpu/parser/valency':90,'lpu/parser/aspect-and-forms':90,'lpu/semantic-assessment':70,'lpu/language-emotion-desire-unit':45,'lpu/senses-scening-unit':55,'lpu/quantification-language-unit':45,'lpu/generator':80,'lpu/unplaced':0,
-    'ontology-core':0,'ontology-core/ontology-knowledge-unit':60,'ontology-core/ontology-knowledge-unit/correspondence-graph':75,'ontology-core/ontology-knowledge-unit/classification':60,'ontology-core/ontology-knowledge-unit/quantification-unit':45,'ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit':60,'ontology-core/emotion-desire':50,'ontology-core/sense-unit':40,
+    'lpu':80,'lpu/parser':85,'lpu/parser/token':95,'lpu/parser/sense':70,'lpu/parser/valency':90,'lpu/parser/aspect-and-forms':90,'lpu/semantic-assessment':70,'lpu/language-emotion-desire-unit':45,'lpu/senses-scening-unit':55,'lpu/normalcy-assessment':45,'lpu/quantification-language-unit':45,'lpu/generator':80,'lpu/unplaced':0,
+    'ontology-core':0,'ontology-core/ontology-knowledge-unit':60,'ontology-core/ontology-knowledge-unit/correspondence-graph':75,'ontology-core/ontology-knowledge-unit/classification':60,'ontology-core/ontology-knowledge-unit/quantification-unit':45,'ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit':60,'ontology-core/emotion-desire':50,'ontology-core/sense-unit':40,'ontology-core/normalcy-unit':35,
     'session-and-situation':75,'session-and-situation/states-and-origins':85,'session-and-situation/events':70,'session-and-situation/topics':80,'session-and-situation/corrections':80,'session-and-situation/open-unknowns':50,
     'knowledge':70,'knowledge/lexicon':80,'knowledge/variant-graph':45,'knowledge/banked':65,
     'reasoning':80,'reasoning/derivation':85,'reasoning/planner':80,'reasoning/pricing':85,'reasoning/decline-floor':90,'reasoning/compositions':85,
     'intake':25,'intake/router':30,'intake/cskg':50,'intake/wikidata':0,'intake/web':0,'intake/model':0,
     'retrieval-harborer':45,'retrieval-harborer/pipeline':45,'retrieval-harborer/gate':70,
     'verbalizer':40,
-    'coherence':0,'coherence/coherence-demand':0,'coherence/coherence-analysis':55,
+    'coherence':0,'coherence/coherence-demand':0,'coherence/coherence-analysis':60,
     'surfaces':70,'surfaces/root-page':90,'surfaces/dashboard':85,'surfaces/chat':45,'surfaces/trace-view':60,
     'unplaced':0
   };
   function stateOf(p){ return p<=0?'placeholder':(p>=100?'functional':'partial'); }
   /* inspector id -> registry id, for the percent readout in select() */
-  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','semantic-assessment':'lpu/semantic-assessment','language-emotion-desire-unit':'lpu/language-emotion-desire-unit','senses-scening-unit':'lpu/senses-scening-unit','quantification-language-unit':'lpu/quantification-language-unit','ontology-core':'ontology-core','emotion-desire':'ontology-core/emotion-desire','sense-unit':'ontology-core/sense-unit','quantification-unit':'ontology-core/ontology-knowledge-unit/quantification-unit','units-measurement-unit':'ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit','open-unknowns':'session-and-situation/open-unknowns','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'ontology-core/ontology-knowledge-unit/correspondence-graph',classification:'ontology-core/ontology-knowledge-unit/classification','ontology-knowledge-unit':'ontology-core/ontology-knowledge-unit',lexicon:'knowledge/lexicon','variant-graph':'knowledge/variant-graph',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',coherence:'coherence','coherence-demand':'coherence/coherence-demand','coherence-analysis':'coherence/coherence-analysis',surfaces:'surfaces','unplaced-sys':'unplaced'};
+  var ID2NODE={system:'system',config:'configuration',awareness:'awareness',composer:'awareness/current-activity/composer',lpu:'lpu',parser:'lpu/parser',token:'lpu/parser/token',sense:'lpu/parser/sense',valency:'lpu/parser/valency',aspect:'lpu/parser/aspect-and-forms',generator:'lpu/generator','semantic-assessment':'lpu/semantic-assessment','language-emotion-desire-unit':'lpu/language-emotion-desire-unit','senses-scening-unit':'lpu/senses-scening-unit','normalcy-assessment':'lpu/normalcy-assessment','quantification-language-unit':'lpu/quantification-language-unit','ontology-core':'ontology-core','emotion-desire':'ontology-core/emotion-desire','sense-unit':'ontology-core/sense-unit','normalcy-unit':'ontology-core/normalcy-unit','quantification-unit':'ontology-core/ontology-knowledge-unit/quantification-unit','units-measurement-unit':'ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit','open-unknowns':'session-and-situation/open-unknowns','unplaced-lpu':'lpu/unplaced',session:'session-and-situation',knowledge:'knowledge',correspondence:'ontology-core/ontology-knowledge-unit/correspondence-graph',classification:'ontology-core/ontology-knowledge-unit/classification','ontology-knowledge-unit':'ontology-core/ontology-knowledge-unit',lexicon:'knowledge/lexicon','variant-graph':'knowledge/variant-graph',reasoning:'reasoning',derivation:'reasoning/derivation',planner:'reasoning/planner',gate:'reasoning/decline-floor',tables:'reasoning/compositions',intake:'intake',router:'intake/router',harborer:'retrieval-harborer',verbalizer:'verbalizer',coherence:'coherence','coherence-demand':'coherence/coherence-demand','coherence-analysis':'coherence/coherence-analysis',surfaces:'surfaces','unplaced-sys':'unplaced'};
   /* ===== layout — mirrors ai-system/system-layout.ts =====
      Placement (rects, for focus/zoom) and sibling ORDER live here, apart
      from the registry: move a column or row by editing this object only.
@@ -1077,18 +1102,18 @@
   var SYSTEM_LAYOUT={
     rects:{
     system:{x:190,y:56,w:1250,h:2280}, lpu:{x:222,y:118,w:776,h:1042}, parser:{x:252,y:196,w:470,h:468},
-    awareness:{x:1030,y:118,w:378,h:510}, 'semantic-assessment':{x:752,y:196,w:216,h:216}, 'language-emotion-desire-unit':{x:752,y:432,w:216,h:216}, 'senses-scening-unit':{x:752,y:668,w:216,h:216}, 'quantification-language-unit':{x:752,y:904,w:216,h:216}, generator:{x:752,y:1140,w:216,h:216},
-    'ontology-core':{x:222,y:2072,w:1186,h:400}, 'ontology-knowledge-unit':{x:252,y:2140,w:1126,h:176}, 'quantification-unit':{x:264,y:2307,w:1102,h:252}, 'units-measurement-unit':{x:276,y:2432,w:1078,h:118}, 'emotion-desire':{x:252,y:2330,w:410,h:132}, 'sense-unit':{x:678,y:2330,w:700,h:132}, 'open-unknowns':{x:1040,y:895,w:358,h:62},
+    awareness:{x:1030,y:118,w:378,h:510}, 'semantic-assessment':{x:752,y:196,w:216,h:216}, 'language-emotion-desire-unit':{x:752,y:432,w:216,h:216}, 'senses-scening-unit':{x:752,y:668,w:216,h:216}, 'normalcy-assessment':{x:752,y:904,w:216,h:216}, 'quantification-language-unit':{x:752,y:1140,w:216,h:216}, generator:{x:752,y:1376,w:216,h:216},
+    'ontology-core':{x:222,y:2072,w:1186,h:400}, 'ontology-knowledge-unit':{x:252,y:2140,w:1126,h:176}, 'quantification-unit':{x:264,y:2307,w:1102,h:252}, 'units-measurement-unit':{x:276,y:2432,w:1078,h:118}, 'emotion-desire':{x:252,y:2330,w:410,h:132}, 'sense-unit':{x:678,y:2330,w:700,h:132}, 'normalcy-unit':{x:252,y:2476,w:1126,h:132}, 'open-unknowns':{x:1040,y:895,w:358,h:62},
     planner:{x:640,y:1514,w:330,h:64}, derivation:{x:240,y:1514,w:330,h:64},
     lexicon:{x:900,y:1270,w:270,h:120}, 'variant-graph':{x:1118,y:1270,w:270,h:120}, correspondence:{x:262,y:2201,w:549,h:95}, classification:{x:818,y:2201,w:549,h:95},
     session:{x:1030,y:652,w:378,h:196}, router:{x:240,y:1758,w:370,h:120}, harborer:{x:1020,y:1758,w:370,h:120}, intake:{x:222,y:1702,w:1186,h:200},
     gate:{x:640,y:1582,w:330,h:56}, tables:{x:240,y:1582,w:330,h:56}, clock:{x:660,y:40,w:170,h:34}, config:{x:902,y:34,w:520,h:44}, source:{x:102,y:283,w:220,h:34}, composer:{x:1048,y:540,w:342,h:64},
     verbalizer:{x:1030,y:862,w:378,h:106}, coherence:{x:1030,y:982,w:378,h:216}, 'coherence-demand':{x:1042,y:1062,w:172,h:118}, 'coherence-analysis':{x:1224,y:1062,w:172,h:118}, knowledge:{x:222,y:1214,w:1186,h:230}, reasoning:{x:222,y:1458,w:1186,h:230},
-    surfaces:{x:222,y:1916,w:760,h:140}, 'unplaced-lpu':{x:252,y:1376,w:716,h:168}, 'unplaced-sys':{x:998,y:1916,w:410,h:140},
+    surfaces:{x:222,y:1916,w:760,h:140}, 'unplaced-lpu':{x:252,y:1612,w:716,h:168}, 'unplaced-sys':{x:998,y:1916,w:410,h:140},
     token:{x:264,y:262,w:218,h:118}, sense:{x:490,y:262,w:218,h:118}, valency:{x:264,y:388,w:218,h:118}, aspect:{x:490,y:388,w:218,h:118}
     },
     order:{
-      'lpu':['lpu/parser','lpu/semantic-assessment','lpu/language-emotion-desire-unit','lpu/senses-scening-unit','lpu/quantification-language-unit','lpu/generator','lpu/unplaced'],
+      'lpu':['lpu/parser','lpu/semantic-assessment','lpu/language-emotion-desire-unit','lpu/senses-scening-unit','lpu/normalcy-assessment','lpu/quantification-language-unit','lpu/generator','lpu/unplaced'],
       'knowledge':['knowledge/lexicon','knowledge/variant-graph','knowledge/banked'],
       'ontology-core/ontology-knowledge-unit':['ontology-core/ontology-knowledge-unit/correspondence-graph','ontology-core/ontology-knowledge-unit/classification','ontology-core/ontology-knowledge-unit/quantification-unit'],
       'ontology-core/ontology-knowledge-unit/quantification-unit':['ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit'],
@@ -1152,8 +1177,8 @@
     /* titled containers & units: badge at the upper right of the title bar */
     [['system','system'],['awareness','awareness'],['session','session-and-situation'],['verbalizer','verbalizer'],['coherence','coherence'],
      ['knowledge','knowledge'],['reasoning','reasoning'],['intake','intake'],['surfaces','surfaces'],
-     ['lpu','lpu'],['parser','lpu/parser'],['semantic-assessment','lpu/semantic-assessment'],['language-emotion-desire-unit','lpu/language-emotion-desire-unit'],['senses-scening-unit','lpu/senses-scening-unit'],['quantification-language-unit','lpu/quantification-language-unit'],['generator','lpu/generator'],
-     ['ontology-core','ontology-core'],['ontology-knowledge-unit','ontology-core/ontology-knowledge-unit'],['quantification-unit','ontology-core/ontology-knowledge-unit/quantification-unit'],['units-measurement-unit','ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit'],['emotion-desire','ontology-core/emotion-desire'],['sense-unit','ontology-core/sense-unit'],
+     ['lpu','lpu'],['parser','lpu/parser'],['semantic-assessment','lpu/semantic-assessment'],['language-emotion-desire-unit','lpu/language-emotion-desire-unit'],['senses-scening-unit','lpu/senses-scening-unit'],['normalcy-assessment','lpu/normalcy-assessment'],['quantification-language-unit','lpu/quantification-language-unit'],['generator','lpu/generator'],
+     ['ontology-core','ontology-core'],['ontology-knowledge-unit','ontology-core/ontology-knowledge-unit'],['quantification-unit','ontology-core/ontology-knowledge-unit/quantification-unit'],['units-measurement-unit','ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit'],['emotion-desire','ontology-core/emotion-desire'],['sense-unit','ontology-core/sense-unit'],['normalcy-unit','ontology-core/normalcy-unit'],
      ['token','lpu/parser/token'],['sense','lpu/parser/sense'],['valency','lpu/parser/valency'],['aspect','lpu/parser/aspect-and-forms'],
      ['unplaced-lpu','lpu/unplaced'],['unplaced-sys','unplaced']
     ].forEach(function(pr){ markNode(boxEl(pr[0]),pr[1],'titlebar'); });
@@ -1301,11 +1326,13 @@
     generator:{name:'Generator Unit',path:'System ⊃ LPU ⊃ Generator unit',body:'A <strong>sibling of the Parser</strong> inside the LPU — the reverse road. It takes the reply meaning graph the Planner selected and generates the surface wording from it.',ports:['IN — reply meaning graph','OUT — wording']},
     'language-emotion-desire-unit':{name:'LanguageEmotionDesireUnit',path:'System › Language Processing Unit (LPU) › LanguageEmotionDesireUnit — 45% completed to goal',body:"The LEDU: the LPU's bridge to the EmotionDesireUnit, maintained inside the LPU. It maps emotion and desire as expressed in language — 'furious', 'longing to see her' — into the EDU's framework on the way in, and an object's emotion or desire aspect back into language on the way out. The mapping is language's; the framework is the EDU's.<br><br><strong>State:</strong> the inbound bridge is built — a word's emotion aspect read for semantic objects (canonical face via the EDU, filed phase from the OKU table); the outbound direction is still to build.<br><strong>Current code:</strong> <span class='mono'>src/fork/ledu.ts</span>",ports:['IN — emotion / desire in language','OUT — EDU framework terms']},
     'senses-scening-unit':{name:'Senses-Scening Unit',path:'System › Language Processing Unit (LPU) › Senses-Scening Unit — 55% completed to goal',body:"The Senses-Scening Unit: the LPU's unit that produces the senses/scene part of a semantic object, maintained inside the LPU. It maps sensory content as expressed in language — 'salty', 'green', 'loudly', 'fragrant', 'cold', 'overripe' — through the SenseUnit's framework (channel, discrimination, the OKU's filed phase where one exists), and binds the entries across ALL channels into one described scene: the entities, their sensory qualities, and the spatial arrangement where the sentence gives one (the banana sat on the table). A scene is recorded whenever any channel has an entry; a turn with no sensory content records every channel none and no scene. Only what the sentence says enters the face — implied channels are Coherence's derived-tier annotations, never entries. SemanticAssessment consults it at creation for person and reply objects alike. Uses the SenseUnit; the mapping is language's, the framework is the SenseUnit's.<br><br><strong>Scene placeholder design:</strong> the scene graph is persistent across the conversation and held by Session — fragments are placed into the running scene, entities referenced, not re-minted. Its spatial faculties place unlocated entities coarsely in three tiers (said / placed-by-scene / default-placed), defeasible, with exact position an unknown slot. The standing placements also form a qualitative constraint network: the RCC-8 and Allen algebra data are <strong>qualreas</strong>'s (MIT), imported as sourced data, with our own path-consistency engine (qualreas.ts) — derived relations are computed over the placements at every scene update, and an inconsistent placement set is flagged on the scene with a spatial-consistency unknown opened.<br><br><strong>State:</strong> partial — 55% completed to goal. Placed 2026-11-17 at the owner's direction; inbound built the same day, the outbound mapping back into wording still to build.<br><strong>Current code:</strong> <span class='mono'>src/fork/senses-scening.ts</span>, <span class='mono'>src/fork/qualreas.ts</span>",ports:['IN — sensory content in language','OUT — senses face + scene']},
+    'normalcy-assessment':{name:'NormalcyAssessment',path:'System › Language Processing Unit (LPU) › NormalcyAssessment — 45% completed to goal',body:"NormalcyAssessment: the LPU's bridge to the NormalcyUnit, maintained inside the LPU (the Senses-Scening shape). It reads a freshly assessed information object — its parse, its surface, the Session as it stood before the turn — and files NORMALCY FLAGS on the object's envelope: obviousness (the question asks what the Classification already settles), self-redundancy (the Session record already settles the question), gibberish (no content arrived — graded, and only on token-resolution failure). The flags describe the communication, never the content, so they ride the envelope side of the wall; the semantic core stays untouched. The bridge runs after Session & Situation and before CoherenceAnalysis, which prices the flags by kind; the priced flags are recorded as an internal Awareness-side note on the turn trace. The hard rule: a flag is an internal thought only — no reply ever speaks one. Uses the NormalcyUnit; the mapping from text is language's, the standards and the filed word knowledge are the authority's.<br><br><strong>State:</strong> partial — 45% completed to goal. The v1 bridge is built: the three determinations run on every assessed person object. Not built: the answered-earlier variant of self-redundancy is detected and priced but drives no reply move in v1; obviousness determinations for kinds without a degree profile; any reading of constructions (the bridge reads predications and tokens).<br><strong>Current code:</strong> <span class='mono'>src/fork/normalcy-assessment.ts</span>",ports:['IN — assessed information object + Session record','OUT — normalcy flags on the envelope']},
     'quantification-language-unit':{name:'QuantificationLanguageUnit',path:'System ⊃ LPU ⊃ QuantificationLanguageUnit',body:"The QuantificationLanguageUnit: the LPU's bridge to the QuantificationUnit, maintained inside the LPU (the EDU/LEDU pattern). <strong>Inbound:</strong> quantity as expressed in language — numerals and number words (one..twenty, hundred, thousand; digits), quantifier words (all/some/none/each/every) as bounded quantity kinds, construction-implied counts, unit words via the UnitsMeasurement Unit — read from the parse as quantity mentions, with the OKU Numbers slice's filed reading attached where one exists. SemanticAssessment attaches the mentions to the semantic object at creation, and the turn loop applies them to the Session's quantity ledger. <strong>Outbound:</strong> a tracked quantity rendered back into language ('two apples') — the how-many reader speaks through it. Uses the QuantificationUnit at its home inside the OKU; the mapping is language's, the framework is the QuantificationUnit's.<br><br><strong>State:</strong> partial — 45% completed to goal.<br><strong>Current code:</strong> <span class='mono'>src/fork/quantification-language.ts</span>",ports:['IN — quantity in language','OUT — quantity mentions / rendered quantity']},
-    'ontology-core':{name:'OntologyCore',path:'System › OntologyCore — 0% completed to goal',body:"The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table), the EmotionDesireUnit (placed 2026-11-16) and the SenseUnit (placed 2026-11-17), at the owner's direction.",ports:['—']},
+    'ontology-core':{name:'OntologyCore',path:'System › OntologyCore — 0% completed to goal',body:"The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table), the EmotionDesireUnit (placed 2026-11-16), the SenseUnit (placed 2026-11-17) and the NormalcyUnit (placed 2026-11-17), at the owner's direction.",ports:['—']},
     'emotion-desire':{name:'EmotionDesireUnit',path:'System › OntologyCore › EmotionDesireUnit — 50% completed to goal',body:"The EDU: the system's medium-neutral authority on emotion and desire. It holds the Seven Emotions and Six Desires framework — the emotions and desires, their phase and organ correspondences — and answers any medium's bridge unit: what emotion or desire is this, what does it correspond to. Language reaches it through the LPU's LEDU today; in the future an IDU will contact it for the Image Processing Unit, the same way.<br><br><strong>State:</strong> the naming authority and the larger-graph reach are built — the seven emotions and six desires named (fright and the mind's desire unsettled), and the walks from an emotion's phase computed as tiered derived relations, the emotion counteractions among them; no turn behaviour reads the reach yet.<br><strong>Current code:</strong> <span class='mono'>src/fork/edu.ts</span>, <span class='mono'>src/fork/edu-reach.ts</span>",ports:['IN — emotion / desire query','OUT — framework answer']},
     'ontology-knowledge-unit':{name:'Ontology Knowledge Unit',path:'System › OntologyCore › Ontology Knowledge Unit — 60% completed to goal',body:"The OKU: the OntologyCore's knowledge unit. It contains the correspondence graph and the classification table — the system's ontology as held, consultable knowledge. The graph and the table moved here from Knowledge, which keeps the lexicon, the variant graph and the banked stores.",ports:['IN — consultation','OUT — correspondences / classifications']},
     'sense-unit':{name:'SenseUnit',path:'System › OntologyCore › SenseUnit — 40% completed to goal',body:"The SenseUnit: the system's medium-neutral authority on the human senses, sitting inside the OntologyCore beside the EDU. Its contents are the join of three provenance-labelled lists, never silently harmonised: the channels from 六根/六塵 (eye→form, ear→sound, nose→smell, tongue→taste, body→touch, mind→mental objects), the per-channel discriminations from Xunzi (Tianlun's five 天官, Rongru's assignments), and the phase correspondences from the OKU's Suwen rows (orifices, colour/sound/flavour quality rows, the ch. 4 odour row, skin as tissue). Its data lives in the OKU, as the EDU's does; it is the specialist authority over that slice, not a private store. Recorded tensions stand labelled: taste double-filed (tongue/Fire, mouth/Earth), touch with no channel phase (its values carry phases), mind's phase unsettled. Boundary with the EDU: this unit owns the channels; the EDU owns the cravings OF the channels. Language reaches it through the LPU's Senses-Scening Unit. Placed 2026-11-17 at the owner's direction; the naming authority built the same day (channel/discrimination lookups, the overripe cross-channel implication filed as derived-tier knowledge); no larger-graph reach yet.<br><br><strong>State:</strong> partial — 40% completed to goal.<br><strong>Current code:</strong> <span class='mono'>src/fork/sense-unit.ts</span>",ports:['IN — sense query','OUT — framework answer']},
+    'normalcy-unit':{name:'NormalcyUnit',path:'System › OntologyCore › NormalcyUnit — 35% completed to goal',body:"The NormalcyUnit: the system's medium-neutral authority on the normal shape of a communication, sitting inside the OntologyCore beside the SenseUnit. It files the norm dimensions — obviousness (a predication is obvious iff the OKU Classification settles it without testimony: the asked quality is the kind's classifying quality on its filed degree profile), self-redundancy (the Session record already settles the question), gibberish (no content arrived; the flag requires token-resolution failure — frequency and familiarity evidence grades strength only) — and serves the labelled word knowledge the bridges read. That knowledge ships in the repo as data bundles: wordfreq frequency (data/wordfreq — 95,641 English words, Zipf ≥ 2.0; data CC BY-SA 4.0) and the Glasgow Norms' nine dimensions (data/glasgow — Scott et al. 2019; 5,553 words, the whole table banked; CC BY 4.0). The governing principle is the owner's (2026-11-17): the tables supply KNOWLEDGE about what is happening in the communication, never the system's values — no table number sets a price, fires a flag by itself, or decides a reply; CoherenceAnalysis prices the flags by kind. Gender association is guarded knowledge: the labelled access path exists, and in v1 its values change no price, flag, referent or pronoun decision, or reply. Not a dimension: unanchored definites ('What table?') — a comprehension gap, handled as a reply matter in the turn loop; no flag rides on it. Language reaches it through the LPU's NormalcyAssessment.<br><br><strong>State:</strong> partial — 35% completed to goal. Placed and built 2026-11-17 at the owner's direction: the three v1 dimensions filed with their standards, the obviousness standard operationalised over the Classification's degree profiles, the labelled table access served. Not built: any dimension beyond the three; any medium's bridge but text's; a norm for whole constructions.<br><strong>Current code:</strong> <span class='mono'>src/fork/normalcy-unit.ts</span>, <span class='mono'>src/fork/wordfreq.ts</span>, <span class='mono'>src/fork/glasgow.ts</span>",ports:['IN — normalcy query','OUT — standards + labelled word knowledge']},
     'quantification-unit':{name:'QuantificationUnit',path:'System ⊃ OntologyCore ⊃ Ontology Knowledge Unit ⊃ QuantificationUnit',body:"The QuantificationUnit: the system's authority on quantity, living inside the Ontology Knowledge Unit over its Numbers slice — the specialist reader of that slice, keeping no private number lore. The slice's banked number row is Suwen ch. 4's: eight/Wood, seven/Fire, five/Earth, nine/Metal, six/Water; numbers the slice does not file have no reading.<br><br><strong>Three jobs:</strong> <strong>READ</strong> quantities stated and implied ('between' implies two); <strong>TRACK</strong> them in a ledger held on the Session — stated amounts, event deltas as transfers and gains, the latest record standing as current; <strong>COMPUTE</strong> from the tracked state — how-many answers, and inconsistency flags: a delta larger than the tracked amount is flagged, never silently applied.<br><br><strong>The Luoshu, built in:</strong> the nine palaces, every row, column and diagonal summing to 15, and the flight path — machinery in the unit, distinct from the OKU's filed numbers. The tension stands labelled: ch. 4 files Wood/east as 8, while the Luoshu places 3 in the east palace and 8 in the north-east.<br><br><strong>State:</strong> partial — 45% completed to goal.<br><strong>Current code:</strong> <span class='mono'>src/fork/quantification.ts</span>",ports:['IN — quantity query','OUT — tracked quantity / computed answer']},
     'units-measurement-unit':{name:'UnitsMeasurement Unit',path:'System ⊃ OntologyCore ⊃ Ontology Knowledge Unit ⊃ QuantificationUnit ⊃ UnitsMeasurement Unit',body:"A quantity is a number OF something, and this sub-unit names the somethings: each unit's dimension (weight, length, volume, count, temperature) and its factor to the dimension's base unit, across three systems in one table. <strong>Traditional Chinese:</strong> 銖/兩/斤 (weight); 寸/尺/丈/里 (length); 合/升/斗 (volume); and the counting measure words 個/隻/條/本/張/頭 — the units the banked classical quantities, bencao dosages above all, are stated in. <strong>Imperial:</strong> ounce/pound/stone; inch/foot/yard/mile; imperial pint/gallon. <strong>SI:</strong> gram/kilogram; metre; litre.<br><br>Conversion runs only within a dimension; across dimensions it refuses, typed. Temperature is a scale, not a factor — Fahrenheit/Celsius convert by offset and ratio, separately. Traditional factors are the <strong>modern standardised values</strong> (斤 = 500 g, 兩 = 50 g, 里 = 500 m, 尺 = 1/3 m, 升 = 1 L), labelled as such — historical values varied by dynasty and no dynasty table is banked. The parser does not yet route unit words in ordinary sentences through here.<br><br>Extended with the <strong>QUDT</strong> port: every SI/Imperial factor cross-checked against the QUDT units vocabulary (CC BY 4.0) — all shared units agreed — and QUDT-supplied coverage added under source 'qudt': the US liquid variants distinguished from their Imperial namesakes (us-pint/us-gallon/us-quart/us-fluid-ounce; imperial quart and fluid ounce), plus two new dimensions, area (acre) and pressure (pascal, psi). The hand table remains the authority; the traditional rows are untouched.<br><br><strong>State:</strong> partial — 60% completed to goal.<br><strong>Current code:</strong> <span class='mono'>src/fork/units-measurement.ts</span>",ports:['IN — unit name','OUT — dimension + factor / typed refusal']},
     'open-unknowns':{name:'Open unknowns',path:'System › Session & Situation › Open unknowns — 50% completed to goal',body:"The register of currently-open unknowns across the conversation's scenes: facts about established scene entities that no turn has supplied yet (the airport's city), held as explicit typed slots ON the scene graphs themselves (owner's ruling, 2026-11-17). This register is a derived view over the scenes — one source of truth, no second store. Awareness's Open gaps reads from it; it does not own the slots. Built 2026-11-17: the view and the mint/fill wiring (the Senses-Scening Unit places fragments into the running scene); one slot-kind rule filed so far (airport → city). Since the envelope build, the register's derived view also reads surviving envelope needs across the session's information objects (listSurvivingNeeds): a reconciliation no unit discharged, an answer still owed, a greeting's situate-owed — read off the person objects' originals, so the register still keeps no second store.<br><br><strong>State:</strong> partial — 50% completed to goal.<br><strong>Current code:</strong> <span class='mono'>src/fork/session.ts</span> (listOpenUnknowns over session.scenes; listSurvivingNeeds over the session's information objects)",ports:['HOLDS — open unknown slots (view)','READ BY — Awareness · Open gaps']},
@@ -1435,7 +1462,7 @@
      the circle at the node where the code stopped, and the stop popover
      appears at that node carrying the exact stop text. Anything not
      recorded is NOT walked and NOT answered — the readout says so plainly.
-     Sessions (anger, soup) must be followed in order: a later turn said
+     Sessions (anger, normalcy, apples, owed) must be followed in order: a later turn said
      first is treated as unrecorded. */
   var NODE_POS={
     'person':[118,300],
@@ -1445,8 +1472,9 @@
     'reasoning/derivation':[422,1590],'reasoning/pricing':[1190,1546],'reasoning/planner':[792,1590],
     'lpu/semantic-assessment':[860,303],
     'lpu/senses-scening-unit':[860,776],
-    'lpu/quantification-language-unit':[860,1012],
-    'lpu/generator':[860,1248],'verbalizer':[1219,915],
+    'lpu/normalcy-assessment':[860,1012],
+    'lpu/quantification-language-unit':[860,1248],
+    'lpu/generator':[860,1484],'verbalizer':[1219,915],
     'ontology-core/ontology-knowledge-unit/correspondence-graph':[536,2248],
     'coherence/coherence-analysis':[1310,1121]
   };
@@ -1456,6 +1484,7 @@
     'reasoning/derivation':'derivation','reasoning/pricing':null,'reasoning/planner':'planner',
     'lpu/semantic-assessment':'semantic-assessment',
     'lpu/senses-scening-unit':'senses-scening-unit',
+    'lpu/normalcy-assessment':'normalcy-assessment',
     'lpu/quantification-language-unit':'quantification-language-unit',
     'lpu/generator':'generator','verbalizer':'verbalizer','ontology-core/ontology-knowledge-unit/correspondence-graph':'correspondence',
     'coherence/coherence-analysis':'coherence-analysis'
@@ -1474,6 +1503,7 @@
     'reasoning/planner':{loc:'Reasoning ⊃ Planner',text:'The Planner selects the next move from the priced results and the situation statement.'},
     'lpu/semantic-assessment':{loc:'LPU ⊃ SemanticAssessment',text:'SemanticAssessment says what the utterance is as a whole, packaged as a semantic object that then travels the system inside an information object\u2019s envelope — act, provenance, confidence, route, and needs.'},
     'lpu/senses-scening-unit':{loc:'LPU ⊃ Senses-Scening Unit',text:'The Senses-Scening Unit maps the turn\u2019s sensory content through the SenseUnit\u2019s framework and binds it into the described scene \u2014 the turn passes here whenever any sense channel is present.'},
+    'lpu/normalcy-assessment':{loc:'LPU ⊃ NormalcyAssessment',text:'NormalcyAssessment reads the assessed information object — its parse, its surface, the Session as it stood before the turn — and files its flags on the envelope: obviousness, self-redundancy, gibberish. Readings about the communication, never the content. Coherence Analysis prices them by kind next; no reply ever speaks one.'},
     'lpu/quantification-language-unit':{loc:'LPU ⊃ QuantificationLanguageUnit',text:'The QuantificationLanguageUnit maps the turn\u2019s quantity content \u2014 numerals, quantifiers, implied counts \u2014 into the QuantificationUnit\u2019s records, and the mentions are applied to the Session\u2019s quantity ledger \u2014 the turn passes here whenever the utterance carries a quantity.'},
     'lpu/generator':{loc:'Generator Unit',text:'The selected move arrives at the Generator as a reply meaning graph and becomes surface wording.'},
     'verbalizer':{loc:'Verbalizer · uses the LPU',text:'The Verbalizer says the recorded reply — it appears in the conversation readout.'},
@@ -1483,27 +1513,29 @@
   var PARSE_PATH=['person','lpu/parser/token','lpu/parser/sense','lpu/parser/valency','lpu/parser/aspect-and-forms','lpu/parser'];
   var RECORDED=[
     {say:'Hello.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','coherence/coherence-analysis','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'Hello.',session:null,idx:0},
-    {say:'I heard the news.',path:PARSE_PATH.concat(['session-and-situation','verbalizer']),reply:'You heard the news. What was in it?',session:'anger',idx:0},
-    {say:'I was furious.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were furious when you heard the news. What did you say when you heard the news?',session:'anger',idx:1},
-    {say:'I shouted at him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You shouted at him. Now that it\u2019s out — what would help you settle?',session:'anger',idx:2},
-    {say:'Is winter cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','reasoning/planner','lpu/generator','verbalizer']),reply:'Winter is most fully cold, and it is most fully dark.',session:null,idx:0},
-    {say:'Is the table cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','reasoning/derivation','ontology-core/ontology-knowledge-unit/correspondence-graph']),reply:'I can\u2019t answer that from what I know: I have nothing on table in my notes.',session:null,idx:0,stop:'decline'},
+    {say:'I heard the news.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:'anger',idx:0},
+    {say:'I was furious.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were furious when you heard the news. What did you say when you heard the news?',session:'anger',idx:1},
+    {say:'I shouted at him.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You shouted at him. Now that it\u2019s out — what would help you settle?',session:'anger',idx:2},
+    {say:'Is winter cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:"That's its definition: winter is cold.",session:null,idx:0},
+    {say:'Is the table cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','coherence/coherence-analysis','verbalizer']),reply:'What table? You just started talking.',session:null,idx:0,note:"No normalcy flag rides on this turn — an unanchored definite is a comprehension gap, not an oddity of the communication: 'table' has no referent in the scene graph or the Session record, and the Classification holds no such kind. The turn asks back; the question's answer need survives, priced, on the envelope."},
     {say:'What was put in the soup?',path:PARSE_PATH.concat(['session-and-situation']),reply:'I can\u2019t answer that from what I know: nothing you have told me says what the agent of \u2018put\u2019 was.',session:null,idx:0,stop:'decline'},
     {say:'I gave him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'You gave. What did you give him?',session:null,idx:0},
-    {say:'Blorp zizzle frak.',path:['person','lpu/parser'],reply:'I couldn\u2019t take that sentence apart — could you put it another way?',session:null,idx:0,stop:'parse'},
-    {say:'The soup is hot.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were hot. What did you say or do?',session:'soup',idx:0},
-    {say:'Is the soup hot?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','reasoning/planner','lpu/generator','verbalizer']),reply:'The soup is hot.',session:'soup',idx:1},
-    {say:'I have 5 apples.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You had the apple. What goes in next?',session:'apples',idx:0},
-    {say:'Sally bought 3 of them.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'You bought the 3. What was in it?',session:'apples',idx:1},
+    {say:'Blorp zizzle frak.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:'What is that? Gibberish?',session:null,idx:0,note:"The gibberish flag (moderate) rides this turn's envelope: no content arrived — of 3 content tokens, 1 failed resolution outright and 2 arrived only as spelling guesses, and none is attested as a real word. Frequency and familiarity evidence graded the flag's strength; they did not fire it. The priced move is the repair question — the flag itself is never spoken as a verdict."},
+    /* Normalcy session — recorded 2026-11-18 by running processTurn on the normalcy build: the soup pair (a statement acknowledged; the same question then answered from the record, its self-redundancy flag priced internally and nowhere spoken) and the winter question (answered from the definition, its obviousness flag likewise internal). */
+    {say:'The soup is hot.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:'normalcy',idx:0},
+    {say:'Is the soup hot?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:'You said so.',session:'normalcy',idx:1,note:"The self-redundancy flag rides this turn's envelope: the record already settles the question — 'soup is hot' stands in the record from turn 1, stated by the speaker themselves. NormalcyAssessment filed it, Coherence Analysis priced it by kind, and the reply answers from the record. The oddity is registered internally — an Awareness-side note on the trace — and nowhere spoken."},
+    {say:'Is winter cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:"That's its definition: winter is cold.",session:'normalcy',idx:2,note:"The obviousness flag rides this turn's envelope: cold is winter's classifying quality for temperature, settled by the Classification itself, without testimony. The reply answers from the definition; the oddity is registered internally and nowhere spoken."},
+    {say:'I have 5 apples.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:'apples',idx:0},
+    {say:'Sally bought 3 of them.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'Ok.',session:'apples',idx:1},
     {say:'How many do I have left?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'You have two apples left.',session:'apples',idx:2},
-    {say:'She blushed the rabbit.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','verbalizer']),reply:'You blushed the rabbit. What was in it?',session:null,idx:0},
+    {say:'She blushed the rabbit.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:null,idx:0},
     /* Owed hello session — recorded 2026-11-18 by running processTurn on the envelope build: 'I found rest.' draws a clarification question, and the 'Hello.' that follows it is answered through the whole route (SemanticAssessment → Session & Situation → Coherence Analysis → Planner) with the situate-owed need surviving onto the reply object. */
     {say:'I found rest.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'Do you mean rest as in sleep, or as in relief?',session:'owed',idx:0},
     {say:'Hello.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','coherence/coherence-analysis','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'Hello.',session:'owed',idx:1,note:"The situate-owed need survives this turn: the clarification question asked at turn 1 still stands unanswered. Coherence Analysis priced it as surviving, and it is carried onto the reply object's envelope — the greeting is returned with the debt on record, and the Open Unknowns view lists it."}
   ];
-  var SESSION_LEN={anger:3,soup:2,apples:3,owed:2};
-  var SESSION_NAME={anger:'Anger session',soup:'Soup session',apples:'Apples session',owed:'Owed hello session'};
-  var sessionProgress={anger:0,soup:0,apples:0,owed:0};
+  var SESSION_LEN={anger:3,normalcy:3,apples:3,owed:2};
+  var SESSION_NAME={anger:'Anger session',normalcy:'Normalcy session',apples:'Apples session',owed:'Owed hello session'};
+  var sessionProgress={anger:0,normalcy:0,apples:0,owed:0};
   /* LIVE mode: set when a sibling engine.js defines window.AnSciLive
      (see the loader at the end of the chat section). Recorded mode is
      the default and is unchanged when no engine is present. */
@@ -1608,7 +1640,7 @@
   var CHIP_GROUPS=[
     {label:'Recorded turns',says:['Hello.','Is winter cold?','Is the table cold?','What was put in the soup?','I gave him.','Blorp zizzle frak.']},
     {label:'Anger session — say in order',session:'anger'},
-    {label:'Soup session — say in order',session:'soup'},
+    {label:'Normalcy session — say in order',session:'normalcy'},
     {label:'Apples session — say in order',session:'apples'},
     {label:'Owed hello session — say in order',session:'owed'}
   ];
@@ -1639,7 +1671,7 @@
       wrap.appendChild(row); chipGroups.appendChild(wrap);
     });
     var parts=[];
-    ['anger','soup','apples','owed'].forEach(function(sk){
+    ['anger','normalcy','apples','owed'].forEach(function(sk){
       var prog=sessionProgress[sk], len=SESSION_LEN[sk];
       if(prog>=len) parts.push('<strong>'+SESSION_NAME[sk]+':</strong> complete — say turn 1 to run it again');
       else { var nx=RECORDED.filter(function(t){return t.session===sk && t.idx===prog;})[0]; parts.push('<strong>'+SESSION_NAME[sk]+':</strong> next is turn '+(prog+1)+' of '+len+' — \u201C'+nx.say+'\u201D'); }
@@ -1825,7 +1857,7 @@
   function resetConversation(){
     cancelWalk('Walk cleared by reset.');
     if(LIVE && window.AnSciLive){ try{ window.AnSciLive.reset(); }catch(e){} }
-    sessionProgress={anger:0,soup:0,apples:0,owed:0};
+    sessionProgress={anger:0,normalcy:0,apples:0,owed:0};
     hideStopPop(); hideInfoPop();
     packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
     helloBubble.textContent='…';
@@ -1902,7 +1934,7 @@
     });
     (function(){
       var lpu=boxEl('lpu'); if(!lpu) return;
-      var kids=[boxEl('parser'),boxEl('semantic-assessment'),boxEl('language-emotion-desire-unit'),boxEl('senses-scening-unit'),boxEl('quantification-language-unit'),boxEl('generator'),boxEl('unplaced-lpu')].filter(Boolean);
+      var kids=[boxEl('parser'),boxEl('semantic-assessment'),boxEl('language-emotion-desire-unit'),boxEl('senses-scening-unit'),boxEl('normalcy-assessment'),boxEl('quantification-language-unit'),boxEl('generator'),boxEl('unplaced-lpu')].filter(Boolean);
       var allHidden=kids.length && kids.every(function(k){ return k.classList.contains('built-hidden'); });
       lpu.classList.toggle('built-hidden',builtOnly && !!allHidden);
       var aw=boxEl('awareness'); if(!aw) return;
@@ -1978,7 +2010,7 @@
      (Parser, Generator, Unplaced) moves only its in-LPU siblings
      ('lpu') — its growth is otherwise absorbed by the LPU frame. */
   function shiftForY(y,deltas,scope){ var s=0; for(var i=0;i<deltas.length;i++){ if(deltas[i].scope===scope && y>=deltas[i].bottom-0.5) s+=deltas[i].delta; } return s; }
-  var LPU_KIDS=['parser','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','quantification-language-unit','generator','unplaced-lpu'];
+  var LPU_KIDS=['parser','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','normalcy-assessment','quantification-language-unit','generator','unplaced-lpu'];
   function scopeForPoint(x,y){ return (x>=222&&x<=998&&y>=118&&y<=968)?'lpu':'all'; }
   function layoutContainers(){
     if(!GEO) snapshotGeo();
@@ -2016,7 +2048,7 @@
     }
     /* submodules first — the Parser's natural height depends on theirs */
     ['token','sense','valency','aspect'].forEach(deriveFlowBox);
-    ['awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','quantification-language-unit','generator','parser','unplaced-lpu','unplaced-sys','ontology-knowledge-unit','emotion-desire','sense-unit'].forEach(deriveFlowBox);
+    ['awareness','session','verbalizer','coherence','knowledge','reasoning','intake','surfaces','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','normalcy-assessment','quantification-language-unit','generator','parser','unplaced-lpu','unplaced-sys','ontology-knowledge-unit','emotion-desire','sense-unit','normalcy-unit'].forEach(deriveFlowBox);
 
     /* geometric containers grow to enclose their (shifted) children */
     function childBottom(id){
@@ -2027,7 +2059,7 @@
     }
     var lpuTop=origTopOf('lpu'), lpuDelta=0;
     if(lpuTop!==null && ('lpu' in origH)){
-      var needLpu=Math.max(childBottom('parser'),childBottom('semantic-assessment'),childBottom('language-emotion-desire-unit'),childBottom('senses-scening-unit'),childBottom('quantification-language-unit'),childBottom('generator'),childBottom('unplaced-lpu'))-lpuTop+24;
+      var needLpu=Math.max(childBottom('parser'),childBottom('semantic-assessment'),childBottom('language-emotion-desire-unit'),childBottom('senses-scening-unit'),childBottom('normalcy-assessment'),childBottom('quantification-language-unit'),childBottom('generator'),childBottom('unplaced-lpu'))-lpuTop+24;
       lpuDelta=Math.max(0,needLpu-origH['lpu']);
       if(lpuDelta>0){ deltas.push({id:'lpu',bottom:lpuTop+origH['lpu'],delta:lpuDelta,scope:'all'}); newH['lpu']=origH['lpu']+lpuDelta; var lpuEl=boxEl('lpu'); if(lpuEl) lpuEl.style.height=newH['lpu']+'px'; if(RECTS['lpu']) RECTS['lpu'].h=newH['lpu']; }
     }
@@ -2035,7 +2067,7 @@
        the Ontology Knowledge Unit and the EmotionDesireUnit inside it */
     var ocTop=origTopOf('ontology-core');
     if(ocTop!==null && ('ontology-core' in origH)){
-      var needOc=Math.max(childBottom('ontology-knowledge-unit'),childBottom('emotion-desire'),childBottom('sense-unit'))-ocTop+24;
+      var needOc=Math.max(childBottom('ontology-knowledge-unit'),childBottom('emotion-desire'),childBottom('sense-unit'),childBottom('normalcy-unit'))-ocTop+24;
       var ocDelta=Math.max(0,needOc-origH['ontology-core']);
       if(ocDelta>0){ deltas.push({id:'ontology-core',bottom:ocTop+origH['ontology-core'],delta:ocDelta,scope:'all'}); newH['ontology-core']=origH['ontology-core']+ocDelta; var ocEl=boxEl('ontology-core'); if(ocEl) ocEl.style.height=newH['ontology-core']+'px'; if(RECTS['ontology-core']) RECTS['ontology-core'].h=newH['ontology-core']; }
     }
@@ -2056,7 +2088,7 @@
       var vn=0; g.el.setAttribute('d',g.d.replace(/-?\d+\.?\d*/g,function(){ var v=vs[vn++]; return Math.round(v*100)/100; }));
     }
     for(i=0;i<GEO.circles.length;i++){ g=GEO.circles[i]; g.el.setAttribute('cy',g.cy+shiftForY(g.cy,deltas,scopeForPoint(g.cx,g.cy))); }
-    var RECT_LPU=['parser','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','quantification-language-unit','generator','unplaced-lpu','token','sense','valency','aspect'];
+    var RECT_LPU=['parser','semantic-assessment','language-emotion-desire-unit','senses-scening-unit','normalcy-assessment','quantification-language-unit','generator','unplaced-lpu','token','sense','valency','aspect'];
     Object.keys(GEO.rects).forEach(function(k){ var rsc=RECT_LPU.indexOf(k)>=0?'lpu':'all'; RECTS[k].y=GEO.rects[k].y+shiftForY(GEO.rects[k].y,deltas,rsc); });
     Object.keys(GEO.nodepos).forEach(function(k){ var p=GEO.nodepos[k]; NODE_POS[k][1]=p[1]+shiftForY(p[1],deltas,scopeForPoint(p[0],p[1])); });
 

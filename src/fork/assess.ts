@@ -25,7 +25,7 @@ import type { Element, ParsedSentence } from "./sentence";
 import type { Session } from "./session";
 import type { AspectReading, GroundingMark, ObjectHole, SemanticObject } from "./semantic-object";
 import { classificationsOf } from "./classify";
-import { emotionAspect } from "./ledu";
+import { emotionAspect, emotionPriorFor } from "./ledu";
 import { buildSensesFace } from "./senses-scening";
 import { computeQuantityMentions } from "./quantification-language";
 import { tierOfProvenance } from "./pricing";
@@ -203,6 +203,39 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     links: { ...(prev ? { follows: prev.id } : {}) },
     trail: [{ unit: "lpu/semantic-assessment", note: `assessed as ${kind}` }],
   };
+  /* The affect-prior consultation (the Glasgow scope
+   * extension, 2026-11-17): where the LEDU derived an emotion
+   * reading for a word, the bridge's affect prior — the
+   * NormalcyUnit's labelled Glasgow valence/arousal/dominance
+   * facts for that word — is consulted and the consultation
+   * filed on the trail. Knowledge alongside the derivation,
+   * never a second derivation: the reading stands exactly as
+   * the EDU derived it, and a word with a prior but no EDU
+   * derivation gets no reading and no annotation. */
+  for (const r of aspects) {
+    if (r.aspect !== "emotion") continue;
+    const prior = emotionPriorFor(r.value);
+    if (!prior) continue;
+    const parts = [
+      prior.valence ? `valence ${prior.valence.mean}/9` : undefined,
+      prior.arousal ? `arousal ${prior.arousal.mean}/9` : undefined,
+      prior.dominance ? `dominance ${prior.dominance.mean}/9` : undefined,
+    ].filter(Boolean);
+    obj.trail.push({
+      unit: "lpu/language-emotion-desire-unit",
+      note:
+        `affect prior consulted for '${r.value}': ${parts.join(", ")} ` +
+        "(the Glasgow Norms, labelled knowledge — the EDU's derivation stands as derived; the prior directed nothing)",
+      data: {
+        affectPrior: {
+          word: r.value,
+          ...(prior.valence ? { valence: prior.valence.mean } : {}),
+          ...(prior.arousal ? { arousal: prior.arousal.mean } : {}),
+          ...(prior.dominance ? { dominance: prior.dominance.mean } : {}),
+        },
+      },
+    });
+  }
   return [obj];
 }
 

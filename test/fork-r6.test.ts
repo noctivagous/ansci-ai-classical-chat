@@ -25,16 +25,25 @@ const LEAK = /\b(wood|fire|earth|metal|wuxing|yin|yang|element|elements|five ele
 const R6_1 = ["I was furious.", "I heard the news.", "The soup is sweet.", "I made the soup yesterday.", "The soup is green."];
 
 test("R6-1: the unexpressed state is taken up at the first statement reply, priced from its origin", () => {
+  // RE-PIN (the Normalcy arc, Part 3c): the move's TIMING
+  // changes, its discipline does not. The test's own title
+  // states the rule — taken up at the FIRST statement reply.
+  // Before the arc, turns 2–4's replies were steering
+  // questions, so the first plain statement reply was turn
+  // 5's; now turn 3 ("The soup is sweet.", a third-person
+  // telling) is answered with the plain acknowledgement, and
+  // that is the first statement reply at which furious (turn
+  // 1) meets the age rule. The gates are unchanged: turn 2
+  // still bars it (furious is one turn old, and its reply is
+  // the venting question besides), the price is still the
+  // origin's, and turn 5 — furious already taken up, and
+  // inside the bound besides — carries no second move.
   const s = newSession();
   const results = run(s, R6_1);
-  for (const r of results.slice(0, 4)) assert.equal(r.trace.initiative, undefined, `no initiative at turn ${r.trace.turn}`);
-  const t5 = results[4];
-  assert.equal(
-    t5.reply,
-    "You were held from sweet, and you were green. What is the green about? " +
-      "That seems to be the thing holding the sweet back. You are furious.",
-  );
-  const init = t5.trace.initiative;
+  for (const r of results.slice(0, 2)) assert.equal(r.trace.initiative, undefined, `no initiative at turn ${r.trace.turn}`);
+  const t3 = results[2];
+  assert.equal(t3.reply, "Ok. You are furious.");
+  const init = t3.trace.initiative;
   assert.ok(init, "the initiative record stands in the trace");
   assert.equal(init!.shape, "unexpressed-state");
   assert.deepEqual(init!.state, { holder: "you", lemma: "furious", turn: 1 });
@@ -42,20 +51,29 @@ test("R6-1: the unexpressed state is taken up at the first statement reply, pric
   assert.equal(init!.sentence, "You are furious.");
   assert.match(init!.ground, /unexpressed/);
   assert.match(init!.ground, /Wood→Fire/);
-  assert.match(init!.ground, /4 turns/);
+  assert.match(init!.ground, /2 turns/);
   assert.equal(init!.pricing?.weakestTier, "attested");
   assert.equal(init!.pricing?.support, 0.9);
   assert.equal(init!.pricing?.level, "plain");
-  // The addressed state (sweet) is NOT the ground — the
-  // exclusion, not the arithmetic, keeps it out.
-  assert.equal(t5.trace.addressedState?.lemma, "sweet");
-  assert.notEqual(init!.state?.lemma, "sweet");
   // The move's graph is the predication's, in the trace.
-  const graph = JSON.parse(t5.trace.replyGraph ?? "{}");
+  const graph = JSON.parse(t3.trace.replyGraph ?? "{}");
   assert.ok(graph.nodes.some((n: { lemma: string }) => n.lemma === "furious"), "the reply graph predicates the standing state");
+  // Turn 5: the restrainer reply stands on its own — furious
+  // was already taken up (and 5 − 3 < 5 bars a second move in
+  // any case). The addressed state (sweet) is not the ground
+  // of anything — the exclusion, not the arithmetic, keeps
+  // it out.
+  const t5 = results[4];
+  assert.equal(t5.trace.initiative, undefined);
+  assert.equal(
+    t5.reply,
+    "You were held from sweet, and you were green. What is the green about? " +
+      "That seems to be the thing holding the sweet back.",
+  );
+  assert.equal(t5.trace.addressedState?.lemma, "sweet");
   assert.equal(s.initiatives.length, 1);
   assert.deepEqual(s.initiatives[0], {
-    turn: 5,
+    turn: 3,
     shape: "unexpressed-state",
     state: { holder: "you", lemma: "furious", stateTurn: 1 },
   });
@@ -100,38 +118,50 @@ const R6_3 = [
   "I made the soup yesterday.", "The pie is sweet.", "I cooked the rice.", "The juice is salty.", "The cake is sweet.",
 ];
 
-test("R6-3: one move in any five turns — fires at 5 and 10, bound-blocked at 7 and 9", () => {
+test("R6-3: one move in any five turns — fires at 3 and 9, bound-blocked at 5 and 7", () => {
+  // RE-PIN (the Normalcy arc, Part 3c): the cadence shifts for
+  // the R6-1 reason — the bound, the age rule, the prices and
+  // the candidate order are unchanged; what changed is which
+  // replies are plain statements. Third-person tellings
+  // (turns 3 and 9 here) now get the plain acknowledgement,
+  // so the first qualifying statement reply comes earlier.
+  // Turn 3 takes the OLDEST candidate (cold, turn 1) — not
+  // worried (turn 2) — at its origin price; turn 9 (9 − 3 = 6,
+  // the bound permits) takes worried at its derived-tier
+  // price, cold already taken up and not taken again.
   const s = newSession();
   const results = run(s, R6_3);
   const fired = results.filter((r) => r.trace.initiative).map((r) => r.trace.turn);
-  assert.deepEqual(fired, [5, 10], "initiative fires at turns 5 and 10 only");
-  // Turn 2: a plain-statement reply, but cold is one turn old — the age rule bars it.
+  assert.deepEqual(fired, [3, 9], "initiative fires at turns 3 and 9 only");
+  // Turn 2: cold is one turn old — the age rule bars it (and
+  // the reply is the worry steering question besides).
   assert.equal(results[1].trace.initiative, undefined);
-  // Turn 5: the OLDEST candidate (cold, turn 1) — not worried (turn 2).
-  const t5 = results[4];
-  assert.equal(t5.trace.initiative?.state?.lemma, "cold");
-  assert.equal(t5.trace.initiative?.pricing?.weakestTier, "attested");
-  assert.equal(t5.trace.initiative?.pricing?.support, 0.95);
-  assert.equal(t5.trace.initiative?.pricing?.level, "plain");
-  assert.ok(t5.reply.endsWith("The soup is cold."));
-  // Turns 7 and 9: candidates stand, replies are plain statements — the bound alone bars them.
+  // Turn 3: the oldest candidate (cold, turn 1), appended to
+  // the acknowledgement.
+  const t3 = results[2];
+  assert.equal(t3.trace.initiative?.state?.lemma, "cold");
+  assert.equal(t3.trace.initiative?.pricing?.weakestTier, "attested");
+  assert.equal(t3.trace.initiative?.pricing?.support, 0.95);
+  assert.equal(t3.trace.initiative?.pricing?.level, "plain");
+  assert.equal(t3.reply, "Ok. The soup is cold.");
+  // Turns 5 and 7: candidates stand, replies are plain
+  // statements — the bound alone bars them (5 − 3 = 2, 7 − 3 = 4).
+  assert.equal(results[4].trace.initiative, undefined);
   assert.equal(
     results[6].reply,
     "You were held from cold, and you were sweet. What is the sweet about? That seems to be the thing holding the cold back.",
   );
-  assert.equal(
-    results[8].reply,
-    "You were held from hot, and you were salty. What is the salty about? That seems to be the thing holding the hot back.",
-  );
-  // Turn 10: the bound permits (10 − 5 = 5); cold, already taken up, is not
-  // taken up again — worried grounds the move, at its derived-tier price.
-  const t10 = results[9];
-  assert.equal(t10.trace.initiative?.state?.lemma, "worried");
-  assert.equal(t10.trace.initiative?.pricing?.weakestTier, "derived");
-  assert.equal(t10.trace.initiative?.pricing?.support, 0.9);
-  assert.equal(t10.trace.initiative?.pricing?.level, "qualified");
-  assert.ok(t10.reply.endsWith("You may be worried."));
-  assert.deepEqual(s.initiatives.map((i) => i.turn), [5, 10]);
+  assert.equal(results[6].trace.initiative, undefined);
+  // Turn 9: worried grounds the move, at its derived-tier price.
+  const t9 = results[8];
+  assert.equal(t9.trace.initiative?.state?.lemma, "worried");
+  assert.equal(t9.trace.initiative?.pricing?.weakestTier, "derived");
+  assert.equal(t9.trace.initiative?.pricing?.support, 0.9);
+  assert.equal(t9.trace.initiative?.pricing?.level, "qualified");
+  assert.ok(t9.reply.endsWith("You may be worried."));
+  // Turn 10: inside the new bound (10 − 9 = 1) — no move.
+  assert.equal(results[9].trace.initiative, undefined);
+  assert.deepEqual(s.initiatives.map((i) => i.turn), [3, 9]);
 });
 
 /* ---------------- R6-4: control (i) — the person's own questions and gaps ---------------- */

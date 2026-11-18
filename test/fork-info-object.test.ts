@@ -160,14 +160,21 @@ test("need lifecycle: the apples question's answer need is discharged by the led
   assert.equal(r3.trace.survivingNeeds, undefined);
 });
 
-test("need lifecycle: a predication question's answer need is discharged by the Planner's reply object", () => {
+test("need lifecycle: a predication question's answer need is discharged by the record answer", () => {
+  // RE-PIN (the Normalcy arc, Part 3a): the speaker stated the
+  // asked predication, so the record answer (the said-so move)
+  // answers it — hand-worded, no Planner reply object — and
+  // the settlement discharges the answer need on the record's
+  // evidence, the discharger being Session & Situation, whose
+  // record settled the question. Planner-discharged answers
+  // stand elsewhere (the derivation routes).
   const s = newSession();
   const [, r2] = run(s, ["The soup is hot.", "Is the soup hot?"]);
-  assert.equal(r2.reply, "The soup is hot.");
-  assert.ok(r2.trace.replyObject, "the answer is a Planner-authored reply object");
+  assert.equal(r2.reply, "You said so.");
+  assert.equal(r2.trace.replyObject, undefined, "the record answer is hand-worded — no reply object");
   const answer = needOf(persons(s)[1], "answer");
   assert.equal(answer.status, "discharged");
-  assert.equal(answer.dischargedBy, "reasoning/planner");
+  assert.equal(answer.dischargedBy, "session-and-situation");
 });
 
 test("need lifecycle: a quantity flag leaves a reconciliation need surviving", () => {

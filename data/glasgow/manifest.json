@@ -1,0 +1,69 @@
+{
+  "v": 1,
+  "source": "The Glasgow Norms (Scott et al. 2019), supplementary data file ESM 2 (CSV)",
+  "edition": "Behavior Research Methods 51:1258-1270; doi:10.3758/s13428-018-1099-3; PMC6538586",
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0). Scott, Keitel, Becirspahic, Yao & Sereno (2019), The Glasgow Norms, Behavior Research Methods 51:1258-1270, doi:10.3758/s13428-018-1099-3.",
+  "counts": {
+    "words": 5553
+  },
+  "dimensions": {
+    "arousal": {
+      "code": "AROU",
+      "scale": 9,
+      "columns": "[mean, sd, n]"
+    },
+    "valence": {
+      "code": "VAL",
+      "scale": 9,
+      "columns": "[mean, sd, n]"
+    },
+    "dominance": {
+      "code": "DOM",
+      "scale": 9,
+      "columns": "[mean, sd, n]"
+    },
+    "concreteness": {
+      "code": "CNC",
+      "scale": 7,
+      "columns": "[mean, sd, n]"
+    },
+    "imageability": {
+      "code": "IMAG",
+      "scale": 7,
+      "columns": "[mean, sd, n]"
+    },
+    "familiarity": {
+      "code": "FAM",
+      "scale": 7,
+      "columns": "[mean, sd, n]"
+    },
+    "aoa": {
+      "code": "AOA",
+      "scale": 7,
+      "columns": "[mean, sd, n]"
+    },
+    "size": {
+      "code": "SIZE",
+      "scale": 7,
+      "columns": "[mean, sd, n]"
+    },
+    "gender": {
+      "code": "GEND",
+      "scale": 7,
+      "columns": "[mean, sd, n]"
+    }
+  },
+  "notes": [
+    "Age of acquisition points are 2-year bands: 1 = 0-2 years ... 7 = 13+ years.",
+    "Gender association: 1 = strongly feminine-associated, 7 = strongly masculine-associated.",
+    "Disambiguated presentations (e.g. 'toast (bread)') are filed under their full published string, lowercased."
+  ],
+  "parts": [
+    {
+      "file": "part-001.json",
+      "kind": "entries",
+      "count": 5553,
+      "bytes": 1548548
+    }
+  ]
+}

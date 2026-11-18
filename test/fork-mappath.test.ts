@@ -73,7 +73,13 @@ test("cycle steering: derivation and pricing run; the hand-worded reply skips th
 });
 
 test("a planner-built answer passes the Planner and the Generator", () => {
-  const [r] = run(newSession(), ["Is winter cold?"]);
+  // RE-PIN (the Normalcy arc, Part 3b): the scenario was "Is
+  // winter cold?" — a classifying question, now answered by
+  // the definitional route (hand-worded; its path is pinned in
+  // fork-normalcy.test.ts). The planner-built pin moves to the
+  // salt derivation, which still runs derivation → pricing →
+  // Planner → Generator.
+  const [r] = run(newSession(), ["Is the salt cold?"]);
   assertWalkShape(r);
   const p = r.trace.mapPath!;
   assert.ok(p.includes("reasoning/planner"));
@@ -82,12 +88,27 @@ test("a planner-built answer passes the Planner and the Generator", () => {
 });
 
 test("a knowledge-gap decline ends at the correspondence graph it searched", () => {
-  const [r] = run(newSession(), ["Is the table cold?"]);
+  // RE-PIN (the Normalcy arc, Part 3d ii): the scenario was
+  // "Is the table cold?" — the definite cold open no longer
+  // declines; the unanchored-definite move asks after the
+  // referent (next test). The indefinite form keeps the
+  // decline's ground exactly.
+  const [r] = run(newSession(), ["Is a table cold?"]);
   assertWalkShape(r);
   assert.ok(r.trace.declineReason);
   // The graph moved into the Ontology Knowledge Unit in the OntologyCore
   // (owner's direction, 2026-11-16); the walk ends at its new address.
   assert.equal(r.trace.mapPath![r.trace.mapPath!.length - 1], "ontology-core/ontology-knowledge-unit/correspondence-graph");
+});
+
+test("an unanchored definite asks after its referent — no decline, no derivation", () => {
+  const [r] = run(newSession(), ["Is the table cold?"]);
+  assertWalkShape(r);
+  assert.equal(r.trace.declineReason, undefined, "the turn asks back instead of declining");
+  assert.equal(r.trace.unanchoredDefinite?.lemma, "table");
+  const p = r.trace.mapPath!;
+  assert.ok(!p.includes("reasoning/derivation"), "nothing was derived");
+  assert.equal(p[p.length - 1], "verbalizer");
 });
 
 test("a missing-role decline ends at the session record — nothing further ran", () => {
@@ -108,11 +129,30 @@ test("a valency gap question is planner-built and generated", () => {
 });
 
 test("a record answer goes from the record through the Planner — no derivation", () => {
-  const [, t2] = run(newSession(), ["The soup is hot.", "Is the soup hot?"]);
+  // RE-PIN (the Normalcy arc, Part 3a): the soup pair's second
+  // turn is the said-so case now (the speaker stated the asked
+  // predication) — its route is pinned in the next test. This
+  // pin keeps the R7.5 record-graph route with a scenario
+  // that still takes it: the standing occupant (hot) is not
+  // the asked quality (cold), so the record graph predicates
+  // the occupant.
+  const [, t2] = run(newSession(), ["The soup is hot.", "Is the soup cold?"]);
   assertWalkShape(t2);
   assert.ok(t2.trace.answeredFromRecord, "the second turn answered from the record");
   const p = t2.trace.mapPath!;
   assert.ok(!p.includes("reasoning/derivation"), "a record answer is not a derivation");
   assert.ok(p.indexOf("reasoning/planner") > p.indexOf("session-and-situation"));
+  assert.equal(p[p.length - 1], "verbalizer");
+});
+
+test("the said-so record answer passes NormalcyAssessment — no Planner, no derivation", () => {
+  const [, t2] = run(newSession(), ["The soup is hot.", "Is the soup hot?"]);
+  assertWalkShape(t2);
+  assert.ok(t2.trace.saidSo, "the second turn answered from the record, in the said-so family");
+  const p = t2.trace.mapPath!;
+  assert.ok(!p.includes("reasoning/derivation"), "a record answer is not a derivation");
+  assert.ok(!p.includes("reasoning/planner"), "the said-so wording is the probe's, not the Planner's");
+  assert.ok(p.indexOf("lpu/normalcy-assessment") > p.indexOf("session-and-situation"), "the bridge sits after Session & Situation");
+  assert.ok(p.indexOf("coherence/coherence-analysis") > p.indexOf("lpu/normalcy-assessment"), "Coherence prices after the bridge");
   assert.equal(p[p.length - 1], "verbalizer");
 });

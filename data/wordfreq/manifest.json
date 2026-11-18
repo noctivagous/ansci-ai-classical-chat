@@ -1,0 +1,24 @@
+{
+  "v": 1,
+  "source": "wordfreq (Robyn Speer): the English 'best' word list of the wordfreq Python package",
+  "edition": "wordfreq 3.1.1",
+  "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) for the data (the wordfreq package's data files); attribution to Robyn Speer and the wordfreq contributors, and to the SUBTLEX word lists (Marc Brysbaert et al.), as the package's license requires.",
+  "counts": {
+    "words": 95641,
+    "fullListWords": 319938
+  },
+  "trim": {
+    "language": "en",
+    "wordlist": "best",
+    "zipfFloor": 2.0,
+    "note": "Zipf = log10 occurrences per billion words. Floors measured at extraction: 3.5 -> 15,089 words; 3.0 -> 29,151; 2.5 -> 53,354; 2.0 -> 95,641 (filed)."
+  },
+  "parts": [
+    {
+      "file": "part-001.json",
+      "kind": "words",
+      "count": 95641,
+      "bytes": 1633769
+    }
+  ]
+}

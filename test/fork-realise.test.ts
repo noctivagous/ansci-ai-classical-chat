@@ -128,12 +128,15 @@ test("realise: a modal state on a verb clause is spoken, not dropped (G3, verb-c
 test("realise: the wired sites speak from the plan (T-R1's three failed turns)", () => {
   const s = newSession();
   const t1 = processTurn(s, "Is winter cold?");
-  // R2: the season question composes the profile set (§7.1/
-  // §8.7 S13) — winter's light-aspect quality joins the asked
-  // one in a single composed reply graph. Itemised in
-  // docs/fork/transcripts/T-R2-results.md.
-  assert.equal(t1.reply, "Winter is most fully cold, and it is most fully dark.");
-  assert.equal(t1.trace.wordingNotDerived, false);
+  // RE-PIN (the Normalcy arc, 2026-11-17): this turn no longer
+  // reaches a wired plan site — 'cold' is winter's classifying
+  // quality, so the definitional answer (Part 3b) answers it,
+  // hand-worded by design (the probe's wording, citing the
+  // definition). The remaining turns below still pin the
+  // wired sites speaking from the plan.
+  assert.equal(t1.reply, "That's its definition: winter is cold.");
+  assert.equal(t1.trace.wordingNotDerived, true, "the definitional answer is the probe's wording, not a generated plan");
+  assert.equal(t1.trace.definitionalAnswer?.quality, "cold");
   const t3 = processTurn(s, "Why is winter cold?");
   assert.equal(t3.reply, "Winter is cold, because it is most fully cold.");
   assert.equal(t3.trace.wordingNotDerived, false);

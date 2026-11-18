@@ -209,6 +209,45 @@ export function priceSurvivingNeeds(object: SemanticObject): Need[] {
   return survivors;
 }
 
+/**
+ * Coherence prices NormalcyAssessment's flags (the Normalcy
+ * arc, 2026-11-17): each flag on the object's envelope is
+ * priced BY KIND, at the standing this table files — the
+ * system's own words for what the flag costs the reply
+ * decision. The pricing NEVER reads the flag's evidence
+ * values: a wordfreq Zipf or a Glasgow familiarity mean may
+ * grade a flag's strength at the bridge, but no table number
+ * reaches this table — kinds price, numbers don't (the
+ * owner's governing principle: the tables supply knowledge
+ * about the communication, not the system's values). The
+ * priced flag is an internal reading: the turn loop records
+ * it as an Awareness-side note on the trace, and no reply
+ * speaks it.
+ */
+const NORMALCY_STANDINGS: Record<string, string> = {
+  obviousness:
+    "the question asks what the classification settles; the reply answers from the classification — the oddity is registered here and nowhere spoken",
+  "self-redundancy":
+    "the record already settles the question; the reply answers from the record — the oddity is registered here and nowhere spoken",
+  gibberish:
+    "no content arrived; the priced move is the repair question — the flag itself is never spoken as a verdict",
+};
+
+export function priceNormalcyFlags(object: SemanticObject): void {
+  const info = informationOf(object);
+  const flags = info?.envelope.normalcy;
+  if (!info || !flags?.length) return;
+  for (const flag of flags) {
+    if (flag.priced) continue;
+    flag.priced = { by: UNIT, standing: NORMALCY_STANDINGS[flag.kind] ?? "registered; nowhere spoken" };
+    object.trail.push({
+      unit: UNIT,
+      note: `normalcy priced (${flag.kind}): ${flag.priced.standing}`,
+      data: { normalcyPriced: flag.kind, ...(flag.strength ? { strength: flag.strength } : {}) },
+    });
+  }
+}
+
 export function analyseInbound(object: SemanticObject, session: Session): void {
   if (object.act.kind === "greeting") {
     const prior = session.objects.some((o) => o.act.kind === "greeting");

@@ -218,6 +218,19 @@ export interface TokenResolution {
   confidence: number;
   rule: string;
   candidates?: { term: string; distance: number; count: number }[];
+  /** The age-of-acquisition PRIOR for the resolution's best
+   *  candidate (the Glasgow scope extension, 2026-11-17): when
+   *  the word the resolution lands on — or, unresolved, the
+   *  best candidate found — is one the Glasgow Norms rate as
+   *  LATE-acquired (mean band 6+ of the 1–7 band scale, i.e.
+   *  typically acquired at 11+ years), the labelled fact rides
+   *  the record: late-acquired words are likelier
+   *  comprehension-gap candidates, which is knowledge for the
+   *  gap machinery (Awareness), never an assumption about the
+   *  person. The prior changes nothing about the resolution —
+   *  outcome, replacement and confidence are computed exactly
+   *  as without it (pinned in test/fork-glasgow-priors.test.ts). */
+  aoaPrior?: string;
 }
 
 export interface ParsedSentence {

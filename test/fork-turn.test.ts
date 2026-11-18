@@ -68,7 +68,17 @@ test("soup scenario: pronoun 'it' resolves to the soup by recency", () => {
   assert.deepEqual(t2.trace.resolutions, [{ pronoun: "it", resolvedTo: "soup" }]);
   assert.match(t2.reply, /soup needs more salt/);
   assert.match(t2.trace.derivationPath ?? "", /salty/, "the follow-up comes from salt's taste correspondence");
-  assert.match(t3.reply, /put the salt in the soup/);
+  // RE-PIN (the Normalcy arc, Part 3c): turn 3 ("I put the
+  // salt in the soup.") is a fully specified telling and now
+  // gets the plain acknowledgement — was the steering echo
+  // "You put the salt in the soup. What goes in next?". The
+  // event itself stands recorded with its roles filled,
+  // which is what the echo used to show.
+  assert.equal(t3.reply, "Ok.");
+  const put = s.events[s.events.length - 1];
+  assert.equal(put.verb, "put");
+  assert.equal(put.theme, "salt");
+  assert.equal(put.location, "soup");
 });
 
 test("decline: a why-question with no causal path declines in shape, naming what's missing", () => {

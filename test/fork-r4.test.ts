@@ -347,16 +347,26 @@ test("r4-4: the length channel at the question site (turn-level)", () => {
     assert.deepEqual(sets[2], sets[0], `turn ${t + 1}: water's priced member set (spoken + held) equals neutral's`);
   }
   const [neutral, wood, water] = runs.map((r) => r.results);
-  assert.equal(neutral[0].reply, "Winter is most fully cold, and it is most fully dark.");
-  assert.equal(wood[0].reply, neutral[0].reply);
-  assert.equal(wood[0].trace.composition?.held, undefined);
-  assert.equal(water[0].reply, "Winter is most fully cold.");
-  assert.deepEqual(water[0].trace.composition?.held?.map((h) => h.quality), ["dark"]);
-  assert.equal(water[0].trace.composition?.held?.[0].pricing.level, "plain", "the held member keeps its price");
+  // RE-PIN (the Normalcy arc, 2026-11-17): turn 1 ("Is winter
+  // cold?") asks for winter's CLASSIFYING quality, so the
+  // definitional answer (Part 3b) preempts the composition
+  // under every composition alike — itself the pin that the
+  // disposition does not reach the definitional route: no
+  // composition record, no bias record, one identical reply.
+  // The length channel's question-site work is pinned on
+  // turn 2 ("Is summer hot?"), which still composes.
+  for (const r of [neutral, wood, water]) {
+    assert.equal(r[0].reply, "That's its definition: winter is cold.");
+    assert.equal(r[0].trace.composition, undefined, "no composition stands behind a definitional answer");
+    assert.equal(r[0].trace.dispositionBias, undefined, "no bias record on the definitional route");
+  }
+  assert.equal(neutral[1].reply, "Summer is most fully hot, and it is most fully bright.");
+  assert.equal(wood[1].trace.composition?.held, undefined);
   assert.equal(water[1].reply, "Summer is most fully hot.");
   assert.deepEqual(water[1].trace.composition?.held?.map((h) => h.quality), ["bright"]);
-  assert.equal(water[0].trace.dispositionBias?.filter((b) => b.channel === "length").length, 1);
-  assert.equal(neutral[0].trace.dispositionBias, undefined);
+  assert.equal(water[1].trace.composition?.held?.[0].pricing.level, "plain", "the held member keeps its price");
+  assert.equal(water[1].trace.dispositionBias?.filter((b) => b.channel === "length").length, 1);
+  assert.equal(neutral[1].trace.dispositionBias, undefined);
 });
 
 /* ---------------------------------------------------------------- */

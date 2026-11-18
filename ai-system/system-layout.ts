@@ -109,14 +109,17 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "lpu/senses-scening-unit": {
       "order": 4
     },
-    "lpu/quantification-language-unit": {
+    "lpu/normalcy-assessment": {
       "order": 5
     },
-    "lpu/generator": {
+    "lpu/quantification-language-unit": {
       "order": 6
     },
-    "lpu/unplaced": {
+    "lpu/generator": {
       "order": 7
+    },
+    "lpu/unplaced": {
+      "order": 8
     },
     "session-and-situation": {
       "order": 4
@@ -243,6 +246,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     },
     "ontology-core/sense-unit": {
       "order": 3
+    },
+    "ontology-core/normalcy-unit": {
+      "order": 4
     },
     "unplaced": {
       "order": 13

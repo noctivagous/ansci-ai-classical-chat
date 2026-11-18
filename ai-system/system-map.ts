@@ -440,6 +440,19 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "The QuantificationLanguageUnit: the LPU's bridge to the QuantificationUnit, maintained inside the LPU (the EDU/LEDU pattern). Inbound: quantity as expressed in language — numerals and number words (one..twenty, hundred, thousand; digits), quantifier words (all/some/none/each/every) as bounded quantity kinds, construction-implied counts, unit words via the UnitsMeasurement Unit — read from the parse as quantity mentions, with the OKU Numbers slice's filed reading attached where one exists; SemanticAssessment attaches the mentions to the object at creation and the turn loop applies them to the Session's ledger. Outbound: a tracked quantity rendered back into language ('two apples') — the how-many reader speaks through it. Uses the QuantificationUnit at its home inside the OKU; the mapping is language's, the framework is the QuantificationUnit's. Placed and built 2026-11-17 at the owner's direction."
     },
     {
+      "id": "lpu/normalcy-assessment",
+      "title": "NormalcyAssessment",
+      "type": "Unit",
+      "parent": "lpu",
+      "state": "partial",
+      "percent": 45,
+      "path": "lpu/normalcy-assessment",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/normalcy-assessment.ts",
+      "summary": "NormalcyAssessment: the LPU's bridge to the NormalcyUnit, maintained inside the LPU (the Senses-Scening shape). It reads a freshly assessed information object — its parse, its surface, the Session as it stood before the turn — and files NORMALCY FLAGS on the object's envelope: obviousness (the question asks what the Classification already settles), self-redundancy (the Session record already settles the question), gibberish (no content arrived — graded, and only on token-resolution failure). The flags describe the communication, never the content, so they ride the envelope side of the wall. The bridge runs after Session & Situation and before CoherenceAnalysis, which prices the flags by kind; a flag is an internal thought only — no reply ever speaks one. Uses the NormalcyUnit; the mapping from text is language's, the standards and the filed word knowledge are the authority's. Placed and built 2026-11-17 at the owner's direction."
+    },
+    {
       "id": "lpu/generator",
       "title": "Generator Unit",
       "type": "Unit",
@@ -853,7 +866,7 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": "—",
-      "summary": "The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table), the EmotionDesireUnit (placed 2026-11-16) and the SenseUnit (placed 2026-11-17), at the owner's direction."
+      "summary": "The system's ontological heart: the container for what the world is made of and how its kinds correspond, in the system's own terms. It holds the Ontology Knowledge Unit (the correspondence graph and the classification table), the EmotionDesireUnit (placed 2026-11-16), the SenseUnit (placed 2026-11-17) and the NormalcyUnit (placed 2026-11-17), at the owner's direction."
     },
     {
       "id": "ontology-core/ontology-knowledge-unit",
@@ -893,6 +906,19 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": "src/fork/sense-unit.ts",
       "summary": "The SenseUnit: the system's medium-neutral authority on the human senses, sitting inside the OntologyCore beside the EDU. Its contents are the join of three provenance-labelled lists, never silently harmonised: the channels from 六根/六塵 (eye→form, ear→sound, nose→smell, tongue→taste, body→touch, mind→mental objects), the per-channel discriminations from Xunzi (Tianlun's five 天官, Rongru's assignments), and the phase correspondences from the OKU's Suwen rows (orifices, colour/sound/flavour quality rows, the ch. 4 odour row, skin as tissue). Its data lives in the OKU, as the EDU's does; it is the specialist authority over that slice, not a private store. Recorded tensions stand labelled: taste double-filed (tongue/Fire, mouth/Earth), touch with no channel phase (its values carry phases), mind's phase unsettled. Boundary with the EDU: this unit owns the channels; the EDU owns the cravings OF the channels. Language reaches it through the LPU's Senses-Scening Unit. Placed 2026-11-17 at the owner's direction; the naming authority built the same day (channel/discrimination lookups, the overripe cross-channel implication filed as derived-tier knowledge); no larger-graph reach yet."
+    },
+    {
+      "id": "ontology-core/normalcy-unit",
+      "title": "NormalcyUnit",
+      "type": "Unit",
+      "parent": "ontology-core",
+      "state": "partial",
+      "percent": 35,
+      "path": "ontology-core/normalcy-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "src/fork/normalcy-unit.ts, src/fork/wordfreq.ts, src/fork/glasgow.ts",
+      "summary": "The NormalcyUnit: the system's medium-neutral authority on the normal shape of a communication, sitting inside the OntologyCore beside the SenseUnit. It files the norm dimensions — obviousness (a predication is obvious iff the OKU Classification settles it without testimony: the asked quality is the kind's classifying quality on its filed degree profile), self-redundancy (the Session record already settles the question), gibberish (no content arrived; the flag requires token-resolution failure, frequency/familiarity evidence grades strength only) — and serves the labelled word knowledge the bridges read: wordfreq frequency (CC BY-SA 4.0) and the Glasgow Norms' nine dimensions (Scott et al. 2019, CC BY 4.0), whole table banked. The governing principle is the owner's (2026-11-17): the tables supply KNOWLEDGE about what is happening in the communication, never the system's values — no table number sets a price, fires a flag by itself, or decides a reply; CoherenceAnalysis prices the flags by kind. Gender association is guarded knowledge: the labelled access path exists, and in v1 its values change no price, flag, referent or pronoun decision, or reply. Language reaches it through the LPU's NormalcyAssessment. Placed and built 2026-11-17 at the owner's direction."
     },
     {
       "id": "verbalizer",
@@ -939,12 +965,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "coherence",
       "state": "partial",
-      "percent": 55,
+      "percent": 60,
       "path": "coherence/coherence-analysis",
       "file": null,
       "external": false,
       "currentCode": "src/fork/coherence.ts",
-      "summary": "Works in both directions, at several levels. Inbound: how what comes in makes sense — the words and the sentence, the situation, the stream of what has been said; what doesn't fit, and what information is missing (e.g. an unknown person's 'I was furious' → 'Furious about what?'). Outbound: used by the Verbalizer — what goes out is checked as it is verbalized, so that what is said makes sense too."
+      "summary": "Works in both directions, at several levels. Inbound: how what comes in makes sense — the words and the sentence, the situation, the stream of what has been said; what doesn't fit, and what information is missing (e.g. an unknown person's 'I was furious' → 'Furious about what?'). Outbound: used by the Verbalizer — what goes out is checked as it is verbalized, so that what is said makes sense too. Since 2026-11-17 it also prices NormalcyAssessment's flags — by KIND, at standings filed in its own words (an obviousness or self-redundancy flag: answered from the classification or the record, the oddity registered and nowhere spoken; a gibberish flag: the priced move is the repair question). The pricing never reads the flags' table evidence: kinds price, numbers don't. Standing raised 55 → 60 for the new pricing duty, which is built and specimen-pinned."
     },
     {
       "id": "surfaces",
@@ -1188,6 +1214,12 @@ export const SYSTEM_MAP: SystemMap = {
     {
       "from": "lpu/quantification-language-unit",
       "to": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "kind": "connection",
+      "label": "uses"
+    },
+    {
+      "from": "lpu/normalcy-assessment",
+      "to": "ontology-core/normalcy-unit",
       "kind": "connection",
       "label": "uses"
     }

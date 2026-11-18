@@ -60,6 +60,29 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { SymSpell, type Suggestion } from "./symspell";
 import { EN_LEXICON, type TokenResolution } from "./sentence";
+import { ageOfAcquisitionOf } from "./normalcy-unit";
+
+/**
+ * The age-of-acquisition prior for a resolution's landing word
+ * (the Glasgow scope extension, 2026-11-17): when the word a
+ * resolution lands on — or, unresolved, its best candidate —
+ * is one the Glasgow Norms rate LATE-acquired (mean band 6 or
+ * above on the filed 1–7 band scale: typically acquired at
+ * 11+ years), the labelled fact is returned for the record.
+ * Knowledge for the gap machinery: a late-acquired word at a
+ * resolution gap is a likelier comprehension-gap candidate.
+ * The prior is attached to the record only — it never changes
+ * an outcome, a replacement, or a confidence.
+ */
+function aoaPriorFor(term: string | undefined): string | undefined {
+  if (!term) return undefined;
+  const fact = ageOfAcquisitionOf(term);
+  if (!fact || fact.mean < 6) return undefined;
+  return (
+    `'${term}' is a late-acquired word (age of acquisition band ${fact.mean}/7 — ${fact.scale}; ${fact.source}) — ` +
+    "a likelier comprehension-gap candidate, as labelled knowledge for the gap machinery"
+  );
+}
 
 export type { TokenResolution };
 
@@ -254,6 +277,7 @@ export function resolveTokenList(
             confidence: Math.round(confidence * 100) / 100,
             rule: "matcher:symspell",
             candidates: topCandidates(usable),
+            ...(aoaPriorFor(best.term) ? { aoaPrior: aoaPriorFor(best.term) } : {}),
           });
           guessesApplied++;
           continue;
@@ -269,6 +293,7 @@ export function resolveTokenList(
           confidence: Math.round(confidence * 100) / 100,
           rule: "matcher:below-threshold",
           candidates: topCandidates(usable),
+          ...(aoaPriorFor(best.term) ? { aoaPrior: aoaPriorFor(best.term) } : {}),
         });
         continue;
       }
@@ -277,6 +302,7 @@ export function resolveTokenList(
     // 5. Unresolved: the token stands; the gap is located here.
     out.push(token);
     const ambiguous = edges !== undefined && canonicals.length > 1;
+    const bestCandidate = ambiguous ? canonicals[0] : all.length > 0 ? topCandidates(all)[0]?.term : undefined;
     resolutions.push({
       surface: token,
         tokenIndex: atIndex,
@@ -289,6 +315,7 @@ export function resolveTokenList(
         : all.length > 0
           ? { candidates: topCandidates(all) }
           : {}),
+      ...(aoaPriorFor(bestCandidate) ? { aoaPrior: aoaPriorFor(bestCandidate) } : {}),
     });
   }
   return { tokens: out, resolutions };
