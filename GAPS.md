@@ -18,7 +18,12 @@ against the system map (all agree), the headline numbers
 re-checked against the coverage report, the depth baseline and
 the Slice A design (all agree), prose and tree appendix
 reconciled item for item, and the stale statuses found were
-corrected in place.
+corrected in place. A correction followed the same day: §5 had
+been compiled from the depth programme's stage-0 baseline and
+the sweep re-checked it against that same document; §5 is now
+stated against the programme's final (stage-5) accounting, and
+the items it had wrongly carried as open are struck there with
+their closing evidence. The sweep's other checks stand.
 
 The summary that prompted this file, from the anchor-expansion
 recap: the coverage slices "widen what the classification machinery
@@ -77,7 +82,7 @@ depth that widening does not buy.
   (user's direction, 2026-11-18): the system's standing picture
   of the person it is talking with — identity known or unknown,
   first contact or returning, and the accumulating picture the
-  conversation itself forms. That picture exists on the map today
+  conversation itself forms. That picture existed on the map
   only as `awareness/surroundings/interlocutor-standing`, a
   Register at 10% whose current code is recorded as "almost
   none"; under this placement it moves into the Social Unit and
@@ -85,6 +90,13 @@ depth that widening does not buy.
   stated as "might be inside Awareness" — to be confirmed when
   the unit is designed; the Interlocutor's inclusion in it is
   settled.
+  *Status (2026-11-18):* placed on the system map — the Social
+  Unit stands inside Awareness holding the Interlocutor (the
+  register, moved from Surroundings, at its new address
+  `awareness/social-unit/interlocutor`) and Conversation; the
+  map's correspondence check passes (82 nodes). What remains of
+  this item is the design itself and the confirmation of the
+  Awareness placement at design time.
   *Closes when:* the Social Unit is designed (its contents, its
   seam with the turn loop and the reply planner, what it may and
   may not originate) and placed on the system map.
@@ -176,8 +188,9 @@ report: the coverage measurement of 2026-11-18.
   P2 CREATURE_CLASS_YUELING_V1 → B stuff categories,
   registered-rules only → C recognised-but-unclassified →
   D per-word overlay mappings), each separately commissioned.
-  Slice A's design is presented and corrected in the fork chat;
-  its five decisions stand open there (§4).
+  Slice A's design was presented and corrected in the fork chat;
+  its five decisions were ruled on 2026-11-18, all as recommended
+  (§4), and the build is commissioned there.
 - **Sense correctness inside "works" is unproven.** A token that
   climbs to one anchor counts as working whether or not that is
   the sense a sentence meant. The measurable proxy (bucket C,
@@ -217,24 +230,93 @@ reaches 82 of its 95 measured animal tokens:
   catfish caveat is gone (a scaleless fish is simply a fish; no
   stop or audit step feature-checks anatomy), and the cetacean
   exclusion is re-grounded on kind-membership rather than bare
-  skin. The design's five decisions stand open in the fork chat.
+  skin. The design's five decisions were ruled on 2026-11-18,
+  all as recommended: (1) taxonomy stops, id-keyed, with
+  exclusion records, certified by the audit; (2) class pricing
+  flat at the P2 cap, 0.80, hops recorded, walk bounded at 6;
+  (3) the classes P2 does not name stay T5, located gaps for a
+  future ruling; (4) the mammal stop ships with the human and
+  cetacean exclusions as data from day one; (5) the mollusk
+  stop's shape is the build audit's to choose between the two
+  pre-approved shapes. The build is commissioned in the fork
+  chat.
 
 ## 5. Parser depth (the depth programme's residue)
 
-Baseline: holdout feature preservation 96.3% vs the 95% bar —
-negation preservation 84.4% against its 90% per-family floor.
+The depth programme (stages 0–5) is complete; its final
+accounting is the stage-5 report. Frozen-holdout state: pooled
+feature preservation 97.7–98.2% against the 95% bar (met);
+parse rate 80/80; generation failures 0.
 
-- **Negation (F1).** Chinese preverbal negation (不 / 没) is
-  dropped at parse: no negation atom in G0, invisible to
-  preservation and to the checker. Recorded as open and small;
-  not yet fixed. English negation preservation is the family's
-  weakest at baseline.
-- **Constructions.** 12 of the 80 holdout sentences still do not
-  parse (copular wh-questions, contractions, fragments among
-  them); the generator throws on 2 of 68 parsed holdout
-  sentences, counted as full loss.
-- **Aspect.** Built to 90% on the map (feature bundles, irregular
-  forms selected, both languages), from a two-value state; the
+Correction (2026-11-18): this section as first compiled
+presented the programme's stage-0 baseline as its current
+state. The struck items below were already closed by stage 5
+when this file was written; they are kept struck, with their
+closing evidence, rather than deleted, so the error stays
+visible in the record.
+
+- ~~**Negation (F1).** Chinese preverbal negation (不 / 没)
+  dropped at parse; negation preservation 84.4% against its
+  90% floor.~~ **Closed by depth stage 5.** Negation is a
+  structured state — the Water state with its Metal carrier,
+  negator and carrier recorded, not a boolean flag; preverbal
+  不/没 is consumed by the parser's main loop and the verbless
+  branch, and 没有 expands to its two morphemes. The negation
+  family preserves at 91.2% against the 90% floor, met by the
+  ontology mechanism it was amended to require; the admission
+  probe ran negator-correct 15/15 in both directions. F1's
+  English twin (copula negation regenerating as the
+  affirmative) was fixed in the same stage.
+- ~~**Constructions and generator throws.** 12 of the 80
+  holdout sentences unparsed; the generator throws on 2 of
+  68.~~ **Closed by stage 5:** parse rate 80/80, generation
+  failures 0. What remains is different in kind: the suppressed
+  family is a declared ontology failure (66.7% on 3 atoms,
+  F.5), its evidence carried by the demo's agentless-passive
+  case.
+- **Construction family — measured (2026-11-18).** A dedicated
+  set (scripts/construction-family-challenge.tsv; report:
+  docs/fork/construction-family-challenge.md) ran 41 core
+  items, built to the eight branches that set
+  `states.construction` (en imperative / existential /
+  weather; zh ba / bei / correlative / a-not-a / serial),
+  through the stage-5 instrument: recognition 41/41, family
+  preservation **89.1% over 46 atoms** — the holdout's
+  50%-on-2 superseded as evidence. Seven of the eight
+  constructions preserve at 100%. The family's whole measured
+  loss is the imperative defect stated next; one further core
+  item's round trip crashed at reparse, also stated.
+- **Imperative construction state is single-use per process.**
+  0/5 on the new set: every imperative records the atom at
+  parse and loses it at reparse, although the generated
+  surface is the identical sentence. Parsing registers the
+  sentence-initial word as a verb in the shared lexicon, and
+  the imperative branch's signature requires that word to NOT
+  be verb-classified — the branch consumes its own
+  precondition. (Stage 5's lost holdout atom was this same
+  case: "Tell me about winter.")
+  *Closes when:* the branch's signature no longer depends on
+  a lexicon state its own parse destroys.
+- **Existential reparse crash on a mass-noun subject.** "There
+  is snow in winter." parses, and generates its identical
+  surface, which then fails to reparse in the instrument's
+  process ("cannot parse existential subject") — the
+  existential chunking is lexicon-state-sensitive, so under
+  the instrument's accounting the item contributes no atoms
+  at all.
+  *Closes when:* a generated existential reparses in any
+  lexicon state the parser itself can produce.
+- **bei with an unattested verb crashes.** 猫被狗咬了 — its
+  verb is not a ZH lexicon entry — throws a TypeError from
+  the bei branch's unchecked dereference instead of failing
+  as a parse error. The sentence is outside the lexicon's
+  territory, but the failure mode is a crash where the
+  parser elsewhere fails cleanly.
+  *Closes when:* the branch guards the missing entry and
+  the sentence fails as a parse error.
+- **Aspect.** Aspect & Forms stands at 90% on the map (feature
+  bundles, irregular forms selected, both languages) and the
+  aspect family scored 100% on the stage-5 holdout; the
   recorded residue is in the aspect challenge set
   (docs/fork/aspect-challenge.md) rather than closed outright.
 - **Sense selection.** The coherence-based sense unit stands at
@@ -245,7 +327,10 @@ negation preservation 84.4% against its 90% per-family floor.
   theorem, and it has no discourse-bearing test set yet:
   single sentences carry no discourse, and in the desk
   evaluation every coherence win was decided by the collocation
-  (Earth) layer, none by the elemental machinery itself.
+  (Earth) layer, none by the elemental machinery itself. The
+  stage-5 verdict names the same wait in the wider programme:
+  the H3 experiment's subjects, and the elemental-prior trial,
+  which waits on verbs carrying classifications (§3).
 - **Valency residue.** Stage 1 closed the original blindness
   (FrameNet signatures, then VerbNet shapes for the verbs
   FrameNet misses: 4,135 of 11,604 verb lemmas checkable). What
@@ -255,16 +340,41 @@ negation preservation 84.4% against its 90% per-family floor.
   obligations (fewer arguments than a frame allows is never
   flagged), lexicalised frames excluded, and VerbNet's own sense
   splits can flag ordinary English (the "ferment" case).
+- **Sealed-run divergences (from §7's expected-graph run,
+  2026-11-18) — unadjudicated.** Against expectations authored
+  blind and sealed before the run, G0 accuracy on the 20 scored
+  holdout items is 76.1%. The divergences group into three
+  shapes: (1) whole-root-predicate substitution — 3 items
+  (H-004, H-047, H-070) carry 66 of the 99 divergences: the
+  expected root predicate's whole bundle is absent and the
+  subject/topic noun carries a predicate bundle instead (rain
+  for flood, tea for food, people for take); (2) wh-question
+  role/person shape — 3 items (H-007, H-008, H-012): the
+  wh-word stands as agent, the pronoun's entity atom is lost,
+  subjectPerson reads unmarked; (3) aspect-value shape — 5
+  items: expected bounded/ongoing aspect atoms lost, `aspect =
+  unmarked` added on the same predicate; with tense on
+  did-questions contradicted past → present on 2 of them.
+  Each is author expectation ≠ parser output; neither side is
+  adjudicated here.
+  *Closes when:* the shapes are adjudicated item by item
+  against the design record — parser defect, author error, or
+  a determination the record never made (§7) — and the parser
+  defects among them are fixed or located as their own gaps.
 
 ## 6. Lexical and token layer
 
 - **Adverbs are absent from the extract.** The WordNet extract
   was trimmed to n/v/a; an adverb token (usually, indoors) has
   no synset in the shipped data even though full WordNet has it.
-- **Inflection gaps in the forms index.** Regular pasts the index
-  does not list (happened → happen) do not resolve through the
-  surface lookup, though wordnet-lex's morphology fallback can
-  catch some in the parser path.
+- ~~**Inflection gaps in the forms index.** Regular pasts the
+  index does not list (happened → happen) do not resolve through
+  the surface lookup, though wordnet-lex's morphology fallback
+  can catch some in the parser path.~~ **Closed 2026-11-18:**
+  the surface lookup gained the regular-morphology fallback
+  (stems accepted only when attested as lemmas; index-listed
+  forms keep precedence); audit over the 2,841 measured tokens:
+  18 gained resolution, 0 changed, 0 lost.
 - **Multiword thinness.** Of 185 genuinely multiword object
   phrases in the 500-object sample, only 60 are single WordNet
   lemmas; the rest resolve word-by-word at best.
@@ -279,9 +389,53 @@ negation preservation 84.4% against its 90% per-family floor.
 
 ## 7. Evidence and evaluation
 
-- **No sealed expected graphs.** G0 correctness is still measured
-  only by the checker proxy; the sealed-set tooling exists
-  (WP2), the sealed expected graphs do not.
+- ~~**No sealed expected graphs.** G0 correctness is still
+  measured only by the checker proxy; the sealed-set tooling
+  exists (WP2), the sealed expected graphs do not.~~ **Closed
+  for the frozen holdout, with a recorded demotion
+  (2026-11-18).** A sealed expected-graph set for the 80
+  holdout sentences now exists (manifest
+  `wp2-holdout80-g0-2026-11-18`, hash `f552b631…e1fc`, seals
+  verified before the run), authored blind — from the sentences
+  and the design documents, in a separate context, sealed
+  before any run — and scored in one custodian run: **G0
+  accuracy 76.1%** (194 of 255 expected atoms) beside **98.3%
+  preservation** on the same items. The gap between the two
+  numbers is the point of the instrument: the round trip is
+  near-total while a quarter of G0's content diverges from
+  independent expectation. *The demotion, stated plainly:* the
+  author was an in-loop agent, not the independent human author
+  WP2 specifies; the set is the approximated form (the stage-3
+  construction set is the precedent), and WP2's
+  independent-human benchmark remains open below. Scored pool:
+  20 of 80 items — see the next item for why.
+- **The design record underdetermines G0 for most of the
+  holdout.** Of the 80 items, 53 were sealed as indeterminate:
+  blind authoring from the documents capped at 25% of the
+  corpus, because what G0 should be exists, at those places,
+  only as parser behaviour. The named blockers: unslottable
+  objects — what the graph does when a verb's object fits no
+  FrameNet slot (~12 items); when-clause link type (5);
+  feel + adjective complement shape (5); bare temporal
+  adjuncts; time/season/location query shapes. A further 7
+  items were exposed before authoring (named in the baseline
+  and stage-5 records, or present in the tooling's own
+  fixture), declared in the manifest and excluded.
+  *Closes when:* the missing determinations are written into
+  the design record — as design, not reverse-engineered from
+  parser output — and a re-authored set scores a materially
+  larger share of the corpus.
+- **Sealed-run divergences, unadjudicated (§5's to settle).**
+  The run's 99 non-preserved atoms group into shapes, the
+  largest being whole-root-predicate substitution (3 items,
+  66 divergences: the expected root predicate's bundle absent,
+  a different node — in all three the subject/topic noun —
+  carrying a predicate bundle instead), wh-question
+  role/person shape (3 items), and aspect-value shape (5
+  items: expected bounded/ongoing atoms lost, `unmarked`
+  added). Each divergence is author expectation ≠ parser
+  output; which side is wrong is not yet adjudicated. They are
+  recorded as a located item in §5.
 - **The evidence is evaluator-shaped.** Probes and benchmarks
   were designed and scored inside this loop; precision has been
   measured against ratified thresholds on the classification
@@ -301,8 +455,10 @@ negation preservation 84.4% against its 90% per-family floor.
 
 ## 8. Standing decisions this file does not settle
 
-- Slice A build: not commissioned — design first, in the fork
-  chat, including rulings on the §4 gaps.
+- Slice A build: commissioned 2026-11-18 in the fork chat, the
+  five design decisions ruled as recommended (§4). The classes
+  with no P2 leg stay T5 under ruling 3 — a future ruling, not
+  this build, settles them.
 - Slices B, C, D: accepted in shape and order (2026-11-18), each
   awaiting its own commission.
 - CSKG reply integration (§1): not taken.
@@ -312,7 +468,12 @@ negation preservation 84.4% against its 90% per-family floor.
   candidates in the harvest record.
 - Push of this file: the word was given on 2026-11-18, with the
   tree appendix below; the findings pass and the finishing sweep
-  were given their push word the same day.
+  were given their push word the same day. A further word the
+  same day covers the batch that followed: the Social Unit's
+  map placement, the Slice A rulings, the §5 correction, and
+  the three slice records (§5 construction family, §6
+  inflection, §7 expected graphs) with their code, tests and
+  run records.
 
 ## Appendix — the gaps as a tree, with task lists
 
@@ -340,7 +501,9 @@ AnSci — GAPS
 │   │   │        identity known/unknown, first contact or returning,
 │   │   │        the picture the conversation itself accumulates
 │   │   ├─ [ ] Define its seam with the turn loop and reply planner
-│   │   └─ [ ] Place it on the system map; confirm Awareness placement
+│   │   └─ [x] Place it on the system map (2026-11-18: Social Unit,
+│              the Interlocutor moved in, Conversation — map check
+│              passes); confirm Awareness placement at design time
 │   ├─ [ ] Run the sealed conversation probe set — 128 probes,
 │   │        sealed 2026-11-18, held outside the repo; commission
 │   │        only, and report against this checklist. Note: no
@@ -374,27 +537,54 @@ AnSci — GAPS
 │          (Erya / Shuowen: habitat + form, correlative —
 │           never anatomical; fish/creature boundaries are fluid)
 │
-├─ 5. Parser depth
-│   ├─ [ ] F1 — stop dropping Chinese preverbal negation
-│   │      (negation preservation 84.4% vs its 90% floor)
-│   ├─ [ ] Close the construction residue (12 of 80 holdout sentences)
-│   ├─ [ ] Stop the generator throwing on 2 of 68 parsed sentences
-│   ├─ [ ] Finish aspect per the challenge set (unit at 90%)
+├─ 5. Parser depth  (depth programme complete — stage-5 accounting)
+│   ├─ [x] F1 — Chinese preverbal negation (closed by stage 5:
+│          structured state; negation 91.2% vs its 90% floor)
+│   ├─ [x] Construction parse residue + generator throws
+│          (closed by stage 5: parse 80/80, generation failures 0)
+│   ├─ [x] Test the construction family properly (done 2026-11-18:
+│          89.1% over 46 atoms on a dedicated set; 7 of 8
+│          constructions at 100%)
+│   ├─ [ ] Fix the imperative construction state (single-use per
+│          process — the branch's signature is consumed by its own
+│          parse; 0/5 on the set)
+│   ├─ [ ] Fix the existential reparse crash (mass-noun subject:
+│          the generated surface will not reparse)
+│   ├─ [ ] Guard the bei branch against unattested verbs (a
+│          TypeError crash instead of a parse error)
+│   ├─ [ ] Answer the suppressed family (declared ontology failure,
+│          F.5 — 66.7% on 3 atoms)
+│   ├─ [ ] Finish aspect per the challenge set (unit at 90%;
+│          family 100% on the stage-5 holdout)
 │   ├─ [ ] Run the H3 sense experiment — needs materials + judges
 │   │      (priority order is an axiom under test, no discourse test set)
+│   ├─ [ ] Adjudicate the sealed-run divergences (76.1% accuracy):
+│          root-predicate substitution ×3 · wh-question role shape
+│          ×3 · aspect-value shape ×5 — parser defect, author error,
+│          or a determination the record never made, item by item
 │   └─ [ ] Valency residue: sense-split the union-of-classes check,
 │          add obligations, admit lexicalised frames (ferment case)
 │
 ├─ 6. Lexical and token layer
 │   ├─ [ ] Restore adverbs (extract trimmed to n/v/a — usually, indoors)
-│   ├─ [ ] Close forms-index inflection gaps (happened → happen)
+│   ├─ [x] Close forms-index inflection gaps (happened → happen)
+│          (closed 2026-11-18: regular-morphology fallback in the
+│           surface lookup; audit 18 gained / 0 changed / 0 lost)
 │   ├─ [ ] Multiword coverage (only 60 of 185 object phrases are lemmas)
 │   ├─ [ ] Make token resolution work in the browser build (Node-only now)
 │   ├─ [ ] Calibrate the error model from attested variant pairs
 │   └─ [ ] Bank confirmed resolutions back (Variant Graph at 45%)
 │
 ├─ 7. Evidence and evaluation
-│   ├─ [ ] Produce sealed expected graphs (G0 still rests on checker proxy)
+│   ├─ [x] Produce sealed expected graphs (done 2026-11-18 for the
+│          frozen holdout: G0 accuracy 76.1% beside 98.3%
+│          preservation; blind in-loop author — demotion recorded)
+│   ├─ [ ] Write the missing design determinations so a re-authored
+│          set can score more of the corpus (53 of 80 indeterminate:
+│          unslottable objects · when-clauses · feel+adjective ·
+│          bare temporals · query shapes)
+│   ├─ [ ] WP2's independent-human benchmark (the full WP2 claim;
+│          human-shaped, cannot be supplied inside this loop)
 │   ├─ [ ] Get judgment from outside this loop (evaluator-shaped evidence;
 │          for conversation, partly answered — sealed probe set, §2, unrun)
 │   ├─ [ ] Get native-speaker judgment on the Chinese side
@@ -402,7 +592,8 @@ AnSci — GAPS
 │          (bars never drop as density scales — applied, not yet proven)
 │
 └─ 8. Standing decisions (not gaps — decisions owed)
-    ├─ [ ] Commission the Slice A build (design first, fork chat)
+    ├─ [x] Commission the Slice A build (commissioned 2026-11-18,
+           fork chat; five decisions ruled as recommended)
     ├─ [ ] Commission slices B, C, D in turn
     ├─ [ ] Decide CSKG reply integration (see §1)
     ├─ [x] Rule on the found-ahead candidates (ruled 2026-11-18, §2)

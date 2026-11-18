@@ -206,19 +206,6 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "Who and what is around the system."
     },
     {
-      "id": "awareness/surroundings/interlocutor-standing",
-      "title": "Interlocutor standing",
-      "type": "Register",
-      "parent": "awareness/surroundings",
-      "state": "partial",
-      "percent": 10,
-      "path": null,
-      "file": "interlocutor-standing.ts",
-      "external": false,
-      "currentCode": "almost none",
-      "summary": "Who the system is talking to: identity known or unknown, first contact or returning."
-    },
-    {
       "id": "awareness/surroundings/standing-topics",
       "title": "Standing topics",
       "type": "Register",
@@ -308,6 +295,45 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": "src/fork/plan.ts (gap questions)",
       "summary": "What is currently missing that the other party could supply."
+    },
+    {
+      "id": "awareness/social-unit",
+      "title": "Social Unit",
+      "type": "Unit",
+      "parent": "awareness",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "awareness/social-unit",
+      "file": null,
+      "external": false,
+      "currentCode": "none",
+      "summary": "Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Placed inside Awareness by the owner's direction (2026-11-18, GAPS §2); the unit's design — its seam with the turn loop and the reply planner, what it may and may not originate — is a separate item, not yet taken. Not built: no social layer exists yet."
+    },
+    {
+      "id": "awareness/social-unit/interlocutor",
+      "title": "The Interlocutor",
+      "type": "Register",
+      "parent": "awareness/social-unit",
+      "state": "partial",
+      "percent": 10,
+      "path": null,
+      "file": "interlocutor-standing.ts",
+      "external": false,
+      "currentCode": "almost none",
+      "summary": "The system's standing picture of the person it is talking with: identity known or unknown, first contact or returning, and the picture the conversation itself accumulates. This is the register formerly at awareness/surroundings/interlocutor-standing, moved into the Social Unit by the owner's direction (2026-11-18) to be built out there as the Interlocutor."
+    },
+    {
+      "id": "awareness/social-unit/conversation",
+      "title": "Conversation",
+      "type": "Container",
+      "parent": "awareness/social-unit",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "awareness/social-unit/conversation",
+      "file": null,
+      "external": false,
+      "currentCode": "none",
+      "summary": "Conversation lives inside the Social Unit: greeting and leave-taking, identity and capabilities as socially presented, thanks, acknowledgement, turn-taking. Not built."
     },
     {
       "id": "lpu",

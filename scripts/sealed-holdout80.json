@@ -1,0 +1,3313 @@
+{
+  "manifest_id": "wp2-holdout80-g0-2026-11-18",
+  "created": "2026-11-18T11:50:00Z",
+  "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+  "roles": {
+    "author": "blind authoring pass, in-loop (Muse subagent, separate context, 2026-11-18) — independence APPROXIMATED per the commission: authored from the sentences and the design record only, sealed before any run; NOT an independent author, and not the custodian. C.5 standing demotions apply: internal evidence only.",
+    "operator": "operator (phase 2, separate pass — runs the blind operator view only)",
+    "custodian": "project custodian (parent agent) — holds this manifest, verifies before and after the run, scores"
+  },
+  "items": [
+    {
+      "item_id": "H-001",
+      "item_text": "It's raining.",
+      "language": "en",
+      "source_id": "frozen-holdout H1 · scripts/cskg-evaluation-e5-causal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "rain#0",
+            "value": "rain"
+          },
+          {
+            "family": "voice",
+            "key": "rain#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "rain#0|aspect:ongoing",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "rain#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "rain#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "rain#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "construction",
+            "key": "rain#0|construction",
+            "value": "weather"
+          },
+          {
+            "family": "number",
+            "key": "rain#0|subjectPerson",
+            "value": "unmarked"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "f0bb3f075a6e3b984b9a24f38a4f6ccb68a833f9b3a794a37e700010a99d30ce"
+    },
+    {
+      "item_id": "H-002",
+      "item_text": "We moved the picnic indoors because of the rain.",
+      "language": "en",
+      "source_id": "frozen-holdout H2 · scripts/cskg-evaluation-e5-causal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the causal adjunct ('because of the rain') has no edge type stated in the design record, and rain's classification carriage inside an adjunct PP is contradicted by the fixture precedent (a tabled concept, garden, carries 'none' in a location PP).",
+      "content_hash": "b6cd6626bc5747744fd43d6fc932a38b9ceef6df16669c99dd9388d25f842bbf"
+    },
+    {
+      "item_id": "H-003",
+      "item_text": "Why did we move the picnic?",
+      "language": "en",
+      "source_id": "frozen-holdout H3 · scripts/cskg-evaluation-e5-causal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "move#0",
+            "value": "move"
+          },
+          {
+            "family": "voice",
+            "key": "move#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "move#0|aspect:bounded",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "move#0|tense",
+            "value": "past"
+          },
+          {
+            "family": "mood",
+            "key": "move#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "mood",
+            "key": "move#0|questionKind",
+            "value": "why"
+          },
+          {
+            "family": "negation",
+            "key": "move#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "negation",
+            "key": "move#0|aux",
+            "value": "did"
+          },
+          {
+            "family": "number",
+            "key": "move#0|subjectPerson",
+            "value": "1pl"
+          },
+          {
+            "family": "roles",
+            "key": "move#0|agent",
+            "value": "we"
+          },
+          {
+            "family": "roles",
+            "key": "move#0|theme",
+            "value": "picnic"
+          },
+          {
+            "family": "entity",
+            "key": "we#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "picnic#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "picnic#0|det",
+            "value": "the"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "408ec0c66a5ab031b9a7df15c1a5b786da95c8a9ae674d5eae2ff190d63aa343"
+    },
+    {
+      "item_id": "H-004",
+      "item_text": "The rain flooded the garden.",
+      "language": "en",
+      "source_id": "frozen-holdout H4 · scripts/cskg-evaluation-e5-causal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "flood#0",
+            "value": "flood"
+          },
+          {
+            "family": "voice",
+            "key": "flood#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "flood#0|aspect:bounded",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "flood#0|tense",
+            "value": "past"
+          },
+          {
+            "family": "mood",
+            "key": "flood#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "flood#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "flood#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "roles",
+            "key": "flood#0|agent",
+            "value": "rain"
+          },
+          {
+            "family": "roles",
+            "key": "flood#0|theme",
+            "value": "garden"
+          },
+          {
+            "family": "entity",
+            "key": "rain#0",
+            "value": "Water"
+          },
+          {
+            "family": "entity",
+            "key": "rain#0|det",
+            "value": "the"
+          },
+          {
+            "family": "entity",
+            "key": "garden#0",
+            "value": "Earth"
+          },
+          {
+            "family": "entity",
+            "key": "garden#0|det",
+            "value": "the"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "89d178b4b7dd116200ad00a77d3f50c89cb0dd03a0cdd974d86e4bed35ba4c3b"
+    },
+    {
+      "item_id": "H-005",
+      "item_text": "Why is the garden flooded?",
+      "language": "en",
+      "source_id": "frozen-holdout H5 · scripts/cskg-evaluation-e5-causal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: per-sentence parser records for this item (the stage-0 F3 generator-throw note and a baseline atom record naming it) were encountered in inherited context before this authoring pass. Excluded from scoring so blindness is not pretended.",
+      "content_hash": "a9866858765cf1000f631321cc963ca2f4fc29a36f14d2c79587c06a38b4d7fa"
+    },
+    {
+      "item_id": "H-006",
+      "item_text": "My brother is bringing his new girlfriend.",
+      "language": "en",
+      "source_id": "frozen-holdout H6 · scripts/cskg-evaluation-e5-people.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "bring#0",
+            "value": "bring"
+          },
+          {
+            "family": "voice",
+            "key": "bring#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect:ongoing",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "bring#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "bring#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "bring#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|agent",
+            "value": "brother"
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|theme",
+            "value": "girlfriend"
+          },
+          {
+            "family": "entity",
+            "key": "brother#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "brother#0|det",
+            "value": "my"
+          },
+          {
+            "family": "entity",
+            "key": "girlfriend#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "girlfriend#0|det",
+            "value": "his"
+          },
+          {
+            "family": "entity",
+            "key": "new#0",
+            "value": "none"
+          },
+          {
+            "family": "attachment",
+            "key": "girlfriend|qualifies",
+            "value": "new"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "c5e69042d961a46c1dff82971d544a84a34f2df6a5afb9c0dd876c422b8cca0d"
+    },
+    {
+      "item_id": "H-007",
+      "item_text": "What is he bringing?",
+      "language": "en",
+      "source_id": "frozen-holdout H7 · scripts/cskg-evaluation-e5-people.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "bring#0",
+            "value": "bring"
+          },
+          {
+            "family": "voice",
+            "key": "bring#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect:ongoing",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "bring#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "bring#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "bring#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|agent",
+            "value": "he"
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|theme",
+            "value": "what"
+          },
+          {
+            "family": "entity",
+            "key": "he#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "what#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "what#0|questionWord",
+            "value": "true"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "6eee440c91f175ffee7ffa2a7073fabb01a936dd0e27002b1cbf107127fcd7f2"
+    },
+    {
+      "item_id": "H-008",
+      "item_text": "Who is he bringing?",
+      "language": "en",
+      "source_id": "frozen-holdout H8 · scripts/cskg-evaluation-e5-people.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "bring#0",
+            "value": "bring"
+          },
+          {
+            "family": "voice",
+            "key": "bring#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect:ongoing",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "bring#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "bring#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "bring#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|agent",
+            "value": "he"
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|theme",
+            "value": "who"
+          },
+          {
+            "family": "entity",
+            "key": "he#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "who#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "who#0|questionWord",
+            "value": "true"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "1691cfeba2a95541bb472d4bb7050b6a7cac4d9d693fafe6c5228bd4a3ccc0ea"
+    },
+    {
+      "item_id": "H-009",
+      "item_text": "Sarah is my sister.",
+      "language": "en",
+      "source_id": "frozen-holdout H9 · scripts/cskg-evaluation-e5-people.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "sister#0",
+            "value": "sister"
+          },
+          {
+            "family": "voice",
+            "key": "sister#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "sister#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "sister#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "sister#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "sister#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "sister#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "sarah#0",
+            "value": "none"
+          },
+          {
+            "family": "connective",
+            "key": "sarah|predicated-as|sister",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "c1426b4ac7b1897711cce80b8095bf5da09ff71d7c374beb9dcbaf988c053ba2"
+    },
+    {
+      "item_id": "H-010",
+      "item_text": "Who is Sarah?",
+      "language": "en",
+      "source_id": "frozen-holdout H10 · scripts/cskg-evaluation-e5-people.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "who#0",
+            "value": "who"
+          },
+          {
+            "family": "voice",
+            "key": "who#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "who#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "who#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "who#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "who#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "who#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "sarah#0",
+            "value": "none"
+          },
+          {
+            "family": "connective",
+            "key": "sarah|predicated-as|who",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "8cfebb1e84960ee19ae8729a19ce1b06f341713512f4695f6586eacdd3efe4f6"
+    },
+    {
+      "item_id": "H-011",
+      "item_text": "I'm making a big pot of soup Saturday.",
+      "language": "en",
+      "source_id": "frozen-holdout H11 · scripts/cskg-evaluation-e5-soup.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the patient NP's head (pot vs soup in 'a big pot of soup') and the bare temporal 'Saturday' are both undetermined — Saturday is not a classified time node, and F.4's time route requires one.",
+      "content_hash": "cdb62cfbf361a7687c5bf2395b422985fa6216f727eef8e51985169d9925d0e7"
+    },
+    {
+      "item_id": "H-012",
+      "item_text": "What are you making?",
+      "language": "en",
+      "source_id": "frozen-holdout H12 · scripts/cskg-evaluation-e5-soup.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "make#0",
+            "value": "make"
+          },
+          {
+            "family": "voice",
+            "key": "make#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "make#0|aspect:ongoing",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "make#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "make#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "make#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "make#0|subjectPerson",
+            "value": "2"
+          },
+          {
+            "family": "roles",
+            "key": "make#0|agent",
+            "value": "you"
+          },
+          {
+            "family": "roles",
+            "key": "make#0|patient",
+            "value": "what"
+          },
+          {
+            "family": "entity",
+            "key": "you#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "what#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "what#0|questionWord",
+            "value": "true"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "aa3211b86aa9be5bbd5fb40e261feeb9ef7d961cf6229e1da0abca86e9bb62c6"
+    },
+    {
+      "item_id": "H-013",
+      "item_text": "When is it?",
+      "language": "en",
+      "source_id": "frozen-holdout H13 · scripts/cskg-evaluation-e5-soup.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the time-query graph ('When is it?') — its root and edge shape are not determined by the design record.",
+      "content_hash": "6af4b9c1b6bf942b923786b858d9ea5f127ea3dabcb72cc6738ece1d2aa6b725"
+    },
+    {
+      "item_id": "H-014",
+      "item_text": "What's in it?",
+      "language": "en",
+      "source_id": "frozen-holdout H14 · scripts/cskg-evaluation-e5-soup.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: containment ('What's in it?') — the contains relation is not atomised by features.ts and the root of a containment question is not determined.",
+      "content_hash": "421b8c053519831d7610219cb445f1b05dfa791c1847cf99322184ece257ba76"
+    },
+    {
+      "item_id": "H-015",
+      "item_text": "I feel tired today.",
+      "language": "en",
+      "source_id": "frozen-holdout H15 · scripts/cskg-evaluation-e5-state.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the feel + adjective-complement construction's G0 shape is not stated in the design documents available to this pass; the bare temporal 'today' compounds it.",
+      "content_hash": "f999294f578abbcc9f667dbfa8b3f704f17f087f4744a71b631287bfee0a82c7"
+    },
+    {
+      "item_id": "H-016",
+      "item_text": "I feel much better now.",
+      "language": "en",
+      "source_id": "frozen-holdout H16 · scripts/cskg-evaluation-e5-state.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: feel + adjective complement (as H15), plus the comparative 'better' structure.",
+      "content_hash": "962cc1a1daa08b9b01065a6fee750334852fb02ed47730c279287918e42d1fea"
+    },
+    {
+      "item_id": "H-017",
+      "item_text": "How am I feeling?",
+      "language": "en",
+      "source_id": "frozen-holdout H17 · scripts/cskg-evaluation-e5-state.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: feel + adjective complement (as H15); the 'how' questionKind is also undocumented.",
+      "content_hash": "5556ceda81863e121c121362d7e1550988caff7db741a2b4e7001b70d946c4bf"
+    },
+    {
+      "item_id": "H-018",
+      "item_text": "First we set up the tent, then we cooked dinner.",
+      "language": "en",
+      "source_id": "frozen-holdout H18 · scripts/cskg-evaluation-e5-temporal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: two-clause event sequencing — D4 refuses the cycles for ordering and the record names no atomised relation for the clause link; 'set up' and 'cook' derivations compound it.",
+      "content_hash": "1bfa8558928dcfcebbef57ebe3220595787cb52e6bd45c38d19f8032d7485a07"
+    },
+    {
+      "item_id": "H-019",
+      "item_text": "Then we lit the campfire.",
+      "language": "en",
+      "source_id": "frozen-holdout H19 · scripts/cskg-evaluation-e5-temporal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: light -> Setting_fire signature maps no object slot (Kindler/Flame/Flammables unmapped), so 'the campfire' has no determinable role.",
+      "content_hash": "19a0a7fe43c0306875b3f817e0f03522cbbf9d6c2874165439213e7ab88b2b48"
+    },
+    {
+      "item_id": "H-020",
+      "item_text": "Which happened first?",
+      "language": "en",
+      "source_id": "frozen-holdout H20 · scripts/cskg-evaluation-e5-temporal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: event-ordering query (as H18) over 'happen', whose documented selector signature (Becoming_aware) is a sense-blind artefact.",
+      "content_hash": "8f09571ed711f0003b78a53b999fdb0e07708e6b26c4f196ef3a5dac6b45a12b"
+    },
+    {
+      "item_id": "H-021",
+      "item_text": "Did the tent come before the campfire?",
+      "language": "en",
+      "source_id": "frozen-holdout H21 · scripts/cskg-evaluation-e5-temporal.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the 'before' ordering relation between events is not atomised in any stated form (D4).",
+      "content_hash": "7fc001bc4608f42de0e2ddbc4858b32883c25bc05a51d4f9fcbe526ec5bf0cba"
+    },
+    {
+      "item_id": "H-022",
+      "item_text": "How do people feel when they lose their keys?",
+      "language": "en",
+      "source_id": "frozen-holdout H22 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: a stage-5 family narrative encountered in inherited context names this item's class ('How do people feel...' — interrogative do-support carrier losses in question generation). The quotation is truncated and its referent is ambiguous among H22/H26/H29; all three are marked exposed rather than guessing which.",
+      "content_hash": "9fd07b834c4dbde2692fcc1678126e7081ffdfee6c8355d0231731b0705d4833"
+    },
+    {
+      "item_id": "H-023",
+      "item_text": "What do people want when they can't sleep?",
+      "language": "en",
+      "source_id": "frozen-holdout H23 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: want -> Desiring signature maps no object slot (Event/Focal_participant unmapped), so the questioned 'what' has no determinable role; the when-clause link type is also undetermined, and the subordinate clause carries its own negated modal.",
+      "content_hash": "021045832c7b1b776e1c07e46afba6a2bc8d07d04b40993533f0acd67c2ecf08"
+    },
+    {
+      "item_id": "H-024",
+      "item_text": "What happens when you stay up all night?",
+      "language": "en",
+      "source_id": "frozen-holdout H24 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: happen (selector artefact, as H20) plus an undetermined when-clause link.",
+      "content_hash": "30ed210569853266d1c8aed638295f1d087fc49ef01da7cf51196a65bcb683e8"
+    },
+    {
+      "item_id": "H-025",
+      "item_text": "How do people react when someone apologizes?",
+      "language": "en",
+      "source_id": "frozen-holdout H25 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: react -> Response maps no usable object structure; 'how' questionKind undocumented; when-clause link undetermined; apologize has no FrameNet LU.",
+      "content_hash": "bbcf970dcbbccb649a936beafa428ae30e292f1959a72bc0e87e75f64351b7dc"
+    },
+    {
+      "item_id": "H-026",
+      "item_text": "How do people feel when they get lost?",
+      "language": "en",
+      "source_id": "frozen-holdout H26 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: as H22 (the truncated 'How do people feel...' quotation cannot be assigned to one of H22/H26/H29).",
+      "content_hash": "c2adddc23643184475e6923c6b7b3a850ec557661755ab495578908a9878d630"
+    },
+    {
+      "item_id": "H-027",
+      "item_text": "What do people need when they go to the beach?",
+      "language": "en",
+      "source_id": "frozen-holdout H27 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the when-clause link type is not stated in the record (both clause cores are determinable — need [theme], go [goal] — but the link between them is not).",
+      "content_hash": "7557b9fbe9b60a154ecdf1832faf12fb843a7c26e36b21fe14846c32d7224766"
+    },
+    {
+      "item_id": "H-028",
+      "item_text": "What do people intend when they apologize?",
+      "language": "en",
+      "source_id": "frozen-holdout H28 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: intend -> Purpose signature maps no object slot (Means/Attribute/Value unmapped); when-clause link undetermined.",
+      "content_hash": "98615a9098c74d411da4db404df6bbaa2a797ac47f13c49bf1ae665301e3ddfc"
+    },
+    {
+      "item_id": "H-029",
+      "item_text": "How do people feel when it rains?",
+      "language": "en",
+      "source_id": "frozen-holdout H29 · scripts/cskg-evaluation-events.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: as H22 (the truncated 'How do people feel...' quotation cannot be assigned to one of H22/H26/H29).",
+      "content_hash": "0ba8ae2b0d86ae3f8ad9f2f6f10cb80aeb49bce807b2be3db890345ccaac1da7"
+    },
+    {
+      "item_id": "H-030",
+      "item_text": "I'm making a big pot of soup on Saturday.",
+      "language": "en",
+      "source_id": "frozen-holdout H30 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: as H11 (patient NP head; 'on Saturday' — Saturday is not a classified time node).",
+      "content_hash": "98fc7d918111f6848c00ec362c8ef1ac9f608fdf77b9980b318a7ba3769850b0"
+    },
+    {
+      "item_id": "H-031",
+      "item_text": "I'm thinking of selling my bike online.",
+      "language": "en",
+      "source_id": "frozen-holdout H31 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: think -> Awareness maps no complement slot (Content/Topic unmapped); the of-gerund chain's graph is not determined.",
+      "content_hash": "abf8419c4b455a19833527b9425e164128244d0c0aa8ebe3fa6d3fae6b38b318"
+    },
+    {
+      "item_id": "H-032",
+      "item_text": "My bananas have gone all brown.",
+      "language": "en",
+      "source_id": "frozen-holdout H32 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: 'have gone all brown' — the EN go + adjective change-of-state complement shape (a resultative?) is not stated in the record.",
+      "content_hash": "696205bc8d84dc1a7be3a7a7f376d4e87c0003d5dc1ec5e90262de8c41dd250b"
+    },
+    {
+      "item_id": "H-033",
+      "item_text": "It's the third day of rain here.",
+      "language": "en",
+      "source_id": "frozen-holdout H33 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the definite-description structure ('the third day of rain') and the bare locative 'here' — neither graph is determined.",
+      "content_hash": "5d78f5c363d30ebb1ffab1798d02804f661b210c5f6aec8d987971d9555e8c63"
+    },
+    {
+      "item_id": "H-034",
+      "item_text": "I'm thinking of buying a winter coat.",
+      "language": "en",
+      "source_id": "frozen-holdout H34 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: as H31 (think-of chain; the embedded buy is determinable but the chain is not).",
+      "content_hash": "dbef826d00b913bdeb04d7f9289b0f4c421c9c94fe8d9404270ed1bb71e80fd3"
+    },
+    {
+      "item_id": "H-035",
+      "item_text": "I feel tired all the time.",
+      "language": "en",
+      "source_id": "frozen-holdout H35 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: feel + adjective complement (as H15).",
+      "content_hash": "ed75adcdb29cdec39f6e59a1dd50c072e921569ce6ddd091979d590a105a788c"
+    },
+    {
+      "item_id": "H-036",
+      "item_text": "Why do my eyes water when I chop onions?",
+      "language": "en",
+      "source_id": "frozen-holdout H36 · scripts/cskg-evaluation-roles.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the when-clause link is undetermined and 'water' (verb) has no FrameNet LU; the main clause alone does not make the item determinate.",
+      "content_hash": "42c182b1ad7889126857812033967a24f54dcc4cde75dfe7c01d69794a11df37"
+    },
+    {
+      "item_id": "H-037",
+      "item_text": "What do you remember about me?",
+      "language": "en",
+      "source_id": "frozen-holdout H37 · scripts/cskg-evaluation-sessions-2.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: remember -> Memory maps no object slot (Content/Topic unmapped); the about-PP's role is not determined.",
+      "content_hash": "42349ccbcbcd69431abea84197ea081740c9c7397fd6c31baa588d96b256573e"
+    },
+    {
+      "item_id": "H-038",
+      "item_text": "I'm making soup again tonight.",
+      "language": "en",
+      "source_id": "frozen-holdout H38 · scripts/cskg-evaluation-sessions-2.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: bare temporal 'tonight' and the adverb 'again' — their attachments are undetermined (the same gap as H11's Saturday).",
+      "content_hash": "296249642f5a79af808158731e8fdc9bf5b1e2871fa7207ca16c01c619323e4f"
+    },
+    {
+      "item_id": "H-039",
+      "item_text": "I feel tired.",
+      "language": "en",
+      "source_id": "frozen-holdout H39 · scripts/cskg-evaluation-sessions-2.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: feel + adjective complement (as H15).",
+      "content_hash": "e84b6ed5e87af7d3143db1cff8f5b2fb70801cea653d12fb9ebc161dd6cb0441"
+    },
+    {
+      "item_id": "H-040",
+      "item_text": "My name is Sam.",
+      "language": "en",
+      "source_id": "frozen-holdout H40 · scripts/cskg-evaluation-sessions.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "sam#0",
+            "value": "sam"
+          },
+          {
+            "family": "voice",
+            "key": "sam#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "sam#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "sam#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "sam#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "sam#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "sam#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "name#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "name#0|det",
+            "value": "my"
+          },
+          {
+            "family": "connective",
+            "key": "name|predicated-as|sam",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "100b4b437a4c1aadc97fb7f1e4631ab4534496d17fcd2ca7c6120d3687d69a2a"
+    },
+    {
+      "item_id": "H-041",
+      "item_text": "I live in Chicago.",
+      "language": "en",
+      "source_id": "frozen-holdout H41 · scripts/cskg-evaluation-sessions.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "live#0",
+            "value": "live"
+          },
+          {
+            "family": "voice",
+            "key": "live#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "live#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "live#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "live#0|mood",
+            "value": "indicative"
+          },
+          {
+            "family": "negation",
+            "key": "live#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "live#0|subjectPerson",
+            "value": "1sg"
+          },
+          {
+            "family": "roles",
+            "key": "live#0|agent",
+            "value": "i"
+          },
+          {
+            "family": "roles",
+            "key": "live#0|location",
+            "value": "chicago@in"
+          },
+          {
+            "family": "entity",
+            "key": "i#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "chicago#0",
+            "value": "none"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "bb3bf3904fb6f5962bbe04c927ace42008b2212d790c39b6d8ffac4c2ed4f674"
+    },
+    {
+      "item_id": "H-042",
+      "item_text": "My brother likes soup.",
+      "language": "en",
+      "source_id": "frozen-holdout H42 · scripts/cskg-evaluation-sessions.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: like -> Experiencer_focus maps no object role (Content/Topic/Event unmapped); the record does not state how an unslottable object attaches in G0.",
+      "content_hash": "0dff3eaf31c5dd9d03486e77a1a50f8a8de50b0218c6b7e588823fa861084016"
+    },
+    {
+      "item_id": "H-043",
+      "item_text": "What season is it?",
+      "language": "en",
+      "source_id": "frozen-holdout H43 · scripts/cskg-evaluation-sydney.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the season/time query graph ('What season is it?') — root and edge shape not determined (as H13).",
+      "content_hash": "42b6788ba08120c16857f4b877a8433da866dc512f87cfc30ba41faa2f01c36c"
+    },
+    {
+      "item_id": "H-044",
+      "item_text": "What is a coat used for?",
+      "language": "en",
+      "source_id": "frozen-holdout H44 · scripts/cskg-evaluation-sydney.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: use -> the documented selector gives Ingest_substance (no fillable slots), a sense-blind artefact; the purpose-question ('used for') graph is not determined by the record.",
+      "content_hash": "6994eb5060c77c98d8d1ebcae4b3b5ee42c21cf0042a4b4080dcc2d22e61413b"
+    },
+    {
+      "item_id": "H-045",
+      "item_text": "What can I open a wine bottle with if I don't have a corkscrew?",
+      "language": "en",
+      "source_id": "frozen-holdout H45 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: open -> selector gives Body_movement (no slots); no candidate frame maps an instrument role for the questioned 'with'; the if-clause condition edge's direction is not stated.",
+      "content_hash": "a85d6c90c5cd01cb7ef72c35ee5a078709dc1fa4f58ab9d4cc01eaba4056a147"
+    },
+    {
+      "item_id": "H-046",
+      "item_text": "Can I still make banana bread with them?",
+      "language": "en",
+      "source_id": "frozen-holdout H46 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: a stage-5 family narrative encountered in inherited context names this item ('Can I still...' — modal carrier losses in question generation). Excluded from scoring.",
+      "content_hash": "ca9caf3a10a7f97917f23957c407e0a1861283f3566782a43159a04d37b0fbcd"
+    },
+    {
+      "item_id": "H-047",
+      "item_text": "Is ginger tea a warming food?",
+      "language": "en",
+      "source_id": "frozen-holdout H47 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "finite-ambiguity",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "food#0",
+            "value": "food"
+          },
+          {
+            "family": "voice",
+            "key": "food#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "food#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "food#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "food#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "food#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "food#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "tea#0",
+            "value": "Water"
+          },
+          {
+            "family": "entity",
+            "key": "ginger#0",
+            "value": "Metal"
+          },
+          {
+            "family": "attachment",
+            "key": "tea|qualifies",
+            "value": "ginger"
+          },
+          {
+            "family": "entity",
+            "key": "warming#0",
+            "value": "Fire"
+          },
+          {
+            "family": "attachment",
+            "key": "food|qualifies",
+            "value": "warming"
+          },
+          {
+            "family": "connective",
+            "key": "tea|predicated-as|food",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [
+        {
+          "atoms": [
+            {
+              "family": "predicate",
+              "key": "food#0",
+              "value": "food"
+            },
+            {
+              "family": "voice",
+              "key": "food#0|voice",
+              "value": "active"
+            },
+            {
+              "family": "aspect",
+              "key": "food#0|aspect",
+              "value": "unmarked"
+            },
+            {
+              "family": "tense",
+              "key": "food#0|tense",
+              "value": "present"
+            },
+            {
+              "family": "mood",
+              "key": "food#0|mood",
+              "value": "interrogative"
+            },
+            {
+              "family": "negation",
+              "key": "food#0|negated",
+              "value": "false"
+            },
+            {
+              "family": "number",
+              "key": "food#0|subjectPerson",
+              "value": "3sg"
+            },
+            {
+              "family": "entity",
+              "key": "tea#0",
+              "value": "Water"
+            },
+            {
+              "family": "entity",
+              "key": "ginger#0",
+              "value": "Metal"
+            },
+            {
+              "family": "attachment",
+              "key": "tea|qualifies",
+              "value": "ginger"
+            },
+            {
+              "family": "entity",
+              "key": "warming#0",
+              "value": "none"
+            },
+            {
+              "family": "attachment",
+              "key": "food|qualifies",
+              "value": "warming"
+            },
+            {
+              "family": "connective",
+              "key": "tea|predicated-as|food",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "entry",
+              "value": "Earth"
+            }
+          ]
+        }
+      ],
+      "excluded_decisions": "none",
+      "content_hash": "2a3c0cedaeca5b746f9b06a562fa1a6acd8387b5cdb66cc650f4099c7585c150"
+    },
+    {
+      "item_id": "H-048",
+      "item_text": "What is a headache?",
+      "language": "en",
+      "source_id": "frozen-holdout H48 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "finite-ambiguity",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what"
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "headache#0",
+            "value": "Metal"
+          },
+          {
+            "family": "entity",
+            "key": "headache#0|det",
+            "value": "a"
+          },
+          {
+            "family": "connective",
+            "key": "headache|predicated-as|what",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [
+        {
+          "atoms": [
+            {
+              "family": "predicate",
+              "key": "what#0",
+              "value": "what"
+            },
+            {
+              "family": "voice",
+              "key": "what#0|voice",
+              "value": "active"
+            },
+            {
+              "family": "aspect",
+              "key": "what#0|aspect",
+              "value": "unmarked"
+            },
+            {
+              "family": "tense",
+              "key": "what#0|tense",
+              "value": "present"
+            },
+            {
+              "family": "mood",
+              "key": "what#0|mood",
+              "value": "interrogative"
+            },
+            {
+              "family": "negation",
+              "key": "what#0|negated",
+              "value": "false"
+            },
+            {
+              "family": "number",
+              "key": "what#0|subjectPerson",
+              "value": "3sg"
+            },
+            {
+              "family": "entity",
+              "key": "headache#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "headache#0|det",
+              "value": "a"
+            },
+            {
+              "family": "connective",
+              "key": "headache|predicated-as|what",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "entry",
+              "value": "Earth"
+            }
+          ]
+        }
+      ],
+      "excluded_decisions": "none",
+      "content_hash": "ac52bfcee94a140f258cfc22b7c19c5736e092839e8d0dce1d646bb7134c70fe"
+    },
+    {
+      "item_id": "H-049",
+      "item_text": "Why do people get headaches?",
+      "language": "en",
+      "source_id": "frozen-holdout H49 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: get (hand lexicon) declares no object slot, so 'headaches' has no determinable attachment; its tabled classification (Metal, 0.55) is also below the 0.6 confidence gate.",
+      "content_hash": "fb8d46ec06feeafa9b75c15944a8ffe2e300858aeec6d98a45b1dc66e507d205"
+    },
+    {
+      "item_id": "H-050",
+      "item_text": "What can I use a hammer for?",
+      "language": "en",
+      "source_id": "frozen-holdout H50 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: as H44 (use / purpose question).",
+      "content_hash": "34f7c2e85a9cb71529bc000722b9260b2c37d1c3972ed6ae34caf0064c27f8b6"
+    },
+    {
+      "item_id": "H-051",
+      "item_text": "Where would I find a penguin?",
+      "language": "en",
+      "source_id": "frozen-holdout H51 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: find -> Becoming_aware maps no location slot for the where-question; penguin's classification is not in the readable table (P2/climb outcomes are behaviour, not documents).",
+      "content_hash": "575f45787a6868325f5f6d4fc48414f8c8d3f9225ef64e2a0cd17ee909e9ef82"
+    },
+    {
+      "item_id": "H-052",
+      "item_text": "What is a passport used for?",
+      "language": "en",
+      "source_id": "frozen-holdout H52 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: as H44 (use / purpose question).",
+      "content_hash": "647bef94bcd9d2c974218457eb76006aa488fcbf3b636e98f7146ec1327e06d9"
+    },
+    {
+      "item_id": "H-053",
+      "item_text": "How are a coat and a jacket related?",
+      "language": "en",
+      "source_id": "frozen-holdout H53 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: relation question ('How are a coat and a jacket related?') — D4 keeps relation/opposition off the cycles and the record states no atomised graph for it.",
+      "content_hash": "5deaed48f75c2791241bbb3a9971afff9b31009e2e26b6a7fb658ea9a47d14e3"
+    },
+    {
+      "item_id": "H-054",
+      "item_text": "What is money used for?",
+      "language": "en",
+      "source_id": "frozen-holdout H54 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: as H44 (use / purpose question).",
+      "content_hash": "e8d3354e9ee9c6ca69f471b1f41221fccbb216b8d72a0d3808720ea78b1849ab"
+    },
+    {
+      "item_id": "H-055",
+      "item_text": "What happens when it rains?",
+      "language": "en",
+      "source_id": "frozen-holdout H55 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: happen (selector artefact, as H20) plus an undetermined when-clause link.",
+      "content_hash": "250c7e99e4f9999a862b4485b29a317ca0cc44eb9cb23a8fb8996672edab0525"
+    },
+    {
+      "item_id": "H-056",
+      "item_text": "Is a wheel part of a bicycle?",
+      "language": "en",
+      "source_id": "frozen-holdout H56 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "finite-ambiguity",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "part#0",
+            "value": "part"
+          },
+          {
+            "family": "voice",
+            "key": "part#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "part#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "part#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "part#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "part#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "part#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "wheel#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "wheel#0|det",
+            "value": "a"
+          },
+          {
+            "family": "entity",
+            "key": "bicycle#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "bicycle#0|det",
+            "value": "a"
+          },
+          {
+            "family": "entity",
+            "key": "bicycle#0|prep",
+            "value": "of"
+          },
+          {
+            "family": "connective",
+            "key": "wheel|predicated-as|part",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [
+        {
+          "atoms": [
+            {
+              "family": "predicate",
+              "key": "part#0",
+              "value": "part"
+            },
+            {
+              "family": "voice",
+              "key": "part#0|voice",
+              "value": "active"
+            },
+            {
+              "family": "aspect",
+              "key": "part#0|aspect",
+              "value": "unmarked"
+            },
+            {
+              "family": "tense",
+              "key": "part#0|tense",
+              "value": "present"
+            },
+            {
+              "family": "mood",
+              "key": "part#0|mood",
+              "value": "interrogative"
+            },
+            {
+              "family": "negation",
+              "key": "part#0|negated",
+              "value": "false"
+            },
+            {
+              "family": "number",
+              "key": "part#0|subjectPerson",
+              "value": "3sg"
+            },
+            {
+              "family": "entity",
+              "key": "wheel#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "wheel#0|det",
+              "value": "a"
+            },
+            {
+              "family": "entity",
+              "key": "bicycle#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "bicycle#0|det",
+              "value": "a"
+            },
+            {
+              "family": "entity",
+              "key": "bicycle#0|prep",
+              "value": "of"
+            },
+            {
+              "family": "connective",
+              "key": "wheel|predicated-as|part",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "part|links|bicycle",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "entry",
+              "value": "Earth"
+            }
+          ]
+        }
+      ],
+      "excluded_decisions": "none",
+      "content_hash": "69066cdefcad4ec0812afd369a6cbe03fb44741df63968dedbe31d76a022b247"
+    },
+    {
+      "item_id": "H-057",
+      "item_text": "What is a bicycle made of?",
+      "language": "en",
+      "source_id": "frozen-holdout H57 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: material-composition question — a bicycle's material decomposition (H5's input data) is not in the readable classification record.",
+      "content_hash": "60f4c74dd96754af1005cb77af68c9a90fa43c0a88bd35a4bc5e2b159b704bc7"
+    },
+    {
+      "item_id": "H-058",
+      "item_text": "What is a cold?",
+      "language": "en",
+      "source_id": "frozen-holdout H58 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what"
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "cold#0",
+            "value": "Metal"
+          },
+          {
+            "family": "entity",
+            "key": "cold#0|det",
+            "value": "a"
+          },
+          {
+            "family": "connective",
+            "key": "cold|predicated-as|what",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "d1136dde793e2b32600f941806acca8c96ceb064d188ff61fb29aa7c321d4588"
+    },
+    {
+      "item_id": "H-059",
+      "item_text": "No, I meant the common cold",
+      "language": "en",
+      "source_id": "frozen-holdout H59 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "near-miss",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: discourse correction ('No, I meant...') — its G0 shape is not determined (correction act plus mean -> Purpose, which maps no object slot for 'the common cold').",
+      "content_hash": "c8296120c296bf31b3e9013c5e07d4df6c832e230a0116b8c2ff7861e0d6fe6e"
+    },
+    {
+      "item_id": "H-060",
+      "item_text": "What about the flu?",
+      "language": "en",
+      "source_id": "frozen-holdout H60 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: topic-proposal discourse act (D2) — the act record lives outside the meaning graph and the atom vocabulary; no propositional G0 is determined.",
+      "content_hash": "a7bbc757de4dd8ef9a96c45a8507ed64b19f2217e7e026cd9663bc2c5ef1217b"
+    },
+    {
+      "item_id": "H-061",
+      "item_text": "Why?",
+      "language": "en",
+      "source_id": "frozen-holdout H61 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: bare reason-query discourse act (D2) — as H60.",
+      "content_hash": "7590dc95ceafda45e0557cd832e588f90e10657fff43284c3592a2374b49bc30"
+    },
+    {
+      "item_id": "H-062",
+      "item_text": "Why did you say that?",
+      "language": "en",
+      "source_id": "frozen-holdout H62 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "say#0",
+            "value": "say"
+          },
+          {
+            "family": "voice",
+            "key": "say#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "say#0|aspect:bounded",
+            "value": "true"
+          },
+          {
+            "family": "tense",
+            "key": "say#0|tense",
+            "value": "past"
+          },
+          {
+            "family": "mood",
+            "key": "say#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "mood",
+            "key": "say#0|questionKind",
+            "value": "why"
+          },
+          {
+            "family": "negation",
+            "key": "say#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "negation",
+            "key": "say#0|aux",
+            "value": "did"
+          },
+          {
+            "family": "number",
+            "key": "say#0|subjectPerson",
+            "value": "2"
+          },
+          {
+            "family": "roles",
+            "key": "say#0|agent",
+            "value": "you"
+          },
+          {
+            "family": "roles",
+            "key": "say#0|theme",
+            "value": "that"
+          },
+          {
+            "family": "entity",
+            "key": "you#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "that#0",
+            "value": "none"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "b208b24628c33147fd66fa704a77e93a2a3d820deff76408ce741e3331163ea5"
+    },
+    {
+      "item_id": "H-063",
+      "item_text": "What time is it?",
+      "language": "en",
+      "source_id": "frozen-holdout H63 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the time-query graph ('What time is it?') — as H13.",
+      "content_hash": "6270d5e35eff9d25b25c3e2c30a679fbd3e4cfc12cec0a6fcb3f06c94fd4a4b9"
+    },
+    {
+      "item_id": "H-064",
+      "item_text": "Where are you?",
+      "language": "en",
+      "source_id": "frozen-holdout H64 · scripts/cskg-evaluation.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: location question over a bare copula ('Where are you?') — no nominal predicate exists to root the graph and the locative-query shape is not determined.",
+      "content_hash": "a72612d1ab0e937eb51a69b20a8bfeae6d7b79d93aebc244542d25a83754e851"
+    },
+    {
+      "item_id": "H-065",
+      "item_text": "I'm planning a camping trip in the mountains.",
+      "language": "en",
+      "source_id": "frozen-holdout H65 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: plan -> Purpose maps no object slot for 'a camping trip'; the 'in the mountains' adjunct compounds it.",
+      "content_hash": "f69a35f39bd0f96d184542fbc0eaedd4967b895fac3bf1d2720e201b81cb5384"
+    },
+    {
+      "item_id": "H-066",
+      "item_text": "How are rain and snow related?",
+      "language": "en",
+      "source_id": "frozen-holdout H66 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: relation question (as H53); snow's classification is also contested in the record (table phase-null by H6 withdrawal vs the IS_A link to precipitation -> Water).",
+      "content_hash": "0dc23838db22696b38edb0d3d6649bf556886062a07a4c747fd52d15dae2e305"
+    },
+    {
+      "item_id": "H-067",
+      "item_text": "What is the opposite of hot?",
+      "language": "en",
+      "source_id": "frozen-holdout H67 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "finite-ambiguity",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what"
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "opposite#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "opposite#0|det",
+            "value": "the"
+          },
+          {
+            "family": "entity",
+            "key": "hot#0",
+            "value": "Fire"
+          },
+          {
+            "family": "entity",
+            "key": "hot#0|prep",
+            "value": "of"
+          },
+          {
+            "family": "connective",
+            "key": "opposite|predicated-as|what",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [
+        {
+          "atoms": [
+            {
+              "family": "predicate",
+              "key": "what#0",
+              "value": "what"
+            },
+            {
+              "family": "voice",
+              "key": "what#0|voice",
+              "value": "active"
+            },
+            {
+              "family": "aspect",
+              "key": "what#0|aspect",
+              "value": "unmarked"
+            },
+            {
+              "family": "tense",
+              "key": "what#0|tense",
+              "value": "present"
+            },
+            {
+              "family": "mood",
+              "key": "what#0|mood",
+              "value": "interrogative"
+            },
+            {
+              "family": "negation",
+              "key": "what#0|negated",
+              "value": "false"
+            },
+            {
+              "family": "number",
+              "key": "what#0|subjectPerson",
+              "value": "3sg"
+            },
+            {
+              "family": "entity",
+              "key": "opposite#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "opposite#0|det",
+              "value": "the"
+            },
+            {
+              "family": "entity",
+              "key": "hot#0",
+              "value": "Fire"
+            },
+            {
+              "family": "entity",
+              "key": "hot#0|prep",
+              "value": "of"
+            },
+            {
+              "family": "connective",
+              "key": "opposite|predicated-as|what",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "opposite|links|hot",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "entry",
+              "value": "Earth"
+            }
+          ]
+        }
+      ],
+      "excluded_decisions": "none",
+      "content_hash": "07bf943cb2c14b62cb7d69805e1cfc0bbd0b457c2677da28cc574f411920f698"
+    },
+    {
+      "item_id": "H-068",
+      "item_text": "What about coffee?",
+      "language": "en",
+      "source_id": "frozen-holdout H68 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: topic-proposal discourse act (as H60).",
+      "content_hash": "dcc97163103205bea5e499683f0c1d6be9414816878831a206bf6a041f3d9db2"
+    },
+    {
+      "item_id": "H-069",
+      "item_text": "Tell me about winter.",
+      "language": "en",
+      "source_id": "frozen-holdout H69 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: this item's parser behaviour was encountered in inherited context in detail — the stage-0 F3 generator-throw note, the stage-5 construction-atom loss, and the construction slice's verified imperative mechanism (G0 records the imperative atom; reparse loses it) all name it. Excluded from scoring.",
+      "content_hash": "d7fe40af1854e53585a00dd4e98379448747744293d299a25577045e9ee83fb4"
+    },
+    {
+      "item_id": "H-070",
+      "item_text": "What do people take to the beach?",
+      "language": "en",
+      "source_id": "frozen-holdout H70 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "take#0",
+            "value": "take"
+          },
+          {
+            "family": "voice",
+            "key": "take#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "take#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "take#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "take#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "take#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "negation",
+            "key": "take#0|aux",
+            "value": "do"
+          },
+          {
+            "family": "number",
+            "key": "take#0|subjectPerson",
+            "value": "3pl"
+          },
+          {
+            "family": "roles",
+            "key": "take#0|agent",
+            "value": "people"
+          },
+          {
+            "family": "roles",
+            "key": "take#0|theme",
+            "value": "what"
+          },
+          {
+            "family": "roles",
+            "key": "take#0|goal",
+            "value": "beach@to"
+          },
+          {
+            "family": "entity",
+            "key": "people#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "what#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "what#0|questionWord",
+            "value": "true"
+          },
+          {
+            "family": "entity",
+            "key": "beach#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "beach#0|det",
+            "value": "the"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "ab7c7f4405ebe68c8c5846ad3049af0d196fd10804f20b9e126ba46be749809c"
+    },
+    {
+      "item_id": "H-071",
+      "item_text": "Why do we sleep?",
+      "language": "en",
+      "source_id": "frozen-holdout H71 · scripts/cskg-explore.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "determinate",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "sleep#0",
+            "value": "sleep"
+          },
+          {
+            "family": "voice",
+            "key": "sleep#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "sleep#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "sleep#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "sleep#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "mood",
+            "key": "sleep#0|questionKind",
+            "value": "why"
+          },
+          {
+            "family": "negation",
+            "key": "sleep#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "negation",
+            "key": "sleep#0|aux",
+            "value": "do"
+          },
+          {
+            "family": "number",
+            "key": "sleep#0|subjectPerson",
+            "value": "1pl"
+          },
+          {
+            "family": "roles",
+            "key": "sleep#0|agent",
+            "value": "we"
+          },
+          {
+            "family": "entity",
+            "key": "we#0",
+            "value": "none"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood"
+          }
+        ]
+      },
+      "acceptable_variants": [],
+      "excluded_decisions": "none",
+      "content_hash": "3776378e3e314e12e8aebeeb680e482ed9bce69ebb7298965aa9eb59df1ebd01"
+    },
+    {
+      "item_id": "H-072",
+      "item_text": "What is my neighbour's phone number?",
+      "language": "en",
+      "source_id": "frozen-holdout H72 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the possessive NP structure inside the topic ('my neighbour's phone number') is not determined by the record; the item is also unanswerable by design.",
+      "content_hash": "a12db84a354182958e76585807c9d81003de33eced7eadc31d35fc944f607d57"
+    },
+    {
+      "item_id": "H-073",
+      "item_text": "Who won the football match last night?",
+      "language": "en",
+      "source_id": "frozen-holdout H73 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: win -> Getting signature's lone-object role (recipient vs theme) depends on an alternation rule stated only in parse code this pass may not read; the 'last night' temporal adjunct is also undetermined.",
+      "content_hash": "430991818644a56d31d7f09c5ca348c2942c929a8506510ea30753555f958b78"
+    },
+    {
+      "item_id": "H-074",
+      "item_text": "What did Napoleon eat for breakfast on his tenth birthday?",
+      "language": "en",
+      "source_id": "frozen-holdout H74 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "EXPOSED: the WP2 tooling fixture (an allowed format reference) contains this sentence as item F-004 with its status (unresolved / negative-control) already assigned by the builders — its treatment was seen before authoring. Excluded from scoring.",
+      "content_hash": "08bd7e69d90bc50f6c999c459e73e9baf8c476dd89d34e8440573548e355f8f4"
+    },
+    {
+      "item_id": "H-075",
+      "item_text": "How many grains of sand are there on Brighton beach?",
+      "language": "en",
+      "source_id": "frozen-holdout H75 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: existential + quantity question ('How many grains of sand are there...') — the quantity-query graph is not determined (no numeral is present, and EN counted-noun atoms ride the ZH classifier machinery in the record).",
+      "content_hash": "e46bb11c4ef641696e8b13d4fe65a2ac32b191b9bca5e75431c2a377ab37dc30"
+    },
+    {
+      "item_id": "H-076",
+      "item_text": "What is the stock price of Apple right now?",
+      "language": "en",
+      "source_id": "frozen-holdout H76 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: 'right now' is not a classified time node (the H11 gap); the stock-price NP's structure compounds it.",
+      "content_hash": "3d9ff3a082412fa50b4eeba5831e2685bab016c9db7056655aba212037163fa8"
+    },
+    {
+      "item_id": "H-077",
+      "item_text": "Who is the current president of the chess club in my town?",
+      "language": "en",
+      "source_id": "frozen-holdout H77 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: the topic NP carries an adjective and two PP adjuncts whose atomisation compounds the single-PP uncertainty recorded at H80.",
+      "content_hash": "7993b0a1c183fb6133f4c826fdbc9bea7379fd891d773a6d6dc53772e4b0f37f"
+    },
+    {
+      "item_id": "H-078",
+      "item_text": "What will the weather be like on Mars tomorrow?",
+      "language": "en",
+      "source_id": "frozen-holdout H78 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: future 'will be like' predication plus 'tomorrow' (not a classified time node) — the graph is not determined.",
+      "content_hash": "794a0804eee70287c270e808eb6113a1d47155b91382fe1a994b14f42e256669"
+    },
+    {
+      "item_id": "H-079",
+      "item_text": "What is the exact population of Chicago at this moment?",
+      "language": "en",
+      "source_id": "frozen-holdout H79 · scripts/probes/abstention.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "negative-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "unresolved",
+      "expected_graph": null,
+      "acceptable_variants": [],
+      "excluded_decisions": "INDETERMINATE: F.4 determines the temporal intent only where a classified time node exists; 'moment' is not one and the fallback shape for 'at this moment' is not stated; 'exact' is a declared representation failure (F.4).",
+      "content_hash": "be9ef9d0ed3b17a4f2c6862519b810bbc2808b00a13d922c03aeef532363aac1"
+    },
+    {
+      "item_id": "H-080",
+      "item_text": "What is the capital of Oklahoma?",
+      "language": "en",
+      "source_id": "frozen-holdout H80 · scripts/probes/capital.txt",
+      "sampling_frame": "frozen holdout (fork-depth-baseline holdoutCorpus derivation: scripts/cskg-evaluation*.txt, then scripts/cskg-explore.txt, then scripts/probes/*.txt; filtered, deduped, first 80; all en)",
+      "selection_seed": "deterministic corpus derivation, cap 80 (no seed)",
+      "item_class": "positive-control",
+      "target_claim_id": "g0-accuracy-vs-design-record",
+      "conventional_prediction": "",
+      "elemental_prediction": "",
+      "scoring_rule_version": "C.5/A1 v1 (features.ts atom comparison)",
+      "parser_build_target": "fork parser, working tree",
+      "creation_timestamp": "2026-11-18T11:50:00Z",
+      "item_status": "finite-ambiguity",
+      "expected_graph": {
+        "atoms": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what"
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active"
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked"
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present"
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative"
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false"
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg"
+          },
+          {
+            "family": "entity",
+            "key": "capital#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "capital#0|det",
+            "value": "the"
+          },
+          {
+            "family": "entity",
+            "key": "oklahoma#0",
+            "value": "none"
+          },
+          {
+            "family": "entity",
+            "key": "oklahoma#0|prep",
+            "value": "of"
+          },
+          {
+            "family": "connective",
+            "key": "capital|predicated-as|what",
+            "value": "present"
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth"
+          }
+        ]
+      },
+      "acceptable_variants": [
+        {
+          "atoms": [
+            {
+              "family": "predicate",
+              "key": "what#0",
+              "value": "what"
+            },
+            {
+              "family": "voice",
+              "key": "what#0|voice",
+              "value": "active"
+            },
+            {
+              "family": "aspect",
+              "key": "what#0|aspect",
+              "value": "unmarked"
+            },
+            {
+              "family": "tense",
+              "key": "what#0|tense",
+              "value": "present"
+            },
+            {
+              "family": "mood",
+              "key": "what#0|mood",
+              "value": "interrogative"
+            },
+            {
+              "family": "negation",
+              "key": "what#0|negated",
+              "value": "false"
+            },
+            {
+              "family": "number",
+              "key": "what#0|subjectPerson",
+              "value": "3sg"
+            },
+            {
+              "family": "entity",
+              "key": "capital#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "capital#0|det",
+              "value": "the"
+            },
+            {
+              "family": "entity",
+              "key": "oklahoma#0",
+              "value": "none"
+            },
+            {
+              "family": "entity",
+              "key": "oklahoma#0|prep",
+              "value": "of"
+            },
+            {
+              "family": "connective",
+              "key": "capital|predicated-as|what",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "capital|links|oklahoma",
+              "value": "present"
+            },
+            {
+              "family": "connective",
+              "key": "entry",
+              "value": "Earth"
+            }
+          ]
+        }
+      ],
+      "excluded_decisions": "none",
+      "content_hash": "0d91b43c0d0b900e55d8392944ebb96a6c3bffe01075f8da930928b46a527f27"
+    }
+  ],
+  "manifest_hash": "f552b6314c2b829a6cee3ed06ebddd8aabb9fa9286a70bf49389769e1222e1fc"
+}

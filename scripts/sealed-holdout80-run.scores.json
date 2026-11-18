@@ -1,0 +1,4151 @@
+{
+  "manifest_id": "wp2-holdout80-g0-2026-11-18",
+  "manifest_hash": "f552b6314c2b829a6cee3ed06ebddd8aabb9fa9286a70bf49389769e1222e1fc",
+  "build_id": "7d7e2cc7e1656c4521a5c8e7fc9948d2ecf23856",
+  "items": [
+    {
+      "item_id": "H-001",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "rain#0",
+            "value": "rain",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "rain#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "rain#0|aspect:ongoing",
+            "value": "true",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "rain#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "rain#0|mood",
+            "value": "indicative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "rain#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "construction",
+            "key": "rain#0|construction",
+            "value": "weather",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "rain#0|subjectPerson",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "rain#0|aux",
+            "value": "is",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "construction": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0.1,
+        "total0": 9,
+        "total1": 10
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-002",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-003",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.8666666666666667,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "move#0",
+            "value": "move",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "move#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "move#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "move#0|questionKind",
+            "value": "why",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "move#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "move#0|aux",
+            "value": "did",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "move#0|subjectPerson",
+            "value": "1pl",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "move#0|agent",
+            "value": "we",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "move#0|theme",
+            "value": "picnic",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "we#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "picnic#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "picnic#0|det",
+            "value": "the",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "move#0|aspect:bounded",
+            "value": "true",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "move#0|tense",
+            "value": "past",
+            "reparsedValue": "present",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "move#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.8666666666666667,
+        "macro": 0.8,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "mood": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 3,
+            "preserved": 3,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.06666666666666667,
+        "contradictionRate": 0.06666666666666667,
+        "spuriousRate": 0.06666666666666667,
+        "total0": 15,
+        "total1": 15
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-004",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.14285714285714285,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "entity",
+            "key": "garden#0|det",
+            "value": "the",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "predicate",
+            "key": "flood#0",
+            "value": "flood",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "voice",
+            "key": "flood#0|voice",
+            "value": "active",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "flood#0|aspect:bounded",
+            "value": "true",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "flood#0|tense",
+            "value": "past",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "mood",
+            "key": "flood#0|mood",
+            "value": "indicative",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "flood#0|negated",
+            "value": "false",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "flood#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "flood#0|agent",
+            "value": "rain",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "flood#0|theme",
+            "value": "garden",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "rain#0",
+            "value": "Water",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "rain#0|det",
+            "value": "the",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "garden#0",
+            "value": "Earth",
+            "reparsedValue": "none",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "predicate",
+            "key": "rain#0",
+            "value": "rain",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "voice",
+            "key": "rain#0|voice",
+            "value": "active",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "rain#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "rain#0|tense",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "mood",
+            "key": "rain#0|mood",
+            "value": "indicative",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "rain#0|negated",
+            "value": "false",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "rain#0|subjectPerson",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "flooded#0",
+            "value": "none",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "attachment",
+            "key": "flooded|result",
+            "value": "rain",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "rain#0|patient",
+            "value": "garden",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.14285714285714285,
+        "macro": 0.125,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 0,
+            "score": 0
+          },
+          "entity": {
+            "atoms": 4,
+            "preserved": 1,
+            "score": 0.25
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.7857142857142857,
+        "contradictionRate": 0.07142857142857142,
+        "spuriousRate": 0.7692307692307693,
+        "total0": 14,
+        "total1": 13
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-005",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-006",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "bring#0",
+            "value": "bring",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "bring#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect:ongoing",
+            "value": "true",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "bring#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "bring#0|mood",
+            "value": "indicative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "bring#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|agent",
+            "value": "brother",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|theme",
+            "value": "girlfriend",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "brother#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "brother#0|det",
+            "value": "my",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "girlfriend#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "girlfriend#0|det",
+            "value": "his",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "new#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "attachment",
+            "key": "girlfriend|qualifies",
+            "value": "new",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|aux",
+            "value": "is",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 5,
+            "preserved": 5,
+            "score": 1
+          },
+          "attachment": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0.058823529411764705,
+        "total0": 16,
+        "total1": 17
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-007",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.6153846153846154,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "bring#0",
+            "value": "bring",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "bring#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "bring#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "bring#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "what#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "what#0|questionWord",
+            "value": "true",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect:ongoing",
+            "value": "true",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "bring#0|subjectPerson",
+            "value": "3sg",
+            "reparsedValue": "unmarked",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|agent",
+            "value": "he",
+            "reparsedValue": "what",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|theme",
+            "value": "what",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "he#0",
+            "value": "none",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.6153846153846154,
+        "macro": 0.6666666666666667,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 0,
+            "score": 0
+          },
+          "entity": {
+            "atoms": 3,
+            "preserved": 2,
+            "score": 0.6666666666666666
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.23076923076923078,
+        "contradictionRate": 0.15384615384615385,
+        "spuriousRate": 0.09090909090909091,
+        "total0": 13,
+        "total1": 11
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-008",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.6153846153846154,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "bring#0",
+            "value": "bring",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "bring#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "bring#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "bring#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "bring#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "who#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "who#0|questionWord",
+            "value": "true",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect:ongoing",
+            "value": "true",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "bring#0|subjectPerson",
+            "value": "3sg",
+            "reparsedValue": "unmarked",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|agent",
+            "value": "he",
+            "reparsedValue": "who",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "bring#0|theme",
+            "value": "who",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "he#0",
+            "value": "none",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "bring#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.6153846153846154,
+        "macro": 0.6666666666666667,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 0,
+            "score": 0
+          },
+          "entity": {
+            "atoms": 3,
+            "preserved": 2,
+            "score": 0.6666666666666666
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.23076923076923078,
+        "contradictionRate": 0.15384615384615385,
+        "spuriousRate": 0.09090909090909091,
+        "total0": 13,
+        "total1": 11
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-009",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "sister#0",
+            "value": "sister",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "sister#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "sister#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "sister#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "sister#0|mood",
+            "value": "indicative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "sister#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "sister#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "sarah#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "sarah|predicated-as|sister",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0,
+        "total0": 10,
+        "total1": 10
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-010",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "who#0",
+            "value": "who",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "who#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "who#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "who#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "who#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "who#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "who#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "sarah#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "sarah|predicated-as|who",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0,
+        "total0": 10,
+        "total1": 10
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-011",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-012",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.6153846153846154,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "make#0",
+            "value": "make",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "make#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "make#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "make#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "make#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "what#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "what#0|questionWord",
+            "value": "true",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "make#0|aspect:ongoing",
+            "value": "true",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "make#0|subjectPerson",
+            "value": "2",
+            "reparsedValue": "unmarked",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "make#0|agent",
+            "value": "you",
+            "reparsedValue": "what",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "make#0|patient",
+            "value": "what",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "you#0",
+            "value": "none",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "make#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.6153846153846154,
+        "macro": 0.6666666666666667,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 0,
+            "score": 0
+          },
+          "entity": {
+            "atoms": 3,
+            "preserved": 2,
+            "score": 0.6666666666666666
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.23076923076923078,
+        "contradictionRate": 0.15384615384615385,
+        "spuriousRate": 0.09090909090909091,
+        "total0": 13,
+        "total1": 11
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-013",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-014",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-015",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-016",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-017",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-018",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-019",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-020",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-021",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-022",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-023",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-024",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-025",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-026",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-027",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-028",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-029",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-030",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-031",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-032",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-033",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-034",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-035",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-036",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-037",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-038",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-039",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-040",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "sam#0",
+            "value": "sam",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "sam#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "sam#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "sam#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "sam#0|mood",
+            "value": "indicative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "sam#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "sam#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "name#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "name#0|det",
+            "value": "my",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "name|predicated-as|sam",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0,
+        "total0": 11,
+        "total1": 11
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-041",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "live#0",
+            "value": "live",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "live#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "live#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "live#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "live#0|mood",
+            "value": "indicative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "live#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "live#0|subjectPerson",
+            "value": "1sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "live#0|agent",
+            "value": "i",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "live#0|location",
+            "value": "chicago@in",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "i#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "chicago#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "chicago#0|prep",
+            "value": "in",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0.07692307692307693,
+        "total0": 12,
+        "total1": 13
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-042",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-043",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-044",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-045",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-046",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-047",
+      "item_class": "positive-control",
+      "item_status": "finite-ambiguity",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.07142857142857142,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "predicate",
+            "key": "food#0",
+            "value": "food",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "voice",
+            "key": "food#0|voice",
+            "value": "active",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "food#0|aspect",
+            "value": "unmarked",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "food#0|tense",
+            "value": "present",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "mood",
+            "key": "food#0|mood",
+            "value": "interrogative",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "food#0|negated",
+            "value": "false",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "food#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "tea#0",
+            "value": "Water",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "ginger#0",
+            "value": "Metal",
+            "reparsedValue": "none",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "attachment",
+            "key": "tea|qualifies",
+            "value": "ginger",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "warming#0",
+            "value": "Fire",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "attachment",
+            "key": "food|qualifies",
+            "value": "warming",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "connective",
+            "key": "tea|predicated-as|food",
+            "value": "present",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "predicate",
+            "key": "tea#0",
+            "value": "tea",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "voice",
+            "key": "tea#0|voice",
+            "value": "active",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "tea#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "tea#0|tense",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "mood",
+            "key": "tea#0|mood",
+            "value": "interrogative",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "tea#0|negated",
+            "value": "false",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "tea#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "connective",
+            "key": "ginger|predicated-as|tea",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.07142857142857142,
+        "macro": 0.05,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "entity": {
+            "atoms": 3,
+            "preserved": 0,
+            "score": 0
+          },
+          "attachment": {
+            "atoms": 2,
+            "preserved": 0,
+            "score": 0
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 1,
+            "score": 0.5
+          }
+        },
+        "lostRate": 0.8571428571428571,
+        "contradictionRate": 0.07142857142857142,
+        "spuriousRate": 0.8,
+        "total0": 14,
+        "total1": 10
+      },
+      "preservation": 1,
+      "matched_variant": "expected"
+    },
+    {
+      "item_id": "H-048",
+      "item_class": "positive-control",
+      "item_status": "finite-ambiguity",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "headache#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "headache#0|det",
+            "value": "a",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "headache|predicated-as|what",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0,
+        "total0": 11,
+        "total1": 11
+      },
+      "preservation": 1,
+      "matched_variant": "variant-1"
+    },
+    {
+      "item_id": "H-049",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-050",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-051",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-052",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-053",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-054",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-055",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-056",
+      "item_class": "positive-control",
+      "item_status": "finite-ambiguity",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "part#0",
+            "value": "part",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "part#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "part#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "part#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "part#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "part#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "part#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "wheel#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "wheel#0|det",
+            "value": "a",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "bicycle#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "bicycle#0|det",
+            "value": "a",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "bicycle#0|prep",
+            "value": "of",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "wheel|predicated-as|part",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "part|modifier|bicycle",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 5,
+            "preserved": 5,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0.06666666666666667,
+        "total0": 14,
+        "total1": 15
+      },
+      "preservation": 0.7333333333333333,
+      "matched_variant": "expected"
+    },
+    {
+      "item_id": "H-057",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-058",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.9090909090909091,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "cold#0|det",
+            "value": "a",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "cold|predicated-as|what",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "cold#0",
+            "value": "Metal",
+            "reparsedValue": "none",
+            "outcome": "contradicted",
+            "score": 0
+          }
+        ],
+        "micro": 0.9090909090909091,
+        "macro": 0.9444444444444444,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 2,
+            "preserved": 1,
+            "score": 0.5
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0.09090909090909091,
+        "spuriousRate": 0,
+        "total0": 11,
+        "total1": 11
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-059",
+      "item_class": "near-miss",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-060",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-061",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-062",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.7142857142857143,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "say#0",
+            "value": "say",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "say#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "say#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "say#0|questionKind",
+            "value": "why",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "say#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "say#0|aux",
+            "value": "did",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "say#0|subjectPerson",
+            "value": "2",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "say#0|agent",
+            "value": "you",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "you#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "say#0|aspect:bounded",
+            "value": "true",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "say#0|tense",
+            "value": "past",
+            "reparsedValue": "present",
+            "outcome": "contradicted",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "say#0|theme",
+            "value": "that",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "that#0",
+            "value": "none",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "say#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.7142857142857143,
+        "macro": 0.7,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "mood": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "roles": {
+            "atoms": 2,
+            "preserved": 1,
+            "score": 0.5
+          },
+          "entity": {
+            "atoms": 2,
+            "preserved": 1,
+            "score": 0.5
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.21428571428571427,
+        "contradictionRate": 0.07142857142857142,
+        "spuriousRate": 0.08333333333333333,
+        "total0": 14,
+        "total1": 12
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-063",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-064",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-065",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-066",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-067",
+      "item_class": "positive-control",
+      "item_status": "finite-ambiguity",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "opposite#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "opposite#0|det",
+            "value": "the",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "hot#0",
+            "value": "Fire",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "hot#0|prep",
+            "value": "of",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "opposite|predicated-as|what",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "opposite|modifier|hot",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 4,
+            "preserved": 4,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0.07142857142857142,
+        "total0": 13,
+        "total1": 14
+      },
+      "preservation": 1,
+      "matched_variant": "expected"
+    },
+    {
+      "item_id": "H-068",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-069",
+      "item_class": "positive-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-070",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 0.17647058823529413,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "entity",
+            "key": "what#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "what#0|questionWord",
+            "value": "true",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "predicate",
+            "key": "take#0",
+            "value": "take",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "voice",
+            "key": "take#0|voice",
+            "value": "active",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "take#0|aspect",
+            "value": "unmarked",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "take#0|tense",
+            "value": "present",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "mood",
+            "key": "take#0|mood",
+            "value": "interrogative",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "take#0|negated",
+            "value": "false",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "take#0|aux",
+            "value": "do",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "take#0|subjectPerson",
+            "value": "3pl",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "take#0|agent",
+            "value": "people",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "take#0|theme",
+            "value": "what",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "take#0|goal",
+            "value": "beach@to",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "people#0",
+            "value": "none",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "beach#0",
+            "value": "none",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "entity",
+            "key": "beach#0|det",
+            "value": "the",
+            "outcome": "lost",
+            "score": 0
+          },
+          {
+            "family": "predicate",
+            "key": "people#0",
+            "value": "people",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "voice",
+            "key": "people#0|voice",
+            "value": "active",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "aspect",
+            "key": "people#0|aspect",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "tense",
+            "key": "people#0|tense",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "mood",
+            "key": "people#0|mood",
+            "value": "interrogative",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "people#0|negated",
+            "value": "false",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "negation",
+            "key": "people#0|aux",
+            "value": "do",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "number",
+            "key": "people#0|subjectPerson",
+            "value": "unmarked",
+            "outcome": "added",
+            "score": 0
+          },
+          {
+            "family": "roles",
+            "key": "people#0|agent",
+            "value": "what",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 0.17647058823529413,
+        "macro": 0.13999999999999999,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "negation": {
+            "atoms": 2,
+            "preserved": 0,
+            "score": 0
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 0,
+            "score": 0
+          },
+          "roles": {
+            "atoms": 3,
+            "preserved": 0,
+            "score": 0
+          },
+          "entity": {
+            "atoms": 5,
+            "preserved": 2,
+            "score": 0.4
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0.8235294117647058,
+        "contradictionRate": 0,
+        "spuriousRate": 0.75,
+        "total0": 17,
+        "total1": 12
+      },
+      "preservation": 0.9166666666666666
+    },
+    {
+      "item_id": "H-071",
+      "item_class": "positive-control",
+      "item_status": "determinate",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "sleep#0",
+            "value": "sleep",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "sleep#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "sleep#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "sleep#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "sleep#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "sleep#0|questionKind",
+            "value": "why",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "sleep#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "sleep#0|aux",
+            "value": "do",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "sleep#0|subjectPerson",
+            "value": "1pl",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "roles",
+            "key": "sleep#0|agent",
+            "value": "we",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "we#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Wood",
+            "outcome": "preserved",
+            "score": 1
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "roles": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0,
+        "total0": 12,
+        "total1": 12
+      },
+      "preservation": 1
+    },
+    {
+      "item_id": "H-072",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-073",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-074",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-075",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-076",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-077",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-078",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-079",
+      "item_class": "negative-control",
+      "item_status": "unresolved",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": null,
+      "g0_comparison": null,
+      "preservation": null
+    },
+    {
+      "item_id": "H-080",
+      "item_class": "positive-control",
+      "item_status": "finite-ambiguity",
+      "language": "en",
+      "parsed": true,
+      "g0_accuracy": 1,
+      "g0_comparison": {
+        "records": [
+          {
+            "family": "predicate",
+            "key": "what#0",
+            "value": "what",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "voice",
+            "key": "what#0|voice",
+            "value": "active",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "aspect",
+            "key": "what#0|aspect",
+            "value": "unmarked",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "tense",
+            "key": "what#0|tense",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "mood",
+            "key": "what#0|mood",
+            "value": "interrogative",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "negation",
+            "key": "what#0|negated",
+            "value": "false",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "number",
+            "key": "what#0|subjectPerson",
+            "value": "3sg",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "capital#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "capital#0|det",
+            "value": "the",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "oklahoma#0",
+            "value": "none",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "entity",
+            "key": "oklahoma#0|prep",
+            "value": "of",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "capital|predicated-as|what",
+            "value": "present",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "entry",
+            "value": "Earth",
+            "outcome": "preserved",
+            "score": 1
+          },
+          {
+            "family": "connective",
+            "key": "capital|modifier|oklahoma",
+            "value": "present",
+            "outcome": "added",
+            "score": 0
+          }
+        ],
+        "micro": 1,
+        "macro": 1,
+        "familyScores": {
+          "predicate": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "voice": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "aspect": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "tense": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "mood": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "negation": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "number": {
+            "atoms": 1,
+            "preserved": 1,
+            "score": 1
+          },
+          "entity": {
+            "atoms": 4,
+            "preserved": 4,
+            "score": 1
+          },
+          "connective": {
+            "atoms": 2,
+            "preserved": 2,
+            "score": 1
+          }
+        },
+        "lostRate": 0,
+        "contradictionRate": 0,
+        "spuriousRate": 0.07142857142857142,
+        "total0": 13,
+        "total1": 14
+      },
+      "preservation": 1,
+      "matched_variant": "expected"
+    }
+  ],
+  "g0_accuracy_pooled": 0.7607843137254902,
+  "g0_accuracy_by_language": {
+    "en": 0.7607843137254902
+  },
+  "g0_accuracy_by_class": {
+    "positive-control": 0.7607843137254902
+  },
+  "preservation_pooled": 0.9825000000000002,
+  "family_scores": {
+    "predicate": {
+      "atoms": 20,
+      "preserved": 17,
+      "score": 0.85
+    },
+    "voice": {
+      "atoms": 20,
+      "preserved": 17,
+      "score": 0.85
+    },
+    "aspect": {
+      "atoms": 20,
+      "preserved": 12,
+      "score": 0.6
+    },
+    "tense": {
+      "atoms": 20,
+      "preserved": 15,
+      "score": 0.75
+    },
+    "mood": {
+      "atoms": 23,
+      "preserved": 20,
+      "score": 0.8695652173913043
+    },
+    "negation": {
+      "atoms": 24,
+      "preserved": 20,
+      "score": 0.8333333333333334
+    },
+    "construction": {
+      "atoms": 1,
+      "preserved": 1,
+      "score": 1
+    },
+    "number": {
+      "atoms": 20,
+      "preserved": 14,
+      "score": 0.7
+    },
+    "connective": {
+      "atoms": 29,
+      "preserved": 28,
+      "score": 0.9655172413793104
+    },
+    "roles": {
+      "atoms": 20,
+      "preserved": 8,
+      "score": 0.4
+    },
+    "entity": {
+      "atoms": 55,
+      "preserved": 41,
+      "score": 0.7454545454545455
+    },
+    "attachment": {
+      "atoms": 3,
+      "preserved": 1,
+      "score": 0.3333333333333333
+    }
+  },
+  "unresolved_by_class": {
+    "positive-control": 51,
+    "near-miss": 1,
+    "negative-control": 8
+  },
+  "scored_items": 20,
+  "unresolved_items": 60
+}

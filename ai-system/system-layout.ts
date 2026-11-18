@@ -58,14 +58,11 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "awareness/surroundings": {
       "order": 3
     },
-    "awareness/surroundings/interlocutor-standing": {
+    "awareness/surroundings/standing-topics": {
       "order": 1
     },
-    "awareness/surroundings/standing-topics": {
-      "order": 2
-    },
     "awareness/surroundings/other-presences": {
-      "order": 3
+      "order": 2
     },
     "awareness/current-activity": {
       "order": 4
@@ -81,6 +78,15 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     },
     "awareness/current-activity/open-gaps": {
       "order": 4
+    },
+    "awareness/social-unit": {
+      "order": 5
+    },
+    "awareness/social-unit/interlocutor": {
+      "order": 1
+    },
+    "awareness/social-unit/conversation": {
+      "order": 2
     },
     "lpu": {
       "order": 3

@@ -1,0 +1,64 @@
+# Construction family challenge set — depth programme follow-on (Part C.1 family accounting).
+# Purpose: stage 5's family accounting found the construction family at 50.0% on 2 atoms in the
+# frozen holdout — under-tested, neither pass nor fail. This set feeds the family a real sample.
+# A construction atom (features.ts) is emitted per predicate whose record carries
+# states.construction. The parser sets that state in exactly eight branches:
+#   en: imperative, existential, weather — zh: ba, bei, correlative, a-not-a, serial.
+# Copular questions, contractions, fragments and the rest of the stage-3 territory earn no
+# construction atoms; they are scored by scripts/construction-challenge.tsv and not re-tested here.
+# Columns (tab-separated): lang <TAB> class <TAB> sentence <TAB> expected construction value in G0 <TAB> note
+# Classes: core = scored (built to the branch signatures in parse.ts, vocabulary attested in the
+# lexicons); probe = adjacent territory the branch prose suggests but the coded signature may not
+# cover — reported descriptively, never in the family score.
+# Authored by Kavi, 2026-11-18; frozen once written — sha256 recorded in docs/fork/construction-family-challenge.md.
+en	core	Tell me about winter.	imperative	stage-3 crashfix sentence; signature met (tell is noun-classified but verb-resolvable, pronoun follows)
+en	core	Show me the garden.	imperative	
+en	core	Bring me the book.	imperative	generation drops the patient ("Bring me.") — roles family, noted not scored here
+en	core	Pass me the book.	imperative	
+en	core	Ask me about winter.	imperative	
+en	core	There is a garden.	existential	
+en	core	There is a book on the table.	existential	with location phrase
+en	core	There was a garden.	existential	past copula
+en	core	There is a cat in the garden.	existential	with location phrase
+en	core	There is a garden?	existential	interrogative in there-initial order; the branch records mood
+en	core	There are two books on the table.	existential	numeral phrase: generation emits "There is two." (numeral phrase and location lost — entity/number families)
+en	core	There were two books.	existential	plural past: generation emits "There was two." (copula agreement and noun lost — entity/number families)
+en	core	There is snow in winter.	existential	mass-noun subject with temporal phrase
+en	core	It is raining.	weather	
+en	core	It is snowing.	weather	generation's verb-lemma selection for this item is state-dependent (a cold process emitted "showing" in exploration); the set's own run is the record
+en	core	It was raining.	weather	past auxiliary
+en	core	It is raining?	weather	interrogative in it-initial order; the branch records mood
+zh	core	他把书放在桌子上。	ba	canonical shape: agent 把 theme verb 在 location 上
+zh	core	她把茶放在桌子上。	ba	
+zh	core	他把猫放在花园里。	ba	locative suffix 里 is not re-emitted in generation — attachment family, noted not scored here
+zh	core	他把书放在桌子上了吗？	ba	question force （吗） is not re-emitted in generation — mood family, noted not scored here
+zh	core	饭被吃了。	bei	agentless: the agent is recorded as suppressed
+zh	core	饭被他吃了。	bei	agentive
+zh	core	书被他看了。	bei	agentive
+zh	core	茶被他喝了。	bei	agentive
+zh	core	书被他拿走。	bei	result complement 走
+zh	core	猫被他吃了。	bei	agentive
+zh	core	他一边吃饭一边看书。	correlative	two construction atoms, one per verb; the verbs' objects are not re-emitted in generation — roles family
+zh	core	他一边喝茶一边看书。	correlative	two construction atoms, one per verb; objects not re-emitted in generation — roles family
+zh	core	她一边吃一边唱歌。	correlative	two construction atoms, one per verb
+zh	core	他一边游泳一边唱歌。	correlative	two construction atoms, one per verb
+zh	core	他去不去学校？	a-not-a	
+zh	core	他去没去学校？	a-not-a	bounded negator 没 in the A-not-A frame
+zh	core	他喝不喝茶？	a-not-a	with object
+zh	core	她喜欢不喜欢猫？	a-not-a	disyllabic verb repeated whole
+zh	core	他看不看书？	a-not-a	with object
+zh	core	他去学校看书。	serial	two-verb chain
+zh	core	他吃了饭去学校。	serial	aspect 了 on the first verb
+zh	core	他去商店买书。	serial	generation drops the first verb's goal （商店） — roles family, noted not scored here
+zh	core	他跑去学校看书。	serial	three-verb chain: two serial atoms
+zh	core	她走去学校看书。	serial	three-verb chain: two serial atoms
+en	probe	Give me the book.	imperative	imperative shape, but "give" is classified as a verb outright, so the branch signature (first word NOT verb-classified) is not met; parses as a declarative
+en	probe	Tell her about the garden.	imperative	imperative shape with object pronoun "her": the signature wants a subject-form pronoun after the verb chunk; in a cold process this does not parse at all
+en	probe	Is there a garden?	existential	fronted existential question: the branch requires there-initial order
+en	probe	Is it raining?	weather	fronted weather question: the branch requires it-initial order
+en	probe	It is raining in winter.	weather	weather with a trailing temporal PP: the zero-valency branch returns before the PP, which is dropped at parse
+zh	probe	他把门关上。	ba	ba shape with a result complement instead of a 在-location: outside the branch's coded shape
+zh	probe	他忙不忙？	a-not-a	adjectival A-not-A: the branch requires a verb before the negator
+zh	probe	她一边唱歌一边跳舞。	correlative	correlative whose second verb （跳舞） is not a ZH lexicon entry
+zh	probe	猫被狗咬了。	bei	bei whose verb （咬） is not a ZH lexicon entry: the branch dereferences the missing entry and throws a TypeError instead of failing as a parse error
+zh	probe	他去学校看书学习。	serial	serial chain whose third verb （学习） is not a ZH lexicon entry: the chain truncates

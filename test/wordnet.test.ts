@@ -20,6 +20,7 @@ import {
   loadWordNetExtract,
   mappedConceptForSynset,
   synsetsForLemma,
+  synsetsForSurface,
 } from "../src/wordnet";
 
 const extract = loadWordNetExtract();
@@ -139,4 +140,56 @@ test("chat REPL exits cleanly on EOF", () => {
   });
   assert.match(out, /snow is cold in this system/);
   assert.match(out, /bye/);
+});
+
+/* Surface lookup: the regular-morphology fallback (GAPS §6). The
+ * closed forms index lists "baked" but not "happened"; a surface
+ * the index misses entirely now resolves through regular-inflection
+ * stems, accepted only when the extract attests the stem as a
+ * lemma. Index-listed forms keep precedence and resolve exactly
+ * as before; non-words stay unresolved. */
+test("surface lookup: regular inflections missing from the forms index resolve to their lemma", () => {
+  // The measured gap (coverage measurement, 2026-11-18): happened
+  // had no synset in any POS; happen has five verb synsets.
+  const happened = synsetsForSurface(extract, "happened");
+  assert.equal(happened.via, "form");
+  assert.deepEqual(happened.candidates, [{ lemma: "happen", pos: "v" }]);
+  assert.deepEqual(
+    happened.synsets.map((s) => s.id),
+    synsetsForLemma(extract, "happen").filter((s) => s.pos === "v").map((s) => s.id),
+  );
+
+  // A regular -ed the index also misses: fluttered → flutter.
+  const fluttered = synsetsForSurface(extract, "fluttered");
+  assert.ok(fluttered.candidates.some((c) => c.lemma === "flutter" && c.pos === "v"));
+  assert.ok(fluttered.synsets.length > 0);
+  assert.ok(fluttered.synsets.every((s) => s.lemmas.includes("flutter")));
+
+  // An -ing form the index misses: slumbering → slumber.
+  const slumbering = synsetsForSurface(extract, "slumbering");
+  assert.ok(slumbering.candidates.some((c) => c.lemma === "slumber" && c.pos === "v"));
+  assert.ok(slumbering.synsets.length > 0);
+  assert.ok(slumbering.synsets.every((s) => s.lemmas.includes("slumber")));
+});
+
+test("surface lookup: index-listed forms keep precedence, irregulars unchanged", () => {
+  // Plural -es through the forms index, exactly as before.
+  const churches = synsetsForSurface(extract, "churches");
+  assert.deepEqual(churches.candidates, [
+    { lemma: "church", pos: "n" },
+    { lemma: "church", pos: "v" },
+  ]);
+  assert.equal(churches.synsets.length, 5);
+
+  // Irregular past listed in the index: went → go, never re-derived.
+  const went = synsetsForSurface(extract, "went");
+  assert.deepEqual(went.candidates, [{ lemma: "go", pos: "v" }]);
+  assert.equal(went.synsets.length, 30);
+  assert.ok(went.synsets.every((s) => s.pos === "v" && s.lemmas.includes("go")));
+});
+
+test("surface lookup: a non-word still resolves to nothing", () => {
+  const blorped = synsetsForSurface(extract, "blorped");
+  assert.equal(blorped.synsets.length, 0);
+  assert.deepEqual(blorped.candidates, []);
 });

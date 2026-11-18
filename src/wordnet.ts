@@ -189,16 +189,60 @@ export function synsetsForLemma(extract: WordNetExtract, lemma: string): SynsetR
 
 export interface SurfaceLookup {
   synsets: SynsetRecord[];
-  /** How the surface resolved: as an exact lemma, or through the forms index. */
+  /** How the surface resolved: as an exact lemma, or through a form
+   *  (the closed forms index, or the regular-morphology fallback). */
   via: "lemma" | "form";
   /** Lemma+POS candidates (the surface itself when via === "lemma"). */
   candidates: FormCandidate[];
 }
 
 /**
+ * Candidate stems for a surface under REGULAR English inflection —
+ * the same stripping rules the fork parser's morphology fallback
+ * uses (wordnet-lex.ts, lemmaFor): -ied/-ies → -y, -ing and -ed
+ * with silent-e restoration and final-consonant undoubling, -es
+ * and plural/third-person -s. A stem is only a GUESS here; callers
+ * accept it solely when it is an attested lemma of the extract,
+ * which is the guard against over-stripping (and against resolving
+ * non-words: "blorped" strips to unattested stems and stays
+ * unresolved).
+ */
+export function regularInflectionStems(surface: string): string[] {
+  const key = surface.toLowerCase();
+  const stems: string[] = [];
+  const push = (s: string) => {
+    if (s && !stems.includes(s)) stems.push(s);
+  };
+  if (key.length > 4 && (key.endsWith("ied") || key.endsWith("ies"))) push(key.slice(0, -3) + "y");
+  if (key.length > 5 && key.endsWith("ing")) {
+    const base = key.slice(0, -3);
+    push(base);
+    push(base + "e");
+    if (base.length > 2 && base[base.length - 1] === base[base.length - 2]) push(base.slice(0, -1));
+  }
+  if (key.length > 4 && key.endsWith("ed")) {
+    const base = key.slice(0, -2);
+    push(base);
+    push(base + "e");
+    push(key.slice(0, -1));
+    if (base.length > 2 && base[base.length - 1] === base[base.length - 2]) push(base.slice(0, -1));
+  }
+  if (key.length > 3 && key.endsWith("es")) push(key.slice(0, -2));
+  if (key.length > 3 && key.endsWith("s") && !key.endsWith("ss")) push(key.slice(0, -1));
+  return stems;
+}
+
+/**
  * Surface-aware lookup (design §7.3): exact lemma first, then the
- * importer's closed forms index. Inflection is resolved here, from
- * attested data — the router never guesses a stem at runtime.
+ * importer's closed forms index, then — only when both miss
+ * entirely — the regular-morphology fallback above. Precedence is
+ * what keeps irregulars exact: a surface the index lists (went →
+ * go) resolves exactly as the index says, and the fallback never
+ * overrides it. The fallback closes a measured hole in the index:
+ * it lists "baked" but not "happened", though both are regular
+ * pasts; a stem is accepted only when the extract attests it as a
+ * lemma, so the lookup still resolves from attested data, never
+ * from a guessed stem alone.
  */
 export function synsetsForSurface(extract: WordNetExtract, surface: string): SurfaceLookup {
   const key = surface.toLowerCase();
@@ -211,7 +255,20 @@ export function synsetsForSurface(extract: WordNetExtract, surface: string): Sur
       candidates: poses.map((pos) => ({ lemma: key, pos })),
     };
   }
-  const candidates = extract.forms.get(key) ?? [];
+  let candidates = extract.forms.get(key) ?? [];
+  if (candidates.length === 0) {
+    // Regular-morphology fallback: every attested lemma among the
+    // candidate stems, in stem order, each with its attested POSes.
+    const derived: FormCandidate[] = [];
+    for (const stem of regularInflectionStems(key)) {
+      for (const s of synsetsForLemma(extract, stem)) {
+        if (!derived.some((c) => c.lemma === stem && c.pos === s.pos)) {
+          derived.push({ lemma: stem, pos: s.pos });
+        }
+      }
+    }
+    candidates = derived;
+  }
   const synsets: SynsetRecord[] = [];
   const seen = new Set<string>();
   for (const cand of candidates) {
