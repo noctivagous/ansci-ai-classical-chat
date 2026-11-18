@@ -17,8 +17,14 @@ enableWordnetLexicon(true);
 const ungated = (lemma: string) => climbCandidates(lemma).filter((c) => !c.gated);
 const elements = (lemma: string) => ungated(lemma).map((c) => `${c.element} via ${c.anchor}`);
 
-test("rock: the candy-synset route to 'sweet' no longer fires (Earth candidate gone)", () => {
-  assert.deepEqual(ungated("rock"), []);
+test("rock: the candy-synset route to 'sweet' no longer fires; the material sense takes the stone class (Slice B, 2026-11-18)", () => {
+  // Premise corrected to the new truth, Slice A precedent: the
+  // candy route stays dead (no candidate via 'sweet'), and rock's
+  // material sense (sense 7, {rock, stone}) now stops at the R3
+  // stone class — an Earth candidate by the designed route, not
+  // the wayward one this test was written against.
+  assert.deepEqual(elements("rock"), ["Earth via rock"]);
+  assert.ok(ungated("rock").every((c) => c.viaClass?.stuffClass === "stone"));
 });
 
 test("kick: the complaint sense of 'beef' no longer fires; the excitement route stands", () => {
@@ -29,16 +35,29 @@ test("chalk: the drug-slang sense of 'ice' no longer fires; the colour route to 
   assert.deepEqual(elements("chalk"), ["Metal via white"]);
 });
 
-test("brass: neither the instrument sense of 'wind' nor the boldness sense of 'face' fires", () => {
-  assert.deepEqual(ungated("brass"), []);
+test("brass: neither the instrument sense of 'wind' nor the boldness sense of 'face' fires; the alloy sense takes the metal class (Slice B, 2026-11-18)", () => {
+  // Premise corrected to the new truth, Slice A precedent: the
+  // wind/face routes stay dead, and brass — an alloy — now stops
+  // at the R3 metal class via copper-base alloy (2 hops, @0.8).
+  assert.deepEqual(elements("brass"), ["Metal via alloy"]);
+  assert.ok(ungated("brass").every((c) => c.viaClass?.stuffClass === "metal"));
 });
 
 test("snap: the easy-undertaking sense of 'breeze' no longer fires; the gingersnap route to cake stands (a coherent minor-sense path, retained by design)", () => {
   assert.deepEqual(elements("snap"), ["Earth via cake"]);
 });
 
-test("stock: blood's lineage synset no longer supplies a Fire rival — the broth baseline stands unopposed", () => {
-  assert.deepEqual(elements("stock"), ["Water via broth"]);
+test("stock: blood's lineage synset no longer supplies a Fire rival — and since Slice A the broth baseline has a legitimate Metal rival (the livestock sense at the mammal class stop)", () => {
+  // The pinning repair's claim stands: no Fire candidate via blood.
+  assert.ok(!elements("stock").some((e) => e.startsWith("Fire")), elements("stock").join(", "));
+  // Slice A (2026-11-18) changed the second clause of this test's
+  // original name ("the broth baseline stands unopposed"): stock's
+  // livestock sense now climbs to the mammal creature-class stop
+  // and supplies a Metal candidate beside the broth Water. That is
+  // the slice working as designed, recorded here rather than
+  // excluded away — the same change that moved sense set B's stock
+  // item (docs/fork/slice-a-report.md).
+  assert.deepEqual(elements("stock").sort(), ["Metal via mammal", "Water via broth"]);
 });
 
 test("frozen premises preserved by the exception data: passion keeps both rivals, rest keeps both, lettuce keeps both, outpouring keeps both", () => {

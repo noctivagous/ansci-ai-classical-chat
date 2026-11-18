@@ -301,13 +301,13 @@ export const SYSTEM_MAP: SystemMap = {
       "title": "Social Unit",
       "type": "Unit",
       "parent": "awareness",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 20,
       "path": "awareness/social-unit",
       "file": null,
       "external": false,
-      "currentCode": "none",
-      "summary": "Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Placed inside Awareness by the owner's direction (2026-11-18, GAPS §2); the unit's design — its seam with the turn loop and the reply planner, what it may and may not originate — is a separate item, not yet taken. Not built: no social layer exists yet."
+      "currentCode": "src/fork/social.ts (S1) + assess.ts (social kinds)",
+      "summary": "Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Designed 2026-11-18 (ansci-social-unit-design.md; placement inside Awareness confirmed, rulings 1a-5a). S1 built: the social reading annotates assessed objects in shadow — no reply changes — and the two registers live in the Session. Slices S2-S6 (moves through the Planner, self-facts, clarification, premise stance, persistence) are not yet commissioned in turn."
     },
     {
       "id": "awareness/social-unit/interlocutor",
@@ -315,25 +315,25 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Register",
       "parent": "awareness/social-unit",
       "state": "partial",
-      "percent": 10,
+      "percent": 30,
       "path": null,
       "file": "interlocutor-standing.ts",
       "external": false,
-      "currentCode": "almost none",
-      "summary": "The system's standing picture of the person it is talking with: identity known or unknown, first contact or returning, and the picture the conversation itself accumulates. This is the register formerly at awareness/surroundings/interlocutor-standing, moved into the Social Unit by the owner's direction (2026-11-18) to be built out there as the Interlocutor."
+      "currentCode": "src/fork/social.ts (register) + src/fork/session.ts (held)",
+      "summary": "The system's standing picture of the person it is talking with: identity known or unknown, first contact or returning, and the picture the conversation itself accumulates. S1 (2026-11-18): contact, a stated-name identity, pointers to the content established with them, and the social state (greeted / thanked / leave taken), updated only from speaker-attributed content. Returning-contact persistence is slice S6, deferred. This is the register formerly at awareness/surroundings/interlocutor-standing, moved into the Social Unit by the owner's direction (2026-11-18)."
     },
     {
       "id": "awareness/social-unit/conversation",
       "title": "Conversation",
       "type": "Container",
       "parent": "awareness/social-unit",
-      "state": "placeholder",
-      "percent": 0,
+      "state": "partial",
+      "percent": 15,
       "path": "awareness/social-unit/conversation",
       "file": null,
       "external": false,
-      "currentCode": "none",
-      "summary": "Conversation lives inside the Social Unit: greeting and leave-taking, identity and capabilities as socially presented, thanks, acknowledgement, turn-taking. Not built."
+      "currentCode": "src/fork/social.ts (phase & pending register)",
+      "summary": "Conversation lives inside the Social Unit: greeting and leave-taking, identity and capabilities as socially presented, thanks, acknowledgement, turn-taking. S1 (2026-11-18): the phase machine and pending register live in the Session and the reading tracks them; the moves themselves — authored through the Planner — are slice S2 on. The design adds two moves to this container: clarification and the premise stance (slices S4, S5)."
     },
     {
       "id": "lpu",

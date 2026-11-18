@@ -118,23 +118,63 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   // interrogative mood on the root and no query — what it opens
   // is the predication itself.
   const interrogative = root?.states?.mood === "interrogative";
+
+  // The social acts (Social Unit S1, 2026-11-18; design:
+  // ansci-social-unit-design.md §1–§2). Each is recognised from
+  // the parse's own structure, in the greeting's manner — a bare
+  // topic from a closed set, or one fixed predication shape —
+  // never from the raw surface.
+  const LEAVE_TAKING_FORMS = new Set(["goodbye", "bye", "farewell"]);
+  const isLeaveTaking = Boolean(
+    root && root.role === "topic" && parsed.meaning.edges.length === 0 && LEAVE_TAKING_FORMS.has(root.lemma.toLowerCase()),
+  );
+  // Thanks arrives two ways: the bare topic ("Thanks.") and the
+  // one predication "Thank you." — a thank-verb whose only edge
+  // is its recipient.
+  const isThanks = Boolean(
+    root &&
+      ((root.role === "topic" && parsed.meaning.edges.length === 0 && root.lemma.toLowerCase() === "thanks") ||
+        (root.role === "verb" &&
+          root.lemma.toLowerCase() === "thank" &&
+          parsed.meaning.edges.length > 0 &&
+          parsed.meaning.edges.every((e) => e.relation === "recipient"))),
+  );
+  // A self-query asks about the system itself: an interrogative
+  // predication of "you" by a question word ("Who are you?",
+  // "What are you?"). Capability phrasings ("What can you do?")
+  // do not parse today — the sentence layer draws no modal
+  // shape for them — so S1 recognises the identity shape only;
+  // the gap is the sentence layer's, recorded in the S1 report.
+  const isSelfQuery = Boolean(
+    interrogative &&
+      parsed.meaning.edges.some((e) => e.relation === "predicated-as") &&
+      parsed.meaning.nodes.some((n) => n.lemma.toLowerCase() === "you") &&
+      parsed.meaning.nodes.some((n) => n.questionWord && (n.lemma.toLowerCase() === "who" || n.lemma.toLowerCase() === "what")),
+  );
+
   const kind: SemanticObject["act"]["kind"] = parsed.discourseAct
     ? parsed.discourseAct
     : isGreeting
       ? "greeting"
-      : parsed.query || interrogative
-        ? "question"
-        : "statement";
+      : isLeaveTaking
+        ? "leave-taking"
+        : isThanks
+          ? "thanks"
+          : isSelfQuery
+            ? "self-query"
+            : parsed.query || interrogative
+              ? "question"
+              : "statement";
 
   const trimmed = surface.trim();
   const form =
-    kind === "greeting"
+    kind === "greeting" || kind === "leave-taking" || kind === "thanks"
       ? trimmed.endsWith("?")
         ? "interrogative"
         : trimmed.endsWith("!")
           ? "exclamatory"
           : "declarative"
-      : kind === "question" || kind === "reason-query"
+      : kind === "question" || kind === "reason-query" || kind === "self-query"
         ? "interrogative"
         : (root?.states?.mood ?? "indicative");
 
@@ -171,7 +211,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   // certain reading of the act's form; the default statement
   // reading carries the residual doubt that the act may yet prove
   // social — the doubt slice 2's readers start spending.
-  const confidence = parsed.discourseAct || parsed.query || interrogative || isGreeting ? 1 : 0.85;
+  const confidence = parsed.discourseAct || parsed.query || interrogative || isGreeting || isLeaveTaking || isThanks || isSelfQuery ? 1 : 0.85;
 
   const aspects = classifyAspects(parsed);
   const composition = rollUpComposition(aspects);
@@ -193,7 +233,14 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     producer: "person",
     surface,
     ...(parsed.tokenResolutions ? { tokenResolutions: parsed.tokenResolutions } : {}),
-    act: { kind, form, force: kind, ritual: kind === "greeting", streamRole },
+    act: {
+      kind,
+      form,
+      force: kind,
+      ritual: kind === "greeting" || kind === "leave-taking" || kind === "thanks",
+      streamRole,
+      ...(kind === "self-query" ? { selfQuery: "identity" as const } : {}),
+    },
     content: { meaning: parsed.meaning, connective: parsed.connective, holes, grounding },
     aspects,
     senses,

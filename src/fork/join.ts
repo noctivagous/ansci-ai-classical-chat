@@ -41,6 +41,7 @@ import {
 import type { Element, ParsedSentence } from "./sentence";
 import { semanticClassifications } from "./sentence";
 import { climbClassification } from "./wordnet-lex";
+import { lookupOverlay } from "./overlay";
 
 /** Below this confidence a classification is recorded but does not
  *  drive derivations (the gate the cycle-probe evaluation demanded). */
@@ -143,7 +144,7 @@ export interface Derivation {
   concept: string;
   aspect?: string;
   nodeId?: string;
-  classification?: { element: Element; confidence: number; provenance: Provenance | "seed-atomic" | "wordnet-derived"; aspectKey: AspectKey };
+  classification?: { element: Element; confidence: number; provenance: Provenance | "seed-atomic" | "wordnet-derived" | "overlay"; aspectKey: AspectKey };
   /** True when the classification fell below CONFIDENCE_GATE and no
    *  conclusions were derived from it. */
   gated: boolean;
@@ -334,6 +335,46 @@ export function deriveSentence(graph: Graph, parsed: ParsedSentence): Map<string
       conflicts: [],
       reviewItems: [],
       classification: { element: cls.semanticElement, confidence: 1, provenance: "seed-atomic", aspectKey: "overall" },
+    });
+  }
+  // Overlay (Slice D): FILL-ONLY — a meaning node none of the
+  // routes above classified takes its overlay entry if one
+  // exists (overlay.ts; the table and the climb have both been
+  // heard, and the sentence lexicon's own address had its say in
+  // the route above). The node inherits the element's
+  // correspondence row at the entry's confidence, provenance
+  // "overlay"; an entry below the gate is recorded as a gated
+  // derivation and yields no conclusions, exactly as a gated
+  // table classification does in derive().
+  for (const node of parsed.meaning.nodes) {
+    if (out.has(node.id)) continue;
+    const entry = lookupOverlay(node.lemma);
+    if (!entry) continue;
+    const gated = entry.confidence < CONFIDENCE_GATE;
+    const conclusions: DerivedConclusion[] = [];
+    if (!gated) {
+      for (const [category, entries] of correspondenceRow(graph, entry.element.toLowerCase())) {
+        for (const rowEntry of entries) {
+          conclusions.push({
+            kind: "correspondence",
+            label: rowEntry.name,
+            category,
+            element: entry.element,
+            confidence: entry.confidence,
+            pathLength: 2,
+            path: `${node.lemma} —OVERLAY→ ${entry.element} —CORRESPONDS_TO→ ${rowEntry.name} (overlay, derived tier: ${entry.rationale})`,
+          });
+        }
+      }
+    }
+    out.set(node.id, {
+      concept: node.lemma,
+      gated,
+      ...(gated ? { gateReason: `overlay confidence ${entry.confidence} is below the gate ${CONFIDENCE_GATE}` } : {}),
+      conclusions,
+      conflicts: [],
+      reviewItems: [],
+      classification: { element: entry.element, confidence: entry.confidence, provenance: "overlay", aspectKey: "overall" },
     });
   }
   return out;

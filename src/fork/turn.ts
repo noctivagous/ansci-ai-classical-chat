@@ -87,6 +87,7 @@ import { EN_LEXICON, type MeaningNode, type ParsedSentence, type TokenResolution
 import { CONTROLS, GENERATES, type Element } from "./sentence";
 import { parse } from "./parse";
 import { lookupClassification } from "./classify";
+import { climbClassification, climbRecognitions } from "./wordnet-lex";
 import { derive, type Derivation, type DerivedConclusion } from "./join";
 import { classifiedOrigin, holderOf, recordEntity, resolvePronoun, supersedeRecord, supersedeState, type FrameRecord, type Session, type StateRecord, type SupersessionRecord, type TopicRecord } from "./session";
 import { renderComposition } from "./composition";
@@ -105,6 +106,7 @@ import {
   seedSceneNeeds,
 } from "./info-object";
 import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
+import { readSocial } from "./social";
 import { assessNormalcy, normalcyFlagOf } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
 import { applySceneUpdate } from "./senses-scening";
@@ -165,6 +167,11 @@ export interface TurnTrace {
   };
   parseSummary: string;
   classifications: { concept: string; element: Element; confidence: number; provenance: string }[];
+  /** Slice C recognitions: lemmas neither the table nor the climb
+   *  classified, whose kind the climb still recognised (a function
+   *  category, no element claimed). The decline diagnosis reads
+   *  these: the gap is located at classification, not at kind. */
+  recognitions: { concept: string; category: string; stopSynset: string }[];
   resolutions: { pronoun: string; resolvedTo: string }[];
   /** Token resolutions from the sentence layer (token-resolve.ts):
    *  words the parser did not recognise and what resolved them —
@@ -249,6 +256,11 @@ export interface TurnTrace {
    *  (coherence.ts): the annotation notes, in order. Present
    *  only when the analysis had something to say. */
   coherence?: string[];
+  /** The Social Unit's readings of this turn's objects
+   *  (social.ts, S1 2026-11-18): the annotation notes, in order.
+   *  Present only when the reading had something to say. S1 is
+   *  shadow — no reply path consumes these yet. */
+  social?: string[];
   /** The reply object this turn's planner-composed reply was
    *  authored as (reply.ts, slice 4): id and kind. Absent when
    *  the reply is the probe's hand wording. */
@@ -870,6 +882,7 @@ function processTurnInner(session: Session, text: string): TurnResult {
     ...(session.frame ? { frame: session.frame } : {}),
     parseSummary: "",
     classifications: [],
+    recognitions: [],
     resolutions: [],
     tokenResolutions: [],
     // R1: the probe's wording speaks unless the planner's graph
@@ -923,6 +936,12 @@ function processTurnInner(session: Session, text: string): TurnResult {
     assessNormalcy(parsed, o, session);
     analyseInbound(o, session);
     compareCompositions(o, session);
+    /* The Social Unit's reading (social.ts, S1): after
+     * Coherence's inbound analysis, before planning, as the
+     * design's seam specifies. It annotates the object and
+     * updates its Session registers; in S1 nothing downstream
+     * consumes either — the reading is shadow. */
+    readSocial(o, session);
     analyseSenses(o);
     priceNormalcyFlags(o);
     noteHandled(o, "coherence/coherence-analysis");
@@ -986,6 +1005,10 @@ function processTurnInner(session: Session, text: string): TurnResult {
     o.trail.filter((a) => a.unit === "coherence/coherence-analysis").map((a) => a.note),
   );
   if (coherenceNotes.length) trace.coherence = coherenceNotes;
+  const socialNotes = assessed.flatMap((o) =>
+    o.trail.filter((a) => a.unit === "awareness/social-unit").map((a) => a.note),
+  );
+  if (socialNotes.length) trace.social = socialNotes;
 
   /* The greeting (slice 2; envelope build 2026-11-17): the
    * Planner answers the greeting object with its mirror — the
@@ -1060,6 +1083,14 @@ function processTurnInner(session: Session, text: string): TurnResult {
   const classificationOf = (lemma: string) => {
     const c = lookupClassification(lemma);
     if (c) trace.classifications.push({ concept: c.concept, element: c.element, confidence: c.confidence, provenance: c.provenance });
+    else if (!climbClassification(lemma)) {
+      // Slice C: neither the table nor the climb classifies this
+      // lemma — record what the climb recognised instead, so the
+      // turn's record distinguishes "kind known, element unclaimed"
+      // from "wholly unknown".
+      const rec = climbRecognitions(lemma)[0];
+      if (rec) trace.recognitions.push({ concept: lemma, category: rec.category, stopSynset: rec.stopSynset });
+    }
     return c;
   };
 
@@ -1139,6 +1170,9 @@ function processTurnInner(session: Session, text: string): TurnResult {
   }
   trace.classifications = trace.classifications.filter(
     (c, i, a) => a.findIndex((x) => x.concept === c.concept && x.element === c.element) === i,
+  );
+  trace.recognitions = trace.recognitions.filter(
+    (r, i, a) => a.findIndex((x) => x.concept === r.concept && x.category === r.category) === i,
   );
 
   /* ---- R5 (§8.7 S12): the recorded state stands — by plain
@@ -1801,6 +1835,7 @@ function computeMapPath(trace: TurnTrace): string[] {
     return path;
   }
   if (trace.coherence?.length) path.push("coherence/coherence-analysis");
+  if (trace.social?.length) path.push("awareness/social-unit");
   const correctionOnly = Boolean(trace.correction && trace.replyGraph && !trace.derivationPath);
   const planned = Boolean(trace.replyGraph || trace.gapQuestion || trace.clarification);
   const derived = Boolean(trace.derivationPath || trace.cyclePath);

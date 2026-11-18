@@ -24,7 +24,7 @@ import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDefaultExtract } from "../dist/src/wordnet.js";
-import { anchorPinReport, climbAudit, climbCandidates } from "../dist/src/fork/wordnet-lex.js";
+import { anchorPinReport, categoryStopReport, classStopReport, climbAudit, climbCandidates, climbRecognitions, stuffStopReport } from "../dist/src/fork/wordnet-lex.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -35,6 +35,17 @@ const NAMED = [
   "blow", "lettuce", "rest", "outpouring", "passion", "stock", "alabaster",
   // unit-test climbs
   "gale", "drizzle", "blizzard", "hurricane", "fury", "sleet",
+  // Slice A creature-class stops (2026-11-18): reached, excluded,
+  // and honestly-unreached animals
+  "badger", "tiger", "duck", "snail", "abalone", "shrimp", "catfish",
+  "crane", "crab", "octopus", "whale", "human", "silkworm", "frog", "yak",
+  // Slice B stuff-class words (2026-11-18): the measured scope,
+  // plus the abstentions that must stay anchorless
+  "marble", "steel", "copper", "oak", "ash", "clay", "kaolin", "water",
+  "bronze", "pewter", "rosewood", "silk", "plastic", "flour", "coal", "leather",
+  // Slice C recognition words (2026-11-18): recognised kinds, and
+  // words that must stay unrecognised
+  "hammer", "teapot", "abacus", "bicycle", "thermostat",
 ];
 
 function fmtTrail(hit) {
@@ -54,8 +65,16 @@ function dumpLemma(lemma) {
     console.log(`  [${s.pos} sense ${s.sense}] {${s.start.lemmas.join(", ")}} — "${s.start.gloss}" [${s.start.id}]`);
     if (s.hit) {
       const h = s.hit;
-      console.log(`      —ANCHOR→ ${h.anchor} (${h.element} @${h.confidence}${h.gated ? ", GATED" : ""}) via ${h.via}, ${h.hops} hop(s)`);
+      if (h.via === "class" && h.viaClass?.creatureClass) {
+        console.log(`      —CLASS→ ${h.anchor} (${h.element} @${h.confidence}${h.gated ? ", GATED" : ""}) via class ⇒ ${h.viaClass.creatureClass} [${h.viaClass.stopSynset}], ${h.hops} hop(s)`);
+      } else {
+        const cls = h.viaClass ? ` ⇒ class ${h.viaClass.stuffClass} (STUFF_CLASS_R3_V1, stop ${h.viaClass.stopSynset})` : "";
+        console.log(`      —ANCHOR→ ${h.anchor} (${h.element} @${h.confidence}${h.gated ? ", GATED" : ""}) via ${h.via}, ${h.hops} hop(s)${cls}`);
+      }
       console.log(`      path: ${fmtTrail(h)}`);
+    } else if (s.recognition) {
+      const r = s.recognition;
+      console.log(`      —RECOGNISED→ kind: ${r.category} (stop ${r.stopSynset}, ${r.hops} hop(s), ${r.stops} stop(s) on path) — no classification`);
     } else {
       console.log("      (no anchor within 6 hops)");
     }
@@ -104,6 +123,7 @@ for (const lemma of population) {
           lemma, pos: s.pos, sense: s.sense,
           anchor: s.hit.anchor, element: s.hit.element, confidence: s.hit.confidence,
           hops: s.hit.hops, gated: s.hit.gated, via: s.hit.via,
+          ...(s.hit.viaClass ? { viaClass: s.hit.viaClass } : {}),
           trail: s.hit.trail,
         }));
       }
@@ -123,6 +143,45 @@ for (const d of distinct) console.log(`  ${d}`);
 
 writeFileSync(join(root, "docs/fork/anchor-audit-dump.jsonl"), dumpRows.join("\n") + "\n");
 console.log(`\nfull per-candidate dump: docs/fork/anchor-audit-dump.jsonl (${dumpRows.length} rows)`);
+
+/* ---- creature-class stop report (Slice A) ---- */
+const classStops = classStopReport();
+console.log("\n== Creature-class stops ==");
+for (const s of classStops) {
+  console.log(`  ${s.synset} {${s.lemmas.join(", ")}} ⇒ ${s.creatureClass} (${s.element}) — subtree ${s.subtreeSize} synsets`);
+  for (const x of s.exclusionsApplied) {
+    console.log(`    exclusion: ${x.synset} {${x.lemmas.join(", ")}} — subtree ${x.subtreeSize}`);
+  }
+}
+writeFileSync(join(root, "docs/fork/class-stop-dump.json"), JSON.stringify(classStops, null, 1) + "\n");
+console.log(`full class-stop dump: docs/fork/class-stop-dump.json`);
+
+/* ---- stuff-class stops (Slice B, 2026-11-18) ---- */
+const stuffStops = stuffStopReport();
+console.log("\n== Stuff-class stops (STUFF_CLASS_R3_V1) ==");
+for (const s of stuffStops) {
+  console.log(
+    `${s.synset} {${s.lemmas.join(", ")}} — class ${s.stuffClass} → ${s.element} @${s.price}; subtree ${s.subtreeSize} synsets`,
+  );
+}
+writeFileSync(join(root, "docs/fork/stuff-stop-dump.json"), JSON.stringify(stuffStops, null, 1) + "\n");
+console.log(`full stuff-stop dump: docs/fork/stuff-stop-dump.json`);
+
+/* ---- category stops (Slice C, 2026-11-18) ---- */
+const categoryStops = categoryStopReport();
+console.log("\n== Category stops (recognition, Slice C) ==");
+for (const s of categoryStops) {
+  console.log(
+    `${s.synset} {${s.lemmas.join(", ")}} — kind: ${s.category}; subtree ${s.subtreeSize} synsets`,
+  );
+}
+writeFileSync(join(root, "docs/fork/category-stop-dump.json"), JSON.stringify(categoryStops, null, 1) + "\n");
+console.log(`full category-stop dump: docs/fork/category-stop-dump.json`);
+for (const lemma of ["hammer", "teapot", "abacus"]) {
+  for (const r of climbRecognitions(lemma)) {
+    console.log(`recognition: ${r.path} · stops on path: ${r.stops.map((s) => `${s.category}@${s.hops}${s.primary ? " (primary)" : ""}`).join(", ")}`);
+  }
+}
 
 /* ---- named lemmas ---- */
 console.log("\n== Named lemmas (full paths) ==");

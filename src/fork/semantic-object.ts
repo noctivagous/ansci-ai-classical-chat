@@ -41,6 +41,9 @@ export type ObjectKind =
   | "topic-proposal"
   | "reason-query"
   | "greeting"
+  | "leave-taking"
+  | "thanks"
+  | "self-query"
   | "reply";
 
 export type StreamRole = "opens" | "answers" | "continues" | "corrects" | "closes";
@@ -199,6 +202,13 @@ export interface SemanticObject {
      *  Nothing is ritual in slice 1. */
     ritual: boolean;
     streamRole: StreamRole;
+    /** Present on self-query objects (Social Unit S1, 2026-11-18):
+     *  what the question asks about the system itself. "identity"
+     *  is the shape the sentence layer draws today ("Who are
+     *  you?", "What are you?"); "capability" is reserved — the
+     *  modal shapes it needs ("What can you do?") do not parse
+     *  yet, a located sentence-layer gap. */
+    selfQuery?: "identity" | "capability";
   };
   content: {
     meaning: MeaningGraph;

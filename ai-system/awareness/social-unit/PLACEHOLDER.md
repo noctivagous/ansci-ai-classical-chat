@@ -1,13 +1,13 @@
 # Social Unit
 
-Schematic address: `awareness/social-unit` · Type: Unit · State: placeholder · 0% completed to goal
+Schematic address: `awareness/social-unit` · Type: Unit · State: partial · 20% completed to goal
 
-Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Placed inside Awareness by the owner's direction (2026-11-18, GAPS §2); the unit's design — its seam with the turn loop and the reply planner, what it may and may not originate — is a separate item, not yet taken. Not built: no social layer exists yet.
+Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Designed 2026-11-18 (design: `~/workspace/ansci-social-unit-design.md`; placement inside Awareness confirmed at design time, owner's rulings 1a–5a).
 
-Working code today: none
+Slice S1 (2026-11-18, this track's worktree): the social reading runs in the turn loop after Coherence's inbound analysis and annotates each assessed object in shadow — no reply changes — while the Interlocutor and Conversation registers live in the Session and update from the reading. Assessment recognises leave-taking, thanks, and self-query objects beside the greeting. Slices S2–S6 (moves through the Planner, self-facts, clarification, the premise stance, cross-conversation persistence) follow in turn, each on its own commission.
+
+Working code today: `src/fork/social.ts` (the reading + the registers), `src/fork/assess.ts` (the social kinds), `src/fork/session.ts` (the registers held), `src/fork/turn.ts` (the seam)
 
 Holds:
 - `awareness/social-unit/interlocutor` — The Interlocutor (module file: `interlocutor-standing.ts`)
 - `awareness/social-unit/conversation` — Conversation
-
-This is a placeholder: the unit's home in ai-system/ exists so the tree and the map agree. Its implementation migrates or is built here in a gated slice; until then the working code stays where PLACEHOLDER.md says it is.

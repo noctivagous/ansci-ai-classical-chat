@@ -5,12 +5,12 @@ Authorship caveat (standing): both sets builder-authored against the sentences' 
 
 ## The census ceiling
 
-Of 8,094 extract lemmas with ≥3 noun/adjective senses, 416 have any ungated anchored climb candidate, 64 have ≥2, and **19 have candidates in distinct elements** — after the anchor-quality repair (2026-11-15, docs/fork/anchor-audit.md) pinned each anchor to the synsets carrying its classified sense. At stage 4 the figures were 646 / 85 / 28 (census population 8,099 under that stage's tool definition), and several of the 28 reached their anchors by spelling rather than sense (rock via "sweet", brass via "wind"); the repair traded that coverage for sense fidelity. The sets below sample the genuine subset. This is the material the stage actually has; claims are sized to it.
+Of 8,094 extract lemmas with ≥3 noun/adjective senses, 729 have any ungated climb candidate, 183 have ≥2, and **64 have candidates in distinct elements** — as this tree stands after the 2026-11-18 merge landed Slice A's creature-class stops and Slice B's stuff-class stops together: Slice B alone stood at 509 / 79 / 27, and the creature stops raise the census again because an animal word's senses now reach their creature class beside the anchors (a stuff word's senses already reached their material class — rock's material sense → stone/Earth; brass's alloy sense → metal/Metal). Before that, the anchor-quality repair (2026-11-15, docs/fork/anchor-audit.md) had pinned each anchor to the synsets carrying its classified sense; at stage 4 the figures were 646 / 85 / 28 (census population 8,099 under that stage's tool definition), and several of the 28 reached their anchors by spelling rather than sense (rock via "sweet", brass via "wind") — those routes stay dead; the class candidates are new routes by sense, not the old ones restored. The sets below sample the genuine subset. This is the material the stage actually has; claims are sized to it.
 
 ## Scores
 
 Set A: coherence **11/11** vs isolated-climb baseline **3/11**.
-Set B (sealed, single run): coherence **6/6** vs baseline **4/6** — the gain survives on the held-out set.
+Set B (sealed, single run): coherence **5/6** vs baseline **3/6** — the gain survives on the held-out set.
 
 ### Set A
 
@@ -37,7 +37,7 @@ Set B (sealed, single run): coherence **6/6** vs baseline **4/6** — the gain s
 | acerbity | The acerbity of the lemon startled her. | Wood | Wood | Wood | pass | support {"Wood":1,"Fire":0.8} |
 | beak | The beak pecked the grain. | Earth | Earth | Earth | pass | support {"Earth":0,"Metal":0} |
 | alabaster | The alabaster was white. | Metal | Metal | Metal | pass | support {"Metal":1,"Water":0.8} |
-| stock | The stock simmered in the pot. | Water | Water | Water | pass | no decision (single-element candidates) |
+| stock | The stock simmered in the pot. | Water | Metal | Metal | **FAIL** | support {"Metal":0,"Water":0} |
 
 ## Non-regression
 

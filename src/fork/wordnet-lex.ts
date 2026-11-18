@@ -52,6 +52,31 @@
  *    weather sense is second, and climbs blizzard —IS_A→ storm in one
  *    hop. Strict first-synset climbing would strand it, so senses are
  *    tried in order until one anchors.
+ *  - STUFF-CLASS STOPS (2026-11-18, Slice B of the B-bucket anchor
+ *    expansion; design: slice-b-design.md): a sense's climb can also
+ *    stop at a synset that names a stuff class (STUFF_CLASS_STOPS in
+ *    classify.ts), taking the class's element under the registered
+ *    rule R3 (STUFF_CLASS_R3_V1) at the class's flat specimen price.
+ *    The result's viaClass field records the stop. The taxonomy
+ *    assigns no element anywhere; R3 does, once, as data.
+ *  - CREATURE-CLASS STOPS (2026-11-18, Slice A of the same
+ *    expansion; design: slice-a-design.md): a sense's climb can
+ *    also stop at a taxonomic synset registered as a stop for the
+ *    Yueling creature classes of prediction rule P2
+ *    (CREATURE_CLASS_YUELING_V1): when a sense's climb reaches a
+ *    stop synset — without its path passing a carved-out
+ *    exclusion subtree (the human and cetacean subtrees inside
+ *    mammal) — the sense gains a class candidate: the class's
+ *    element at P2's flat cap (0.80, no per-hop decay —
+ *    membership in an audited subtree is binary, not a distance
+ *    from an exemplar), aspect "animal", with the derivation
+ *    named in the path string and in the result's viaClass
+ *    field. Membership is by the recognised kind, never by
+ *    anatomical feature-checks; the stops are id-keyed, with no
+ *    string-match route. Creature classes P2 does not name
+ *    (amphibians, arachnids, worms, cnidarians) have no stops
+ *    and stay unclassified — located gaps, recorded in the
+ *    slice report (docs/fork/slice-a-report.md).
  *  - 'cold' never climbs at all: the curated table owns it, keyed by
  *    (concept, aspect) — temperature/Water vs illness/Metal — and the
  *    table always wins over the climb. That is the X1 brake. (In this
@@ -109,8 +134,18 @@ import {
   ANCHOR_SYNSET_OVERRIDES,
   CLASSIFICATIONS,
   CLIMB_ANCHORS,
+  CATEGORY_STOPS,
+  CREATURE_CLASS_CAP,
+  CREATURE_CLASS_ELEMENTS,
+  CREATURE_CLASS_EXCLUSIONS,
+  CREATURE_CLASS_STOPS,
+  STUFF_CLASS_ELEMENTS,
+  STUFF_CLASS_PRICES,
+  STUFF_CLASS_STOPS,
   lookupClassification,
   type ClassificationEntry,
+  type CreatureClass,
+  type StuffClass,
 } from "./classify";
 import { CONFIDENCE_GATE } from "./join";
 import { ingForm } from "./parse";
@@ -456,6 +491,18 @@ export interface ClimbResult {
   /** Human-readable climb: synset lemmas walked, sense used, anchor. */
   path: string;
   provenance: "wordnet-derived";
+  /** Set only on a class candidate (Slice A creature classes,
+   *  Slice B stuff classes): the class the climb stopped at —
+   *  exactly one of creatureClass / stuffClass, keyed by rule —
+   *  the registered rule that prices it, and the stop synset.
+   *  Absent on ordinary anchor candidates. */
+  viaClass?: {
+    creatureClass?: CreatureClass;
+    stuffClass?: StuffClass;
+    rule: "CREATURE_CLASS_YUELING_V1" | "STUFF_CLASS_R3_V1";
+    stopSynset: string;
+    stopLemmas: string[];
+  };
 }
 
 const MAX_CLIMB_HOPS = 6;
@@ -677,6 +724,411 @@ function hypernymAdjacency(ex: WordNetExtract): Map<number, number[]> {
   return up;
 }
 
+/* ---------------- creature-class stops ----------------
+ * The stops and exclusions are data in classify.ts (synset ids).
+ * Here they are resolved once against the extract: stops by synset
+ * index for the climb's test, exclusions as an id set the climb's
+ * paths are checked against. */
+
+interface ClassStop {
+  creatureClass: CreatureClass;
+  synset: string;
+  lemmas: string[];
+}
+interface ClassStopState {
+  byIndex: Map<number, ClassStop>;
+  exclusionIds: Set<string>;
+}
+
+let classStopState: ClassStopState | null = null;
+
+function ensureClassStops(ex: WordNetExtract): ClassStopState {
+  if (classStopState) return classStopState;
+  const idToIndex = new Map<string, number>();
+  ex.synsets.forEach((s, i) => idToIndex.set(s.id, i));
+  const byIndex = new Map<number, ClassStop>();
+  for (const stop of CREATURE_CLASS_STOPS) {
+    const index = idToIndex.get(stop.synset);
+    if (index === undefined) continue;
+    byIndex.set(index, {
+      creatureClass: stop.creatureClass,
+      synset: stop.synset,
+      lemmas: [...ex.synsets[index].lemmas],
+    });
+  }
+  classStopState = {
+    byIndex,
+    exclusionIds: new Set(CREATURE_CLASS_EXCLUSIONS.map((x) => x.synset)),
+  };
+  return classStopState;
+}
+
+export interface ClassStopInfo {
+  synset: string;
+  lemmas: string[];
+  gloss: string;
+  creatureClass: CreatureClass;
+  element: Element;
+  /** Every synset in the stop's subtree, the stop itself included. */
+  subtreeSize: number;
+  /** Sorted headwords of the subtree's synsets — the audit dump. */
+  members: string[];
+  /** Exclusion roots inside this subtree, with their subtrees. */
+  exclusionsApplied: { synset: string; lemmas: string[]; reason: string; subtreeSize: number }[];
+}
+
+/** The class-stop selection, as computed — the audit's inspectable
+ *  record of each stop's subtree and the exclusions carved from
+ *  it. Mirrors anchorPinReport's role for anchors. */
+export function classStopReport(): ClassStopInfo[] {
+  const ex = extract();
+  if (!ex) return [];
+  const stops = ensureClassStops(ex);
+  const idToIndex = new Map<string, number>();
+  ex.synsets.forEach((s, i) => idToIndex.set(s.id, i));
+  const down = new Map<number, number[]>();
+  for (const kind of ["hypernym", "instance"] as const) {
+    const flat = ex.relations[kind] ?? [];
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const from = flat[i] as number;
+      const to = flat[i + 1] as number;
+      const list = down.get(to);
+      if (list) list.push(from);
+      else down.set(to, [from]);
+    }
+  }
+  const subtreeOf = (root: number): Set<number> => {
+    const out = new Set<number>([root]);
+    const queue = [root];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      for (const next of down.get(cur) ?? []) {
+        if (out.has(next)) continue;
+        out.add(next);
+        queue.push(next);
+      }
+    }
+    return out;
+  };
+  const out: ClassStopInfo[] = [];
+  for (const [index, stop] of stops.byIndex) {
+    const subtree = subtreeOf(index);
+    const exclusionsApplied: ClassStopInfo["exclusionsApplied"] = [];
+    for (const x of CREATURE_CLASS_EXCLUSIONS) {
+      const xi = idToIndex.get(x.synset);
+      if (xi === undefined || !subtree.has(xi)) continue;
+      exclusionsApplied.push({
+        synset: x.synset,
+        lemmas: [...ex.synsets[xi].lemmas],
+        reason: x.reason,
+        subtreeSize: subtreeOf(xi).size,
+      });
+    }
+    const s = ex.synsets[index];
+    out.push({
+      synset: stop.synset,
+      lemmas: stop.lemmas,
+      gloss: s.gloss,
+      creatureClass: stop.creatureClass,
+      element: CREATURE_CLASS_ELEMENTS[stop.creatureClass],
+      subtreeSize: subtree.size,
+      members: [...subtree].map((i) => ex.synsets[i].lemmas[0]).sort(),
+      exclusionsApplied,
+    });
+  }
+  return out;
+}
+/* ---------------- stuff-class stops ----------------
+ * The stops are data in classify.ts (synset ids). Here they are
+ * resolved once against the extract: stops by synset index for
+ * the climb's test. (The creature-class stops directly above
+ * follow the same pattern with an added exclusion set; the two
+ * class branches were built in parallel trees and united in the
+ * merge that landed both.) */
+
+interface StuffStop {
+  stuffClass: StuffClass;
+  synset: string;
+  lemmas: string[];
+}
+
+let stuffStopState: { byIndex: Map<number, StuffStop> } | null = null;
+
+function ensureStuffStops(ex: WordNetExtract): { byIndex: Map<number, StuffStop> } {
+  if (stuffStopState) return stuffStopState;
+  const idToIndex = new Map<string, number>();
+  ex.synsets.forEach((s, i) => idToIndex.set(s.id, i));
+  const byIndex = new Map<number, StuffStop>();
+  for (const stop of STUFF_CLASS_STOPS) {
+    const index = idToIndex.get(stop.synset);
+    if (index === undefined) continue;
+    byIndex.set(index, {
+      stuffClass: stop.stuffClass,
+      synset: stop.synset,
+      lemmas: [...ex.synsets[index].lemmas],
+    });
+  }
+  stuffStopState = { byIndex };
+  return stuffStopState;
+}
+
+export interface StuffStopInfo {
+  synset: string;
+  lemmas: string[];
+  gloss: string;
+  stuffClass: StuffClass;
+  element: Element;
+  price: number;
+  /** Every synset in the stop's subtree, the stop itself included. */
+  subtreeSize: number;
+  /** Sorted headwords of the subtree's synsets — the audit dump. */
+  members: string[];
+}
+
+/** The stuff-stop selection, as computed — the audit's inspectable
+ *  record of each stop's subtree. Mirrors anchorPinReport's role
+ *  for anchors. */
+export function stuffStopReport(): StuffStopInfo[] {
+  const ex = extract();
+  if (!ex) return [];
+  const stops = ensureStuffStops(ex);
+  const down = new Map<number, number[]>();
+  for (const kind of ["hypernym", "instance"] as const) {
+    const flat = ex.relations[kind] ?? [];
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const from = flat[i] as number;
+      const to = flat[i + 1] as number;
+      const list = down.get(to);
+      if (list) list.push(from);
+      else down.set(to, [from]);
+    }
+  }
+  const subtreeOf = (root: number): Set<number> => {
+    const out = new Set<number>([root]);
+    const queue = [root];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      for (const next of down.get(cur) ?? []) {
+        if (out.has(next)) continue;
+        out.add(next);
+        queue.push(next);
+      }
+    }
+    return out;
+  };
+  const out: StuffStopInfo[] = [];
+  for (const [index, stop] of stops.byIndex) {
+    const subtree = subtreeOf(index);
+    const s = ex.synsets[index];
+    out.push({
+      synset: stop.synset,
+      lemmas: stop.lemmas,
+      gloss: s.gloss,
+      stuffClass: stop.stuffClass,
+      element: STUFF_CLASS_ELEMENTS[stop.stuffClass],
+      price: STUFF_CLASS_PRICES[stop.stuffClass],
+      subtreeSize: subtree.size,
+      members: [...subtree].map((i) => ex.synsets[i].lemmas[0]).sort(),
+    });
+  }
+  return out;
+}
+
+/* ---------------- category stops: recognition ----------------
+ * The stops are data in classify.ts (CATEGORY_STOPS). A sense the
+ * climb did not classify can still be RECOGNISED: its walk passes
+ * a synset naming a function category. The outcome is formal
+ * (Slice C pre-rulings 1a–4a): it carries category, path and
+ * hops — no element, no aspect, no classification confidence —
+ * and nothing downstream may treat it as a candidate. */
+
+interface CategoryStop {
+  category: string;
+  synset: string;
+  lemmas: string[];
+}
+
+let categoryStopState: { byIndex: Map<number, CategoryStop> } | null = null;
+
+function ensureCategoryStops(ex: WordNetExtract): { byIndex: Map<number, CategoryStop> } {
+  if (categoryStopState) return categoryStopState;
+  const idToIndex = new Map<string, number>();
+  ex.synsets.forEach((s, i) => idToIndex.set(s.id, i));
+  const byIndex = new Map<number, CategoryStop>();
+  for (const stop of CATEGORY_STOPS) {
+    const index = idToIndex.get(stop.synset);
+    if (index === undefined) continue;
+    byIndex.set(index, {
+      category: stop.category,
+      synset: stop.synset,
+      lemmas: [...ex.synsets[index].lemmas],
+    });
+  }
+  categoryStopState = { byIndex };
+  return categoryStopState;
+}
+
+export interface CategoryStopInfo {
+  synset: string;
+  lemmas: string[];
+  gloss: string;
+  category: string;
+  /** Every synset in the stop's subtree, the stop itself included. */
+  subtreeSize: number;
+  /** Sorted headwords of the subtree's synsets — the audit dump. */
+  members: string[];
+}
+
+/** The category-stop selection, as computed — the audit's
+ *  inspectable record of each stop's subtree. */
+export function categoryStopReport(): CategoryStopInfo[] {
+  const ex = extract();
+  if (!ex) return [];
+  const stops = ensureCategoryStops(ex);
+  const down = new Map<number, number[]>();
+  for (const kind of ["hypernym", "instance"] as const) {
+    const flat = ex.relations[kind] ?? [];
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      const from = flat[i] as number;
+      const to = flat[i + 1] as number;
+      const list = down.get(to);
+      if (list) list.push(from);
+      else down.set(to, [from]);
+    }
+  }
+  const subtreeOf = (root: number): Set<number> => {
+    const out = new Set<number>([root]);
+    const queue = [root];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      for (const next of down.get(cur) ?? []) {
+        if (out.has(next)) continue;
+        out.add(next);
+        queue.push(next);
+      }
+    }
+    return out;
+  };
+  const out: CategoryStopInfo[] = [];
+  for (const [index, stop] of stops.byIndex) {
+    const subtree = subtreeOf(index);
+    const s = ex.synsets[index];
+    out.push({
+      synset: stop.synset,
+      lemmas: stop.lemmas,
+      gloss: s.gloss,
+      category: stop.category,
+      subtreeSize: subtree.size,
+      members: [...subtree].map((i) => ex.synsets[i].lemmas[0]).sort(),
+    });
+  }
+  return out;
+}
+
+/** One category stop met on a sense's climb path. */
+export interface RecognitionStop {
+  category: string;
+  stopSynset: string;
+  stopLemmas: string[];
+  hops: number;
+  /** True for the nearest stop on the path (ruling 4a). */
+  primary: boolean;
+}
+
+/** A recognised-but-unclassified sense (Slice C, ruling 1a): the
+ *  system knows the kind of thing the word names and claims no
+ *  element for it. There is deliberately no element, aspect or
+ *  confidence field on this type. */
+export interface RecognitionResult {
+  /** The primary (nearest) category. */
+  category: string;
+  stopSynset: string;
+  stopLemmas: string[];
+  hops: number;
+  /** Human-readable walk to the primary stop. */
+  path: string;
+  /** Every category stop on the sense's climb paths, nearest first. */
+  stops: RecognitionStop[];
+  /** The sense this recognition belongs to (1-based, extract order). */
+  sense: number;
+  start: AuditSynset;
+}
+
+/** All category stops on one sense's climb paths (≤ MAX_CLIMB_HOPS),
+ *  nearest first, each with the trail that first reached it. */
+function categoryWalk(
+  ex: WordNetExtract,
+  startIndex: number,
+): { stop: CategoryStop; hops: number; trail: number[] }[] {
+  const stops = ensureCategoryStops(ex);
+  const up = hypernymAdjacency(ex);
+  const found = new Map<number, { stop: CategoryStop; hops: number; trail: number[] }>();
+  const queue: { index: number; hops: number; trail: number[] }[] = [
+    { index: startIndex, hops: 0, trail: [startIndex] },
+  ];
+  const seen = new Set<number>([startIndex]);
+  while (queue.length) {
+    const cur = queue.shift()!;
+    const stop = stops.byIndex.get(cur.index);
+    if (stop && !found.has(cur.index)) {
+      found.set(cur.index, { stop, hops: cur.hops, trail: cur.trail });
+    }
+    if (cur.hops >= MAX_CLIMB_HOPS) continue;
+    for (const next of up.get(cur.index) ?? []) {
+      if (seen.has(next)) continue;
+      seen.add(next);
+      queue.push({ index: next, hops: cur.hops + 1, trail: [...cur.trail, next] });
+    }
+  }
+  return [...found.values()].sort((a, b) => a.hops - b.hops);
+}
+
+/**
+ * Recognitions for a lemma: one per noun sense the climb did NOT
+ * classify (classification takes precedence, per sense — ruling
+ * 3a), for senses whose walk passes at least one category stop.
+ * Table-owned lemmas return [] (the table owns them; there is
+ * nothing to recognise). Senses are in extract order.
+ */
+export function climbRecognitions(lemma: string): RecognitionResult[] {
+  if (!enabled) return [];
+  const ex = extract();
+  if (!ex) return [];
+  const key = lemma.toLowerCase();
+  if (lookupClassification(key)) return [];
+  const audit = climbAudit(key);
+  const out: RecognitionResult[] = [];
+  for (const sense of audit) {
+    if (sense.pos !== "n" || sense.hit) continue; // classified senses never recognise
+    const startIndex = ex.synsets.findIndex((s) => s.id === sense.start.id);
+    if (startIndex < 0) continue;
+    const walk = categoryWalk(ex, startIndex);
+    if (!walk.length) continue;
+    const stops: RecognitionStop[] = walk.map((w, i) => ({
+      category: w.stop.category,
+      stopSynset: w.stop.synset,
+      stopLemmas: w.stop.lemmas,
+      hops: w.hops,
+      primary: i === 0,
+    }));
+    const first = walk[0];
+    out.push({
+      category: first.stop.category,
+      stopSynset: first.stop.synset,
+      stopLemmas: first.stop.lemmas,
+      hops: first.hops,
+      path:
+        `${key} [n sense ${sense.sense}: ${sense.start.lemmas.join("/")}] ` +
+        first.trail.map((i) => ex.synsets[i].lemmas.join("/")).slice(1).map((t) => `—IS_A→ ${t}`).join(" ") +
+        `${first.hops ? " " : ""}—RECOGNISED→ ${first.stop.lemmas.join("/")} ⇒ kind: ${first.stop.category} (no classification)`,
+      stops,
+      sense: sense.sense,
+      start: sense.start,
+    });
+  }
+  return out;
+}
+
 interface ClimbCandidate extends ClimbResult {
   gated: boolean;
 }
@@ -709,6 +1161,8 @@ export function climbCandidates(lemma: string): ClimbCandidate[] {
   if (lookupClassification(key)) return []; // the table owns it
   const up = hypernymAdjacency(ex);
   const pins = ensurePins(ex);
+  const stuffStops = ensureStuffStops(ex);
+  const classStops = ensureClassStops(ex);
   const out: ClimbCandidate[] = [];
   for (const pos of ["n", "a"] as const) {
     const synsets = synsetsForLemma(ex, key).filter((s) => s.pos === pos);
@@ -716,8 +1170,11 @@ export function climbCandidates(lemma: string): ClimbCandidate[] {
       const start = synsets[si];
       // BFS upward; adjectives have no hypernym edges, so for them
       // this is the hop-0 lemma check only — as WordNet gives it.
-      const queue: { index: number; hops: number; trail: string[] }[] = [
-        { index: start.index, hops: 0, trail: [start.lemmas.join("/")] },
+      // `excluded` records whether the path so far passed a
+      // creature-class exclusion subtree (classify.ts): such a
+      // path must not fire the creature-class stop above it.
+      const queue: { index: number; hops: number; trail: string[]; excluded: boolean }[] = [
+        { index: start.index, hops: 0, trail: [start.lemmas.join("/")], excluded: classStops.exclusionIds.has(start.id) },
       ];
       const seen = new Set<number>([start.index]);
       while (queue.length) {
@@ -754,11 +1211,84 @@ export function climbCandidates(lemma: string): ClimbCandidate[] {
           });
           break; // first anchor on this sense's shortest path wins the sense
         }
+        // Creature-class stop: this synset is a registered P2
+        // stop and the path here passed no exclusion subtree.
+        // Priced once at P2's cap — see CREATURE_CLASS_CAP in
+        // classify.ts. (The creature and stuff stop tables are
+        // disjoint — organism subtrees vs substance subtrees —
+        // so the order of the two class tests cannot matter.)
+        if (!cur.excluded) {
+          const stop = classStops.byIndex.get(cur.index);
+          if (stop) {
+            const element = CREATURE_CLASS_ELEMENTS[stop.creatureClass];
+            out.push({
+              element,
+              aspect: "animal",
+              aspectKey: "overall",
+              confidence: CREATURE_CLASS_CAP,
+              hops: cur.hops,
+              anchor: stop.lemmas[0],
+              path:
+                `${key} [${pos} sense ${si + 1}: ${start.lemmas.join("/")}] ` +
+                cur.trail.map((t) => `—IS_A→ ${t}`).slice(1).join(" ") +
+                `${cur.hops ? " " : ""}—CLASS→ ${stop.lemmas.join("/")} ⇒ ${stop.creatureClass} (${element}, CREATURE_CLASS_YUELING_V1 @${CREATURE_CLASS_CAP})`,
+              provenance: "wordnet-derived",
+              viaClass: {
+                creatureClass: stop.creatureClass,
+                rule: "CREATURE_CLASS_YUELING_V1",
+                stopSynset: stop.synset,
+                stopLemmas: stop.lemmas,
+              },
+              gated: CREATURE_CLASS_CAP < CONFIDENCE_GATE,
+            });
+            break; // first hit on this sense's shortest path wins the sense
+          }
+        }
+        // Stuff-class stop: this synset is a registered R3 stop.
+        // Priced flat at the class's specimen price — see
+        // STUFF_CLASS_PRICES in classify.ts. The aspect is the
+        // pilot's axis name (material); the aspectKey stays
+        // "overall" because AspectKey is a closed union owned by
+        // the foundation graph module — the material reading is
+        // carried by the aspect and by viaClass.
+        {
+          const stop = stuffStops.byIndex.get(cur.index);
+          if (stop) {
+            const element = STUFF_CLASS_ELEMENTS[stop.stuffClass];
+            const price = STUFF_CLASS_PRICES[stop.stuffClass];
+            out.push({
+              element,
+              aspect: "material",
+              aspectKey: "overall",
+              confidence: price,
+              hops: cur.hops,
+              anchor: stop.lemmas[0],
+              path:
+                `${key} [${pos} sense ${si + 1}: ${start.lemmas.join("/")}] ` +
+                cur.trail.map((t) => `—IS_A→ ${t}`).slice(1).join(" ") +
+                `${cur.hops ? " " : ""}—CLASS→ ${stop.lemmas.join("/")} ⇒ ${stop.stuffClass} (${element}, STUFF_CLASS_R3_V1 @${price})`,
+              provenance: "wordnet-derived",
+              viaClass: {
+                stuffClass: stop.stuffClass,
+                rule: "STUFF_CLASS_R3_V1",
+                stopSynset: stop.synset,
+                stopLemmas: stop.lemmas,
+              },
+              gated: price < CONFIDENCE_GATE,
+            });
+            break; // first hit on this sense's shortest path wins the sense
+          }
+        }
         if (cur.hops >= MAX_CLIMB_HOPS) continue;
         for (const next of up.get(cur.index) ?? []) {
           if (seen.has(next)) continue;
           seen.add(next);
-          queue.push({ index: next, hops: cur.hops + 1, trail: [...cur.trail, ex.synsets[next].lemmas.join("/")] });
+          queue.push({
+            index: next,
+            hops: cur.hops + 1,
+            trail: [...cur.trail, ex.synsets[next].lemmas.join("/")],
+            excluded: cur.excluded || classStops.exclusionIds.has(ex.synsets[next].id),
+          });
         }
       }
     }
@@ -789,9 +1319,15 @@ export interface SenseAudit {
     confidence: number;
     hops: number;
     gated: boolean;
-    via: "cue" | "exception" | "override" | "legacy" | "climb-anchor";
+    via: "cue" | "exception" | "override" | "legacy" | "climb-anchor" | "class";
+    viaClass?: { creatureClass?: CreatureClass; stuffClass?: StuffClass; stopSynset: string };
     trail: AuditSynset[];
   };
+  /** Slice C: for a sense with no classification hit, the
+   *  recognition its walk reaches (primary stop + how many stops
+   *  the path records). Absent when the sense classifies or when
+   *  no category stop is on its paths. */
+  recognition?: { category: string; stopSynset: string; hops: number; stops: number };
 }
 
 export function climbAudit(lemma: string): SenseAudit[] {
@@ -802,6 +1338,8 @@ export function climbAudit(lemma: string): SenseAudit[] {
   if (lookupClassification(key)) return []; // the table owns it — no climb
   const up = hypernymAdjacency(ex);
   const pins = ensurePins(ex);
+  const stuffStops = ensureStuffStops(ex);
+  const classStops = ensureClassStops(ex);
   const rec = (index: number): AuditSynset => {
     const s = ex.synsets[index];
     return { id: s.id, lemmas: [...s.lemmas], gloss: s.gloss };
@@ -812,8 +1350,8 @@ export function climbAudit(lemma: string): SenseAudit[] {
     for (let si = 0; si < synsets.length; si++) {
       const start = synsets[si];
       const entry: SenseAudit = { pos, sense: si + 1, start: rec(start.index) };
-      const queue: { index: number; hops: number; trail: number[] }[] = [
-        { index: start.index, hops: 0, trail: [start.index] },
+      const queue: { index: number; hops: number; trail: number[]; excluded: boolean }[] = [
+        { index: start.index, hops: 0, trail: [start.index], excluded: classStops.exclusionIds.has(start.id) },
       ];
       const seen = new Set<number>([start.index]);
       while (queue.length) {
@@ -849,11 +1387,67 @@ export function climbAudit(lemma: string): SenseAudit[] {
           };
           break;
         }
+        // Creature-class stop (Slice A): the audit shows the
+        // same hit the real climb takes, exclusions included.
+        if (!cur.excluded) {
+          const stop = classStops.byIndex.get(cur.index);
+          if (stop) {
+            entry.hit = {
+              anchor: stop.lemmas[0],
+              element: CREATURE_CLASS_ELEMENTS[stop.creatureClass],
+              confidence: CREATURE_CLASS_CAP,
+              hops: cur.hops,
+              gated: CREATURE_CLASS_CAP < CONFIDENCE_GATE,
+              via: "class",
+              viaClass: { creatureClass: stop.creatureClass, stopSynset: stop.synset },
+              trail: cur.trail.map(rec),
+            };
+            break;
+          }
+        }
+        // Stuff-class stop (Slice B): the audit shows the same
+        // hit the real climb takes.
+        {
+          const stop = stuffStops.byIndex.get(cur.index);
+          if (stop) {
+            const price = STUFF_CLASS_PRICES[stop.stuffClass];
+            entry.hit = {
+              anchor: stop.lemmas[0],
+              element: STUFF_CLASS_ELEMENTS[stop.stuffClass],
+              confidence: price,
+              hops: cur.hops,
+              gated: price < CONFIDENCE_GATE,
+              via: "class",
+              viaClass: { stuffClass: stop.stuffClass, stopSynset: stop.synset },
+              trail: cur.trail.map(rec),
+            };
+            break;
+          }
+        }
         if (cur.hops >= MAX_CLIMB_HOPS) continue;
         for (const next of up.get(cur.index) ?? []) {
           if (seen.has(next)) continue;
           seen.add(next);
-          queue.push({ index: next, hops: cur.hops + 1, trail: [...cur.trail, next] });
+          queue.push({
+            index: next,
+            hops: cur.hops + 1,
+            trail: [...cur.trail, next],
+            excluded: cur.excluded || classStops.exclusionIds.has(ex.synsets[next].id),
+          });
+        }
+      }
+      // Slice C: a hitless sense may still be recognised — the
+      // audit is the decline diagnosis's window, so it shows the
+      // recognition beside the absence of a hit.
+      if (!entry.hit) {
+        const walk = categoryWalk(ex, start.index);
+        if (walk.length) {
+          entry.recognition = {
+            category: walk[0].stop.category,
+            stopSynset: walk[0].stop.synset,
+            hops: walk[0].hops,
+            stops: walk.length,
+          };
         }
       }
       out.push(entry);

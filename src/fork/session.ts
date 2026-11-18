@@ -46,6 +46,12 @@ import { tierOfProvenance, type Tier } from "./pricing";
 import { lookupClassification, type ClassificationEntry } from "./classify";
 import type { SemanticObject, SenseChannel } from "./semantic-object";
 import type { InformationObject, Need } from "./info-object";
+import {
+  initialConversation,
+  initialInterlocutor,
+  type ConversationRegister,
+  type InterlocutorRegister,
+} from "./social";
 
 export interface EntityRecord {
   lemma: string;
@@ -445,6 +451,13 @@ export interface Session {
    *  to the one it follows, and later slices add the fills /
    *  supersedes links between them. */
   objects: SemanticObject[];
+  /** The Social Unit's Interlocutor register (social.ts, S1
+   *  2026-11-18): the standing picture of the person being talked
+   *  with, written only by the unit's reading. */
+  interlocutor: InterlocutorRegister;
+  /** The Social Unit's Conversation register (social.ts, S1):
+   *  the conversation's phase and what is pending. */
+  conversation: ConversationRegister;
   /** The conversation's scene graphs (senses-scening.ts), in
    *  order. v1 tracks one running scene — the last — and
    *  fragments are placed into it; scene switching is not yet
@@ -526,6 +539,8 @@ export function newSession(disposition: Composition = NEUTRAL_COMPOSITION, frame
     topics: [],
     supersessions: [],
     objects: [],
+    interlocutor: initialInterlocutor(),
+    conversation: initialConversation(),
     scenes: [],
     quantities: [],
     quantityFlags: [],

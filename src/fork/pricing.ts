@@ -70,6 +70,7 @@ export function tierOfProvenance(provenance: string): Tier | undefined {
     case "wordnet-derived":
     case "verb-domain-derived":
     case "B-derived":
+    case "overlay":
       return "derived";
     default:
       return undefined;
