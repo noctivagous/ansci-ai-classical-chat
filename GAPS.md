@@ -7,6 +7,19 @@ close it. A gap here is a located gap — a place to work — not a
 verdict on the project. Statuses are as of the date above; when a
 gap closes, strike it here in the same commit that closes it.
 
+Findings applied 2026-11-18: the chatbot-era survey and the sealed
+probe harvest (§2, §7). The found-ahead candidates drafted in §2
+were ruled on the same day: the three drafted gaps are gaps of
+record; the ten undrafted aspects remain candidates in the
+harvest record.
+
+Finishing sweep completed 2026-11-18: every percentage re-checked
+against the system map (all agree), the headline numbers
+re-checked against the coverage report, the depth baseline and
+the Slice A design (all agree), prose and tree appendix
+reconciled item for item, and the stale statuses found were
+corrected in place.
+
 The summary that prompted this file, from the anchor-expansion
 recap: the coverage slices "widen what the classification machinery
 reaches; they don't deepen what it knows." The gaps below are the
@@ -20,8 +33,10 @@ depth that widening does not buy.
   are for, what they cause, or where they belong. The system can
   classify a kettle and say nothing about what a kettle does.
   *Evidence:* WordNet's relation inventory, recorded 2026-11-08.
-  *Closes when:* §2 below is resolved — deliberately, not by
-  importing a commonsense net as the foundation.
+  *Closes when:* the system's own graph grows this knowledge
+  deliberately — not by importing a commonsense net as the
+  foundation. (The CSKG item below is the nearest feeder
+  question; it does not close this one.)
 - **CSKG is a feeder, not yet a source of answers.** The trimmed
   CSKG bundle (80,466 edges) ships in the repo and the feeder maps
   21 relations, but the reply programme consulting CSKG at answer
@@ -73,6 +88,68 @@ depth that widening does not buy.
   *Closes when:* the Social Unit is designed (its contents, its
   seam with the turn loop and the reply planner, what it may and
   may not originate) and placed on the system map.
+  *Probe coverage note (2026-11-18):* the sealed probe set (next
+  item) carries probes for most of this unit's contents, but of
+  the Interlocutor's parts, "first contact or returning" is the
+  one no harvested probe evidences — a run of the set cannot
+  strike it. The unit's seam and its placement are design items
+  no probe can evidence at all.
+- **Conversation now has assessment material — sealed, unrun.**
+  A survey of late-2010s–2021 chatbot evaluation (2026-11-18)
+  yielded an inventory of 40 assessment aspects in 12 groups;
+  from its shortlist, 128 probes were harvested (DailyDialog 35,
+  EmpatheticDialogues 32, Persona-Chat/ConvAI2 28,
+  BlendedSkillTalk 18, Wizard of Wikipedia Test Unseen 15), each
+  with an expected-behaviour note written in this project's terms
+  before any run. The set is sealed (sha256 `d77c072f…6a1`),
+  held outside the repo at `~/workspace/ansci-sealed-probes/`,
+  and is not to be read by whoever designs or builds the Social
+  Unit. What was taken from that era is its *tests and aspects
+  only* — no designs, no response styles, and none of its success
+  criteria (its specificity scores would count a located decline
+  as a generic failure; that judgement is the era's, not ours).
+  FED and Bot-Adversarial Dialogue were excluded, their licences
+  unverifiable from the sources' own documentation; adversarial
+  pressure is covered only by DailyDialog items.
+  *Closes when:* nothing here closes by itself — the set is run
+  only on the owner's commission, and its report is read against
+  this section's checklist (the tree appendix).
+- **Found ahead of the checklist — gaps of record (accepted
+  2026-11-18).** 18 of the sealed probes test things this
+  section did not name. They cluster where conversation meets
+  testimony, not in the social layer. Three were drafted in this
+  file's form and accepted by the owner as gaps of record:
+  - *Grounding in conversation.* When a reply draws on knowledge
+    the system was given or holds, nothing keeps what it says
+    tied to that knowledge: the era tested this as
+    using-provided-knowledge (10 found-ahead probes), correctness
+    / not making things up (6), and grounding on unseen topics
+    (6). In this project's terms: testimony discipline is
+    enforced for graph answers and has no conversational form.
+    *Closes when:* a reply's use of provided or held knowledge
+    is checkable against its source, in conversation as it is
+    for derivation.
+  - *Clarification behaviour.* The decline discipline locates a
+    gap and stops; nothing in the conversation layer asks the
+    interlocutor what was meant instead of guessing or stopping
+    (6 found-ahead probes; the survey flags this as an aspect
+    the era itself under-assessed). *Closes when:*
+    asking-for-clarification exists as a designed move, distinct
+    from a decline, with its own conditions.
+  - *False-premise inputs.* No designed stance exists toward a
+    partner who asserts something false and invites agreement
+    (2 probes). Agreement would break testimony discipline; flat
+    contradiction is not a social move either. *Closes when:*
+    the response to a false premise is a designed behaviour, not
+    an accident of the parser.
+  - *Also found ahead, not drafted:* relevance / maintaining
+    context (5 probes), informativeness (5), error recovery (2),
+    question-asking balance (2), recognising the interlocutor's
+    feeling (1), topic shifting (1), understandability (1),
+    whole-conversation coherence (1), nonsense inputs (1),
+    adversarial provocation (1). These remain candidates in the
+    harvest record (`HARVEST.md` in the sealed set's folder),
+    not gaps of record.
 - **The situated self is mostly unbuilt.** On the system map:
   Awareness 35% (self 15%, identity and capabilities 0%),
   Session & Situation's open-unknowns 50%, Coherence as a whole 0%
@@ -99,7 +176,8 @@ report: the coverage measurement of 2026-11-18.
   P2 CREATURE_CLASS_YUELING_V1 → B stuff categories,
   registered-rules only → C recognised-but-unclassified →
   D per-word overlay mappings), each separately commissioned.
-  Slice A is at design stage in the fork chat.
+  Slice A's design is presented and corrected in the fork chat;
+  its five decisions stand open there (§4).
 - **Sense correctness inside "works" is unproven.** A token that
   climbs to one anchor counts as working whether or not that is
   the sense a sentence meant. The measurable proxy (bucket C,
@@ -135,6 +213,11 @@ reaches 82 of its 95 measured animal tokens:
   *Closes when:* the fork chat's design, as corrected on this
   point, is accepted and its named gaps are ruled on or left T5
   as located gaps for a future ruling.
+  *Status (2026-11-18):* the correction is in the design — the
+  catfish caveat is gone (a scaleless fish is simply a fish; no
+  stop or audit step feature-checks anatomy), and the cetacean
+  exclusion is re-grounded on kind-membership rather than bare
+  skin. The design's five decisions stand open in the fork chat.
 
 ## 5. Parser depth (the depth programme's residue)
 
@@ -205,6 +288,12 @@ negation preservation 84.4% against its 90% per-family floor.
   programme, but there has been no native-speaker judgment on the
   Chinese side, and the human-judged sense benchmark waits on
   judges this loop cannot supply.
+  *Partly answered for conversation (2026-11-18):* the sealed
+  probe set of §2 is material from outside this loop — other
+  people's test sentences, expectations written in this project's
+  terms before any run, held under seal from the Social Unit's
+  future designer. It has not been run; the parser and
+  classification evidence above stands as stated.
 - **Correctness bars are policy, not yet proof at scale.** The
   ratified rule — bars never drop as density scales, the evidence
   burden rises — has been applied at 100- and 500-object scale,
@@ -217,8 +306,13 @@ negation preservation 84.4% against its 90% per-family floor.
 - Slices B, C, D: accepted in shape and order (2026-11-18), each
   awaiting its own commission.
 - CSKG reply integration (§1): not taken.
+- Found-ahead candidates (§2): ruled on 2026-11-18 — grounding
+  in conversation, clarification behaviour and false-premise
+  inputs are gaps of record; the ten undrafted aspects remain
+  candidates in the harvest record.
 - Push of this file: the word was given on 2026-11-18, with the
-  tree appendix below.
+  tree appendix below; the findings pass and the finishing sweep
+  were given their push word the same day.
 
 ## Appendix — the gaps as a tree, with task lists
 
@@ -247,12 +341,23 @@ AnSci — GAPS
 │   │   │        the picture the conversation itself accumulates
 │   │   ├─ [ ] Define its seam with the turn loop and reply planner
 │   │   └─ [ ] Place it on the system map; confirm Awareness placement
+│   ├─ [ ] Run the sealed conversation probe set — 128 probes,
+│   │        sealed 2026-11-18, held outside the repo; commission
+│   │        only, and report against this checklist. Note: no
+│   │        probe evidences "first contact or returning"
+│   ├─ [ ] Grounding in conversation — testimony discipline has
+│   │        no conversational form (found ahead; accepted 2026-11-18)
+│   ├─ [ ] Clarification behaviour — asking what was meant, as a
+│   │        designed move distinct from a decline (found ahead)
+│   ├─ [ ] False-premise inputs — a designed stance toward a false
+│   │        assertion inviting agreement (found ahead)
 │   └─ [ ] Build out the situated self the planner plans with
 │          (Awareness 35% · self 15% · identity/capabilities 0% ·
 │           Coherence fuller levels unbuilt · Verbalizer 40%)
 │
 ├─ 3. Classification coverage  (measured 2026-11-18)
-│   ├─ [ ] Slice A — animal pilot, class-level climb stop (in design)
+│   ├─ [ ] Slice A — animal pilot, class-level climb stop
+│          (design presented + corrected; five decisions open, §4)
 │   ├─ [ ] Slice B — stuff categories, registered-rules only
 │   ├─ [ ] Slice C — recognised-but-unclassified climb outcome
 │   ├─ [ ] Slice D — per-word overlay mappings, sized after A–C
@@ -290,7 +395,8 @@ AnSci — GAPS
 │
 ├─ 7. Evidence and evaluation
 │   ├─ [ ] Produce sealed expected graphs (G0 still rests on checker proxy)
-│   ├─ [ ] Get judgment from outside this loop (evaluator-shaped evidence)
+│   ├─ [ ] Get judgment from outside this loop (evaluator-shaped evidence;
+│          for conversation, partly answered — sealed probe set, §2, unrun)
 │   ├─ [ ] Get native-speaker judgment on the Chinese side
 │   └─ [ ] Prove the correctness bars at beyond-500 scale
 │          (bars never drop as density scales — applied, not yet proven)
@@ -299,5 +405,8 @@ AnSci — GAPS
     ├─ [ ] Commission the Slice A build (design first, fork chat)
     ├─ [ ] Commission slices B, C, D in turn
     ├─ [ ] Decide CSKG reply integration (see §1)
-    └─ [x] Give the word to push GAPS.md itself (given 2026-11-18)
+    ├─ [x] Rule on the found-ahead candidates (ruled 2026-11-18, §2)
+    └─ [x] Give the word to push GAPS.md itself (given 2026-11-18;
+           findings pass + finishing sweep given their word the
+           same day)
 ```
