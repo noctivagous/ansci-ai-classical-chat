@@ -45,6 +45,7 @@ import { NEUTRAL_COMPOSITION, type Composition } from "./composition";
 import { tierOfProvenance, type Tier } from "./pricing";
 import { lookupClassification, type ClassificationEntry } from "./classify";
 import type { SemanticObject, SenseChannel } from "./semantic-object";
+import type { InformationObject, Need } from "./info-object";
 
 export interface EntityRecord {
   lemma: string;
@@ -478,6 +479,34 @@ export function listOpenUnknowns(session: Session): (SceneUnknownSlot & { sceneI
   for (const s of session.scenes) {
     for (const u of s.unknowns) {
       if (u.status === "open") out.push({ ...u, sceneId: s.id });
+    }
+  }
+  return out;
+}
+
+/**
+ * The open-unknowns register's second source (the envelope
+ * build, 2026-11-17): the SURVIVING needs across the stream's
+ * information objects — needs seeded on an object's envelope
+ * that no unit discharged and Coherence priced as surviving
+ * (info-object.ts). Like listOpenUnknowns this is a DERIVED
+ * VIEW: the needs' only store is the envelopes in the stream,
+ * and a placement need listed here references its scene-graph
+ * slot (its `ref`), which remains the slot's only store.
+ * Awareness's Open gaps reads both listings.
+ */
+export function listSurvivingNeeds(session: Session): (Need & { objectId: string; turn: number })[] {
+  const out: (Need & { objectId: string; turn: number })[] = [];
+  for (const o of session.objects) {
+    // Needs originate on the person's information objects; a
+    // reply object's envelope CARRIES copies of the survivors
+    // it answered (the reply's own record) — the register
+    // reads the originals, so a need is never counted twice.
+    if (o.producer !== "person") continue;
+    const env = (o as InformationObject).envelope;
+    if (!env) continue;
+    for (const n of env.needs) {
+      if (n.status === "surviving") out.push({ ...n, objectId: o.id, turn: o.turn });
     }
   }
   return out;

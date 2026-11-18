@@ -30,6 +30,7 @@ import { buildSensesFace } from "./senses-scening";
 import { computeQuantityMentions } from "./quantification-language";
 import { tierOfProvenance } from "./pricing";
 import { compositionFromRanks, type Composition } from "./composition";
+import { consultSituation, createInformationObject, type InformationObject } from "./info-object";
 
 /**
  * The object's aspect readings (slice 3): every content word the
@@ -203,4 +204,23 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     trail: [{ unit: "lpu/semantic-assessment", note: `assessed as ${kind}` }],
   };
   return [obj];
+}
+
+/**
+ * The assessment as the system now travels it (the envelope
+ * build, 2026-11-17): each assessed core is wrapped in its
+ * ENVELOPE (info-object.ts) at creation — SemanticAssessment
+ * creates the information object — and Session & Situation's
+ * reading is taken against the session as it stands (before
+ * the turn loop records the object), discharging a phatic
+ * turn's situate needs from actual session state. The core
+ * inside is exactly the object assessUtterance builds; the
+ * envelope is attached, never written into it.
+ */
+export function assessInformation(parsed: ParsedSentence, ctx: AssessContext): InformationObject[] {
+  return assessUtterance(parsed, ctx).map((core) => {
+    const info = createInformationObject(core);
+    consultSituation(info, ctx.session);
+    return info;
+  });
 }

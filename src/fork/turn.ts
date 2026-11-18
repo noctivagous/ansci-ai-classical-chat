@@ -94,9 +94,17 @@ import { priceDerivation, tierOfProvenance, weakestTier, type PricingRecord, typ
 import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
 import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rivalSplits } from "./sense";
-import { assessUtterance } from "./assess";
+import { assessInformation } from "./assess";
 import { SENSE_CHANNELS } from "./semantic-object";
-import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions } from "./coherence";
+import {
+  dischargeAnswerNeed,
+  dischargeFilledSceneNeeds,
+  informationOf,
+  noteHandled,
+  seedQuantityNeeds,
+  seedSceneNeeds,
+} from "./info-object";
+import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, priceSurvivingNeeds } from "./coherence";
 import { applySceneUpdate } from "./senses-scening";
 import { applyQuantityMentions, currentQuantity, latestKindFor } from "./quantification";
 import { normaliseKind, pluraliseKind, renderQuantity } from "./quantification-language";
@@ -243,6 +251,13 @@ export interface TurnTrace {
    *  authored as (reply.ts, slice 4): id and kind. Absent when
    *  the reply is the probe's hand wording. */
   replyObject?: { id: string; kind: string };
+  /** The envelope's surviving needs for this turn (2026-11-17):
+   *  the needs seeded on this turn's information objects that
+   *  no unit discharged, priced by Coherence at the turn's
+   *  settlement — data for the reply decision, and, when the
+   *  turn declines, the located decline (the decline is AT
+   *  these needs). */
+  survivingNeeds?: { kind: string; slot: string }[];
   /**
    * The schematic walk of the turn: the ordered node ids
    * (ai-system/system-map.ts) the turn actually passed through,
@@ -649,8 +664,28 @@ function tryGapQuestion(session: Session, trace: TurnTrace, parsed: ParsedSenten
  */
 function speakWithObject(session: Session, trace: TurnTrace, graph: ParsedSentence, move: string): void {
   const inbound = [...session.objects].reverse().find((o) => o.producer === "person" && o.turn === trace.turn);
+  // The envelope settlement at the Planner's door (2026-11-17):
+  // the Planner's handling is recorded on the inbound's route;
+  // a question's ANSWER need is discharged by this authoring —
+  // the Planner authors a reply object answering it — and
+  // Coherence prices whatever needs still stand as SURVIVING,
+  // so the reply object's envelope (reply.ts) carries them.
+  const inboundInfo = inbound ? informationOf(inbound) : undefined;
+  if (inboundInfo) {
+    noteHandled(inboundInfo, "reasoning/planner");
+    if (inboundInfo.act.kind === "question" || inboundInfo.act.kind === "reason-query") {
+      dischargeAnswerNeed(
+        inboundInfo,
+        "reasoning/planner",
+        `the Planner authored a reply object answering the question (move: ${move})`,
+      );
+    }
+    priceSurvivingNeeds(inboundInfo);
+  }
   const replyObject = authorReplyObject({ graph, turn: trace.turn, session, inbound, move });
   analyseOutbound(replyObject, inbound, session);
+  const replyInfo = informationOf(replyObject);
+  if (replyInfo) noteHandled(replyInfo, "coherence/coherence-analysis");
   session.objects.push(replyObject);
   trace.replyObject = { id: replyObject.id, kind: replyObject.act.kind };
 }
@@ -769,32 +804,52 @@ function processTurnInner(session: Session, text: string): TurnResult {
    * stream; CoherenceAnalysis then reads the object against
    * that same prior stream (coherence.ts) and annotates its
    * trail. The objects are stored on the session and named in
-   * the trace. */
-  const assessed = assessUtterance(parsed, { turn, surface: text, session });
+   * the trace.
+   *
+   * Since the envelope build (2026-11-17) what the assessment
+   * creates and the session stores is an INFORMATION object
+   * (assessInformation, info-object.ts): the semantic object
+   * as the unchanged core, wrapped in the envelope that
+   * carries its act, its route and its needs. Each reader
+   * below amends the envelope as it handles the object; the
+   * turn's settlement (processTurn) prices what survives. */
+  const assessed = assessInformation(parsed, { turn, surface: text, session });
   for (const o of assessed) {
     analyseInbound(o, session);
     compareCompositions(o, session);
     analyseSenses(o);
+    noteHandled(o, "coherence/coherence-analysis");
   }
   session.objects.push(...assessed);
   // The scene graph (2026-11-17): the fragment the assessment
   // produced is placed into the Session's running scene, after
   // the object is recorded — the face was computed against the
-  // scene as it stood before this turn.
+  // scene as it stood before this turn. The envelope's share
+  // of the scene work (info-object.ts): the slots this
+  // fragment OPENED on the scene graph seed placement needs
+  // referencing them, and the slots it FILLED discharge the
+  // placement needs standing in the stream for them.
   for (const o of assessed) {
-    if (o.senses?.scene) applySceneUpdate(session, parsed, o.senses, turn);
+    if (o.senses?.scene) {
+      applySceneUpdate(session, parsed, o.senses, turn);
+      seedSceneNeeds(o, session, turn);
+      dischargeFilledSceneNeeds(session, o.senses.scene, turn);
+    }
   }
   // The quantity ledger (2026-11-17): the mentions the
   // QuantificationLanguageUnit read at assessment are applied
   // to the Session's ledger by the QuantificationUnit, after
   // the objects are recorded — the mentions were read against
-  // the conversation as it stood before this turn.
+  // the conversation as it stood before this turn. The
+  // envelope's share: flags the ledger raised this turn seed
+  // reconciliation needs on the turn's objects.
   const quantityNotes: string[] = [];
   for (const o of assessed) {
     if (o.quantities?.length) {
       quantityNotes.push(...applyQuantityMentions(session, o.quantities, turn).applied);
     }
   }
+  for (const o of assessed) seedQuantityNeeds(o, session, turn);
   if (quantityNotes.length) trace.quantities = quantityNotes;
   trace.semanticObjects = assessed.map((o) => ({ id: o.id, kind: o.act.kind }));
   const sensesPresent = SENSE_CHANNELS.filter((c) => assessed.some((o) => o.senses?.channels[c]?.length));
@@ -806,18 +861,37 @@ function processTurnInner(session: Session, text: string): TurnResult {
   );
   if (coherenceNotes.length) trace.coherence = coherenceNotes;
 
-  /* The opening greeting (slice 2): the Planner answers the
-   * greeting object with its mirror — the reply is generated
-   * from the object's own graph, so the register the person
-   * chose (Hello / Hi / Hey) is the register returned. A
-   * greeting records nothing propositional, so the turn ends
-   * here. The disposition-shaped variants (a welcoming
-   * expansion, only when first) wait on the chat-configuration
-   * ruling; the mirror is the neutral behaviour. */
+  /* The greeting (slice 2; envelope build 2026-11-17): the
+   * Planner answers the greeting object with its mirror — the
+   * reply is generated from the object's own graph, so the
+   * register the person chose (Hello / Hi / Hey) is the
+   * register returned. A greeting records nothing
+   * propositional, so the turn ends here. The disposition-
+   * shaped variants (a welcoming expansion, only when first)
+   * wait on the chat-configuration ruling; the mirror is the
+   * neutral behaviour.
+   *
+   * The envelope's rule for the phatic turn (the owner's
+   * addition, 2026-11-17): a greeting is received through the
+   * whole route — assessed, read against the situation (its
+   * situate needs discharged by Session & Situation from
+   * actual session state, info-object.ts), priced by
+   * Coherence, and answered by the Planner authoring a reply
+   * object from the assessed situation — at ANY stream
+   * position, not only at the opening. There is no path from
+   * the greeting act to a reply string except this authoring:
+   * no greeting lookup, no template. (The pre-envelope code
+   * took this branch only when the greeting opened the
+   * exchange and let later greetings fall through to the
+   * statement steering — the envelope build closes that
+   * shortcut-shaped asymmetry.) */
   const openingObject = assessed[0];
-  if (openingObject && openingObject.act.kind === "greeting" && openingObject.act.streamRole === "opens") {
+  if (openingObject && openingObject.act.kind === "greeting") {
     speakWithObject(session, trace, parsed, "return greeting");
-    trace.planNote = "return greeting (the planner, reading the semantic object; coherence: fits)";
+    trace.planNote =
+      openingObject.act.streamRole === "opens"
+        ? "return greeting (the planner, reading the semantic object; coherence: fits)"
+        : "return greeting (the planner, reading the information object — its situate needs read against the session; the reply is authored, not looked up)";
     trace.replyGraph = serialiseReplyGraph(parsed);
     trace.wordingNotDerived = false;
     return { reply: generate(parsed), trace };
@@ -1446,6 +1520,8 @@ function applyInitiative(session: Session, result: TurnResult): void {
     const lastPerson = [...session.objects].reverse().find((o) => o.producer === "person");
     const initiativeObject = authorReplyObject({ graph: move.graph, turn: trace.turn, session, inbound: lastPerson, move: `initiative (${candidate.shape})` });
     analyseOutbound(initiativeObject, lastPerson, session);
+    const initiativeInfo = informationOf(initiativeObject);
+    if (initiativeInfo) noteHandled(initiativeInfo, "coherence/coherence-analysis");
     session.objects.push(initiativeObject);
     if (candidate.shape === "unexpressed-state") {
       const s = candidate.state;
@@ -1560,12 +1636,49 @@ function computeMapPath(trace: TurnTrace): string[] {
 }
 
 /**
+ * The envelope settlement (2026-11-17), run once the turn body
+ * has formed its reply and before the initiative scan: a
+ * how-many question the ledger answered discharges its answer
+ * need HERE (the QuantificationLanguageUnit is its discharger
+ * — that answer never passes the Planner, so it is settled
+ * apart from speakWithObject's), and Coherence then prices
+ * every need still open on this turn's information objects as
+ * SURVIVING. The survivors are recorded on the trace: data for
+ * the reply decision, and — on a declining turn — the located
+ * decline. (Planner-answered turns were already settled at the
+ * authoring site; pricing is idempotent, so the survivors are
+ * simply collected here.)
+ */
+function settleTurnEnvelopes(session: Session, trace: TurnTrace): void {
+  const survivors: { kind: string; slot: string }[] = [];
+  for (const o of session.objects) {
+    if (o.producer !== "person" || o.turn !== trace.turn) continue;
+    const info = informationOf(o);
+    if (!info) continue;
+    if (trace.quantityAnswer) {
+      if (
+        dischargeAnswerNeed(
+          info,
+          "lpu/quantification-language-unit",
+          `the quantity ledger answered the question: '${trace.quantityAnswer.rendered}' for ${trace.quantityAnswer.holder}`,
+        )
+      ) {
+        noteHandled(info, "lpu/quantification-language-unit");
+      }
+    }
+    for (const need of priceSurvivingNeeds(info)) survivors.push({ kind: need.kind, slot: need.slot });
+  }
+  if (survivors.length) trace.survivingNeeds = survivors;
+}
+
+/**
  * One conversational turn: the turn body (parse → record →
- * reason → reply), then the initiative scan over the formed
- * reply (R6, §8.10).
+ * reason → reply), the envelope settlement, then the
+ * initiative scan over the formed reply (R6, §8.10).
  */
 export function processTurn(session: Session, text: string): TurnResult {
   const result = processTurnInner(session, text);
+  settleTurnEnvelopes(session, result.trace);
   applyInitiative(session, result);
   result.trace.mapPath = computeMapPath(result.trace);
   return result;

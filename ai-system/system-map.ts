@@ -393,12 +393,12 @@ export const SYSTEM_MAP: SystemMap = {
       "type": "Unit",
       "parent": "lpu",
       "state": "partial",
-      "percent": 65,
+      "percent": 70,
       "path": "lpu/semantic-assessment",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/semantic-object.ts, src/fork/assess.ts",
-      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction. Slice 1 built (shadow objects): assess.ts creates an object for every parsed utterance — kind, holes, grounding, stream role — stored on the session and named in the trace; nothing reads the objects yet. Every object now also carries its senses face (via the Senses-Scening Unit, 2026-11-17) and, where the utterance carries quantity content, the QuantificationLanguageUnit's quantity mentions, which the turn loop applies to the Session's quantity ledger."
+      "currentCode": "src/fork/semantic-object.ts, src/fork/assess.ts, src/fork/info-object.ts",
+      "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction. Slice 1 built (shadow objects): assess.ts creates an object for every parsed utterance — kind, holes, grounding, stream role — stored on the session and named in the trace; nothing reads the objects yet. Every object now also carries its senses face (via the Senses-Scening Unit, 2026-11-17) and, where the utterance carries quantity content, the QuantificationLanguageUnit's quantity mentions, which the turn loop applies to the Session's quantity ledger. Since the envelope build (2026-11-17, info-object.ts) the object travels as an INFORMATION object: this unit wraps the core in an envelope at creation — act, provenance, confidence, the route of units that handled it, and its needs (answer / placement / reconciliation / the phatic turn's three situate needs), seeded from existing signals and discharged by the units that meet them; the core inside is unchanged (the wall), Coherence prices the needs that survive, and a phatic turn is answered only through the Planner authoring a reply object from the assessed situation — no greeting shortcut exists."
     },
     {
       "id": "lpu/language-emotion-desire-unit",

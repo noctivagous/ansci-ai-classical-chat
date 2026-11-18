@@ -1,0 +1,929 @@
+{
+  "note": "Baseline for test/fork-info-object.test.ts (the wall): person semantic objects produced by the pre-envelope pipeline (main at d41e3de2, before src/fork/info-object.ts existed), captured by running processTurn over each sequence and JSON round-tripping the stored person objects. The envelope build must reproduce these cores exactly once the envelope is stripped.",
+  "apples": [
+    {
+      "id": "obj-1-1",
+      "turn": 1,
+      "producer": "person",
+      "surface": "I have 5 apples.",
+      "act": {
+        "kind": "statement",
+        "form": "indicative",
+        "force": "statement",
+        "ritual": false,
+        "streamRole": "opens"
+      },
+      "content": {
+        "meaning": {
+          "nodes": [
+            {
+              "id": "n1",
+              "lemma": "have",
+              "form": "have",
+              "syntacticElement": "Wood",
+              "role": "verb",
+              "states": {
+                "voice": "active",
+                "tense": "present",
+                "verbForm": "base",
+                "mood": "indicative",
+                "subjectPerson": "1sg"
+              }
+            },
+            {
+              "id": "n2",
+              "lemma": "i",
+              "form": "I",
+              "syntacticElement": "Earth",
+              "role": "agent"
+            },
+            {
+              "id": "n3",
+              "lemma": "5",
+              "form": "5",
+              "syntacticElement": "Earth",
+              "role": "theme"
+            },
+            {
+              "id": "n4",
+              "lemma": "apple",
+              "form": "apples",
+              "syntacticElement": "Earth",
+              "role": "excess"
+            }
+          ],
+          "edges": [
+            {
+              "from": "n1",
+              "to": "n2",
+              "relation": "agent",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n1",
+              "to": "n3",
+              "relation": "theme",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n1",
+              "to": "n4",
+              "relation": "patient",
+              "cycle": "controlling"
+            }
+          ],
+          "rootId": "n1",
+          "entryElement": "Wood"
+        },
+        "connective": {
+          "language": "en",
+          "tokens": [
+            "I",
+            "have",
+            "5",
+            "apples"
+          ],
+          "next": [
+            1,
+            2,
+            3,
+            -1
+          ],
+          "spans": [
+            {
+              "start": 0,
+              "end": 1,
+              "label": "subject"
+            },
+            {
+              "start": 2,
+              "end": 3,
+              "label": "object"
+            },
+            {
+              "start": 3,
+              "end": 4,
+              "label": "object"
+            }
+          ]
+        },
+        "holes": [],
+        "grounding": [
+          {
+            "nodeId": "n2",
+            "lemma": "i",
+            "status": "new"
+          },
+          {
+            "nodeId": "n3",
+            "lemma": "5",
+            "status": "new"
+          },
+          {
+            "nodeId": "n4",
+            "lemma": "apple",
+            "status": "new"
+          }
+        ]
+      },
+      "aspects": [
+        {
+          "aspect": "food",
+          "value": "apple",
+          "element": "Wood",
+          "tier": "derived",
+          "confidence": 0.6,
+          "source": "OKU classification table: 'apple' (food)"
+        }
+      ],
+      "senses": {
+        "channels": {
+          "sight": null,
+          "hearing": null,
+          "smell": null,
+          "taste": null,
+          "touch": null,
+          "mind": null
+        }
+      },
+      "quantities": [
+        {
+          "verb": "have",
+          "holder": "you",
+          "amount": 5,
+          "numeralWord": "5",
+          "kind": "apple",
+          "reading": {
+            "number": 5,
+            "word": "five",
+            "hanzi": "五",
+            "element": "Earth",
+            "tier": "established",
+            "source": "QuantificationUnit ← OKU Numbers slice (ingested): 'five' (五, number), Suwen ch. 4"
+          }
+        }
+      ],
+      "composition": {
+        "predominant": "Wood"
+      },
+      "confidence": 0.85,
+      "links": {},
+      "trail": [
+        {
+          "unit": "lpu/semantic-assessment",
+          "note": "assessed as statement"
+        }
+      ]
+    },
+    {
+      "id": "obj-2-2",
+      "turn": 2,
+      "producer": "person",
+      "surface": "Sally bought 3 of them.",
+      "tokenResolutions": [
+        {
+          "surface": "of",
+          "tokenIndex": 3,
+          "outcome": "unresolved",
+          "replacement": [
+            "of"
+          ],
+          "confidence": 0.3,
+          "rule": "none",
+          "candidates": [
+            {
+              "term": "of",
+              "distance": 0,
+              "count": 13151942776
+            }
+          ]
+        }
+      ],
+      "act": {
+        "kind": "statement",
+        "form": "indicative",
+        "force": "statement",
+        "ritual": false,
+        "streamRole": "continues"
+      },
+      "content": {
+        "meaning": {
+          "nodes": [
+            {
+              "id": "n1",
+              "lemma": "buy",
+              "form": "bought",
+              "syntacticElement": "Wood",
+              "role": "verb",
+              "states": {
+                "voice": "active",
+                "tense": "past",
+                "verbForm": "past/participle",
+                "mood": "indicative",
+                "aspect": {
+                  "bounded": true
+                },
+                "subjectPerson": "3sg"
+              }
+            },
+            {
+              "id": "n2",
+              "lemma": "sally",
+              "form": "Sally",
+              "syntacticElement": "Earth",
+              "role": "agent"
+            },
+            {
+              "id": "n3",
+              "lemma": "3",
+              "form": "3",
+              "syntacticElement": "Earth",
+              "role": "patient"
+            },
+            {
+              "id": "n4",
+              "lemma": "them",
+              "form": "them",
+              "syntacticElement": "Earth",
+              "prep": "of"
+            }
+          ],
+          "edges": [
+            {
+              "from": "n1",
+              "to": "n2",
+              "relation": "agent",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n3",
+              "to": "n4",
+              "relation": "modifier",
+              "cycle": "other"
+            },
+            {
+              "from": "n1",
+              "to": "n3",
+              "relation": "patient",
+              "cycle": "controlling"
+            }
+          ],
+          "rootId": "n1",
+          "entryElement": "Wood"
+        },
+        "connective": {
+          "language": "en",
+          "tokens": [
+            "Sally",
+            "bought",
+            "3",
+            "of",
+            "them"
+          ],
+          "next": [
+            1,
+            2,
+            3,
+            4,
+            -1
+          ],
+          "spans": [
+            {
+              "start": 0,
+              "end": 1,
+              "label": "subject"
+            },
+            {
+              "start": 2,
+              "end": 5,
+              "label": "object"
+            }
+          ]
+        },
+        "holes": [],
+        "grounding": [
+          {
+            "nodeId": "n2",
+            "lemma": "sally",
+            "status": "new"
+          },
+          {
+            "nodeId": "n3",
+            "lemma": "3",
+            "status": "new"
+          },
+          {
+            "nodeId": "n4",
+            "lemma": "them",
+            "status": "new"
+          }
+        ]
+      },
+      "aspects": [],
+      "senses": {
+        "channels": {
+          "sight": null,
+          "hearing": null,
+          "smell": null,
+          "taste": null,
+          "touch": null,
+          "mind": null
+        }
+      },
+      "quantities": [
+        {
+          "verb": "buy",
+          "holder": "sally",
+          "amount": 3,
+          "numeralWord": "3",
+          "pronounStock": true
+        }
+      ],
+      "confidence": 0.85,
+      "links": {
+        "follows": "obj-1-1"
+      },
+      "trail": [
+        {
+          "unit": "lpu/semantic-assessment",
+          "note": "assessed as statement"
+        }
+      ]
+    },
+    {
+      "id": "obj-3-3",
+      "turn": 3,
+      "producer": "person",
+      "surface": "How many do I have left?",
+      "tokenResolutions": [
+        {
+          "surface": "How",
+          "tokenIndex": 0,
+          "outcome": "unresolved",
+          "replacement": [
+            "How"
+          ],
+          "confidence": 0.3,
+          "rule": "none",
+          "candidates": [
+            {
+              "term": "how",
+              "distance": 0,
+              "count": 571848080
+            }
+          ]
+        }
+      ],
+      "act": {
+        "kind": "question",
+        "form": "interrogative",
+        "force": "question",
+        "ritual": false,
+        "streamRole": "continues"
+      },
+      "content": {
+        "meaning": {
+          "nodes": [
+            {
+              "id": "n1",
+              "lemma": "leave",
+              "form": "left",
+              "syntacticElement": "Wood",
+              "role": "verb",
+              "states": {
+                "voice": "active",
+                "tense": "past",
+                "verbForm": "past/participle",
+                "mood": "interrogative",
+                "aux": "do",
+                "aspect": {
+                  "bounded": true
+                },
+                "subjectPerson": "3sg"
+              }
+            },
+            {
+              "id": "n2",
+              "lemma": "How",
+              "form": "How",
+              "syntacticElement": "Earth",
+              "role": "agent"
+            }
+          ],
+          "edges": [
+            {
+              "from": "n1",
+              "to": "n2",
+              "relation": "agent",
+              "cycle": "controlling"
+            }
+          ],
+          "rootId": "n1",
+          "entryElement": "Wood"
+        },
+        "connective": {
+          "language": "en",
+          "tokens": [
+            "How",
+            "many",
+            "do",
+            "I",
+            "have",
+            "left"
+          ],
+          "next": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            -1
+          ],
+          "spans": [
+            {
+              "start": 0,
+              "end": 1,
+              "label": "subject"
+            }
+          ]
+        },
+        "holes": [
+          {
+            "kind": "questioned-predication",
+            "relation": "predication",
+            "expectedType": "polarity"
+          }
+        ],
+        "grounding": [
+          {
+            "nodeId": "n2",
+            "lemma": "How",
+            "status": "new"
+          }
+        ]
+      },
+      "aspects": [],
+      "senses": {
+        "channels": {
+          "sight": null,
+          "hearing": null,
+          "smell": null,
+          "taste": null,
+          "touch": null,
+          "mind": null
+        }
+      },
+      "confidence": 1,
+      "links": {
+        "follows": "obj-2-2"
+      },
+      "trail": [
+        {
+          "unit": "lpu/semantic-assessment",
+          "note": "assessed as question"
+        }
+      ]
+    }
+  ],
+  "airport": [
+    {
+      "id": "obj-1-1",
+      "turn": 1,
+      "producer": "person",
+      "surface": "I waited at the airport.",
+      "tokenResolutions": [
+        {
+          "surface": "waited",
+          "tokenIndex": 1,
+          "outcome": "unresolved",
+          "replacement": [
+            "waited"
+          ],
+          "confidence": 0.3,
+          "rule": "none",
+          "candidates": [
+            {
+              "term": "waited",
+              "distance": 0,
+              "count": 3938627
+            }
+          ]
+        }
+      ],
+      "act": {
+        "kind": "statement",
+        "form": "indicative",
+        "force": "statement",
+        "ritual": false,
+        "streamRole": "opens"
+      },
+      "content": {
+        "meaning": {
+          "nodes": [
+            {
+              "id": "n1",
+              "lemma": "wait",
+              "form": "waited",
+              "syntacticElement": "Wood",
+              "role": "verb",
+              "states": {
+                "voice": "active",
+                "tense": "past",
+                "verbForm": "past/participle",
+                "mood": "indicative",
+                "aspect": {
+                  "bounded": true
+                },
+                "subjectPerson": "1sg"
+              }
+            },
+            {
+              "id": "n2",
+              "lemma": "i",
+              "form": "I",
+              "syntacticElement": "Earth",
+              "role": "agent"
+            },
+            {
+              "id": "n3",
+              "lemma": "airport",
+              "form": "airport",
+              "syntacticElement": "Earth",
+              "role": "location",
+              "det": "the",
+              "prep": "at"
+            }
+          ],
+          "edges": [
+            {
+              "from": "n1",
+              "to": "n2",
+              "relation": "agent",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n1",
+              "to": "n3",
+              "relation": "location",
+              "cycle": "controlling"
+            }
+          ],
+          "rootId": "n1",
+          "entryElement": "Wood"
+        },
+        "connective": {
+          "language": "en",
+          "tokens": [
+            "I",
+            "waited",
+            "at",
+            "the",
+            "airport"
+          ],
+          "next": [
+            1,
+            2,
+            3,
+            4,
+            -1
+          ],
+          "spans": [
+            {
+              "start": 0,
+              "end": 1,
+              "label": "subject"
+            },
+            {
+              "start": 2,
+              "end": 5,
+              "label": "pp"
+            }
+          ]
+        },
+        "holes": [],
+        "grounding": [
+          {
+            "nodeId": "n2",
+            "lemma": "i",
+            "status": "new"
+          },
+          {
+            "nodeId": "n3",
+            "lemma": "airport",
+            "status": "new"
+          }
+        ]
+      },
+      "aspects": [],
+      "senses": {
+        "channels": {
+          "sight": null,
+          "hearing": null,
+          "smell": null,
+          "taste": null,
+          "touch": null,
+          "mind": null
+        },
+        "scene": {
+          "id": "scene-1",
+          "role": "establishes",
+          "entities": [
+            "n2",
+            "n3"
+          ],
+          "arrangements": [
+            {
+              "figure": "you",
+              "figureNodeId": "n2",
+              "relation": "waited-at",
+              "ground": "airport",
+              "groundNodeId": "n3",
+              "tier": "said"
+            }
+          ],
+          "placed": [],
+          "unknownsOpened": [
+            {
+              "of": "airport",
+              "kind": "city"
+            }
+          ],
+          "unknownsFilled": []
+        }
+      },
+      "confidence": 0.85,
+      "links": {},
+      "trail": [
+        {
+          "unit": "lpu/semantic-assessment",
+          "note": "assessed as statement"
+        }
+      ]
+    },
+    {
+      "id": "obj-2-2",
+      "turn": 2,
+      "producer": "person",
+      "surface": "I went to the fountain between the bathrooms.",
+      "tokenResolutions": [
+        {
+          "surface": "between",
+          "tokenIndex": 5,
+          "outcome": "unresolved",
+          "replacement": [
+            "between"
+          ],
+          "confidence": 0.3,
+          "rule": "none",
+          "candidates": [
+            {
+              "term": "between",
+              "distance": 0,
+              "count": 258436698
+            }
+          ]
+        }
+      ],
+      "act": {
+        "kind": "statement",
+        "form": "indicative",
+        "force": "statement",
+        "ritual": false,
+        "streamRole": "continues"
+      },
+      "content": {
+        "meaning": {
+          "nodes": [
+            {
+              "id": "n1",
+              "lemma": "go",
+              "form": "went",
+              "syntacticElement": "Wood",
+              "role": "verb",
+              "states": {
+                "voice": "active",
+                "tense": "past",
+                "verbForm": "past",
+                "mood": "indicative",
+                "aspect": {
+                  "bounded": true
+                },
+                "subjectPerson": "1sg"
+              }
+            },
+            {
+              "id": "n2",
+              "lemma": "i",
+              "form": "I",
+              "syntacticElement": "Earth",
+              "role": "agent"
+            },
+            {
+              "id": "n3",
+              "lemma": "fountain",
+              "form": "fountain",
+              "syntacticElement": "Earth",
+              "semanticElement": "Wood",
+              "role": "goal",
+              "det": "the",
+              "prep": "to"
+            },
+            {
+              "id": "n4",
+              "lemma": "between",
+              "form": "between",
+              "syntacticElement": "Earth",
+              "role": "excess"
+            },
+            {
+              "id": "n5",
+              "lemma": "bathroom",
+              "form": "bathrooms",
+              "syntacticElement": "Earth",
+              "role": "excess",
+              "det": "the"
+            }
+          ],
+          "edges": [
+            {
+              "from": "n1",
+              "to": "n2",
+              "relation": "agent",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n1",
+              "to": "n3",
+              "relation": "goal",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n1",
+              "to": "n4",
+              "relation": "patient",
+              "cycle": "controlling"
+            },
+            {
+              "from": "n1",
+              "to": "n5",
+              "relation": "patient",
+              "cycle": "controlling"
+            }
+          ],
+          "rootId": "n1",
+          "entryElement": "Wood"
+        },
+        "connective": {
+          "language": "en",
+          "tokens": [
+            "I",
+            "went",
+            "to",
+            "the",
+            "fountain",
+            "between",
+            "the",
+            "bathrooms"
+          ],
+          "next": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            -1
+          ],
+          "spans": [
+            {
+              "start": 0,
+              "end": 1,
+              "label": "subject"
+            },
+            {
+              "start": 2,
+              "end": 5,
+              "label": "pp"
+            },
+            {
+              "start": 5,
+              "end": 6,
+              "label": "object"
+            },
+            {
+              "start": 6,
+              "end": 8,
+              "label": "object"
+            }
+          ]
+        },
+        "holes": [],
+        "grounding": [
+          {
+            "nodeId": "n2",
+            "lemma": "i",
+            "status": "new"
+          },
+          {
+            "nodeId": "n3",
+            "lemma": "fountain",
+            "status": "new"
+          },
+          {
+            "nodeId": "n4",
+            "lemma": "between",
+            "status": "new"
+          },
+          {
+            "nodeId": "n5",
+            "lemma": "bathroom",
+            "status": "new"
+          }
+        ]
+      },
+      "aspects": [],
+      "senses": {
+        "channels": {
+          "sight": null,
+          "hearing": null,
+          "smell": null,
+          "taste": null,
+          "touch": null,
+          "mind": null
+        },
+        "scene": {
+          "id": "scene-1",
+          "role": "extends",
+          "entities": [
+            "n2",
+            "n3",
+            "n5"
+          ],
+          "arrangements": [
+            {
+              "figure": "you",
+              "figureNodeId": "n2",
+              "relation": "went-to",
+              "ground": "fountain",
+              "groundNodeId": "n3",
+              "tier": "said"
+            },
+            {
+              "figure": "fountain",
+              "relation": "between",
+              "ground": "bathroom",
+              "groundNodeId": "n5",
+              "tier": "said"
+            }
+          ],
+          "placed": [
+            {
+              "figure": "fountain",
+              "figureNodeId": "n3",
+              "relation": "in",
+              "ground": "airport",
+              "tier": "placed-by-scene",
+              "basis": "placed-by-scene: the fragment was placed into the running scene"
+            },
+            {
+              "figure": "bathroom-1",
+              "relation": "in-or-near",
+              "ground": "airport",
+              "tier": "default-placed",
+              "basis": "spatial faculty default placement: no stated location; coarse region only"
+            },
+            {
+              "figure": "bathroom-2",
+              "relation": "in-or-near",
+              "ground": "airport",
+              "tier": "default-placed",
+              "basis": "spatial faculty default placement: no stated location; coarse region only"
+            }
+          ],
+          "unknownsOpened": [
+            {
+              "of": "bathroom-1",
+              "kind": "exact-location"
+            },
+            {
+              "of": "bathroom-2",
+              "kind": "exact-location"
+            }
+          ],
+          "unknownsFilled": []
+        }
+      },
+      "confidence": 0.85,
+      "links": {
+        "follows": "obj-1-1"
+      },
+      "trail": [
+        {
+          "unit": "lpu/semantic-assessment",
+          "note": "assessed as statement"
+        }
+      ]
+    }
+  ]
+}

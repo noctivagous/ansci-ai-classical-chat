@@ -18,12 +18,17 @@
  * NO reply object yet. Reply objects exist exactly where the
  * Planner composes from a graph today; the hand-worded replies
  * join when their wording is derived.
+ *
+ * Since the envelope build (2026-11-17) the authored object is
+ * an INFORMATION object (info-object.ts): its envelope carries
+ * the surviving needs of the object it answers.
  */
 import type { ParsedSentence } from "./sentence";
 import type { Session } from "./session";
 import type { SemanticObject } from "./semantic-object";
 import { classifyAspects, rollUpComposition } from "./assess";
 import { buildSensesFace } from "./senses-scening";
+import { wrapReplyObject, type InformationObject } from "./info-object";
 
 export interface AuthorReplyInput {
   /** The reply graph the Planner composed (a plan outcome). */
@@ -37,7 +42,7 @@ export interface AuthorReplyInput {
   move: string;
 }
 
-export function authorReplyObject(input: AuthorReplyInput): SemanticObject {
+export function authorReplyObject(input: AuthorReplyInput): InformationObject {
   const { graph, turn, session, inbound, move } = input;
   const systemCount = session.objects.filter((o) => o.producer === "system").length;
   const aspects = classifyAspects(graph);
@@ -68,5 +73,10 @@ export function authorReplyObject(input: AuthorReplyInput): SemanticObject {
     links: { ...(inbound ? { follows: inbound.id } : {}) },
     trail: [{ unit: "reasoning/planner", note: `authored as a reply object: ${move}` }],
   };
-  return obj;
+  // The envelope (2026-11-17): the reply object travels as an
+  // information object too, carrying the surviving needs of
+  // the object it answers — priced by Coherence before this
+  // authoring (the turn loop settles the inbound first), and
+  // carried as data for the reply decision.
+  return wrapReplyObject(obj, inbound);
 }

@@ -32,6 +32,7 @@ import { isNeutralComposition } from "./composition";
 import type { Session } from "./session";
 import { SENSE_CHANNELS, type SemanticObject } from "./semantic-object";
 import { crossChannelImplications } from "./sense-unit";
+import { informationOf, type Need } from "./info-object";
 
 const UNIT = "coherence/coherence-analysis";
 
@@ -183,6 +184,29 @@ export function compareCompositions(object: SemanticObject, session: Session): v
       data: { comparison: "object-disposition", relation: relationBetween(own.predominant, d), objectPredominant: own.predominant, otherPredominant: d },
     });
   }
+}
+
+/**
+ * Coherence prices what SURVIVES the route (the envelope
+ * build, 2026-11-17): a need on the object's envelope that no
+ * unit discharged — an unanswered question, an unfilled
+ * placement, an unreconciled quantity, an unmet situate need —
+ * is marked SURVIVING and returned as the turn's outstanding
+ * cost: data for the reply decision (the reply object's
+ * envelope carries the list), and, when the turn declines,
+ * the located decline itself — the decline is AT this need,
+ * not vaguely at the turn. The pricing writes only the
+ * envelope; the core is never touched (the wall).
+ */
+export function priceSurvivingNeeds(object: SemanticObject): Need[] {
+  const info = informationOf(object);
+  if (!info) return [];
+  const survivors: Need[] = [];
+  for (const need of info.envelope.needs) {
+    if (need.status === "open") need.status = "surviving";
+    if (need.status === "surviving") survivors.push(need);
+  }
+  return survivors;
 }
 
 export function analyseInbound(object: SemanticObject, session: Session): void {
