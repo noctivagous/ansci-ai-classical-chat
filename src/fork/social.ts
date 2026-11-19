@@ -445,6 +445,23 @@ export function readSocial(object: SemanticObject, session: Session): void {
     case "question":
     case "topic-proposal":
     case "reason-query": {
+      // The offer of help (S2, the S programme, 2026-11-19):
+      // a social act in question dress — the reading records
+      // it as the act it is and raises the offer-answer
+      // demand; the Planner answers it in kind. The unit
+      // itself says nothing, as ever.
+      if (object.act.offerHelp) {
+        raise("offer of help received — a social act in question dress", { demand: "offer-answer" });
+      }
+      // The either/or question (S2): a choice posed to the
+      // system about its own preference or being — a
+      // self-answer in the limits voice, raised as such.
+      if (object.act.choiceQuery) {
+        raise(`either/or question (${object.act.choiceQuery}) — a choice posed to the system about itself`, {
+          demand: "self-answer",
+          selfQuery: "fact",
+        });
+      }
       il.establishedWithThem.push(object.id);
       break;
     }

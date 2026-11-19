@@ -92,7 +92,21 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cur("sleep", "Water", "state", "state", 0.9, "night is Water in the seed's time-of-day table"),
 
   /* ---- Emotions & states, extended (fork-creative unless noted) ---- */
-  cur("furious", "Wood", "emotion", "state", 0.9, "anger at full strength; the seed sentence lexicon already classes it Wood"),
+  /* Category filing (owner's ruling, 2026-11-18, the E1 data
+   * pass): an emotion word is filed under its canonical category
+   * and takes the category's Suwen element — anger → Wood, joy →
+   * Fire, pensiveness/worry → Earth, grief/sadness → Metal, fear
+   * → Water — because the category assignment is reliable; the
+   * element follows the category, it is not fitted word by word.
+   * A filing may carry a DEGREE qualifier, on Glasgow-register
+   * arousal evidence (the register supplies degree evidence,
+   * never the filing): furious is anger at high degree, gloomy
+   * grief at low degree. A word whose category is not reliable
+   * is NOT entered here at all — it registers without a fitting
+   * (the LEDU's uncategorised register, ledu.ts) and waits on
+   * the owner (GAPS §2). */
+  cur("furious", "Wood", "emotion", "state", 0.9, "anger at full strength — high degree (Glasgow arousal 6.43, above anger's 5.64; degree evidence: the Glasgow register); the seed sentence lexicon already classes it Wood"),
+  cur("angry", "Wood", "emotion", "state", 0.9, "anger at plain degree (Glasgow arousal 5.91, beside anger's 5.64); the seed sentence lexicon already classes it Wood"),
   cre("rage", "Wood", "emotion", "state", 0.85),
   cre("irritation", "Wood", "emotion", "state", 0.8),
   cre("nervous", "Wood", "emotion", "state", 0.7, "tension reads as Wood's rising, unvented"),
@@ -100,6 +114,9 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("jealousy", "Wood", "emotion", "state", 0.65),
   cre("excitement", "Fire", "emotion", "state", 0.85),
   cre("happiness", "Fire", "emotion", "state", 0.85),
+  cre("happy", "Fire", "emotion", "state", 0.85, "joy's everyday face, as happiness — category filing (joy → Fire)"),
+  cre("glad", "Fire", "emotion", "state", 0.8, "joy's everyday face — category filing (joy → Fire)"),
+  cre("excited", "Fire", "emotion", "state", 0.85, "the state of excitement — joy at high degree (Glasgow arousal 7.88; degree evidence: the Glasgow register)"),
   cre("pride", "Fire", "emotion", "state", 0.7),
   cre("shame", "Fire", "emotion", "state", 0.6, "the hot face of shame; contested — kept low"),
   cre("worry", "Earth", "emotion", "state", 0.9, "the everyday face of attested pensiveness"),
@@ -109,9 +126,14 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("relief", "Earth", "emotion", "state", 0.7),
   cre("boredom", "Earth", "emotion", "state", 0.65),
   cre("sadness", "Metal", "emotion", "state", 0.85, "grief's everyday face"),
+  cre("sad", "Metal", "emotion", "state", 0.85, "grief's everyday face, as sadness — category filing (grief → Metal)"),
+  cre("gloomy", "Metal", "emotion", "state", 0.7, "grief at low degree (Glasgow arousal 2.94, below sad's 3.94; degree evidence: the Glasgow register)"),
   cre("loneliness", "Metal", "emotion", "state", 0.7),
+  cre("lonely", "Metal", "emotion", "state", 0.7, "grief's face, as loneliness — category filing (grief → Metal)"),
   cre("calm", "Water", "emotion", "state", 0.75, "stillness is Yin in the seed's quality table"),
   cre("dread", "Water", "emotion", "state", 0.8, "fear looking forward"),
+  cre("afraid", "Water", "emotion", "state", 0.9, "the state of attested fear — category filing (fear → Water)"),
+  cre("scared", "Water", "emotion", "state", 0.85, "fear's everyday state — category filing (fear → Water)"),
 
   /* ---- Body & everyday states (fork-creative) ---- */
   cre("tired", "Earth", "state", "state", 0.8, "the spleen's load in TCM idiom"),

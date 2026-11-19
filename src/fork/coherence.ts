@@ -407,3 +407,58 @@ export function premiseDegree(session: Session, subjectLemma: string, qualityLem
   }
   return { degree: "absence" };
 }
+
+/**
+ * Whether the graph SUPPORTS a predication (S3, the S
+ * programme, 2026-11-19): a path runs from the subject to
+ * the quality itself, over the same edge family the premise
+ * degree consults — the axes rule included, so for a
+ * temperature predication a classification edge grounds no
+ * support either (soup's road to cold through its matter
+ * phase is not temperature support, exactly as it is not a
+ * temperature contradiction). premiseDegree's absence
+ * outcome does not distinguish this case — its search looks
+ * for a RIVAL value and reports absence when none is found,
+ * whether or not the asserted value itself is held — so the
+ * absence stance reads support here: supported, no stance;
+ * contradicted, the set-aside stance; neither, and the
+ * claim checkable, the absence stance.
+ */
+/**
+ * Whether a lemma names a term of the graph's correspondence
+ * order (S3, the S programme, 2026-11-19): the node carries
+ * an ELEMENT_OF or POLARITY_OF assignment of its own — it is
+ * one of the standing terms (a season, a time, an element, a
+ * polarity) whose correspondences the graph itself states.
+ * A classified thing (soup, garden, tea) only RECEIVES an
+ * assignment (HAS_ELEMENT): predications about it are
+ * tellings about a thing in the world, the conversation's
+ * ordinary business, and the absence stance is not for them.
+ * A predication about a correspondence term is a claim
+ * about the standing order the graph encodes — the claims
+ * the stance family exists for (the season assertions are
+ * its protected specimens).
+ */
+export function isCorrespondenceTerm(session: Session, lemma: string): boolean {
+  const node = session.graph.nodeByName(lemma);
+  if (!node) return false;
+  return session.graph
+    .outEdges(node.id)
+    .some((e) => e.type === "ELEMENT_OF" || e.type === "POLARITY_OF");
+}
+
+export function premiseSupport(session: Session, subjectLemma: string, qualityLemma: string): boolean {
+  const askedAspect = lookupClassification(qualityLemma)?.aspect;
+  if (askedAspect === undefined) return false;
+  const graph = session.graph;
+  const subjectNode = graph.nodeByName(subjectLemma);
+  const qualityNode = graph.nodeByName(qualityLemma);
+  if (!subjectNode || !qualityNode) return false;
+  const edgeTypes =
+    askedAspect === "temperature"
+      ? (["ELEMENT_OF", "POLARITY_OF", "HAS_QUALITY", "CORRESPONDS_TO"] as const)
+      : (["ELEMENT_OF", "HAS_ELEMENT", "POLARITY_OF", "HAS_QUALITY", "CORRESPONDS_TO"] as const);
+  return (
+    graph.findPath(subjectNode.id, qualityNode.id, { edgeTypes: [...edgeTypes], confidenceThreshold: 0 }) !== null
+  );
+}

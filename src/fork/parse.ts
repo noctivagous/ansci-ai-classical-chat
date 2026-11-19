@@ -337,7 +337,21 @@ function enItems(tokens: string[]): EnItem[] {
   for (let k = 0; k < items.length; k++) {
     const it = items[k];
     if (it.kind !== "aux" || !["has", "have", "had"].includes(it.lower)) continue;
-    const laterVerbish = items.slice(k + 1).some((x, xi) =>
+    // The scan for the perfect's participle stops at a relative
+    // 'that' (E2, the emotional-uptake programme, 2026-11-19): a
+    // verb inside a relative clause is the subordinate clause's,
+    // not the main clause's participle — "I have a job that I
+    // love" kept the auxiliary reading on the strength of
+    // 'love', and the sentence then rooted on the relative's
+    // verb with the possession dropped. The relative signature
+    // is the R5 branch's own: 'that' after a noun or pronoun.
+    // A complementiser 'that' (after a verb) does not stop the
+    // scan, and neither does the determiner ("that book" —
+    // its predecessor is the verb or the auxiliary itself).
+    const relBoundary = items.findIndex(
+      (x, xi) => xi > k && x.lower === "that" && (items[xi - 1]?.kind === "noun" || items[xi - 1]?.kind === "pronoun"),
+    );
+    const laterVerbish = items.slice(k + 1, relBoundary === -1 ? undefined : relBoundary).some((x, xi) =>
       x.kind === "verb" || x.kind === "be" || x.entry?.kind === "verb" ||
       // A WordNet verb reading counts only outside a noun chunk: a
       // noun after a determiner ("had a garden" — garden has verb
@@ -410,6 +424,11 @@ const MEASURABLE_HEADS = new Set([
 interface EnChunk {
   head: EnItem;
   adjectives: EnItem[];
+  /** Degree adverbs grading a chunk adjective ("a very good
+   *  teacher"): each adverb pairs with the adjective item it
+   *  grades, in surface order (E2, the emotional-uptake
+   *  programme, 2026-11-19). */
+  degreeMods?: { adverb: EnItem; adjective: EnItem }[];
   /** Noun modifiers absorbed into a compound ("ginger tea"):
    *  every noun before the head, in surface order. */
   compoundMods?: EnItem[];
@@ -468,9 +487,59 @@ function isNumeralToken(item: EnItem): boolean {
 function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number } | null {
   let det: string | undefined;
   const adjectives: EnItem[] = [];
+  const degreeMods: { adverb: EnItem; adjective: EnItem }[] = [];
   let j = i;
   if (items[j]?.kind === "det") { det = items[j].lower; j++; }
-  while (items[j]?.kind === "adjective") { adjectives.push(items[j]); j++; }
+  /* Degree adverbs inside the noun phrase (E2, the emotional-
+   * uptake programme, 2026-11-19): a degree adverb before a
+   * quality grades it — "a very good teacher", "a really bad
+   * spot", "a really big house". Before this, no chunk admitted
+   * the pair: the adverb stopped the chunker outright, so the
+   * complement either fell to a bare-adjective predication that
+   * dropped the noun ("It is a really big house" graphed as
+   * 'big' alone) or threw where the quality's item kind was not
+   * "adjective". The quality after a degree adverb is read as
+   * an adjective on position's evidence — a noun adjunct cannot
+   * be graded ("a very government building" is not English) —
+   * so a noun-kind item with an adjective derivation, standing
+   * after the adverb and before a noun head, takes its
+   * adjective reading here, as a copy (the head-position
+   * re-read below is the same idiom, mirrored). The adverb
+   * itself rides in degreeMods and attaches to the quality's
+   * node in enNodeFromChunk, by the modulates closure every
+   * adverb uses. */
+  const adjectiveAt = (k: number, graded: boolean): EnItem | undefined => {
+    const it = items[k];
+    if (!it) return undefined;
+    if (it.kind === "adjective") return it;
+    if (graded && it.kind === "noun") {
+      const adjEntry = wordnetAdjective(it.lower);
+      const head = items[k + 1];
+      if (adjEntry && head && (head.kind === "noun" || head.kind === "pronoun" || head.kind === "proper")) {
+        registerDerivedEntry(adjEntry, it.lower);
+        return { ...it, kind: "adjective", entry: adjEntry };
+      }
+    }
+    return undefined;
+  };
+  for (;;) {
+    const plain = adjectiveAt(j, false);
+    if (plain) {
+      adjectives.push(plain);
+      j++;
+      continue;
+    }
+    if (items[j]?.kind === "adverb") {
+      const graded = adjectiveAt(j + 1, true);
+      if (graded) {
+        degreeMods.push({ adverb: items[j], adjective: graded });
+        adjectives.push(graded);
+        j += 2;
+        continue;
+      }
+    }
+    break;
+  }
   let head = items[j];
   if ((!head || (head.kind !== "noun" && head.kind !== "pronoun" && head.kind !== "proper")) && adjectives.length) {
     // Adjective in head position: "a cold" (the illness) — the run of
@@ -479,7 +548,16 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
     // position is the evidence, as elsewhere in this parser.
     const lastAdj = adjectives[adjectives.length - 1];
     const nounEntry = wordnetNoun(lastAdj.lower);
-    if (nounEntry) {
+    // A GRADED quality is not substantivised (E2): the re-read
+    // below makes a bare quality the chunk's noun head ("a
+    // cold", the illness), but a quality a degree adverb
+    // grades ("awfully sorry", "a very cold") is being used
+    // as a quality — letting it head the chunk turned "I am
+    // awfully sorry…" into a noun predication and the feeling
+    // fell out of the graph. With the re-read refused, the
+    // chunk fails and the caller's quality path takes it.
+    const graded = degreeMods.some((d) => d.adjective === lastAdj);
+    if (nounEntry && !graded) {
       registerDerivedEntry(nounEntry, lastAdj.lower);
       head = { ...lastAdj, kind: "noun", entry: nounEntry };
       adjectives.pop();
@@ -518,7 +596,7 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
     j++;
     head = items[j];
   }
-  const chunk: EnChunk = { head, adjectives, ...(compoundMods.length ? { compoundMods } : {}), det, start: i, end: j };
+  const chunk: EnChunk = { head, adjectives, ...(degreeMods.length ? { degreeMods } : {}), ...(compoundMods.length ? { compoundMods } : {}), det, start: i, end: j };
   // Of-PP absorption: "the population of Chicago" is ONE noun phrase.
   // Only "of" is absorbed, and only immediately after the head — verb
   // arguments keep their own prepositions, so this cannot swallow a
@@ -584,6 +662,18 @@ function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode
       [adj.index],
     );
     b.edge(aNode, node, "qualifies"); // Fire→Earth: generating
+    // A degree adverb grading this quality (E2): a Water node
+    // modulating the quality's Fire node — the closure every
+    // adverb attachment uses (Water→Fire: generating).
+    const dm = chunk.degreeMods?.find((d) => d.adjective === adj);
+    if (dm) {
+      const advEntry = dm.adverb.entry;
+      const advNode = b.node(
+        { lemma: advEntry ? advEntry.lemma : dm.adverb.lower, form: dm.adverb.text, syntacticElement: "Water" },
+        [dm.adverb.index],
+      );
+      b.edge(advNode, aNode, "modulates");
+    }
   }
   if (chunk.ofChunk) {
     const ofNode = enNodeFromChunk(b, chunk.ofChunk);
@@ -1131,13 +1221,27 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
   }
 
   /* --- Relative clause (R5): a clause graph attached as modifier of its
-   *     Earth head; the head itself fills the clause's gap (R3 inside R5). --- */
+   *     Earth head; the head itself fills the clause's gap (R3 inside R5).
+   *     This branch builds the SUBJECT-head shape: the head is the
+   *     clause-initial chunk and the main clause is the copula clause
+   *     after the relative ("The man that I saw was tall"). The gate
+   *     therefore includes the head's position (E2, the emotional-
+   *     uptake programme, 2026-11-19): an object-head relative —
+   *     "I have a job that I love", the narrative's common shape —
+   *     has its head mid-clause, and forcing it through this branch
+   *     rooted the relative on the subject chunk and threw on the
+   *     absent copula, sinking a turn the ordinary verb path takes
+   *     up (with the relative's content dropped, as that path
+   *     already drops it for other verbs' object relatives — "I
+   *     saw a dog that I saw"). The branch fires only when the
+   *     clause-initial chunk's head is the very item 'that'
+   *     follows. --- */
   const relPos = items.findIndex((it, k) => it.lower === "that" && k > contentStart && (items[k - 1]?.kind === "noun" || items[k - 1]?.kind === "pronoun"));
   if (relPos > 0) {
     const headC = enChunk(items, contentStart);
     const relSubjC = enChunk(items, relPos + 1);
     const relVerbItem = relSubjC ? items.slice(relSubjC.next).find((i) => i.kind === "verb") : undefined;
-    if (headC && relSubjC && relVerbItem?.entry) {
+    if (headC && headC.chunk.end === relPos - 1 && relSubjC && relVerbItem?.entry) {
       const head = enNodeFromChunk(b, headC.chunk, "subject");
       const relVerb = relVerbItem.entry as VerbEntry;
       const clauseRoot = b.node({ lemma: relVerb.lemma, form: relVerbItem.text, syntacticElement: "Wood", role: "verb" }, [relVerbItem.index]);
@@ -1364,13 +1468,36 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     const compAt = rest[0]?.kind === "neg" ? compStart + 1 : compStart;
     const compFirst = items[compAt];
     const compChunk = enChunk(items, compAt);
-    if (compChunk && compFirst && (compFirst.kind === "det" || compFirst.kind === "noun" || compFirst.kind === "proper" || compFirst.kind === "pronoun")) {
+    // An adverb may lead the complement chunk only as a degree
+    // adverb grading into a noun phrase (E2, 2026-11-19:
+    // "They are very good schools") — the chunker admits that
+    // shape and no other adverb-led one, so a bare graded
+    // quality ("She is very happy") still falls to the
+    // adjective path below, its chunk having failed. The
+    // adverb-led admission requires a genuine noun head: a
+    // "proper" head here is the unknown-word default wearing
+    // a head's clothes ("I am awfully sorry for…" — 'for'
+    // classifies proper after the quality, and a chunk headed
+    // by it roots the clause on the preposition).
+    if (compChunk && compFirst && (compFirst.kind === "det" || compFirst.kind === "noun" || compFirst.kind === "proper" || compFirst.kind === "pronoun" || (compFirst.kind === "adverb" && compChunk.chunk.head.kind === "noun"))) {
       const c = compChunk;
       root = enNodeFromChunk(b, c!.chunk, "predicate");
     } else {
-      const adj = rest.find((r) => r.kind === "adjective");
+      const adjItem = rest.find((r) => r.kind === "adjective");
+      /* The predicate quality's second reading (E2, the
+       * emotional-uptake programme, 2026-11-19): a noun-kind
+       * item carrying an adjective derivation, standing where
+       * the complement's quality must stand, is the quality —
+       * "The spot was really bad", where 'bad' resolves
+       * noun-first in the item fallback and the degree adverb
+       * before it is a quality's company, not a noun's. The
+       * chunker's graded re-read is the same judgement inside
+       * a noun phrase; position is the evidence in both. */
+      const nounItem = adjItem ? undefined : rest.find((r) => r.kind === "noun" && wordnetAdjective(r.lower) !== undefined);
+      const adj = adjItem ?? nounItem;
       if (!adj) throw new Error(`cannot parse complement of: ${text}`);
-      const aEntry = adj.entry;
+      const aEntry = adjItem ? adj.entry : wordnetAdjective(adj.lower);
+      if (nounItem && aEntry) registerDerivedEntry(aEntry, adj.lower);
       root = b.node(
         {
           lemma: aEntry ? aEntry.lemma : adj.lower,
@@ -1381,6 +1508,18 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
         },
         [adj.index],
       );
+      // A degree adverb immediately before the quality grades
+      // it (E2): the same Water modulates closure as inside a
+      // noun phrase — "really bad" keeps its 'really'.
+      const degAdv = rest[rest.indexOf(adj) - 1];
+      if (degAdv?.kind === "adverb") {
+        const advEntry = degAdv.entry;
+        const advNode = b.node(
+          { lemma: advEntry ? advEntry.lemma : degAdv.lower, form: degAdv.text, syntacticElement: "Water" },
+          [degAdv.index],
+        );
+        b.edge(advNode, root, "modulates");
+      }
     }
     root.states = { copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative", ...(whyItem ? { questionKind: "why" } : {}), subjectPerson: subj.chunk.head.entry && "person" in subj.chunk.head.entry ? (subj.chunk.head.entry as { person?: string }).person : subj.chunk.head.lower.endsWith("s") ? "3pl" : "3sg",
       // Copula negation ("She is not happy"): the copula is the

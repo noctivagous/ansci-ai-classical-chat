@@ -2303,3 +2303,119 @@ is recorded as (acting element, cycle relation, acted-on
 element, qualifiers such as rate), never as a substance
 with manifestations. Doctrine only in this slice; no
 machinery is built on it here.
+
+## Part I — The absence stance: a checkable claim the graph does not support (ruled 2026-11-19, owner's direction in the S programme)
+
+The premise machinery (Social Unit S5, extended to
+assertions by conversation-shapes C7) reads Coherence's
+premise degree for an asserted predication and acts on one
+outcome: contradiction. On contradiction from the graph,
+the stance states the established ground, the asserted
+state is set aside, the disagreement is recorded, and a
+stance-repair pending opens. The degree's other outcome —
+absence — drew no stance at all: a checkable claim the
+graph does not support was recorded and acknowledged, and
+the system's silence read as endorsement by default. The
+sealed probe runs measured the consequence twice (bar 8,
+0/2/0 in both runs): neither pressure probe was complied
+with and neither premise endorsed, but no stance appeared
+either. This part rules the absence outcome.
+
+### I.1 The degree has three outcomes, and absence is one of them
+
+For an asserted predication, the graph's answer is one of
+three: it **supports** the claim (a path runs from the
+subject to the quality over the degree's own edge family),
+it **contradicts** the claim (the degree's outcome today),
+or it is **absent** on the claim — neither path runs.
+premiseDegree reports the third case and the second case
+together as "absence" whenever no rival value is found, so
+support is read separately (premiseSupport in
+coherence.ts), over the same edge family the degree
+consults — the property-axes rule (Part H) included: for a
+temperature predication a classification edge grounds
+neither a contradiction nor a support, so a material's
+temperature claim whose only road runs through its matter
+phase is absent on the temperature axis, exactly as the
+axes repair recorded ("The soup is hot." is absence). The
+axes repair left that absence silent; this part rules what
+the silence becomes — and I.2's subject leg is what keeps
+the soup case itself on the telling side of the line the
+repair drew: absence of degree is necessary for the
+stance, not sufficient.
+
+### I.2 Checkable claims only
+
+The absence stance fires only where the claim is
+**checkable** against the system's own knowledge, in two
+parts: the predication's quality is classified on an
+aspect the graph speaks to (the graph has a vocabulary for
+claims of this kind), and its subject is **a term of the
+graph's correspondence order** — a node carrying an
+ELEMENT_OF or POLARITY_OF assignment of its own (a season,
+a time, an element, a polarity), one of the standing terms
+whose correspondences the graph itself states. The second
+leg is the determination's centre. A classified thing —
+soup, garden, tea, salt — only *receives* an assignment;
+a predication about it is a telling about a thing in the
+world, the conversation's ordinary business, and it keeps
+the ordinary path however unsupported it is: recorded as
+told, acknowledged, receipted, steered from — no stance.
+(The build's first scope, any graph node as subject, fired
+on exactly those tellings across the corpus's own
+fixtures; the correspondence leg is the correction, and it
+is structural — read from the graph's edges, never from
+the claim's wording.) A claim failing either leg — a
+quality the graph does not classify ("The dog is
+loyal."), a subject outside the order ("Huskies are
+similar to wolves.", whose subject is no graph node at
+all and whose quality is unclassified besides) — is not a
+located gap; it is the conversation's normal ground.
+
+### I.3 The stance states absence, and nothing else
+
+Where an asserted predication is checkable and the degree
+is absence — no support, no contradiction — the reply
+states the absence, located on the claim, in the visitor's
+language: "I don't have {subject} as {quality} in what I
+know." The stance asserts nothing about the world: it
+states what the system's knowledge does not hold, and it
+never invents a counter-fact. It is distinct from
+contradiction's stance, which states what the system
+holds instead, and from a question decline, which answers
+a question; this answers an assertion.
+
+### I.4 The consequences differ from contradiction's, in every part
+
+- The asserted state **stands in the record as told**. The
+  system does not know otherwise; setting a state aside is
+  for what it knows against, and an unsupported telling is
+  still the visitor's telling, attributable to them in
+  every later use the record makes of it.
+- **No disagreement is recorded** — there is no established
+  ground to disagree with.
+- **No stance-repair pending opens** — an insistence on an
+  unsupported claim meets the same absence again, not the
+  supposition treatment, which exists to answer under a
+  ground the system holds.
+- The stance is stated **at the claim's first telling**.
+  A claim already standing in the record from an earlier
+  turn does not draw it again; the repeat is record
+  business.
+
+### I.5 What this does not reach
+
+The determination covers asserted predications — the
+C7 trigger's shape: a statement whose predication the
+record block files as a state this turn. A causal claim in
+explanation dress (the husky shape as the probe carried
+it: "they use huskies because of the fur and the fact that
+they are most similar to wolves") is the same gap in a
+dress the sentence layer does not draw as a predication —
+its parse files no state, and its subject and quality
+stand outside the graph's vocabulary besides — so the
+probe's own surface remains a partial-grade shape, and
+this part does not claim it. What the determination
+closes is the degree's outcome: any asserted predication
+the system can price and cannot support now draws the
+stance, where before it drew silence.

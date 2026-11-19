@@ -132,8 +132,14 @@ test("R2: an event telling is receipted with the recorded event", () => {
 
 test("R2: the speaker's own unclassified state is receipted too — the fallthrough shows what it recorded", () => {
   const s = newSession();
-  const [, r] = run(s, ["The winter is cold.", "I am happy."]);
-  assert.equal(r.reply, "Ok. You are happy.");
+  // Specimen changed by E1 (2026-11-19): 'happy' was this
+  // test's unclassified state; E1 filed it (joy → Fire), so a
+  // happy telling now steers as a classified feeling and no
+  // longer reaches the fallthrough. 'guilty' — registered by
+  // E1's uncategorised register with no element — is the
+  // element-less speaker state that exercises the same path.
+  const [, r] = run(s, ["The winter is cold.", "I am guilty."]);
+  assert.equal(r.reply, "Ok. You are guilty.");
   assert.equal(r.trace.recognition?.kind, "state");
 });
 
@@ -194,8 +200,24 @@ test("R3: a pile of bare acknowledgements composes to one acknowledgement plus w
   const s = newSession();
   const [r] = run(s, ["It doesn't work . It looks like it's broken . I need to get to a hospital . You should drive me there ."]);
   assert.equal(r.trace.segmented?.length, 4, "the four segment replies stand in the trace as processed");
-  assert.equal(r.reply, "Ok. Ok. You drove the there.", "one plain ack stands; the event receipt keeps its own form");
-  assert.equal(r.trace.segmentComposition?.acksCollapsed, 2);
+  // Re-pinned 2026-11-19 (S5 of the S programme): under
+  // segmentation by default the first segment is processed
+  // as the conversation's first turn, so its reply is the
+  // first-turn fuller bare form ("Ok. Noted.", R2's rule)
+  // and that is the ack the shaping stands at the head.
+  // The collapse count and the receipt are unchanged.
+  // Re-pinned 2026-11-19 (X1 of the X programme): the drive
+  // segment's receipt rendered its patient 'there' behind a
+  // determiner ("You drove the there.") — 'there' is a
+  // closed function word, and X1's admission holds that a
+  // function word is never a determiner fill, whatever
+  // register recorded it. The receipt stands down to the
+  // plain acknowledgement and collapses with the rest of
+  // the pile: one ack stands, and nothing else was
+  // substantive. The collapse discipline this test pins is
+  // unchanged — it now also covers the stood-down receipt.
+  assert.equal(r.reply, "Ok. Noted.", "one plain ack stands; the stood-down receipt's ack collapses with the pile");
+  assert.equal(r.trace.segmentComposition?.acksCollapsed, 3);
 });
 
 test("R3: steering does not ride on a receipt inside a composition (the P-072 shape)", () => {
@@ -208,7 +230,13 @@ test("R3: steering does not ride on a receipt inside a composition (the P-072 sh
     "Thanks . I can watch TV now .",
   ]);
   const last = results[results.length - 1];
-  assert.equal(last.reply, "You are welcome.", "the thanks receipt is the whole reply — the venting tail stood down");
+  // Re-pinned 2026-11-19 (X3 of the X programme): the
+  // venting segment stood down — its steering tail is gone
+  // from the receipt, which remains this test's pin — but
+  // under X3's stand-down form the segment keeps its own
+  // content (the echo its steering rode on) rather than
+  // vanishing into the plain acknowledgement.
+  assert.equal(last.reply, "You are welcome. You watched the now.", "the venting tail stood down from the receipt; the segment's echo stands");
   assert.equal(last.trace.segmentComposition?.boundaryReplies, 1);
   assert.equal(last.trace.segmentComposition?.steeringStoodDown, 1);
 });
@@ -221,10 +249,19 @@ test("R3: steering does not ride on a decline inside a composition (the P-124 sh
     "Yeah.. that's kind of cool, actually. Merchants and bankers, they're good peeps. Well, what else might she not know? I don't want some common knowledge, I want the good stuff!",
   ]);
   const last = results[results.length - 1];
+  // Re-pinned 2026-11-19 (X3 of the X programme): the
+  // segment after the decline steered and stood down; under
+  // X3's stand-down form it keeps its own content (its
+  // echo, "You wanted the knowledge.") rather than
+  // collapsing into an acknowledgement, so the decline is
+  // no longer the composition's last word — but no steering
+  // TAIL follows it, which remains this test's pin: the
+  // follow-up the steering would have asked is absent.
   assert.ok(
-    last.reply.endsWith("that one asks something else."),
-    "the decline is the composition's last word — no steering tail after it",
+    last.reply.endsWith("You wanted the knowledge."),
+    `the stood-down segment's echo closes the reply: ${last.reply}`,
   );
+  assert.ok(!last.reply.includes("What's on your mind"), "no steering tail after the decline");
   assert.equal(last.trace.segmentComposition?.steeringStoodDown, 1);
   assert.ok((last.trace.segmentComposition?.boundaryReplies ?? 0) >= 1);
 });
@@ -235,9 +272,40 @@ test("R3: in a composition, steering from a verb-carried state stands down and t
     "Hello , Mr . Black , how are you ?",
     "Very well , thank you . It's nice to meet you again . I am awfully sorry for not being able to meet you at the airport , as I was busy yesterday . I do hope you had a very enjoyable trip from New York .",
   ]);
-  assert.equal(r.reply, "Ok. Ok. It is nice.");
+  // Re-pinned by E1 (2026-11-19): the apology segment's
+  // 'sorry' is now filed (grief → Metal: the classification
+  // climb reaches grief's anchor, and E1's category filing
+  // agrees), so its segment steers instead of standing as a
+  // bare ack — one fewer ack collapses, and the composed
+  // reply carries the steering after the standing head. The
+  // steering's own form (its temporal clause drawn unsoundly
+  // from the record) is the statement branches' steering-
+  // soundness gap the R programme handed to S; the full
+  // string is deliberately not pinned. What this test pins —
+  // the hope segment's stand-down and the pile's collapse —
+  // stands unchanged.
+  // Re-pinned 2026-11-19 (X0 of the X programme): the
+  // apology segment's state stands NEGATED in the record —
+  // the parse scopes the subordinate "not being able to
+  // meet you" onto the copula, so you/sorry stands negated
+  // (a parse negation-scope grain, recorded in GAPS §2 as
+  // a remainder; the record is what it is). X0's rule —
+  // steering respects the record's negation — stands the
+  // sorry steering down, its acknowledgement collapses
+  // with the pile, and the composed reply ends at the
+  // standing head. What this test was built to pin — the
+  // hope segment's verb-carried stand-down and the shaping
+  // discipline — stands unchanged.
+  // Extended 2026-11-19 (X3 of the X programme): the hope
+  // segment's stood-down steering now keeps its own
+  // content under X3's stand-down form — "You hope."
+  // stands where its acknowledgement used to collapse —
+  // so one fewer ack collapses. The sorry steering remains
+  // stood down under X0, and the hope stand-down count is
+  // unchanged.
+  assert.equal(r.reply, "Ok. Ok. It is nice. You hope.", `the standing head and the hope segment's content stand; the sorry steering stood down under X0: ${r.reply}`);
   assert.equal(r.trace.segmentComposition?.steeringStoodDown, 1, "the hope segment's steering stood down — hope was carried by its verb");
-  assert.equal(r.trace.segmentComposition?.acksCollapsed, 2);
+  assert.equal(r.trace.segmentComposition?.acksCollapsed, 1);
 });
 
 test("R3: the initiative never appends to a standalone receipt", () => {

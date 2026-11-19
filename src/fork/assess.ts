@@ -31,6 +31,7 @@ import { computeQuantityMentions } from "./quantification-language";
 import { tierOfProvenance } from "./pricing";
 import { compositionFromRanks, type Composition } from "./composition";
 import { consultSituation, createInformationObject, type InformationObject } from "./info-object";
+import { enIsFunctionWord } from "./parse";
 
 /**
  * The object's aspect readings (slice 3): every content word the
@@ -98,7 +99,35 @@ export interface AssessContext {
 /** The closed set of English greeting forms (slice 2). A form's
  *  register rides on the retained surface; the mirror reply is
  *  generated from the object's own graph. */
-const GREETING_FORMS = new Set(["hello", "hi", "hey"]);
+const GREETING_FORMS = new Set(["hello", "hi", "hey", "greeting"]);
+
+/**
+ * The matter vocabulary of the elliptical return (C3 shape
+ * (h), S1 2026-11-19): the facts-of-a-person the self-fact
+ * family trades in — a birthplace, a family, an occupation,
+ * a home, pets, hobbies — and the name, which is the
+ * Identity table's fact, not a limits fact. A bare return
+ * question resolves only to a matter in this vocabulary;
+ * anything else in play (a feeling, a topic, an event) is
+ * not a self-fact the return can ask after.
+ */
+export const RETURN_MATTERS: { pattern: RegExp; matter: string }[] = [
+  { pattern: /\bbirth\s?place\b/, matter: "birthplace" },
+  { pattern: /\bborn\b/, matter: "birthplace" },
+  { pattern: /\bfamily\b/, matter: "family" },
+  { pattern: /\bjob\b/, matter: "occupation" },
+  { pattern: /\bname\b/, matter: "name" },
+  { pattern: /\bhome\b/, matter: "home" },
+  { pattern: /\bhobbies\b/, matter: "hobbies" },
+  { pattern: /\bhobby\b/, matter: "hobbies" },
+  { pattern: /\bpets\b/, matter: "pets" },
+  { pattern: /\bpet\b/, matter: "pets" },
+  { pattern: /\bdogs\b/, matter: "dogs" },
+  { pattern: /\bdog\b/, matter: "dogs" },
+  { pattern: /\bcats\b/, matter: "cats" },
+  { pattern: /\bcat\b/, matter: "cats" },
+  { pattern: /\bchildren\b/, matter: "children" },
+];
 
 export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): SemanticObject[] {
   const { session, turn, surface } = ctx;
@@ -110,7 +139,22 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   // parser's. It carries no content at all; everything in its
   // handling comes from situation, coherence and disposition.
   const isGreeting = Boolean(
-    root && root.role === "topic" && parsed.meaning.edges.length === 0 && GREETING_FORMS.has(root.lemma.toLowerCase()),
+    (root && root.role === "topic" && parsed.meaning.edges.length === 0 && GREETING_FORMS.has(root.lemma.toLowerCase())) ||
+      // The there-form (S2, the S programme, 2026-11-19):
+      // "hey there." graphs as the topic 'there' qualified by
+      // the greeting word — the same bare greeting carrying
+      // its address particle, no content. Drawn so the fused
+      // forms ("hey there how are you today?") meet a greeting
+      // segment the mirror can return, not a statement ack.
+      (root &&
+        root.role === "topic" &&
+        root.lemma.toLowerCase() === "there" &&
+        parsed.meaning.edges.length > 0 &&
+        parsed.meaning.edges.every((e) => {
+          if (e.relation !== "qualifies" || e.to !== root.id) return false;
+          const src = parsed.meaning.nodes.find((n) => n.id === e.from);
+          return src !== undefined && GREETING_FORMS.has(src.lemma.toLowerCase());
+        })),
   );
 
   // The daypart greetings (conversation-shapes C1, 2026-11-18):
@@ -270,7 +314,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   // A question with any content word in it ("How is the garden?",
   // "How do you know?") is not this act and is never captured.
   const PHATIC_LEMMAS = new Set([
-    "how", "you", "hello", "hi", "hey", "there", "today", "do", "doing", "go", "going", "are", "is", "it", "up", "fine", "well",
+    "how", "you", "hello", "hi", "hey", "there", "today", "tonight", "do", "doing", "go", "going", "are", "is", "it", "up", "fine", "well",
   ]);
   const allPhatic = parsed.meaning.nodes.every((n) => PHATIC_LEMMAS.has(n.lemma.toLowerCase()));
   // The parse's own token record, normalised — positional
@@ -283,14 +327,29 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     const i = tokens.indexOf(w);
     return i >= 0 ? tokens[i + 1] : undefined;
   };
+  // The time-of-day adjuncts the enquiry carries ("today",
+  // "tonight" — S2, the S programme, 2026-11-19): the doing
+  // forms draw the adjunct as the verb's patient ("how are
+  // you doing tonight?" graphs do/how/tonight), which the
+  // patient guard below read as a manner question's object.
+  // A time word in the patient slot is the exchange's frame,
+  // not something done or known, and does not defeat the
+  // recognition; "tonight" joins "today" in the phatic set
+  // on the same ground.
+  const TIME_WORDS = new Set(["today", "tonight"]);
   const isWellbeingQuery = Boolean(
     interrogative &&
       allPhatic &&
       parsed.meaning.nodes.length > 0 &&
       // A patient or theme edge means the question asks after
       // something done or known ("How do you do it?") — a manner
-      // question, not the ritual exchange.
-      !parsed.meaning.edges.some((e) => e.relation === "patient" || e.relation === "theme") &&
+      // question, not the ritual exchange. A time-word target
+      // is the adjunct case above and does not defeat it.
+      !parsed.meaning.edges.some(
+        (e) =>
+          (e.relation === "patient" || e.relation === "theme") &&
+          !TIME_WORDS.has(parsed.meaning.nodes.find((n) => n.id === e.to)?.lemma.toLowerCase() ?? ""),
+      ) &&
       // "How" opening on anything but the copula is a degree
       // question ("How old are you?" — the graph is identical
       // to "How are you?" and only the token record separates
@@ -335,6 +394,29 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
           .map((e) => nodes.find((n) => n.id === e.to))
           .find((n) => n && n.lemma.toLowerCase() !== "any" && n.lemma.toLowerCase() !== "what");
         if (m) selfFactMatter = m.form.toLowerCase();
+        // S1 (the S programme, 2026-11-19): the wh-NP form —
+        // "What pets do you have?" questions the having
+        // itself, and the graph keeps only the question word
+        // in the theme slot; the possessed noun rides in the
+        // question word's own phrase and the graph drops it.
+        // The token record holds it by position, as it holds
+        // the degree of shape (e): the token after "what",
+        // when it is a content word (not the frame's own
+        // scaffolding — "What do you have?" leaves 'do' there
+        // and is not captured). Run 2 met this shape with the
+        // missing-role decline ("nothing you have told me
+        // says what was had") — the matter was on the surface
+        // the whole time.
+        if (!selfFactMatter) {
+          const questioned = edges
+            .filter((e) => e.from === rootId && (e.relation === "theme" || e.relation === "patient"))
+            .map((e) => nodes.find((n) => n.id === e.to))
+            .find((n) => n && n.questionWord && n.lemma.toLowerCase() === "what");
+          if (questioned) {
+            const m2 = tokenAfter("what");
+            if (m2 && m2 !== "any" && !enIsFunctionWord(m2)) selfFactMatter = m2;
+          }
+        }
       } else if (root.lemma.toLowerCase() === "do" && root.states?.tense !== "past") {
         // (c) Occupation: "What do you do (for a living)?" —
         // the questioned patient is "what" and the doing is
@@ -348,7 +430,21 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
             e.relation === "patient" &&
             nodes.some((n) => n.id === e.to && n.questionWord && n.lemma.toLowerCase() === "what"),
         );
-        if (asksWhat) selfFactMatter = "occupation";
+        // S1 (the S programme, 2026-11-19): the doing's sphere
+        // discriminates the matter. A purpose adjunct naming
+        // leisure — "for fun", carried in the token record
+        // (the graph drops the adjunct whole) — asks what the
+        // system does for enjoyment, not what its occupation
+        // is; run 2 answered it with the occupation denial
+        // ("I don't have a job."), which answers a question
+        // the visitor did not ask. The leisure matter is the
+        // limits vocabulary's own: hobbies, the matter the
+        // have-shape already files for "Do you have any fun
+        // hobbies?" — the denial is the same sentence either
+        // way, and it is the honest one here.
+        const forFun = tokens.some((t, i) => t === "for" && tokens[i + 1] === "fun");
+        if (asksWhat && forFun) selfFactMatter = "hobbies";
+        else if (asksWhat) selfFactMatter = "occupation";
       } else if (root.lemma.toLowerCase() === "live" && nodes.some((n) => n.questionWord && n.lemma.toLowerCase() === "where")) {
         selfFactMatter = "home";
       } else if (root.lemma.toLowerCase() === "get") {
@@ -373,6 +469,27 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         root.form.toLowerCase() !== root.lemma.toLowerCase()
       ) {
         selfFactMatter = root.form.toLowerCase();
+      }
+      // (g) Family origin (S1, the S programme, 2026-11-19):
+      // "Do you come from a big family?" — the question ranges
+      // over the system's belonging, and the graph draws the
+      // matter plainly: a 'family' node standing as the
+      // source (a location edge with the 'from' preposition)
+      // of a verb the addressee agents. The size word rides as
+      // the node's qualifier and is not the matter; the matter
+      // is the family itself, and the limits answer is the
+      // plain denial, as for the other biography facts. Run 2
+      // met this shape with the question-shape decline.
+      if (
+        !selfFactMatter &&
+        edges.some(
+          (e) =>
+            e.from === rootId &&
+            e.relation === "location" &&
+            nodes.some((n) => n.id === e.to && n.lemma.toLowerCase() === "family" && n.prep === "from"),
+        )
+      ) {
+        selfFactMatter = "family";
       }
     }
     // (e) Birthplace: "Where were you born?" — the passive
@@ -407,6 +524,50 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
       selfFactMatter = "age";
     }
   }
+  // (h) The elliptical return (S1, the S programme,
+  // 2026-11-19): "What about yours?" / "What about you?" asks
+  // the system's counterpart of a matter the conversation has
+  // just put in play — the visitor states their own fact and
+  // returns the question in its elliptical form, the matter
+  // carried by the exchange, not by the sentence. The graph
+  // draws the return as a lone topic node (no verb, no
+  // interrogative mood), so this shape reads the surface —
+  // the whole utterance must be the return and nothing else
+  // ("What about the strike?" points at a topic, not the
+  // addressee, and is never captured) — and, for the bare
+  // forms, the visitor's immediately preceding surface: the
+  // last person object's retained surface, the record of
+  // what was actually said. A your-NP return names its
+  // matter on its face, as shape (d) files any possessed
+  // noun. A bare return resolves only to a matter of the
+  // return vocabulary — the facts-of-a-person this family
+  // trades in — and only when the preceding surface speaks
+  // in the first person (the visitor stating THEIR fact: a
+  // possessive phrase, a born statement, a have-possession);
+  // a matter word inside a statement about something else is
+  // a topic in play, not a counterpart being asked after.
+  // Run 2 met the shape with a decline about the preceding
+  // statement's subject ("I have nothing on rico in my
+  // notes") — the matter was in the exchange the whole time.
+  if (!selfFactMatter && !selfFactName && !parsed.meaning.nodes.some((n) => n.role === "verb")) {
+    const ret = /^\s*(?:and\s+|so\s+)?what about (yours|you|your\s+([a-z][a-z\s]*?))\s*[?.!]?\s*$/i.exec(surface);
+    if (ret) {
+      if (ret[2]) {
+        const np = ret[2].trim().replace(/\s+/g, " ");
+        const hit = RETURN_MATTERS.find((r) => r.pattern.test(np));
+        if (np === "name") selfFactName = true;
+        else selfFactMatter = hit ? hit.matter : np;
+      } else {
+        const prior = [...session.objects].reverse().find((o) => o.producer === "person" && o.surface);
+        const priorSurface = prior?.surface?.toLowerCase() ?? "";
+        if (/\b(my|i|i'm|i've|me)\b/.test(priorSurface)) {
+          const hit = RETURN_MATTERS.find((r) => r.pattern.test(priorSurface));
+          if (hit?.matter === "name") selfFactName = true;
+          else if (hit) selfFactMatter = hit.matter;
+        }
+      }
+    }
+  }
   const isSelfFactQuery = Boolean(selfFactMatter) || selfFactName;
 
   // The visitor's own clarification request (conversation-
@@ -438,9 +599,142 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
       ),
   );
 
-  const kind: SemanticObject["act"]["kind"] = parsed.discourseAct
-    ? parsed.discourseAct
-    : isGreeting || isDaypartGreeting || isWellbeingQuery
+  // The offer of help (S2, the S programme, 2026-11-19):
+  // "Can I help you?" is a social act in question dress —
+  // the visitor offers the system a service. The graph draws
+  // it plainly when the modal heads the clause (root 'help',
+  // modal 'can'/'may', the visitor as agent, the system as
+  // patient); the how-prefixed form ("How can I help you?")
+  // draws its agent as 'how' and loses the shape, so the
+  // token record carries that variant, read by position as
+  // the C3 shapes read it. Run 2 routed all three of its
+  // specimens to the question path's question-type decline.
+  const isOfferHelp = Boolean(
+    (interrogative &&
+      root?.role === "verb" &&
+      root.lemma.toLowerCase() === "help" &&
+      (root.states?.aux === "can" || root.states?.modal === "can" || root.states?.aux === "may" || root.states?.modal === "may") &&
+      parsed.meaning.edges.some(
+        (e) =>
+          e.from === parsed.meaning.rootId &&
+          e.relation === "agent" &&
+          parsed.meaning.nodes.some((n) => n.id === e.to && n.lemma.toLowerCase() === "i"),
+      ) &&
+      parsed.meaning.edges.some(
+        (e) =>
+          e.from === parsed.meaning.rootId &&
+          e.relation === "patient" &&
+          parsed.meaning.nodes.some((n) => n.id === e.to && n.lemma.toLowerCase() === "you"),
+      )) ||
+      (() => {
+        const i = tokens.indexOf("how");
+        return (
+          i >= 0 &&
+          (tokens[i + 1] === "can" || tokens[i + 1] === "may") &&
+          tokens[i + 2] === "i" &&
+          tokens[i + 3] === "help" &&
+          tokens[i + 4] === "you"
+        );
+      })(),
+  );
+
+  // The either/or question (S2, the S programme, 2026-11-19):
+  // a question whose answer space is presented as two named
+  // alternatives, addressed to the system. Two drawn forms:
+  // the preference form — a preference verb ('prefer',
+  // 'like') the system agents, with an 'or' node in the
+  // graph joining the alternatives ("Do you prefer milk or
+  // dark?", P-056); and the being form — a copula predication
+  // of 'you' whose predicate carries two qualifying nodes,
+  // one of them the 'or' itself and the other the first
+  // alternative ("Are you an aunt or uncle yet?", P-107).
+  // The being form's neither-answer asserts the system is
+  // neither alternative, which is false exactly when an
+  // alternative names the system's own kind — so an
+  // alternative from the kind vocabulary defeats the shape
+  // and the turn keeps its ordinary path.
+  const SYSTEM_KIND_WORDS = new Set(["system", "ai", "computer", "program", "machine", "bot", "assistant"]);
+  const choicePreference = Boolean(
+    interrogative &&
+      root?.role === "verb" &&
+      (root.lemma.toLowerCase() === "prefer" || root.lemma.toLowerCase() === "like") &&
+      parsed.meaning.edges.some(
+        (e) =>
+          e.from === parsed.meaning.rootId &&
+          e.relation === "agent" &&
+          parsed.meaning.nodes.some((n) => n.id === e.to && n.lemma.toLowerCase() === "you"),
+      ) &&
+      parsed.meaning.nodes.some((n) => n.lemma.toLowerCase() === "or"),
+  );
+  let choiceAlternatives: [string, string] | undefined;
+  if (
+    interrogative &&
+    root?.states?.copulaTense &&
+    parsed.meaning.edges.some(
+      (e) =>
+        e.to === parsed.meaning.rootId &&
+        e.relation === "predicated-as" &&
+        parsed.meaning.nodes.some((n) => n.id === e.from && n.lemma.toLowerCase() === "you"),
+    )
+  ) {
+    const quals = parsed.meaning.edges
+      .filter((e) => e.to === parsed.meaning.rootId && e.relation === "qualifies")
+      .map((e) => parsed.meaning.nodes.find((n) => n.id === e.from))
+      .filter((n) => n !== undefined);
+    const altNode = quals.find((n) => n.lemma.toLowerCase() !== "or");
+    const hasOr = quals.some((n) => n.lemma.toLowerCase() === "or");
+    const article = (w: string) => (/^[aeiou]/i.test(w) ? "an" : "a");
+    if (
+      altNode &&
+      hasOr &&
+      !SYSTEM_KIND_WORDS.has(altNode.lemma.toLowerCase()) &&
+      !SYSTEM_KIND_WORDS.has(root.lemma.toLowerCase())
+    ) {
+      const first = `${altNode.det ?? article(altNode.form)} ${altNode.form.toLowerCase()}`;
+      const second = `${root.det ?? article(root.form)} ${root.form.toLowerCase()}`;
+      choiceAlternatives = [first, second];
+    }
+    // The or-headed variant of the same form: for some
+    // alternative pairs the chunker heads the predicate with
+    // the 'or' itself and drops the second alternative from
+    // the graph ("Are you a cat or a dog?" — predicate 'or',
+    // 'cat' its qualifier, 'dog' nowhere). The token record
+    // holds the dropped alternative by position, as it holds
+    // the C3 shapes' dropped matter: the token after "or",
+    // with its own article when one precedes it.
+    if (!choiceAlternatives && root.lemma.toLowerCase() === "or" && altNode) {
+      const oi = tokens.indexOf("or");
+      const afterOr = oi >= 0 ? tokens[oi + 1] : undefined;
+      const secondIsDet = afterOr === "a" || afterOr === "an";
+      const secondName = secondIsDet ? tokens[oi + 2] : afterOr;
+      if (
+        secondName &&
+        !enIsFunctionWord(secondName) &&
+        !SYSTEM_KIND_WORDS.has(altNode.lemma.toLowerCase()) &&
+        !SYSTEM_KIND_WORDS.has(secondName)
+      ) {
+        const first = `${altNode.det ?? root.det ?? article(altNode.form)} ${altNode.form.toLowerCase()}`;
+        const second = `${secondIsDet ? afterOr : article(secondName)} ${secondName}`;
+        choiceAlternatives = [first, second];
+      }
+    }
+  }
+  const choiceQuery: "preference" | "being" | undefined = choicePreference
+    ? "preference"
+    : choiceAlternatives
+      ? "being"
+      : undefined;
+
+  // The parser's discourse act stands unless the assessment's
+  // own self-fact recognition (shape (h), the elliptical
+  // return) has read the utterance: the return's graph is a
+  // lone topic node, which the parser names a topic proposal,
+  // but the assessment has resolved its matter from the
+  // exchange, and that reading is the act it is.
+  const kind: SemanticObject["act"]["kind"] =
+    parsed.discourseAct && !(isSelfFactQuery && parsed.discourseAct === "topic-proposal")
+      ? parsed.discourseAct
+      : isGreeting || isDaypartGreeting || isWellbeingQuery
       ? "greeting"
       : isLeaveTaking || isSeeYou
         ? "leave-taking"
@@ -537,6 +831,8 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         : {}),
       ...(isWellbeingQuery ? { wellbeing: true } : {}),
       ...(isMeanQuery ? { meanQuery: true } : {}),
+      ...(isOfferHelp ? { offerHelp: true } : {}),
+      ...(choiceQuery ? { choiceQuery, ...(choiceAlternatives ? { choiceAlternatives } : {}) } : {}),
     },
     content: { meaning: parsed.meaning, connective: parsed.connective, holes, grounding },
     aspects,

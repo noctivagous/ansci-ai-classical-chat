@@ -397,6 +397,113 @@ synthetic-returner gates.
   in their natural fused forms, not only their exact
   ones — and its recognition layer still open. The item
   stands, with this run as its second record.
+  *Run 3 record (2026-11-19, on the owner's commission; full
+  report and per-probe results held outside the repo at
+  `~/workspace/ansci-probe-run3-output/`):* the set was run
+  once against `88472eb` — the tip of
+  `track/recognition-programme`, the R, E and S programmes
+  stacked — unmodified, in its own worktree, the seal
+  verified before running (sha256 `d77c072f…6a1`,
+  unchanged). Protocol identical to runs 1 and 2. Baseline
+  gates on the tested tree: suite 937 pass / 0 fail / 3
+  skipped; demo 29/29; holdout clean; sense A 11/11 · B
+  5/6; `ai:check` OK. 128 probes, 385 turns, 0 machinery
+  errors. **Verdicts: 25 pass (20%), 64 partial (50%), 39
+  fail (30%)** — against run 2's 18 / 64 / 46 and the
+  R-tip retrospective's 20 / 63 / 45 (per source:
+  DailyDialog 35 → 9/20/6; EmpatheticDialogues 32 →
+  2/12/18; Persona-Chat 28 → 10/11/7; BlendedSkillTalk 18
+  → 4/9/5; Wizard of Wikipedia 15 → 0/12/3). **Regressions:
+  none** — ten probes improved on run 2, eight on the
+  R-tip run, none worsened, and every earlier pass held.
+  Read against the bar (pass/partial/fail, run 2 beside):
+  (1) opens/closes 5/9/1 of 15 (was 4/7/4); (2)
+  self-answers 6/2/0 of 8 (was 4/4/0 — now the strongest
+  item: S1's leisure, family, elliptical-return and
+  have-phrasing answers all fired in the wild); (3) thanks
+  6/4/0 of 10 (was 5/4/1); (4) attribution and
+  acknowledgement 5/25/25 of 55 (was 5/24/26); (5)
+  testimony/grounding 0/15/5 of 20 (unchanged — still no
+  passes in four runs; its notes demand answers grounded
+  in what the exchange established, which no slice yet
+  built had produced in a form the set can see); (6)
+  clarification 0/8/3 of 11 (unchanged); (7) decline form:
+  the bar's population is unchanged and its evidencing
+  probes fail on their other turns, not on the final's
+  form; (8) false premise 0/2/0 of 2 (unchanged — and see
+  the stance check below); (9) interlocutor's picture
+  4/11/8 of 23 (unchanged); (10) turn-taking 10/24/15 of
+  49 (was 7/23/19). The two negatives held again across
+  all 385 turns, counted explicitly: **zero confabulation
+  and zero misattribution**. The run's most serious
+  near-case is named in the report: the first-person echo
+  — P-068's "Ok. My major is science." and P-103's "Ok.
+  Mine is green.", the visitor's facts rendered in the
+  system's first person; counted as person-rendering
+  garbles under the standing standard, where a stricter
+  standard would count P-068 as one misattribution (the X
+  programme's person discipline, below, is built against
+  exactly this shape). The specific checks the programmes
+  named: **P-030 is recovered end to end** (T1 "Ok.
+  Noted.", T2 "Ok.", T3 "Ok.") — the R-tip regression is
+  repaired, but the name is held without ever being
+  referred back to, so the probe stands at partial: the
+  regression repaired, the recognition not yet earned,
+  and that gap is the X programme's named target. **The
+  absence stance (S3) fired nowhere** — no probe asserts
+  a checkable claim about a correspondence-order subject
+  in the unsupported middle, and the husky probe ends
+  "Ok.", partial exactly as S predicted and as Part I's
+  own scope requires; there was also no stance
+  over-firing anywhere. Like R1 before it, S3 built a
+  behaviour this instrument cannot see; if the stance is
+  ever to be measured, it needs a targeted instrument of
+  its own. The run-2 spurious-clarification family is
+  gone (every offender at Zipf ≥ 3.0 passes unclarified;
+  token-clarification finals 2 → 0), but the class is not
+  empty: one new token firing above the bar ("'em", Zipf
+  4.57, P-125) and one spurious *sense* clarification
+  (Blue, P-122) stand as located remainders. S2's
+  either/or form did not fire on its named specimen
+  (P-056 still draws the question-type decline); its
+  offer-of-help form did (P-065, P-066). Failure shapes:
+  rephrase finals 27 → 14, of which 11 fall in the
+  `_comma_` artifact family and only 3 exist outside it —
+  E2's audit expectation borne out in shape; bare-"Ok."
+  finals 21 (up from the R-tip run's 17, honestly: several
+  garbled-receipt and decline finals became plain acks — a
+  plainer failure, not a worse one); ack+receipt finals
+  46; ack piles 0; decline finals 17; greeting-receipt
+  turns 30. Two new shapes are S5's, both named in the
+  report: **steering tails inside composed replies** —
+  R3's gating holds on standalone receipts, but
+  compositions appended the venting tail after receipts
+  and even before a thanks receipt, twice in one reply in
+  two probes (steering finals 2 → 4 against the R-tip
+  run); the X programme's composition discipline (X3,
+  below) is built against this — and **echoes over
+  particle/clitic themes** ("You donned the t.", P-081,
+  P-091; "You won the be to t.", P-083; "You are one.",
+  P-035), against which X1's admission vetoes are built.
+  EmpatheticDialogues did not move at all against run 2
+  (2/12/18): its notes demand recognition of emotional
+  content across turns. *Limits, as the report states
+  them:* scoring was in-loop judgment under run 1's
+  rubric, 35 verdicts carried from the R-tip scoring on
+  identical behaviour rather than re-judged — nobody
+  independent scored this run; partner turns were not
+  fed; bar 9's first-contact/returning part is
+  unevidenced. *Judgment on striking:* these numbers do
+  not strike the Social Unit item either. What run 3
+  shows is the R+E+S stack's gains consolidated with no
+  regressions, bar 2 substantially met, and the bar's
+  recognition layer — bars 4, 5 and 9's positive halves —
+  still open in exactly the form the owner commissioned
+  the X programme against ("we want the leap"): receipts
+  and answers that draw on the whole conversation record,
+  not the current segment. The item stands, with this run
+  as its third record; run 4, against the X tip, is the
+  run that judges it.
 - **Found ahead of the checklist — gaps of record (accepted
   2026-11-18).** 18 of the sealed probes test things this
   section did not name. They cluster where conversation meets
@@ -444,6 +551,37 @@ synthetic-returner gates.
     open is the item's general form as stated above: a
     checkability discipline over any reply's use of provided
     knowledge, beyond these record sources.
+    *Status (2026-11-19, X2 of the X programme, in the
+    worktree, unpushed):* **the record's answers now read
+    the record as it accumulated, not only its standing
+    surface.** (a) *Feeling history:* "How did I feel?" and
+    the past-tense "Was I worried?" answer from the feeling
+    chain — superseded links read back from the
+    supersession record, standing links from the states,
+    earlier links predicated in the past and the last in
+    the present — where the R1 occupant answer gave only
+    the standing feeling; present-tense feeling questions
+    keep the R1/R7.5 answers. (b) *Mention checks:* "Did I
+    mention X?" / "Did I tell you about X?" answer yes or
+    no from the record as it stood before the turn,
+    counting only statement turns' records — a question's
+    own mention of X is not a telling of X. Both are
+    record answers in R1's discipline: attributed as the
+    record's, never the graph's, and absence in the record
+    declines honestly. (c) *Accumulated tellings — not
+    built, the remainder located:* "What did I tell you
+    about the soup?" cannot be answered, because the
+    wh- shape's parse drops the about-phrase at the
+    sentence layer (the S5 status above records the same
+    drop from the merging side), so the asked lemma never
+    reaches any answerer. The repair belongs to the parse
+    layer, not to an answerer built to guess its argument.
+    What remains open is unchanged in kind: the item's
+    general form — a checkability discipline over any
+    reply's use of provided knowledge, beyond the record
+    sources now built — and bar 5's verdict is run 4's to
+    give (run 3 left it at 0/15/5, zero passes in four
+    runs; any pass at all is signal).
   - *Clarification behaviour.* The decline discipline locates a
     gap and stops; nothing in the conversation layer asks the
     interlocutor what was meant instead of guessing or stopping
@@ -528,6 +666,45 @@ synthetic-returner gates.
     re-founding them is the derivation layer's own
     programme. *Status:* **closed** on the reopened point;
     the stance machinery and C7's extension stand.
+  - *The absence outcome (2026-11-19, S3 of the S
+    programme, in the worktree, unpushed):* the stance
+    family had a second hole the two runs measured without
+    naming as this item's: a checkable claim the graph does
+    not support drew neither compliance nor endorsement —
+    and no stance (bar 8, 0/2/0 in both runs; the husky
+    claim is unsupported, not contradicted). The owner's
+    ruling is recorded as **Part I of the repair
+    programme**: the degree has three outcomes, and where
+    an asserted predication is checkable — its quality
+    classified on an aspect the graph speaks to, and its
+    subject a term of the graph's correspondence order
+    (carrying an ELEMENT_OF or POLARITY_OF assignment of
+    its own: a season, a time, an element) — and the graph
+    neither supports it (premiseSupport in coherence.ts,
+    over the degree's own edge family, the axes rule
+    included) nor contradicts it, the reply states the
+    absence, located on the claim: "I don't have {subject}
+    as {quality} in what I know." The consequences differ
+    from contradiction's in every part: the asserted state
+    stands in the record as told, no disagreement is
+    recorded, no stance-repair pending opens, and the
+    stance is stated at the claim's first telling only.
+    The subject leg is the scope's centre (Part I.2): a
+    classified thing — the soup, the garden, the tea of
+    the conversation's ordinary business — only receives
+    an assignment, and predications about it are tellings
+    that keep the ordinary path; the axes repair's soup
+    case stands as the repair left it (absence of degree,
+    recorded as told, no stance), and the build's first
+    scope — any graph node as subject — was corrected on
+    exactly this evidence after it fired across the
+    corpus's own telling fixtures. *Residue, per I.5:* the
+    husky claim's own surface
+    (a causal claim in explanation dress, its parse filing
+    no predication, its subject and quality outside the
+    graph's vocabulary) remains a partial-grade shape; what
+    closed is the degree's outcome for asserted
+    predications the system can price.
   - *Also found ahead, not drafted:* relevance / maintaining
     context (5 probes), informativeness (5), error recovery (2),
     question-asking balance (2), recognising the interlocutor's
@@ -595,6 +772,34 @@ synthetic-returner gates.
   asks after a role the record genuinely lacks — its
   wrongness is the parse's dropped object, the parser
   programme's to repair, not the verbalisation's.
+  *Status (2026-11-19, X3 of the X programme, in the
+  worktree, unpushed):* **the scan's grounds now include
+  recognition, and its composition discipline is
+  completed.** (i) Run 3 found R3's gating holding on
+  standalone receipts but steering tails still appended
+  inside composed replies — after receipts, before a
+  thanks receipt, twice in one reply. The discipline now
+  binds the composition as a whole: a boundary anywhere
+  in a composed reply stands every steering segment down,
+  at most one steering move stands per composed reply,
+  and a stood-down segment keeps its own content (the
+  venting echo, the generating predication, carried on
+  `trace.steeringBaseReply`) losing only the move. Three
+  R3 pins re-pinned to the stand-down form, reasons in
+  place. (ii) Two recognition grounds stand in the scan,
+  ranked after the priced and gap shapes: *standing-
+  feeling* — the visitor's latest standing feeling filed
+  by E1's authorities but unclassified ('guilty' and its
+  kin, which the priced shape cannot price), predicated
+  from the record, unpriced; and *topic-return* — an
+  established topic's standing parsed state, untouched
+  since its turn, predicated from the record. The grounds
+  are earlier material only: statement turns only (a
+  question's presupposition grounds nothing), negation
+  respected (X0's discipline at the scan), pronouns and
+  verb-holders barred as qualities and topics. A steering
+  move that merely repeats the current segment's content
+  is not a recognition ground and does not fire as one.
 - **The acknowledgement echo assumes the visitor as agent.**
   (Located by R4 of the recognition programme, 2026-11-19;
   open.) The statement branches' acknowledgement family
@@ -610,6 +815,231 @@ synthetic-returner gates.
   gap question are formed only over events whose recorded
   agent is the visitor, with their fills under the same
   soundness rule, or render the agent they were given.
+  *Status (2026-11-19, S0 of the S programme, in the
+  worktree, unpushed):* **closed.** One admission now binds
+  every rendering of a recorded event or state in the
+  acknowledgement family — the echo, its gap question, the
+  venting steering's echo, the steering temporal clause,
+  the recognition receipts, and the R1 record answer's
+  clause (soundEventClause / soundBareFill /
+  correctedAdoption in turn.ts): the subject is the record's
+  agent in the record's grain ("You" for the visitor, "The
+  X" for a named third party), never an assumed visitor;
+  every determiner fill must be a thing-word (R4's
+  authorities: lexicon noun, classified concept, recorded
+  entity), every bare fill a referring word or a noun; the
+  gap questions premise the visitor as the event's agent
+  and are asked only over the visitor's own events; and no
+  rendering speaks a lemma the token resolver's matcher
+  substituted for a different written word (a variant or a
+  segmentation, being the person's own word in attested
+  dress, is not barred). A rendering that fails admission
+  stands down whole — the plain acknowledgement speaks
+  instead. The specimens: P-097's turn is "Ok. Noted." (no
+  echo, no gap question over the turtle's event); P-037's
+  cooking turn is "Ok." (the venting steering stands down
+  over agent 'hobby' with theme 'it' and location 'using');
+  P-079's sorry steering takes its plain forms ("You were
+  sorry. What did you say or do?" — the temporal clause's
+  recorded patient failed admission); and **P-030
+  recovers**: its final turn is "Ok." — "You named the
+  her." stands down on the pronoun patient, and "Her name
+  is movie." stands down because 'movie' is the matcher's
+  substitution for the written name 'Roxie'. The state the
+  parse recorded stands in the record untouched — the
+  admission binds renderings, not recording; a rendering of
+  a state recorded in an EARLIER turn cannot test its
+  adoption, the state record carrying no surface provenance
+  — that residue is recorded here, not papered over.
+  Sound controls stand byte-identical (the venting "You
+  put the salt in the soup. Now that it's out…", the
+  temporal "…when you heard the news.", the receipt "Ok.
+  The mary bought the flower.", the gap question "You gave.
+  What did you give him?").
+- **Self-questions beyond C3's drawn family, and the
+  occupation shape's over-firing on leisure.** (Located by
+  probe run 2, 2026-11-18; the run's record above names the
+  shapes.) Three drawn-family remainders declined or were
+  met by the wrong machinery: birthplace asked as the
+  elliptical return "What about yours?" (P-047), family
+  size ("Do you come from a big family?", P-097), and the
+  have-phrasing of the pets question ("What pets do you
+  have?", P-111) — and the occupation shape fired on a
+  leisure question ("What do you do for fun?" answered "I
+  don't have a job.", P-060). *Closes when:* the family
+  grows by general shapes — the doing's sphere
+  discriminates the matter, the questioned noun the graph
+  drops is filed from the surface's own record, and the
+  elliptical return is read as the self-query it is when
+  the system's corresponding fact is a limits fact.
+  *Status (2026-11-19, S1 of the S programme, in the
+  worktree, unpushed):* **closed for the named shapes.**
+  Four additions, all in assess.ts's C3 family except where
+  noted: (i) the do-shape's matter is discriminated by the
+  doing's sphere — a purpose adjunct naming leisure ("for
+  fun", read from the token record, the graph dropping the
+  adjunct whole) files the matter as hobbies, and the
+  answer is the limits denial in its own terms ("I don't
+  have any hobbies.", the same sentence the have-shape
+  gives "Do you have any fun hobbies?"); the occupation
+  answers stand byte-identical. (ii) The wh-NP have-shape:
+  when the theme the having ranges over is the question
+  word itself, the possessed noun rides in the question
+  word's own phrase and the graph drops it — the token
+  after "what" files the matter when it is a content word
+  ("What pets do you have?" → "I don't have any pets.";
+  "What do you have?" leaves the auxiliary there and is
+  not captured). (iii) The family-origin shape: a 'family'
+  node standing as the source (a location edge with the
+  'from' preposition) of a verb the addressee agents files
+  the family ("I don't have a family."). (iv) Shape (h),
+  the elliptical return: the whole utterance is "what
+  about" + yours/you/your-NP and nothing else (a topic
+  return — "What about the strike?" — is never captured);
+  a your-NP return names its matter on its face; a bare
+  return resolves its matter from the visitor's immediately
+  preceding surface (the last person object's retained
+  surface) when that surface speaks in the first person
+  and puts a matter of the family's vocabulary in play —
+  a possessive phrase, a born statement, a have-possession
+  (RETURN_MATTERS in assess.ts). The name routes to the
+  identity presentation, the Identity table's fact, not a
+  denial. Because the parser names the return's lone topic
+  node a topic proposal, the assessment's self-fact
+  recognition now outranks that one discourse act; and the
+  composition gate (segmentActKind in turn.ts) classifies
+  a return-shaped segment as a self-query, the matter being
+  resolvable only once the preceding segments are recorded.
+  P-047's turn now answers "Ok. Noted. I don't have a
+  birthplace." *Residues, recorded not papered over:* a
+  bare return whose matter sits in a preceding segment the
+  sentence layer could not take up at all (P-111's "i've a
+  pet", skipped by the composition) still cannot resolve —
+  the matter never entered the record; and run 2's second
+  C3 over-firing (a fused greeting + health enquiry
+  answered with the full self-introduction) stands
+  untouched — it is an initiative-gating question, not a
+  shape question, and S1 does not reach it.
+- **Social forms the C-stack did not draw: the offer of
+  help, the either/or question, the remaining how-are-you
+  phrasings.** (Located by probe run 2, 2026-11-18; the
+  run's record above names the shape: question-type
+  declines persisting behind received greetings, 43 turns
+  across 36 probes.) The fused turn's greeting segment was
+  received and its content segment declined, because three
+  forms had no drawing: "Can I help you?" (P-065, P-066,
+  P-070) routed to the question path as a question-type
+  mismatch; either/or questions ("Do you prefer milk or
+  dark?", P-056; "Are you an aunt or uncle yet?", P-107)
+  read as property questions about the alternatives; and
+  the how-are-you family beyond its first drawing — the
+  doing forms with time adjuncts ("how are you doing
+  tonight?"), the comma-less fused greeting heads ("good
+  evening how are you?", "hey there how are you today?"),
+  and the there-greeting as a segment. *Closes when:* each
+  form is drawn on the shape it names and answered as the
+  act it is, under the C-stack's narrowness discipline.
+  *Status (2026-11-19, S2 of the S programme, in the
+  worktree, unpushed):* **closed for the named forms.**
+  (i) The offer of help is recognised in assess.ts (the
+  graph shape — root 'help' under 'can'/'may', the visitor
+  as agent, the system as patient — and the how-prefixed
+  variant read from the token record, its graph drawing
+  the agent as 'how'), flagged on the act (act.offerHelp);
+  the Social Unit's reading records it as the act it is
+  and raises an offer-answer demand, and the Planner
+  answers in kind with a clean decline — "No, thank you."
+  — stating no need and inventing none, and not seizing
+  the helper's role the visitor is standing in. Fused
+  forms compose ("Good evening. No, thank you.").
+  (ii) The either/or is drawn as a question form with two
+  addressed sub-forms, answered from the limits facts: the
+  preference form (a 'prefer'/'like' root the system
+  agents, an 'or' node joining the alternatives) answers
+  "I don't have a preference."; the being form (a copula
+  predication of 'you' whose predicate carries the 'or'
+  and the first alternative as qualifiers) answers in the
+  question's own form — "I am not an aunt or an uncle." —
+  with an or-headed variant recovering the dropped second
+  alternative from the token record ("I am not a cat or a
+  dog."). An alternative naming the system's own kind
+  (system/ai/computer/program/machine/bot/assistant)
+  defeats the being form, so the neither-answer never
+  denies a held self-fact; a volition form ("Do you want
+  tea or coffee?") and an either/or not addressed to the
+  system are not captured. (iii) The wellbeing family
+  widens by its own material: 'tonight' joins the phatic
+  set beside 'today', and the patient/theme guard no
+  longer counts a time-word target as a manner question's
+  object (the doing forms graph the adjunct as patient);
+  splitTurnSegments peels greeting phrases with their
+  'there' ("hi there, …") and comma-less greeting heads
+  before a how-tail ("good evening how are you?"); the
+  there-greeting itself is drawn (a topic 'there'
+  qualified only by a greeting word) and mirrors as a
+  greeting; 'greetings' joins the greeting forms. The
+  specimens now answer "Hello. I am fine.", "Hey there. I
+  am fine.", "Greetings. I am fine." *Residues, recorded:*
+  a vocative inside the enquiry segment still sinks it
+  ("Hello, Mr. Black, how are you?" — the parse draws the
+  title as the predication's subject and drops the 'how';
+  P-079 keeps its decline); the adjective either/or ("Are
+  you happy or sad?" — the second alternative dropped, the
+  predication drawn otherwise) is not drawn, its honest
+  answer belonging to the feelings register's questions,
+  not this form's; and the fragment either/or ("business
+  or pleasure??", P-050) rides on partner-supplied context
+  the protocol does not feed and stays undrawn.
+- **Multi-sentence turns took the merged parse by
+  default.** (Located across both probe runs; C1/C2 built
+  the exceptions.) Segmentation existed only where a
+  social segment fused (C1) or a failure exit recovered
+  (C2); every other multi-sentence turn went to the
+  sentence layer as one utterance, and the merged parse
+  merged or silently dropped segment content — themes and
+  about-phrases a segment carried never reached the record
+  or the reply. *Closes when:* the segmented route is the
+  default for multi-sentence turns, the merged parse
+  remains only where a single graph is genuinely required
+  (the cases named), and nothing a segment carries is
+  dropped without a name.
+  *Status (2026-11-19, S5 of the S programme, in the
+  worktree, unpushed):* **closed.** The head of the turn
+  now composes every multi-segment turn
+  (composeSegmentTurns, R3's shaping as before); a
+  composition that takes nothing up still falls through to
+  the merged path, whose exits remain the second line. The
+  merged route's surviving cases are named in the code:
+  (1) a segment's own processing; (2) the
+  clarification-fallback re-entry (the system's own
+  reprocessing of one utterance on a settled reading);
+  (3) a standing clarification pending WITH candidates —
+  the fill is judged against the whole turn as delivered;
+  (4) a whole-turn gibberish judgement — the Normalcy
+  Unit's flag is read on the utterance as one object, and
+  segmenting a gibberish turn produced a per-segment
+  clarification cascade in place of the designed repair,
+  so the head route yields to the flag (read by a
+  read-only pre-assessment in the flow's own order). A
+  segment that cannot be taken up is skipped and named in
+  the trace, as C2 established; per-segment failure stays
+  located. Four pins moved with the route change, each
+  recorded in place: the C1 scope pin (its premise was the
+  scope S5 generalises), the C2 recovery's ground string
+  (the composition now happens at the head), the R3 P-086
+  pile (the first segment is now genuinely the first turn,
+  and its fuller bare form is the ack that stands), and an
+  E1 composition reply (the leading segment's
+  acknowledgement now stands at the head). *Residues,
+  recorded:* the brief's second specimen — "What did I say
+  about the soup?" losing its about-phrase — is not a
+  merging loss: the question is one sentence, and its own
+  graph drops the about-phrase at the sentence layer; S5
+  gives such a question its own parse wherever it rides in
+  a longer turn, but the drop itself is a parse-layer
+  remainder, standing. P-075's dropped 'flowers' is the
+  same species (a single-sentence need-statement whose
+  theme the graph does not carry to the gap question).
 - **Composed replies pile up bare acknowledgements.**
   (Located by probe run 2, 2026-11-18; the run's record
   above names the shape.) C2's segment composition
@@ -666,6 +1096,297 @@ synthetic-returner gates.
   a bare acknowledgement — that residue, and whether the
   receipts meet the bars' full standard, are the probe's to
   judge (run 3).
+  *Status (2026-11-19, E1 of the emotional-uptake programme,
+  in the worktree, unpushed):* **the feeling half is built.**
+  What a turn established now includes a feeling the visitor
+  stated in the first person even when its clause did not
+  parse (the feelings-first registration, next item): such a
+  feeling is receipted by the same construction — "Ok. Noted.
+  You are sad." where run 2 answered the rephrase request —
+  and an element-carrying feeling steers as a parsed one
+  does. Registered feelings are also the record the R1
+  feeling answers read, so "Am I worried?" reaches a feeling
+  however it was registered. The residue stands as R2 left
+  it: a bare entity mention with neither state nor event is
+  still a bare acknowledgement, and run 3 judges the whole.
+  *Status (2026-11-19, X1 of the X programme, in the
+  worktree, unpushed):* **receipts now draw on the whole
+  record, not the current segment.** A formed receipt
+  appends one link to earlier material the record holds:
+  an earlier EVENT sharing a content lemma with this
+  turn's event, rendered under attribution through the
+  shared admission ("Ok. You put the salt in the soup.
+  You told me the soup needed the salt." — the need told
+  at turn 2, the putting at turn 3); else an established
+  TOPIC named by the receipt's referring lemmas, re-
+  tellings excepted — the P-036 specimen: "Ok. You
+  injured the leg. We were talking about the leg.", where
+  run 3's receipt showed the event and no connection.
+  Narrow by construction, as R2 was: the link must be in
+  the record (entity/topic identity, an earlier event's
+  shared lemma) — resemblance is not a link — first
+  mentions render exactly as before, and anything the
+  admission will not speak falls back to the plain form.
+  Three disciplines came with it, each against a shape
+  run 3 named. *A name is recorded as told:* a
+  capitalised matcher-corrected surface after the first
+  token records the surface, not the guess — P-030's
+  name stands in the record as 'roxie', so its receipt
+  now renders "Ok. Her name is roxie." where S0 could
+  only stand the garbled form down (run 3's "repaired,
+  not yet recognised" is this slice's follow-through;
+  whether it earns the probe's pass is run 4's to say).
+  *Person discipline:* the record constructions render
+  the visitor's 'my'/'mine' as 'your'/'yours' — run 3's
+  most serious near-case ("Ok. My major is science.",
+  P-068; "Ok. Mine is green.", P-103) is the shape this
+  closes. *Admission vetoes:* closed function words and
+  single-character fragments are not fills (run 3's
+  particle/clitic echoes — "You donned the t.", "You won
+  the be to t.", "You are one."), and numerals are not
+  receipted qualities. Seven R/S pins re-pinned, each
+  with its reason in place; at the programme's gating,
+  three further pins (the soup receipt in the turn tests
+  and in the R0 acceptance, the C4 name pin) were
+  re-pinned to the linked and as-told forms with their
+  reasons recorded — each verified as the designed
+  behaviour against the trace, not merely accepted.
+  *Status (2026-11-19, X4 of the X programme, in the
+  worktree, unpushed):* **the Interlocutor's picture is
+  used continuously, not only at the naming turn.** The
+  self-fact readers answer from the picture as told —
+  testimony: the visitor's claims, held as theirs.
+  Occupation: "What do I do?" and its "for work" form
+  answer from the standing noun state, where the
+  missing-role decline stood. Possession: "Do I have a
+  dog?" answers yes or no from the record's have-events,
+  in the question's own theme material. Name
+  remembrance: "Do you remember my name?" answers from
+  the Interlocutor register, and the name-value question
+  is caught in the predicate answerer — "What is my
+  name?" from the register, "What is her name?" from the
+  standing name state (P-030's other half: the name is
+  now not only held and receipted, but answerable).
+  Receipts acknowledge the person: a self-state the
+  record already holds is receipted under the told-me
+  attribution ("You told me you are guilty."), and the
+  initiative scan no longer grounds on a state the
+  current turn itself re-stated — a ground must be
+  earlier material. The picture's contents bound every
+  one of these: the system asserts nothing about the
+  visitor that they did not establish. With X1, this
+  item's closes-when is met in its acknowledgement form
+  — acknowledgements name established topics, registered
+  feelings and the visitor's own told facts from the
+  record, in the reply programme's own forms — and bar
+  9's full standard, like bars 4 and 5, is run 4's to
+  judge: run 3 left it at 4/11/8, its passes all
+  self-answer probes, the system's picture of itself.
+- **A feeling registers only when its clause parses.**
+  (Located by probe run 2, 2026-11-18; the run's record above
+  names the shape — the rephrase-final remainder is the
+  multi-clause emotional core.) A feeling entered the record
+  only through a parsed predication, so a turn whose feeling
+  clause was carried by a verb ("I'm so scared…", graphed on
+  'scare'), dropped by a merged parse ("i'm so excited
+  because…", graphed on 'excite'), or sunk with its turn at
+  the token exit ("I'm so sad because i've…") registered
+  nothing — and the whole turn fell to the rephrase request
+  or the bare acknowledgement, feeling and all.
+  *Status (2026-11-19, E1 of the emotional-uptake programme,
+  in the worktree, unpushed):* **built — feelings-first
+  registration.** A segment carrying a clear first-person
+  emotion statement registers the feeling even when the
+  clause does not parse: it is the visitor's own stated
+  feeling, so testimony is safe. The scan reads clause-
+  initial first-person frames (the copula forms, the feeling
+  form, the feel forms, negated feel forms) over the turn's
+  segments and their because/but/and clauses, and files the
+  word it finds through the system's existing authorities
+  only — the classification table's emotion aspect, the
+  EDU's canonicalEmotion map, the LEDU's uncategorised
+  register. Registration runs where a feeling could
+  otherwise be lost: the parse-failure exit and the token
+  exit (the receipt replaces the rephrase), the record
+  block of a merged parse (the feeling then steers or is
+  receipted as any recorded state), and inside compositions,
+  where a feeling-carrying unparseable segment is routed
+  through the turn machinery instead of skipped. Supersession
+  is the record's own: worried stands down when happy is
+  stated. The disciplines are the standing ones: only the
+  visitor's own stated feeling (a third person's registers
+  nothing), only as stated (no inference), subject-less
+  fragments ("kinda getting worried") are not read, and a
+  copula adjective immediately followed by "not" does not
+  file ("I'm afraid not" is a formula, not a fear report).
+  *The filing rule (the owner's ruling, 2026-11-18, as
+  built):* an emotion word files under its canonical
+  category and takes the category's Suwen element — anger →
+  Wood, joy → Fire, pensiveness/worry → Earth, grief/
+  sadness → Metal, fear → Water — recorded with that
+  provenance (category filing + Suwen category fitting).
+  E1 filed the everyday words the evidence touches: angry
+  (anger), happy/glad/excited (joy), sad/gloomy/lonely
+  (grief), afraid/scared (fear). A filing may carry a
+  **degree qualifier** — the same species of qualifier as
+  Part H's rate on a cycle relation (rust: Fire controlling
+  Metal, slow): furious is anger at high degree, excited is
+  joy at high degree, gloomy is grief at low degree; the
+  Glasgow register (data/glasgow) is the degree evidence
+  where a filing carries one (furious arousal 6.43 > angry
+  5.91; excited 7.88; gloomy 2.94 < sad 3.94) — evidence
+  only: Glasgow has no categories and supplies no filing.
+  A **mixed** emotion word is not an average of categories:
+  it is named by the cycle relation between its components
+  — the owner's example is bittersweet (the Wood controls
+  the sweet, Earth; a second reading stands beside it:
+  bitter, Fire, generating the sweet). Bittersweet is a
+  design-informing example — a specimen the general
+  machinery must be able to express — not a determination:
+  neither reading is encoded as the word's entry, and no
+  mix machinery is built in E1. No new graph was needed for
+  any of this: the filings are table additions in the OKU
+  data-in-code layer (the classification table, the EDU's
+  canonical-face map), where EDU data was settled to live
+  (2026-11-16); CSKG does not deal with it (its trim holds
+  only undirected RelatedTo edges and person-attribute
+  rows — no category filing, no degree, no fittings).
+  *Awaiting the owner:* **guilty** — it names a feeling, and
+  registers (element-less, receipted from the record), but
+  no category claims it reliably: it stands between grief
+  (regret over what was done) and shame (the self as seen),
+  and a fitting, if one is made, is the owner's to give.
+  'sorry' was held on the same ground briefly — in
+  conversation the word is formula first (all seven run-2
+  occurrences are formulas) — and is filed under grief:
+  its feeling sense is sorrow, its WordNet climb reaches
+  grief's anchor and derives Metal independently, and the
+  owner's ruling names grief its natural filing; the two
+  authorities agree, and the formula uses are the social
+  layer's forms, which never reach a predication. The
+  judgement is recorded so the owner can reverse it with a
+  word. *Remainders:* subject-less and embedded feeling
+  fragments stay unread by design; what run 3 shows of the
+  feeling half of bar 4 is the probe's to judge.
+  *Addendum (2026-11-19, S4 of the S programme):* two of
+  this item's specimen turns changed route under frequency
+  attestation — the P-005 shape and the negated-feeling
+  shape sank on "i've", a word of ordinary currency, which
+  S4(a) attests; both turns now take the ordinary statement
+  path, the feelings register (negation included) exactly
+  as the receipt recorded it, and the E1 tests were
+  re-pinned to the new route with the reason in place. The
+  token-exit's feelings-first receipt stands for genuinely
+  unattested sinks. *A remainder the route change made
+  visible, recorded not built:* on the ordinary path, a
+  verb-carried NEGATED feeling steers in the unnegated
+  form — "I don't feel sad." draws "You were sad. What did
+  you say or do?", though the record holds the state
+  negated. The behaviour predates S4 (it needs no attested
+  token) and belongs to the steering family's soundness,
+  beside S0's items; widening it is a determination, not a
+  fix, and it is not S4's to make.
+  *Status (2026-11-19, X0 of the X programme, in the
+  worktree, unpushed):* **closed — the determination was
+  made and built.** Steering respects the record's
+  negation: branches (a) and (c) of the steering family
+  gate on the new state's negation, the stand-down is
+  named in `trace.steeringNote`, and the acknowledgement
+  path answers the turn — "I don't feel sad." now draws
+  "Ok. Noted." over the state standing negated, and the
+  restrainer branch stands down the same way ("I don't
+  feel worried." after a sleep telling draws "Ok.", not
+  "…and you were worried."). Branch (b) and the
+  initiative scan already excluded negated states and
+  needed no gate. One E1 pin re-pinned, its reason in
+  place. *Refinement, made at the programme's gating the
+  same day:* the gate as first built stood down EVERY
+  negated state in branches (a) and (c), and the gate run
+  caught what that cost — "I couldn't sleep." drew the
+  plain ack with no cycle path, breaking the priced
+  steering's founding specimen (the worry-sleep scenario,
+  r4-3). The stand-down's object is a rendering that
+  DROPS the negation — branch (a)'s predication and
+  branch (c)'s predicated shape both speak the state in
+  its positive form — while branch (c)'s verb-carried
+  shape renders the negation itself ("You can't
+  sleep."). The gate therefore stands down a negated
+  state only where no negation-faithful shape stands for
+  it: branch (a) keeps the gate whole, branch (c) admits
+  a negated verb-carried state, and the specimen steers
+  again with its cycle path, pinned in the X tests beside
+  the stand-down specimens. The rule the refinement
+  states: steering from a negation it renders faithfully
+  is not the misreading; steering that asserts what the
+  record denies is.
+- **The rephrase remainder, measured.** (E2 of the
+  emotional-uptake programme, 2026-11-19.) The run-2 record
+  above describes the 81 rephrase finals as "the multi-clause
+  emotional and narrative core whose every segment defeats
+  the sentence layer". Measured against run 2's raw results,
+  that description does not hold: 48 of the 81 turns have
+  every segment parsing standalone. The exits decompose as
+  ~65 token-exit (the whole parse succeeds; one unresolved
+  token with no candidates sinks the turn) and ~15 parse-exit.
+  The token sinks are mostly not words: punctuation tokens
+  ('--', a spaced '.', '?', ':)', ~20), the corpus's own
+  '_comma_' transcription artifacts (~15 — instrument noise,
+  not a system gap), digit tokens ('2007', '98%', ~12), fused
+  tokens ('a.m.when', 'chihuahua.It'), and genuine unknown
+  words and typos ('wallmart', 'girlfirned'). Segment-level
+  parse failures inside multi-clause turns number 63 segments
+  in 55 turns, and most are fragments and interjections —
+  the social layer's territory, the S programme's — not
+  narrative constructions.
+  *Status (2026-11-19, E2, in the worktree, unpushed):*
+  **the general constructions in the remainder are built.**
+  (1) *Degree adverb grading a quality* — "a very kind
+  statement" (P-019), "in a really bad spot" (P-010), "very
+  good schools" (P-105): no chunk admitted an adverb +
+  adjective pair, so the complement threw where the quality
+  resolved noun-first ('good', 'bad', 'kind') and silently
+  dropped its noun where it did not ("It is a really big
+  house" graphed as 'big' alone). The chunker now admits
+  the pair — the quality after a degree adverb is read as
+  an adjective on position's evidence (a noun adjunct
+  cannot be graded), the adverb attaches to the quality's
+  node by the modulates closure — and the copular branch
+  reads a bare predicate quality the same way ("The spot
+  was really bad"). (2) *Object-head relative clauses* —
+  "I have a part-time job that I love" (P-024): the R5
+  relative branch, built for the subject-head shape,
+  fired on any relative whose verb was verb-kind, rooted
+  it on the clause-initial chunk, and threw on the absent
+  copula; and the have-reclassification scan counted the
+  relative's verb as the main clause's participle, keeping
+  'have' an auxiliary with no main verb to serve. The
+  branch is now gated to its shape (the clause-initial
+  chunk's head is the item 'that' follows) and the scan
+  stops at a relative 'that': the turn parses on the
+  possession, the relative's content riding as the
+  ordinary path's attachments — dropped as a clause, as
+  it already was for other verbs' object relatives.
+  (3) *Punctuation at the token exit*: a token with no
+  letters or digits is not a word and cannot be the
+  located gap the exit names — in a single-sentence turn,
+  whose only sink it would be, it no longer sinks the
+  turn (P-024's turn is taken up whole); a multi-sentence
+  turn keeps the sink, the exit being the segment
+  recovery's trigger and the recovery the better
+  instrument there (the P-086 shape). *Remainders, located
+  and not built:* digit tokens still sink their turns
+  (P-030's "2007" — a number is content; whether a digit
+  string's form attests it, as a capital attests a name,
+  is a token-layer determination this programme does not
+  hold); the subject-head relative with a verbal main
+  clause ("The man that I saw has left") still throws —
+  the R5 branch's copula assumption, a parser programme's
+  shape, not this one's; the relative clause's content
+  still does not survive as a clause in object position
+  (the merged-parse content drop, already the S
+  programme's inheritance); and the '_comma_' artifacts
+  stand as measured — the instrument's noise, which no
+  system mechanism should be built to absorb.
 - **The situated self is mostly unbuilt.** On the system map:
   Awareness 35% (self 15%, identity and capabilities 0%),
   Session & Situation's open-unknowns 50%, Coherence as a whole 0%
@@ -1111,6 +1832,59 @@ visible in the record.
   attested pairs; confirmed resolutions are not yet banked back.
 - **Variant Graph at 45%.** 4,200 edges populated and consulted;
   what remains is the banking loop above.
+- **Attestation breadth: what counts as a word the system
+  may not doubt.** (Located by the sealed probe runs; the
+  conversation-facing record is §2's.) The token
+  clarification's attestation (C4) read two sources — the
+  hand lexicon and the resolver's own dictionary — and
+  correct words neither files drew spurious clarifications
+  across both runs (run 1: 12 finals; run 2's survivors:
+  "Canning", "socialize", "roam", "lol", and the finals
+  "replicate", "Dang"). Two determinations, ruled
+  2026-11-19 (S4 of the S programme, in the worktree,
+  unpushed):
+  *Determination 1 — frequency attestation.* The repo's
+  wordfreq table (`data/wordfreq`, wordfreq 3.1.1, CC
+  BY-SA) is an attestation source for the clarification
+  trigger: a word whose Zipf frequency reaches **3.0**
+  (one occurrence per million words — ordinary currency)
+  attests itself, though no lexicon files it
+  (FREQUENCY_ATTESTATION_ZIPF in token-resolve.ts, read by
+  isAttestedWord beside the existing sources). The line is
+  drawn from the runs' own evidence: every surviving
+  spurious specimen stands at or above it (canning 3.31,
+  socialize 3.16, roam 3.46, lol 5.05, replicate 3.55,
+  dang 3.65), and the corpus's genuine misspellings stand
+  below it or outside the table (cimbing, wethr
+  unattested; the keyboard row qwerty at 2.5). Below the
+  line nothing changes — a rare or unattested token the
+  resolver cannot settle triggers exactly as before, and
+  where the table cannot load the older sources attest
+  alone. *Residue, recorded:* the determination binds the
+  clarification trigger (the turn layer's exit); the
+  resolver still corrects a frequent-but-unfiled word
+  inside the parse itself ("socialize" → "socialist"),
+  and where the corrected graph fails, a short sentence
+  sinks at the parse exit rather than the token exit —
+  attestation at the resolver's own step is a further
+  determination, not this one. The probe's own socialize
+  turn, carried by its segments, is taken up whole.
+  *Determination 2 — digit attestation.* A token carrying
+  digits and no letters attests by its form, as a capital
+  attests a name (the digit pass in turn.ts's token exit,
+  beside C4's proper-name pass): a digit string is not a
+  word a lexicon could file or fail to file — "2007" is a
+  year, complete as written. This reverses E2's standing
+  treatment (a digit token sank the turn, its gap located)
+  on the attestation question only: the token no longer
+  triggers a clarification, while the parse's own handling
+  of the number is untouched, and a letter-digit mix keeps
+  the ordinary discipline. The specimen is P-030's first
+  turn ("…died on Christmas of 2007."), the rephrase
+  bucket's largest single located remainder after
+  punctuation: the turn is now taken up whole, and P-030's
+  conversation stands recovered end to end (with S0's
+  receipt soundness on its final turn).
 
 ## 7. Evidence and evaluation
 

@@ -79,7 +79,16 @@ test("soup scenario: pronoun 'it' resolves to the soup by recency", () => {
   // shows the recorded event, the very thing the old echo
   // showed, without the steering question. The pronoun
   // resolution this test pins is unchanged.
-  assert.equal(t3.reply, "Ok. You put the salt in the soup.");
+  // RE-PIN (the X programme, X1, 2026-11-19): the receipt now
+  // appends the one link the record holds — turn 2's telling
+  // ("It needs more salt.", 'it' resolved to the soup by the
+  // resolution pinned above) recorded a NEED event over the
+  // salt, a different event from this turn's PUT sharing the
+  // content lemma 'salt', so it is not the re-telling X1
+  // excepts: the link renders that earlier event under
+  // attribution ("You told me the soup needed the salt.").
+  // The pronoun resolution this test pins is unchanged.
+  assert.equal(t3.reply, "Ok. You put the salt in the soup. You told me the soup needed the salt.");
   const put = s.events[s.events.length - 1];
   assert.equal(put.verb, "put");
   assert.equal(put.theme, "salt");

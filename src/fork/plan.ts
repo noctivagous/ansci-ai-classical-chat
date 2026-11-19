@@ -116,6 +116,49 @@ export interface PredicationSubject {
 }
 
 /**
+ * Person discipline for record renderings (X1, the X
+ * programme, 2026-11-19; probe run 3's first-person echo):
+ * the person's own subject material speaks in THEIR first
+ * person — "my major", "mine" — because in their sentence
+ * those words name the visitor's own things. A rendering
+ * the SYSTEM speaks about the visitor must shift the
+ * possessive to the second person: "Your major is
+ * science.", "Yours is green." Unshifted, the rendering
+ * speaks the visitor's fact as the system's own claim
+ * ("Ok. My major is science." — P-068; "Ok. Mine is
+ * green." — P-103), which is a misattribution in the
+ * system's own mouth. The shift applies where the person's
+ * material is rendered back to them: the record predication
+ * and the correction constructions. Third-person material
+ * ("her name") is untouched — it names a third party in
+ * both mouths.
+ */
+const FIRST_TO_SECOND_POSSESSIVE: Record<string, string> = {
+  my: "your",
+  mine: "yours",
+  our: "your",
+  ours: "yours",
+};
+
+function shiftPossessive(word: string): string | undefined {
+  const hit = FIRST_TO_SECOND_POSSESSIVE[word.toLowerCase()];
+  if (!hit) return undefined;
+  return /^[A-Z]/.test(word) ? hit.charAt(0).toUpperCase() + hit.slice(1) : hit;
+}
+
+function secondPersonSubject(subject: PredicationSubject): PredicationSubject {
+  const det = subject.det ? shiftPossessive(subject.det) : undefined;
+  const lemma = shiftPossessive(subject.lemma);
+  const form = shiftPossessive(subject.form);
+  return {
+    ...subject,
+    ...(det ? { det } : {}),
+    ...(lemma ? { lemma } : {}),
+    ...(form ? { form } : {}),
+  };
+}
+
+/**
  * The cohesion mapping (R5, §8.7 S3), as data: the relation a
  * reply graph stands in to the session record, and the 'links'
  * marker that relation earns. A connective is realised only
@@ -773,12 +816,13 @@ export interface PlanCorrectionInput {
  * scoping is recorded in T-R5 §7).
  */
 export function planCorrection(input: PlanCorrectionInput): { sentence: string; graph: ParsedSentence } {
+  const subjectMaterial = secondPersonSubject(input.subject);
   const subject: MeaningNode = {
     id: "reply-subject",
-    lemma: input.subject.lemma,
-    form: input.subject.form,
+    lemma: subjectMaterial.lemma,
+    form: subjectMaterial.form,
     syntacticElement: "Earth",
-    ...(input.subject.det ? { det: input.subject.det } : {}),
+    ...(subjectMaterial.det ? { det: subjectMaterial.det } : {}),
   };
   const predication = (id: string, lemma: string, negated: boolean): MeaningNode => {
     const entry = EN_LEXICON[lemma];
@@ -843,6 +887,12 @@ export interface PlanRecordPredicationInput {
   stateLemma: string;
   /** The standing state's negated flag, as recorded. */
   negated?: boolean;
+  /** The copula's tense (X2, the X programme, 2026-11-19):
+   *  a record answer about an EARLIER state predicates it
+   *  in the past ("You were worried."), as planCorrection's
+   *  construction already allowed; absent, the present —
+   *  the standing state's tense — stands. */
+  copulaTense?: "past" | "present";
   /** R5 (§8.7 S3): the cohesion marker this predication has
    *  EARNED against the session record (COHESION_MARKERS),
    *  detected by the caller — a 'links' edge from the subject
@@ -868,12 +918,13 @@ export interface PlanRecordPredicationInput {
  * this slice closes spoke "may" from exactly that price).
  */
 export function planRecordPredication(input: PlanRecordPredicationInput): { sentence: string; graph: ParsedSentence } {
+  const subjectMaterial = secondPersonSubject(input.subject);
   const subject: MeaningNode = {
     id: "reply-subject",
-    lemma: input.subject.lemma,
-    form: input.subject.form,
+    lemma: subjectMaterial.lemma,
+    form: subjectMaterial.form,
     syntacticElement: "Earth",
-    ...(input.subject.det ? { det: input.subject.det } : {}),
+    ...(subjectMaterial.det ? { det: subjectMaterial.det } : {}),
   };
   const entry = EN_LEXICON[input.stateLemma];
   const quality: MeaningNode = {
@@ -884,7 +935,7 @@ export function planRecordPredication(input: PlanRecordPredicationInput): { sent
     role: "predicate",
     ...(entry && "semanticElement" in entry && entry.semanticElement ? { semanticElement: entry.semanticElement } : {}),
     states: {
-      copulaTense: "present",
+      copulaTense: input.copulaTense ?? "present",
       mood: "indicative",
       subjectPerson: input.subject.person ?? "3sg",
       ...(input.negated ? { negated: true } : {}),

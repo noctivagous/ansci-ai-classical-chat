@@ -96,7 +96,18 @@ test("C1: ordinary how-questions are not captured by the wellbeing recognition",
 test("C1: a multi-sentence statement turn with no social segment takes the ordinary path", () => {
   const s = newSession();
   const [r] = run(s, ["The winter is cold. The garden is cold."]);
-  assert.equal(r.trace.segmented, undefined);
+  // Re-pinned 2026-11-19 (S5 of the S programme): the C1
+  // scope this test pinned — segmentation only for turns
+  // carrying a social segment — is the scope S5
+  // deliberately generalises. Segmentation is now the
+  // default route for every multi-segment turn, social or
+  // not, so this turn composes like any other; the merged
+  // path remains for the named single-graph cases (a
+  // segment's own processing, the clarification fallback,
+  // a candidate-carrying pending, a whole-turn gibberish
+  // judgement).
+  assert.ok(r.trace.segmented, "segmentation by default: the turn composes (S5)");
+  assert.equal(r.trace.segmented?.length, 2);
 });
 
 /* C2 — rephrase restraint: the whole-utterance rephrase request
@@ -111,7 +122,14 @@ test("C2: a telling with one unparseable segment is received through its parseab
   assert.notEqual(r.reply, "Could you put that another way?");
   assert.ok(r.reply.includes("You were furious."), `reply: ${r.reply}`);
   assert.ok(r.trace.segmented, "the recovery is recorded as segmented");
-  assert.ok(r.trace.planNote?.includes("statement recovery (conversation-shapes C2)"), r.trace.planNote);
+  // Re-pinned 2026-11-19 (S5 of the S programme): the
+  // composition now happens at the head of the turn, not at
+  // the C2 recovery exit, so the ground recorded is the
+  // default route's. The behaviour this test pins — the
+  // telling received through its parseable segments, the
+  // unparseable one skipped and named — is unchanged.
+  assert.ok(r.trace.planNote?.includes("segmentation by default (S5)"), r.trace.planNote);
+  assert.ok(r.trace.planNote?.includes("My grandmother frobnicted the zanzibar splunge."), r.trace.planNote);
 });
 
 test("C2: a telling whose segments all fail keeps the rephrase request", () => {
@@ -199,7 +217,17 @@ test("C4: a proper name is not 'corrected'", () => {
   const s = newSession();
   const [r] = run(s, ["My daughter found an old picture of her when she was a teenager. I named my daughter after her. Her name is Roxie."]);
   assert.ok(!r.reply.startsWith("Did you mean"), r.reply);
-  assert.equal(r.reply, "Ok. Noted.");
+  // RE-PIN (the X programme, X1, 2026-11-19): the reply was
+  // the bare "Ok. Noted." when the naming segment's receipt
+  // stood down — the record then held the token matcher's
+  // substitution for the written name, which S0's admission
+  // will not speak. X1 records a name as told (the surface
+  // 'roxie', not the guess), so the receipt now passes
+  // admission and shows the name the turn established. The
+  // C4 discipline this test exists for is untouched — no
+  // correction is asked over the name (the assertion above);
+  // the name is now also recognised as told.
+  assert.equal(r.reply, "Ok. Noted. Ok. Her name is roxie.");
 });
 
 test("C4: a genuine misspelling with genuine rivals still triggers", () => {

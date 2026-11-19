@@ -83,7 +83,13 @@ export interface EventRecord {
  * parse up as one.
  */
 export interface StateOrigin {
-  kind: "classified" | "parsed";
+  /** "stated" (E1, 2026-11-19): the state was read from the
+   *  person's own first-person feeling statement on the surface
+   *  (the feelings-first registration) — the word is filed as a
+   *  feeling by the EDU/LEDU authorities but carries no
+   *  classification entry, so no derivation stands behind the
+   *  state beyond the statement itself. */
+  kind: "classified" | "parsed" | "stated";
   path?: string;
   support?: number;
   tier?: Tier;
@@ -263,7 +269,7 @@ export function buildFrame(graph: Graph, input: FrameInput): FrameRecord {
  */
 export interface InitiativeRecord {
   turn: number;
-  shape: "unexpressed-state" | "persisting-gap";
+  shape: "unexpressed-state" | "persisting-gap" | "standing-feeling" | "topic-return";
   state?: { holder: string; lemma: string; stateTurn: number };
   event?: { verb: string; eventTurn: number; role: string };
 }

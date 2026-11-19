@@ -136,12 +136,15 @@ test("ATOMIC kinds: need is an ordered prerequisite, want is desire, react is re
 
 test("an ATOMIC triple drops as unanchored when either condition fails", () => {
   // Condition (ii): known event verb, but no classifiable head word
-  // ('happy' is in neither the curated table nor climb reach).
-  const noHead = mapTriple({ subject: "personx eats the soup", relation: "at:xEffect", object: "very happy" });
+  // ('sleepy' is in neither the curated table nor climb reach).
+  // Specimen changed by E1 (2026-11-19): this test used 'happy',
+  // which E1's category filing filed under joy (Fire) — it now
+  // anchors, as the filing intends; 'sleepy' keeps the premise.
+  const noHead = mapTriple({ subject: "personx eats the soup", relation: "at:xEffect", object: "very sleepy" });
   assert.equal(noHead.ok, false);
   if (!noHead.ok) {
     assert.equal(noHead.reason, "unanchored-endpoint");
-    assert.match(noHead.detail, /very happy/);
+    assert.match(noHead.detail, /very sleepy/);
   }
   // Condition (i): no verb the system knows in the event phrase.
   const noVerb = mapTriple({ subject: "personx zqxwv the blorp", relation: "at:xEffect", object: "tired" });

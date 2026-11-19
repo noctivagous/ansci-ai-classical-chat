@@ -61,6 +61,7 @@ import * as path from "node:path";
 import { SymSpell, type Suggestion } from "./symspell";
 import { EN_LEXICON, type TokenResolution } from "./sentence";
 import { ageOfAcquisitionOf } from "./normalcy-unit";
+import { getDefaultWordFreqTable } from "../wordfreq";
 
 /**
  * The age-of-acquisition prior for a resolution's landing word
@@ -145,8 +146,10 @@ export function tokenResolverAvailable(): boolean {
 /**
  * Whether the shipped lexicon attests this word (lowercased,
  * punctuation already stripped by the caller): the hand lexicon
- * (EN_LEXICON, every registered form) or the resolver's own
- * frequency dictionary. This is the attestation the turn
+ * (EN_LEXICON, every registered form), the resolver's own
+ * frequency dictionary, or — since S4(a) — the wordfreq
+ * table at ordinary currency (FREQUENCY_ATTESTATION_ZIPF
+ * below). This is the attestation the turn
  * layer's clarification discipline reads (conversation-shapes
  * C4, 2026-11-18): a "correction" of a word the lexicon itself
  * attests is not a doubt — the resolver's own ordering rule
@@ -157,11 +160,34 @@ export function tokenResolverAvailable(): boolean {
  * Where the resolver data cannot load, the hand lexicon alone
  * attests.
  */
+/**
+ * The frequency-attestation threshold (S4(a), the S
+ * programme, 2026-11-19; determination recorded in GAPS §6):
+ * a word whose wordfreq Zipf frequency reaches 3.0 — one
+ * occurrence per million words of running text, ordinary
+ * currency — attests itself, though neither the hand
+ * lexicon nor the resolver's dictionary files it. The
+ * sealed runs' surviving spurious clarifications are the
+ * evidence the line is drawn from: every one of them
+ * ("canning" 3.31, "socialize" 3.16, "roam" 3.46, "lol"
+ * 5.05, "replicate" 3.55, "dang" 3.65) stands at or above
+ * it, while the corpus's genuine misspellings stand below
+ * it or outside the table altogether ("cimbing", "wethr"
+ * unattested; the keyboard row "qwerty" at 2.5). Below the
+ * line, nothing changes: a rare or unattested word the
+ * resolver cannot settle still triggers the clarification,
+ * exactly as before. Where the table cannot load, the
+ * lexicon and the dictionary attest alone, as before.
+ */
+export const FREQUENCY_ATTESTATION_ZIPF = 3.0;
+
 export function isAttestedWord(lower: string): boolean {
   if (!lower) return false;
   if (lower in EN_LEXICON) return true;
   const data = loadData();
-  return data ? data.symspell.has(lower) : false;
+  if (data?.symspell.has(lower)) return true;
+  const zipf = getDefaultWordFreqTable()?.zipf.get(lower);
+  return zipf !== undefined && zipf >= FREQUENCY_ATTESTATION_ZIPF;
 }
 
 /** Split a canonical form the way enTokenize splits contractions, so

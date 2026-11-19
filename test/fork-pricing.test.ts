@@ -312,11 +312,16 @@ const EXPECTED_REPLIES: Record<string, string[]> = {
     // telling turns are first turns, questions, or steering
     // replies — none is a bare acknowledgement over
     // registrable content).
-    "Ok. You put the salt in the soup.",
+    // X programme X1 (2026-11-19): the receipt appends the
+    // one link the record holds — turn 2's need event shares
+    // the put event's content lemma 'salt' and is a different
+    // event, not a re-telling, so the link renders it under
+    // attribution. Itemised here, in the same manner.
+    "Ok. You put the salt in the soup. You told me the soup needed the salt.",
   ],
 };
 
-test("R0 acceptance: the four scenarios' reply text is identical to before R0, except the itemised R1.5 winter-cold origin changes, R2's itemised summer set change, the Normalcy arc's itemised acknowledgement changes, and the recognition programme's itemised receipt change", () => {
+test("R0 acceptance: the four scenarios' reply text is identical to before R0, except the itemised R1.5 winter-cold origin changes, R2's itemised summer set change, the Normalcy arc's itemised acknowledgement changes, the recognition programme's itemised receipt change, and the X programme's itemised receipt-link change", () => {
   for (const scenario of SCENARIOS) {
     const s = newSession();
     const replies = run(s, scenario.turns).map((r) => r.reply);

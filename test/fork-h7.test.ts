@@ -69,8 +69,11 @@ test("(b) confidence is min(C_A, C_B) × K with K fixed at 0.90 (amendment A1)",
 test("(c) A2: the ordinary lookup never returns a B-derived record; the derived accessor does", () => {
   // The classification table is untouched by the banking pass.
   // (153 at the banking pass; 164 since the 2026-11-15 anchor-quality
-  // slice added the 11 survey-attested livestock/grain entries.)
-  assert.equal(CLASSIFICATIONS.length, 164);
+  // slice added the 11 survey-attested livestock/grain entries; 173
+  // since E1 (2026-11-19) filed the nine everyday emotion words —
+  // angry, happy, glad, excited, sad, gloomy, lonely, afraid,
+  // scared — under their canonical categories.)
+  assert.equal(CLASSIFICATIONS.length, 173);
   for (const r of DERIVED_CORRESPONDENCES) {
     for (const entry of classificationsOf(r.subject.slug)) {
       assert.notEqual(entry.aspect, "recorded-flavor", `${r.id}: no derived record may sit in CLASSIFICATIONS`);

@@ -233,6 +233,32 @@ export interface SemanticObject {
      *  routing it to the question path, which declined it
      *  ("nothing you have told me says what was meant"). */
     meanQuery?: boolean;
+    /** Present on question objects that are the visitor's
+     *  offer of help ("Can I help you?" — S2, the S programme,
+     *  2026-11-19): a social act in question dress — the
+     *  visitor offers the system a service, and the designed
+     *  response receives the offer as the act it is and
+     *  answers it in kind. Marked here so the Planner answers
+     *  it with the offer move rather than routing it to the
+     *  question path, which declined it as a question-type
+     *  mismatch (run 2: P-065, P-066, P-070). */
+    offerHelp?: boolean;
+    /** Present on question objects that pose the either/or
+     *  form (S2, the S programme, 2026-11-19): a question
+     *  whose answer space is presented as two named
+     *  alternatives, addressed to the system. "preference"
+     *  asks which of the two the system prefers ("Do you
+     *  prefer milk or dark?"); "being" asks which of the two
+     *  the system is ("Are you an aunt or uncle yet?"). The
+     *  question path read both as property questions about
+     *  the alternatives and declined; the either/or is its
+     *  own form, answered from the limits facts. */
+    choiceQuery?: "preference" | "being";
+    /** The two alternatives of a "being" choice, as noun
+     *  phrases with their articles ("an aunt", "an uncle"),
+     *  in the surface's order — the material the neither-form
+     *  answer is composed from. */
+    choiceAlternatives?: [string, string];
   };
   content: {
     meaning: MeaningGraph;

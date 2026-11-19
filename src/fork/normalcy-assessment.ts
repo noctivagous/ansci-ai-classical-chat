@@ -59,8 +59,12 @@ const UNIT = "lpu/normalcy-assessment";
 
 /** The closed function-word set: tokens that carry grammar,
  *  not content. A token outside this set is a content token
- *  for the gibberish reading. */
-const FUNCTION_WORDS = new Set([
+ *  for the gibberish reading. Exported for the rendering
+ *  admission in turn.ts (X1, the X programme, 2026-11-19):
+ *  a closed function word is never a referring fill, whatever
+ *  register recorded it — the same distinction, read by the
+ *  renderings that speak recorded fills aloud. */
+export const FUNCTION_WORDS = new Set([
   "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
   "my", "your", "his", "its", "our", "their", "mine", "yours",
   "the", "a", "an", "this", "that", "these", "those",
