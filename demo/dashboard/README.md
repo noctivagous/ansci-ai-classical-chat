@@ -13,7 +13,11 @@ The site root (`/`) is the zoomable schematic root page — a map of the
 whole system whose "A Person Says" box is a working chat. Its source
 is `root/index.html` (a self-contained page, no build step); the build
 copies it to `dist/index.html`. This dashboard app builds into
-`dist/dashboard/` and is served at `/dashboard/`.
+`dist/dashboard/` and is served at `/dashboard/`. The map page's
+header carries a **Full Chat** button to `/chat/`: a chat-room style
+app (source in `chat/`, its own Vite config) with one live engine
+session per tab and a settings bar for turn information (trace, walk
+path, declines); it builds into `dist/chat/` in the same build.
 
 The root page runs in two modes from one source. The build also emits
 `dist/engine.js` (from `src/engine-entry.ts`, via
