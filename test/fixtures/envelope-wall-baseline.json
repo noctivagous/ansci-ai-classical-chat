@@ -49,6 +49,7 @@
               "lemma": "apple",
               "form": "apples",
               "syntacticElement": "Earth",
+              "semanticElement": "Wood",
               "role": "excess"
             }
           ],

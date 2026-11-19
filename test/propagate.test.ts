@@ -300,9 +300,12 @@ test("production graph: unmapped precipitation kinds inherit; the curated snow b
   const graph = buildChatGraph();
   // The merged counts as they stand after 2b (2c adds no nodes or
   // edges — its seed deltas are properties and aspect keys on existing
-  // records, §6.11).
-  assert.equal(graph.allNodes().length, 117113, "merged node count unchanged by 2c");
-  assert.equal(graph.allEdges().length, 153918, "merged edge count unchanged by 2c");
+  // records, §6.11). Counts restated 2026-11-18 for the §6 adverb
+  // restoration: the extract gained its 3,622 adverb synsets, and
+  // the merged graph gains exactly those nodes (117,113 + 3,622)
+  // and their relations (153,918 + 712).
+  assert.equal(graph.allNodes().length, 120735, "merged node count unchanged by 2c");
+  assert.equal(graph.allEdges().length, 154630, "merged edge count unchanged by 2c");
   propagateGraph(graph);
   const sleet = statementsFor(graph, "wn-n11730546"); // sleet
   const water = find(sleet, "HAS_ELEMENT", "water");

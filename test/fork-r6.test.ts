@@ -113,6 +113,13 @@ test("R6-2: a gap that persisted unasked is asked by initiative, from the record
 
 /* ---------------- R6-3: the bound over a long conversation ---------------- */
 
+// Fixture restored (property-axes slice, 2026-11-18):
+// turn 3's telling is "The tea is hot." again — C7 swapped
+// in the garden on the ground that the graph's food
+// correspondence contradicts a food subject's 'hot'; that
+// derivation crossed axes (Part H) and is removed, so the
+// tea telling is a plain telling again. Every turn's role
+// in the cadence is unchanged.
 const R6_3 = [
   "The soup is cold.", "I was worried.", "The tea is hot.", "I heard the news.", "The soup is salty.",
   "I made the soup yesterday.", "The pie is sweet.", "I cooked the rice.", "The juice is salty.", "The cake is sweet.",
@@ -183,6 +190,11 @@ test("R6-4 control (i): a question or gap of the person's own bars initiative on
 
 /* ---------------- R6-5: control (iii) — an expressed direction ---------------- */
 
+// Fixture restored (property-axes slice, 2026-11-18): the
+// expressed-direction evidence at turn 2 is the soup's 'hot'
+// again — C7 swapped in the garden on the since-removed
+// cross-axis derivation (Part H). The soup's 'hot' stands
+// as a Fire state in the same slot of the sequence.
 const R6_5 = ["I was furious.", "The soup is hot.", "I heard the news.", "The tea is cold.", "Is winter cold?"];
 
 test("R6-5 control (iii): a state whose generating direction was expressed grounds no initiative", () => {

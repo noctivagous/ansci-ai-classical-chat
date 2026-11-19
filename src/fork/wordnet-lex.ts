@@ -26,9 +26,13 @@
  *  - NOUNS: a SimpleEntry (Earth), lemma normalised through the forms
  *    index (plurals resolve: rivers → river).
  *  - ADJECTIVES: a SimpleEntry (Fire syntactic).
- *  - ADVERBS: NOT derived. The extract trimmed adverb synsets (its
- *    pos set is n/v/a), so there is nothing honest to derive from;
- *    unknown adverbs stay unknown.
+ *  - ADVERBS: a SimpleEntry (Water, the hand lexicon's adverb
+ *    element), derived since the extract's adverb restoration
+ *    (2026-11-18, GAPS §6): the shipped extract carries the
+ *    adverb block again, so 'usually' and 'indoors' resolve to
+ *    their synsets. Derived adverbs carry no semanticElement —
+ *    the climb and the classification table are noun/adjective
+ *    machinery, and no classification is invented for them.
  *
  * Derived entries are registered into EN_LEXICON (only into keys the
  * hand lexicon has not claimed — the hand lexicon always wins) so
@@ -276,7 +280,7 @@ export function regularPast(base: string): string {
  *  while the forms index still attests it as another POS's inflection
  *  (bends → bend, verb) — synsetsForSurface's exact-lemma shortcut
  *  would hide the second fact. */
-function lemmaFor(surface: string, pos: "n" | "v" | "a"): string | undefined {
+function lemmaFor(surface: string, pos: "n" | "v" | "a" | "r"): string | undefined {
   const ex = extract();
   if (!ex) return undefined;
   const key = surface.toLowerCase();
@@ -372,7 +376,15 @@ export function irregularForms(lemma: string): { past?: string; participle?: str
       else if (diffs.length === 1 && b[diffs[0]] === "a" && a[diffs[0]] === "u") participle = a;
     }
   }
-  participle ??= irregular.find((x) => /en$/.test(x)) ?? irregular.find((x) => /n$/.test(x));
+  // The -ne class (conversation-shapes C8): a candidate that is
+  // the lemma + "ne" is the participle — do→done, go→gone.
+  // "done" ends in "ne", not "en"/"n", so both preferences
+  // below missed it and the participle fell back to the past
+  // ("what was did" in the role-question decline).
+  participle ??=
+    irregular.find((x) => x.endsWith("ne") && x.slice(0, -2) === lemma) ??
+    irregular.find((x) => /en$/.test(x)) ??
+    irregular.find((x) => /n$/.test(x));
   const past = irregular.find((x) => x !== participle) ?? participle;
   return { past, participle: participle ?? past };
 }
@@ -480,17 +492,49 @@ export function wordnetNoun(surface: string): SimpleEntry | undefined {
   if (!entry) {
     if (entryCache.has(cacheKey)) return undefined;
     const climb = climbClassification(lemma);
+    // The classification seam (sealed-run mechanism 7): a
+    // table-owned lemma never climbs — the X1 brake reserves
+    // it for the classification table — but until now the
+    // table was never applied here either, so garden, ginger
+    // and cold entered via WordNet and landed unclassified.
+    // The table's own primary entry now reaches the node when
+    // the climb gives nothing. This settles nothing about
+    // WHICH entry a concept like cold should lead with — the
+    // value is whatever the table itself lists first, exactly
+    // as every other lookupClassification caller receives it.
+    const tableElement = climb ? undefined : lookupClassification(lemma)?.element;
     entry = {
       kind: "noun",
       lemma,
       element: "Earth",
-      ...(climb ? { semanticElement: climb.element } : {}),
+      ...(climb ? { semanticElement: climb.element } : tableElement ? { semanticElement: tableElement } : {}),
       source: "wordnet",
     };
     entryCache.set(cacheKey, entry);
   }
   // No registration here: derivation is not adoption (see the
   // header). The caller that adopts this entry registers it.
+  return entry;
+}
+
+export function wordnetAdverb(surface: string): SimpleEntry | undefined {
+  if (!enabled) return undefined;
+  const lemma = lemmaFor(surface, "r");
+  if (!lemma) return undefined;
+  const cacheKey = "r:" + lemma;
+  let entry = entryCache.get(cacheKey) as SimpleEntry | undefined;
+  if (!entry) {
+    if (entryCache.has(cacheKey)) return undefined;
+    entry = {
+      kind: "adverb",
+      lemma,
+      element: "Water",
+      source: "wordnet",
+    };
+    entryCache.set(cacheKey, entry);
+  }
+  // No registration here, as with noun/adjective: derivation is
+  // not adoption. The caller that adopts this entry registers it.
   return entry;
 }
 
@@ -503,11 +547,15 @@ export function wordnetAdjective(surface: string): SimpleEntry | undefined {
   if (!entry) {
     if (entryCache.has(cacheKey)) return undefined;
     const climb = climbClassification(lemma);
+    // Same seam as wordnetNoun (mechanism 7): the table's
+    // primary entry reaches the node when the climb gives
+    // nothing for a table-owned lemma.
+    const tableElement = climb ? undefined : lookupClassification(lemma)?.element;
     entry = {
       kind: "adjective",
       lemma,
       element: "Fire",
-      ...(climb ? { semanticElement: climb.element } : {}),
+      ...(climb ? { semanticElement: climb.element } : tableElement ? { semanticElement: tableElement } : {}),
       source: "wordnet",
     };
     entryCache.set(cacheKey, entry);

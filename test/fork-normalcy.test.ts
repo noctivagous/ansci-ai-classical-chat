@@ -146,6 +146,24 @@ test("specimen: 'I shouted.' asks after the directed target", () => {
 /* ---------------- (a) the record answer: the soup pair ---------------- */
 
 test("specimen: the soup pair — the telling acknowledged, the restated question answered from the record", () => {
+  // PREMISE CORRECTION (property-axes slice, 2026-11-18):
+  // this specimen's original pins were corrected by
+  // conversation-shapes C7, which extended the premise
+  // stance to the soup telling on the ground that
+  // premiseDegree(soup, hot) contradicted from the graph.
+  // That ground conflated two property axes (design record
+  // Part H): soup's Water is its matter phase (a liquid
+  // food), and temperature is a separate axis on which the
+  // graph holds no determination for soup. The premise
+  // degree's temperature check now consults temperature-axis
+  // determinations only, so the telling is absence, not
+  // contradiction — recorded as told, as S5's stance never
+  // legitimately applied to it (its refusal of "Why is the
+  // soup hot?" stood on the same derivation and falls with
+  // it; the stance's protected claim — a positively
+  // contradicted premise meets the stance — stands on the
+  // winter cases). The specimen's original pins are restored
+  // verbatim below.
   const s = newSession();
   const [t1, t2] = run(s, ["The soup is hot.", "Is the soup hot?"]);
   noVerdict(t1.reply);
@@ -167,6 +185,12 @@ test("specimen: the soup pair — the telling acknowledged, the restated questio
 
 test("record routes: where the standing occupant differs from the asked quality, the R7.5 record graph still answers", () => {
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): the
+  // telling subject was the soup until C7 swapped in the
+  // garden, on the ground that the soup's 'hot' was
+  // graph-contradicted. That derivation crossed axes (Part
+  // H) and is removed; the soup telling stands in the record
+  // again, and the route this test exercises is unchanged.
   const [, r2] = run(s, ["The soup is hot.", "Is the soup cold?"]);
   assert.equal(r2.reply, "The soup is hot.");
   assert.ok(r2.trace.answeredFromRecord, "the record graph answered");
@@ -336,6 +360,12 @@ test("discipline (ii): no table value sets a price — Coherence prices the KIND
 
 test("the wall: normalcy flags live on the envelope — the stripped core carries none", () => {
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): C7
+  // swapped the soup telling for the garden's, on the
+  // since-removed cross-axis derivation; the soup telling
+  // stands again and its question is record-settled as
+  // before. The claim under test — flags ride the envelope
+  // only — is unchanged.
   run(s, ["The soup is hot.", "Is the soup hot?", "Is winter cold?"]);
   for (const info of persons(s)) {
     const core = stripEnvelope(info) as ReturnType<typeof stripEnvelope> & { envelope?: unknown };

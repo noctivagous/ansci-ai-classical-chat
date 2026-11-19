@@ -208,7 +208,31 @@ export interface SemanticObject {
      *  you?", "What are you?"); "capability" is reserved — the
      *  modal shapes it needs ("What can you do?") do not parse
      *  yet, a located sentence-layer gap. */
-    selfQuery?: "identity" | "capability";
+    selfQuery?: "identity" | "capability" | "fact";
+    /** Present on self-query objects of the "fact" flavour
+     *  (conversation-shapes C3, 2026-11-18): the matter the
+     *  question asks after, as spoken ("pets", "rank",
+     *  "birthplace", "occupation") — a fact about the system
+     *  the Self tables do not hold, whose honest answer is the
+     *  plain denial the Planner composes from the limits
+     *  facts. */
+    selfFact?: string;
+    /** Present on greeting objects that are the wellbeing query
+     *  ("How are you?" — conversation-shapes C1, 2026-11-18): the
+     *  greeting's ritual exchange, recognised as a greeting in
+     *  kind and marked here so the Planner answers it with the
+     *  wellbeing move rather than the greeting mirror. */
+    wellbeing?: boolean;
+    /** Present on question objects that are the visitor's own
+     *  clarification request ("What do you mean?" —
+     *  conversation-shapes C5, 2026-11-18): the visitor asks
+     *  what the SYSTEM meant, and the designed response is a
+     *  restatement of the system's last substantive reply, from
+     *  the record of what it actually said. Marked here so the
+     *  Planner answers it with the restatement move rather than
+     *  routing it to the question path, which declined it
+     *  ("nothing you have told me says what was meant"). */
+    meanQuery?: boolean;
   };
   content: {
     meaning: MeaningGraph;

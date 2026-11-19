@@ -44,11 +44,11 @@ const STRIDES: Record<string, number> = {
 };
 
 export interface SynsetRecord {
-  /** Global index: blocks concatenated in n, v, a order. */
+  /** Global index: blocks concatenated in n, v, a, r order. */
   index: number;
   /** Stable sense id, e.g. "wn-n15493606", "wn-a01258433". */
   id: string;
-  pos: "n" | "v" | "a";
+  pos: "n" | "v" | "a" | "r";
   offset: number;
   gloss: string;
   lemmas: string[];
@@ -56,7 +56,7 @@ export interface SynsetRecord {
 
 export interface FormCandidate {
   lemma: string;
-  pos: "n" | "v" | "a";
+  pos: "n" | "v" | "a" | "r";
 }
 
 export interface WordNetExtract {
@@ -97,11 +97,11 @@ interface ExtractManifest {
 }
 
 /** A synset record as stored in a synset part: [offset, pos, gloss, lemmas]. */
-type SynsetPartRecord = [number, "n" | "v" | "a", string, string[]];
+type SynsetPartRecord = [number, "n" | "v" | "a" | "r", string, string[]];
 /** A relation record as stored in a relation part: [kind, ...flat tuple]. */
 type RelationPartRecord = [string, ...(number | string)[]];
 /** A form record as stored in a forms part: [surface, lemma, pos]. */
-type FormPartRecord = [string, string, "n" | "v" | "a"];
+type FormPartRecord = [string, string, "n" | "v" | "a" | "r"];
 
 /**
  * Load the chunked extract: read manifest.json in `dir`, then concatenate

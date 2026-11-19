@@ -94,6 +94,11 @@ test("the wall: stripped cores deep-equal the pre-envelope baseline (apples)", (
   // else moved). The wall's claim is unchanged: wrapping
   // adds exactly the envelope, and the cores are otherwise
   // what the machinery produces.
+  // Regenerated again 2026-11-18 for sealed-run mechanism 7
+  // (the classification seam): the 'apple' node now carries
+  // semanticElement Wood — the classification table's entry
+  // reaching the node, as designed. Verified as the ONLY
+  // delta (1 added line; the airport baseline is unchanged).
   const s = newSession();
   run(s, ["I have 5 apples.", "Sally bought 3 of them.", "How many do I have left?"]);
   const infos = persons(s);
@@ -103,6 +108,11 @@ test("the wall: stripped cores deep-equal the pre-envelope baseline (apples)", (
 });
 
 test("the wall: stripped cores deep-equal the pre-envelope baseline (airport)", () => {
+  // Note (2026-11-18, §6 adverb restoration): 'between' keeps
+  // this baseline by design — the parser leaves a between-node
+  // in the graph and senses-scening builds its landmark
+  // relation from it, so the adverb derivation does not claim
+  // the token (see enItems). The baseline stands unchanged.
   const s = newSession();
   run(s, ["I waited at the airport.", "I went to the fountain between the bathrooms."]);
   const infos = persons(s);
@@ -176,6 +186,13 @@ test("need lifecycle: a predication question's answer need is discharged by the 
   // record settled the question. Planner-discharged answers
   // stand elsewhere (the derivation routes).
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): C7
+  // swapped the soup telling for the garden's, on the
+  // since-removed cross-axis derivation (Part H); the soup
+  // telling stands in the record to be said-so'd from again.
+  // The claim under test — a record answer discharges the
+  // answer need, discharged by Session & Situation — is
+  // unchanged.
   const [, r2] = run(s, ["The soup is hot.", "Is the soup hot?"]);
   assert.equal(r2.reply, "You said so.");
   assert.equal(r2.trace.replyObject, undefined, "the record answer is hand-worded — no reply object");

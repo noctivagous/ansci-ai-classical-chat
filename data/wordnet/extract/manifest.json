@@ -4,13 +4,12 @@
   "edition": "2024",
   "license": "CC BY 4.0",
   "trimmed": [
-    "adverb synsets omitted (noun/verb/adjective kept in full)",
     "derivationally-related edges omitted",
     "gloss usage examples omitted (definitions kept in full)"
   ],
   "counts": {
-    "synsets": 117008,
-    "relations": 153758,
+    "synsets": 120630,
+    "relations": 154470,
     "forms": 129800
   },
   "parts": [
@@ -35,20 +34,20 @@
     {
       "file": "part-004.json",
       "kind": "synsets",
-      "count": 32932,
-      "bytes": 2594610
+      "count": 36554,
+      "bytes": 2832596
     },
     {
       "file": "part-005.json",
       "kind": "relations",
-      "count": 128067,
-      "bytes": 3199992
+      "count": 127957,
+      "bytes": 3199980
     },
     {
       "file": "part-006.json",
       "kind": "relations",
-      "count": 25691,
-      "bytes": 657432
+      "count": 26513,
+      "bytes": 678804
     },
     {
       "file": "part-007.json",

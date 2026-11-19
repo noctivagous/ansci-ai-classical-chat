@@ -41,6 +41,18 @@ test("comparison: a role swap is a contradiction, never partial credit", () => {
   assert.equal(c.contradictionRate, 1);
 });
 
+test("atomiser: a copular location query atomises as an attachment (Part G.5)", () => {
+  const atoms = extractFeatures(parse("Where are you?", "en"));
+  assert.ok(
+    atoms.some((a) => a.family === "attachment" && a.key === "where|location" && a.value === "you"),
+    JSON.stringify(atoms),
+  );
+  assert.ok(!atoms.some((a) => a.family === "roles" && a.key.includes("location")));
+  // Predicate-sourced location stays a role.
+  const live = extractFeatures(parse("I live in London.", "en"));
+  assert.ok(live.some((a) => a.family === "roles" && a.key === "live#0|location" && a.value === "london@in"));
+});
+
 test("round trip: a clean fitted sentence preserves every atom", () => {
   const p0 = parse("She gave him a book.", "en");
   const p1 = parse(generate(p0), "en");

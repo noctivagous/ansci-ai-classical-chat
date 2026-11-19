@@ -136,6 +136,11 @@ test("a record answer goes from the record through the Planner — no derivation
   // that still takes it: the standing occupant (hot) is not
   // the asked quality (cold), so the record graph predicates
   // the occupant.
+  // Fixture restored (property-axes slice, 2026-11-18): C7
+  // swapped the soup telling for the garden's, on the
+  // since-removed cross-axis derivation (Part H); the soup
+  // telling stands in the record again, and the record-graph
+  // route's walk is what this test pins.
   const [, t2] = run(newSession(), ["The soup is hot.", "Is the soup cold?"]);
   assertWalkShape(t2);
   assert.ok(t2.trace.answeredFromRecord, "the second turn answered from the record");
@@ -146,6 +151,9 @@ test("a record answer goes from the record through the Planner — no derivation
 });
 
 test("the said-so record answer passes NormalcyAssessment — no Planner, no derivation", () => {
+  // Fixture restored (property-axes slice, 2026-11-18):
+  // as above — the soup telling stands in the record for
+  // the said-so route this test walks.
   const [, t2] = run(newSession(), ["The soup is hot.", "Is the soup hot?"]);
   assertWalkShape(t2);
   assert.ok(t2.trace.saidSo, "the second turn answered from the record, in the said-so family");

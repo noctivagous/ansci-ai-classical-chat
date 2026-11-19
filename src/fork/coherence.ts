@@ -326,6 +326,32 @@ export interface PremiseCheck {
  *    corrected ground.
  * Anything else is absence: §7c's context-request territory,
  * not the stance's.
+ *
+ * The axes rule (property-axes slice, 2026-11-18; design
+ * record Part H): a material carries one manifestation per
+ * property axis, and no determination crosses axes. For a
+ * TEMPERATURE predication the graph check therefore consults
+ * temperature-axis determinations only. A HAS_ELEMENT edge is
+ * a classification: it assigns the subject its element on the
+ * edge's own aspect (food, grain, place…) — for a material,
+ * its matter phase — and a path entering the element spine
+ * through one emerges with the polarity's temperature quality
+ * only by conflating that axis with temperature (soup
+ * —HAS_ELEMENT {food}→ Water —POLARITY_OF→ Yin —HAS_QUALITY→
+ * cold read a liquid food as a cold thing). Temperature
+ * determinations in the graph run on correspondence
+ * assignments — a season's or a time's ELEMENT_OF /
+ * POLARITY_OF into the spine, where the temperature qualities
+ * hang (winter —ELEMENT_OF→ Water —POLARITY_OF→ Yin
+ * —HAS_QUALITY→ cold; the classification record enters cold
+ * as "winter's quality" under the temperature aspect) — so
+ * the temperature check's edge family drops HAS_ELEMENT. A
+ * material with no temperature determination is absent on
+ * the temperature axis: its temperature tellings are recorded
+ * as told, and its temperature questions decline as
+ * don't-knows. The record check above is untouched: a
+ * temperature asserted in the conversation is a temperature
+ * determination, whatever the subject.
  */
 export function premiseDegree(session: Session, subjectLemma: string, qualityLemma: string): PremiseCheck {
   const askedAspect = lookupClassification(qualityLemma)?.aspect;
@@ -349,6 +375,15 @@ export function premiseDegree(session: Session, subjectLemma: string, qualityLem
     const graph = session.graph;
     const subjectNode = graph.nodeByName(subjectLemma);
     if (subjectNode) {
+      // The axes rule (see the note above): for temperature,
+      // the path may not enter the spine through a
+      // classification edge — HAS_ELEMENT is dropped from the
+      // family, so only correspondence assignments
+      // (ELEMENT_OF / POLARITY_OF) can ground the degree.
+      const edgeTypes =
+        askedAspect === "temperature"
+          ? (["ELEMENT_OF", "POLARITY_OF", "HAS_QUALITY", "CORRESPONDS_TO"] as const)
+          : (["ELEMENT_OF", "HAS_ELEMENT", "POLARITY_OF", "HAS_QUALITY", "CORRESPONDS_TO"] as const);
       const seen = new Set<string>();
       for (const entry of CLASSIFICATIONS) {
         if (entry.aspect !== askedAspect || entry.concept === qualityLemma || seen.has(entry.concept)) continue;
@@ -356,7 +391,7 @@ export function premiseDegree(session: Session, subjectLemma: string, qualityLem
         const target = graph.nodeByName(entry.concept);
         if (!target) continue;
         const path = graph.findPath(subjectNode.id, target.id, {
-          edgeTypes: ["ELEMENT_OF", "HAS_ELEMENT", "POLARITY_OF", "HAS_QUALITY", "CORRESPONDS_TO"],
+          edgeTypes: [...edgeTypes],
           confidenceThreshold: 0,
         });
         if (path) {

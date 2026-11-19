@@ -1135,7 +1135,10 @@ test("trace level: an unknown level is rejected", () => {
 
 test("definitions: the store joins terms to WordNet glosses, with provenance", () => {
   const store = loadDefinitionsStore();
-  assert.equal(store.stats.synsets, 117008, "the full OEWN 2024 synset set");
+  // 120,630 since the §6 adverb restoration (2026-11-18): the
+  // count was 117,008 while the extract trimmed adverb synsets;
+  // the full set includes them.
+  assert.equal(store.stats.synsets, 120630, "the full OEWN 2024 synset set");
   const headache = store.candidatesFor("headache");
   const pain = headache.find((c) => c.synsetId === "wn-n14571315");
   assert.ok(pain, "the pain synset is among headache's candidates");

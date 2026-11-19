@@ -96,6 +96,15 @@ export interface ConversationRegister {
     openedTurn?: number;
   } | null;
   lastActs: { theirs: string | null; ours: string | null };
+  /** The system's last substantive reply, as spoken
+   *  (conversation-shapes C5, 2026-11-18): the record the
+   *  restatement move reads when the visitor asks what the
+   *  system meant. Written through recordLastReply below —
+   *  the Planner reports each substantive reply as it is
+   *  spoken (clarification questions, the rephrase request,
+   *  ritual mirrors and restatements themselves are not
+   *  substantive sayings and are never recorded here). */
+  lastReply: { turn: number; text: string } | null;
   /** Sense readings the conversation itself has settled
    *  through clarification (S4): lemma → the reading chosen
    *  (or, at the attempt limit, the baseline the system
@@ -129,7 +138,17 @@ export function initialInterlocutor(): InterlocutorRegister {
 }
 
 export function initialConversation(): ConversationRegister {
-  return { phase: "opening", pending: null, lastActs: { theirs: null, ours: null }, obligations: [], clarifiedSenses: {}, disagreements: [] };
+  return { phase: "opening", pending: null, lastActs: { theirs: null, ours: null }, lastReply: null, obligations: [], clarifiedSenses: {}, disagreements: [] };
+}
+
+/** Record the system's last substantive reply (C5): the
+ *  Planner calls this as a substantive reply is spoken, and
+ *  the restatement move reads it back when the visitor asks
+ *  what the system meant. The unit keeps the record; it does
+ *  not judge the reply — substantiveness is the caller's
+ *  call, made on the trace of the turn that spoke it. */
+export function recordLastReply(session: Session, entry: { turn: number; text: string }): void {
+  session.conversation.lastReply = entry;
 }
 
 /**
@@ -441,7 +460,18 @@ export function readSocial(object: SemanticObject, session: Session): void {
  *  the classification table does not know as a common concept. */
 function statedName(object: SemanticObject): string | undefined {
   const { nodes, edges } = object.content.meaning;
-  const subject = nodes.find((n) => n.role === "subject" && n.lemma.toLowerCase() === "i");
+  // Two drawn shapes: the speaker predicated as the name
+  // ("I'm Sam." — subject "i"), and the name-noun predicated
+  // as the name ("My name is Sam." — subject "name"; the
+  // possessive is the speaker's by the statement's own
+  // delivery, and no other subject-noun draws this reading).
+  // The second shape was added with conversation-shapes C6
+  // (2026-11-18): without it the commonest naming form never
+  // reached the register at all, so no recognition could ever
+  // show the name the visitor had given.
+  const subject = nodes.find(
+    (n) => n.role === "subject" && (n.lemma.toLowerCase() === "i" || n.lemma.toLowerCase() === "name"),
+  );
   if (!subject) return undefined;
   const edge = edges.find((e) => e.relation === "predicated-as" && e.from === subject.id);
   if (!edge) return undefined;

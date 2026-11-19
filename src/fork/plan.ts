@@ -994,6 +994,48 @@ export function planSelfIdentity(name: string): { sentence: string; graph: Parse
   return { sentence: generate(graph), graph };
 }
 
+/**
+ * Build the reply graph for the WELLBEING answer (conversation-
+ * shapes C1, 2026-11-18): the greeting's ritual exchange — the
+ * visitor's "How are you?" answered with the predication the
+ * design names for it (semantic-object.ts: the greeting's
+ * "How are you?" and its "Fine."). The graph is constructed,
+ * not parsed, in the thanks receipt's manner: the quality
+ * "fine" predicated of the system, in the copula's bare form.
+ * It is a ritual move, recorded as ritual by the assessment
+ * that raised it; it is not a report about the system's state
+ * and nothing is banked from it. No pricing: no derivation
+ * backs a ritual answer, and none is fabricated.
+ */
+export function planWellbeingAnswer(): { sentence: string; graph: ParsedSentence } {
+  const subject: MeaningNode = {
+    id: "reply-subject",
+    lemma: "i",
+    form: "I",
+    syntacticElement: "Earth",
+  };
+  const quality: MeaningNode = {
+    id: "reply-predicate",
+    lemma: "fine",
+    form: "fine",
+    syntacticElement: "Fire",
+    role: "predicate",
+    states: { copulaTense: "present", mood: "indicative", subjectPerson: "1sg" },
+  };
+  const graph: ParsedSentence = {
+    meaning: {
+      nodes: [subject, quality],
+      edges: [{ from: subject.id, to: quality.id, relation: "predicate", cycle: cycleOf("Earth", "Fire") }],
+      rootId: quality.id,
+      entryElement: "Fire",
+    },
+    connective: { language: "en", tokens: [], next: [], spans: [] },
+    realizes: {},
+    scopeAttachments: [],
+  };
+  return { sentence: generate(graph), graph };
+}
+
 /* ------------------------------------------------------------------ */
 /* Questions (slice R3: §2.3's transform run on a gap)                */
 /* ------------------------------------------------------------------ */

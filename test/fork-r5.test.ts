@@ -75,6 +75,11 @@ test("R5-2 contrast: reply content controlling a standing state earns the contra
   // preserved where the record does not occupy the subject's
   // slot, pinned in fork-r7.5.test.ts.
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): C7
+  // swapped the soup's 'hot' for the garden's, on the
+  // since-removed cross-axis derivation (Part H). The
+  // soup's 'hot' stands again, and the record answer this
+  // test pins is unchanged in shape.
   const [, t2] = run(s, ["The soup is hot.", "Is the soup cold?"]);
   assert.equal(t2.reply, "The soup is hot.");
   assert.equal(t2.trace.answeredFromRecord?.state.lemma, "hot");
@@ -122,6 +127,12 @@ test("R5-4 value correction: the delta is recorded and the reply is built from i
 
 test("R5-4b never-stated control: a first statement records no supersession", () => {
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): C7
+  // swapped the soup's 'hot' for the garden's, on the
+  // since-removed cross-axis derivation (Part H); the
+  // soup's 'hot' stands as a state again, and the control's
+  // claim — a first statement supersedes nothing — is
+  // unchanged.
   const [t1] = run(s, ["The soup is hot."]);
   assert.equal(s.supersessions.length, 0, "a supersession of nothing is not an event");
   assert.equal(t1.trace.correction, undefined);

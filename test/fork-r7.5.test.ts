@@ -168,6 +168,11 @@ test("R7.5 (h): a why-question whose standing state IS the asked predication kee
 
 test("R7.5: the contrast R5-2 pinned still fires at the derivation site, where the subject's own slot is unoccupied", () => {
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): C7
+  // swapped the soup's 'hot' for the garden's, on the
+  // since-removed cross-axis derivation (Part H). The
+  // soup's 'hot' stands for the derivation to contrast
+  // with again; the contrast and its ground are unchanged.
   const [, t2] = run(s, ["The soup is hot.", "Is the salt cold?"]);
   assert.equal(t2.trace.answeredFromRecord, undefined, "the salt has no standing state — the derivation answers");
   assert.equal(t2.reply, "But the salt is cold.");

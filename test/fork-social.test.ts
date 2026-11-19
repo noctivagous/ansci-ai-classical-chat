@@ -125,8 +125,16 @@ test("S3: 'What do you do?' is not a capability self-query — the modal is the 
   const s = newSession();
   run(s, ["What do you do?"]);
   const obj = person(s)[0];
-  assert.equal(obj.act.kind, "question", "no modal 'can', no self-query: it asks after an occupation");
-  assert.equal(obj.act.selfQuery, undefined);
+  // Premise correction (conversation-shapes C3, 2026-11-18): S3
+  // left the occupation question an ordinary question by
+  // design; C3 draws it as the self-fact flavour of the
+  // self-query family (the probe run measured occupation
+  // questions declined and token-clarified). What S3 pinned —
+  // that it is NOT the capability flavour — stands; what
+  // changed is that the family now answers it.
+  assert.equal(obj.act.kind, "self-query", "no modal 'can', no capability flavour: it asks after an occupation, and C3 answers it as a self-fact");
+  assert.equal(obj.act.selfQuery, "fact");
+  assert.equal(obj.act.selfFact, "occupation");
 });
 
 /* ---------------- S4: the clarification move ---------------- */
@@ -193,6 +201,12 @@ test("S4 referent (c): the context request opens a pending the continuation answ
 
 test("S4 whole utterance (d): an unusable sentence gets a rephrase request that names no failure", () => {
   const s = newSession();
+  // Fixture restored (property-axes slice, 2026-11-18): the
+  // continuation telling is the soup again — C7 swapped in
+  // the garden because the soup's reply was then the premise
+  // stance, not the plain receipt; that stance stood on the
+  // cross-axis derivation Part H removes. The claim under
+  // test is the pending's lifecycle, unchanged.
   const [ask, next] = run(s, ["Blorf wizzle snarp.", "The soup is hot."]);
   assert.equal(ask.reply, "Could you put that another way?");
   assert.equal(next.reply, "Ok.", "the rephrase is processed as itself; the pending closed on the continuation");
@@ -241,6 +255,49 @@ test("S5: mere absence is not a contradiction — no stance is taken", () => {
   assert.ok(r.reply.startsWith("I can't answer that from what I know"), "an uncontradicted gap still declines as a don't-know");
 });
 
+test("S5 axes: a material's phase is not its temperature — the soup's temperature is undetermined, not contradicted", () => {
+  // Property axes (design record Part H; owner's ruling,
+  // 2026-11-18): soup's Water is its matter phase — a liquid
+  // food — and temperature is a separate axis on which the
+  // graph holds no determination for soup. The premise
+  // degree's temperature check consults temperature-axis
+  // determinations only, so neither the why-question nor the
+  // assertion draws the stance: the question declines as a
+  // don't-know and the telling is recorded as told. (S5's
+  // original refusal of the why-question, and C7's stance
+  // toward the assertion, stood on the cross-axis derivation
+  // soup —HAS_ELEMENT {food}→ Water → Yin → cold; both fall
+  // with it. The stance's ground survives where the graph
+  // determines temperature on its own axis — the winter
+  // tests above and the season assertions below.)
+  const s = newSession();
+  const [q] = run(s, ["Why is the soup hot?"]);
+  assert.equal(q.trace.stance, undefined, "no stance over an undetermined premise");
+  assert.ok(q.reply.startsWith("I can't answer that from what I know"), "the why-question declines as a don't-know");
+  const s2 = newSession();
+  const [t] = run(s2, ["The soup is hot."]);
+  assert.equal(t.reply, "Ok. Noted.", "the telling is acknowledged as told");
+  assert.equal(t.trace.stance, undefined);
+  assert.ok(s2.states.some((st) => st.holder === "soup" && st.lemma === "hot"), "the telling stands as a state");
+  assert.equal(s2.conversation.disagreements.length, 0, "no disagreement is recorded over an undetermined premise");
+});
+
+test("S5 axes: the season assertions keep the stance — summer is not the coldest, winter is not the hottest", () => {
+  // The bar-8 shapes, verified on the temperature axis
+  // itself: a season enters the spine by its correspondence
+  // assignment (ELEMENT_OF), and its temperature share is
+  // stated in the seed — the contradiction is a temperature
+  // determination, not a phase reading.
+  const s = newSession();
+  const [summer] = run(s, ["Summer is the coldest."]);
+  assert.equal(summer.reply, "Summer is warm, as I have it.");
+  assert.equal(summer.trace.stance?.source, "graph");
+  const s2 = newSession();
+  const [winter] = run(s2, ["Winter is the hottest."]);
+  assert.equal(winter.reply, "Winter is cold, as I have it.");
+  assert.equal(winter.trace.stance?.source, "graph");
+});
+
 /* ---------------- S6: persistence across conversations ---------------- */
 
 test("S6: a returner is recognised only on stating their identity — and then the picture is loaded", () => {
@@ -281,7 +338,13 @@ test("S6: a different name is a different record — no recognition crosses iden
   run(sam, ["I'm Sam.", "Goodbye."]);
   const mary = newSession(undefined, undefined, { interlocutorStore: store });
   const [naming] = run(mary, ["I am Mary."]);
-  assert.equal(naming.reply, "Ok. Noted.", "Mary's first naming gets no return acknowledgement");
+  // Premise correction (conversation-shapes C6, 2026-11-18):
+  // the receipt now addresses the visitor by the name just
+  // learned — the acknowledgement recognising the picture the
+  // record holds. What this pin protects stands unchanged:
+  // no RETURN acknowledgement ("Welcome back") crosses to a
+  // first contact, and contact stays "first" below.
+  assert.equal(naming.reply, "Ok. Noted, Mary.", "Mary's first naming gets no return acknowledgement — the plain receipt, recognising the name just given");
   assert.equal(mary.interlocutor.contact, "first");
   assert.deepEqual(store.keys().sort(), ["mary", "sam"]);
 });

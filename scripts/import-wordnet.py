@@ -55,10 +55,11 @@ Hyponym/holonym pointers are the reverse of hypernym/meronym pointers already
 present on the other side, so each fact is stored once.
 
 Trimming applied to fit the repo's size budget (all reported, nothing silent):
-adverb synsets are omitted (the extract is noun/verb/adjective), and
 derivationally-related edges are omitted. Core relations (hypernym, meronym,
 antonym, similar-to, entailment, causes) and every kept synset's full
-definition survive untouched.
+definition survive untouched. Adverb synsets were omitted by the original
+trim; they are kept in full since the 2026-11-18 adverb restoration
+(GAPS §6) — the extract is noun/verb/adjective/adverb.
 """
 import json
 import os
@@ -203,8 +204,11 @@ def parse_wndb(wndb_dir: str):
 
 def build_extract(synsets, relations):
     """Apply the trims and compact encoding. Returns (extract, stats)."""
-    # Trim 1: adverb synsets out (noun/verb/adjective kept in full).
-    keep = [i for i, s in enumerate(synsets) if s[1] != "r"]
+    # No POS trim: noun/verb/adjective/adverb are all kept in full.
+    # (The original Trim 1 dropped adverb synsets; restored
+    # 2026-11-18, GAPS §6 — the shipped extract now carries the
+    # adverb block the source data always had.)
+    keep = list(range(len(synsets)))
     remap = {old: new for new, old in enumerate(keep)}
     kept = [synsets[i] for i in keep]
 
@@ -225,13 +229,13 @@ def build_extract(synsets, relations):
     rel["instance"] = instance
 
     # Pos-grouped blocks with delta-encoded offsets; global synset index is
-    # the concatenation of blocks in n, v, a order (the order of `kept` after
+    # the concatenation of blocks in n, v, a, r order (the order of `kept` after
     # sorting each block by offset — relations were remapped against the
     # pre-sort order, so sort blocks and relations consistently below).
-    order = sorted(range(len(kept)), key=lambda i: ("nva".index(kept[i][1]), kept[i][0]))
+    order = sorted(range(len(kept)), key=lambda i: ("nvar".index(kept[i][1]), kept[i][0]))
     final_index = {old: new for new, old in enumerate(order)}
     blocks = {}
-    for pos in ("n", "v", "a"):
+    for pos in ("n", "v", "a", "r"):
         rows = []
         prev = 0
         for old in order:
@@ -257,7 +261,6 @@ def build_extract(synsets, relations):
         "edition": EDITION,
         "license": "CC BY 4.0",
         "trimmed": [
-            "adverb synsets omitted (noun/verb/adjective kept in full)",
             "derivationally-related edges omitted",
             "gloss usage examples omitted (definitions kept in full)",
         ],
@@ -348,7 +351,14 @@ def _adj_forms(lemma: str):
     return {lemma + "er", lemma + "est"}
 
 
-_FORM_GENERATORS = {"n": _noun_forms, "v": _verb_forms, "a": _adj_forms}
+def _adv_forms(lemma: str):
+    # Adverbs carry no regular inflection in this index (no -s/-ed/-er
+    # generation is claimed for them); an adverb surface is its lemma,
+    # which the identity lookup already resolves.
+    return set()
+
+
+_FORM_GENERATORS = {"n": _noun_forms, "v": _verb_forms, "a": _adj_forms, "r": _adv_forms}
 
 
 def build_forms_index(synset_records, exc_pairs):
@@ -382,7 +392,7 @@ def extract_records(extract):
     slice the loader used to read from the flat array.
     """
     synset_records = []
-    for pos in ("n", "v", "a"):
+    for pos in ("n", "v", "a", "r"):
         block = extract["blocks"].get(pos)
         if not block:
             continue

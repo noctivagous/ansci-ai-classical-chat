@@ -142,6 +142,28 @@ export function tokenResolverAvailable(): boolean {
   return loadData() !== null;
 }
 
+/**
+ * Whether the shipped lexicon attests this word (lowercased,
+ * punctuation already stripped by the caller): the hand lexicon
+ * (EN_LEXICON, every registered form) or the resolver's own
+ * frequency dictionary. This is the attestation the turn
+ * layer's clarification discipline reads (conversation-shapes
+ * C4, 2026-11-18): a "correction" of a word the lexicon itself
+ * attests is not a doubt — the resolver's own ordering rule
+ * already holds that recognised words stand ("form" is not
+ * corrected to "from"); the token can stand unresolved in the
+ * record for positional reasons (a trailing period riding on
+ * the surface, "her.") without the word being in question.
+ * Where the resolver data cannot load, the hand lexicon alone
+ * attests.
+ */
+export function isAttestedWord(lower: string): boolean {
+  if (!lower) return false;
+  if (lower in EN_LEXICON) return true;
+  const data = loadData();
+  return data ? data.symspell.has(lower) : false;
+}
+
 /** Split a canonical form the way enTokenize splits contractions, so
  *  a resolved "don't" enters the item stream as do + n't. Mirrors
  *  parse.ts's contraction rules; keep the two in step. */

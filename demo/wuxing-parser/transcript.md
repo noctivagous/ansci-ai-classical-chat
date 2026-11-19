@@ -132,8 +132,10 @@ scoreboard and `README.md` for how to read this.
 
 *Demonstrates: a verb the hand lexicon does not list (WordNet-fed, if enabled). Expectation: `exact`.*
 
-- classified: blow:Wood(verb)  wind:Earth(agent)  east:Earth(location)
+- classified: blow:Wood(verb)  wind:Earth/Wood(agent)  east:Earth/Wood(location)
 - relations: blow -agent-> wind; blow -location-> east
+- in the net: wind -> Wood (seed node 'wood') [fork-curated @0.95]
+- in the net: east -> Wood (seed node 'wood') [fork-curated @0.95]
 - checker: no violations
 - round-trip: The wind blows from the east.  *(exact)*
 

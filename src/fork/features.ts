@@ -149,12 +149,18 @@ export function extractFeatures(p: ParsedSentence): FeatureAtom[] {
   // Edges: roles, attachments, classifiers, links.
   for (const e of p.meaning.edges) {
     const fromPk = predKey.get(e.from);
-    if (ROLE_RELATIONS.has(e.relation) && fromPk) {
+    // Part G.5: a location query over a copular clause ("Where are
+    // you?") puts the question node as root and the topic as the
+    // edge's source — that edge atomises as an attachment
+    // (`where|location = you`), not as a role of the topic.
+    const topicLocation =
+      e.relation === "location" && e.to === p.meaning.rootId && byId.get(e.to)?.questionWord === true;
+    if (ROLE_RELATIONS.has(e.relation) && fromPk && !topicLocation) {
       const filler = byId.get(e.to);
       atoms.push(
         atom("roles", `${fromPk}|${e.relation}`, `${lemmaOf(e.to)}${filler?.prep ? "@" + filler.prep : ""}`),
       );
-    } else if (ATTACH_RELATIONS.has(e.relation)) {
+    } else if (ATTACH_RELATIONS.has(e.relation) || topicLocation) {
       atoms.push(atom("attachment", `${lemmaOf(e.to)}|${e.relation}`, lemmaOf(e.from)));
     } else if (e.relation === "has-classifier") {
       atoms.push(atom("classifier", `classifier:${lemmaOf(e.from)}`, lemmaOf(e.to)));

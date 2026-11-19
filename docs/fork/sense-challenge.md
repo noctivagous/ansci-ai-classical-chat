@@ -41,7 +41,7 @@ Set B (sealed, single run): coherence **5/6** vs baseline **3/6** — the gain s
 
 ## Non-regression
 
-Frozen holdout: parse rate **80/80** (stage-3 close: 80/80); pooled feature preservation **98.7%** (stage-3 close: 98.2%). The sense pass runs inside parse(), so these numbers are with the mechanism live. Instrument note: the preservation figure is warm-state dependent at the ±0.5pt level — derived entries register into the shared lexicon as sentences are parsed, so the atom population shifts slightly with what a runner has parsed before the corpus (measured directly: 97.7% cold vs 98.5% warmed, over ~1,080 atoms). The 0.5pt gap to the stage-3 figure is that instrument effect, not a located regression; parse rate, the hard floor, is unchanged.
+Frozen holdout: parse rate **80/80** (stage-3 close: 80/80); pooled feature preservation **98.6%** (stage-3 close: 98.2%). The sense pass runs inside parse(), so these numbers are with the mechanism live. Instrument note: the preservation figure is warm-state dependent at the ±0.5pt level — derived entries register into the shared lexicon as sentences are parsed, so the atom population shifts slightly with what a runner has parsed before the corpus (measured directly: 97.7% cold vs 98.5% warmed, over ~1,080 atoms). The 0.5pt gap to the stage-3 figure is that instrument effect, not a located regression; parse rate, the hard floor, is unchanged.
 
 ## What this stage does and does not settle
 
