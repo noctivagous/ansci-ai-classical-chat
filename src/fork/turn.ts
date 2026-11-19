@@ -85,7 +85,8 @@
 import { seasonDegreeProfile } from "../engine";
 import { EN_LEXICON, type MeaningNode, type ParsedSentence, type TokenResolution, type VerbEntry } from "./sentence";
 import { CONTROLS, GENERATES, type Element } from "./sentence";
-import { parse } from "./parse";
+import { enIsFunctionWord, parse } from "./parse";
+import { isAttestedWord } from "./token-resolve";
 import { lookupClassification } from "./classify";
 import { climbClassification, climbRecognitions } from "./wordnet-lex";
 import { derive, type Derivation, type DerivedConclusion } from "./join";
@@ -93,9 +94,9 @@ import { classifiedOrigin, holderOf, recordEntity, resolvePronoun, supersedeReco
 import { renderComposition } from "./composition";
 import { priceDerivation, tierOfProvenance, weakestTier, type PricingRecord, type Tier } from "./pricing";
 import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
-import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, planSelfIdentity, planThanksReceipt, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
+import { COHESION_MARKERS, ROLE_QUESTION_WORD, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, planSelfIdentity, planThanksReceipt, planWellbeingAnswer, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rivalSplits } from "./sense";
-import { assessInformation } from "./assess";
+import { assessInformation, assessUtterance } from "./assess";
 import { SENSE_CHANNELS } from "./semantic-object";
 import {
   dischargeAnswerNeed,
@@ -106,7 +107,7 @@ import {
   seedSceneNeeds,
 } from "./info-object";
 import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, premiseDegree, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
-import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, requestCapabilities, requestIdentity } from "./social";
+import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, recordLastReply, requestCapabilities, requestIdentity } from "./social";
 import { routeProblemSolving } from "./problem-solving";
 import { assessNormalcy, normalcyFlagOf } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
@@ -399,6 +400,22 @@ export interface TurnTrace {
     outcome: "filled" | "abandoned" | "attempt-failed" | "fallback";
     detail: string;
   };
+  /** Conversation-shapes C1: this turn was a fused turn — it
+   *  carried several sentence segments, at least one of them a
+   *  social act — and was taken as a sequence of acts in the
+   *  stream, each processed as its own turn; the replies were
+   *  composed in order. The segments and their replies, as
+   *  processed. The trace itself is the last segment's. */
+  segmented?: { segment: string; reply: string }[];
+  /** Conversation-shapes C5: this turn's reply was a ritual
+   *  mirror or receipt (greeting, farewell, thanks) — a social
+   *  exchange, not a substantive saying, so the wrapper does
+   *  not record it as the last substantive reply. */
+  ritualReply?: boolean;
+  /** Conversation-shapes C5: this turn was the visitor's own
+   *  clarification request and the reply restated this
+   *  recorded saying — the record the restatement read. */
+  restatedReply?: { turn: number; text: string };
   /** Social Unit S5: the premise stance — a presupposition
    *  Coherence's premise degree found contradicted (by the
    *  record or the graph), the stance taken on it, or an
@@ -729,7 +746,17 @@ function directedTargetGap(
  * wording is the family's: a fuller note when the turn opens
  * the conversation, the plain receipt after.
  */
-function acknowledgementFor(turn: number): string {
+function acknowledgementFor(turn: number, name?: string): string {
+  // Recognition in the acknowledgement (conversation-shapes
+  // C6, 2026-11-18): when the Interlocutor's picture has just
+  // gained the visitor's name — stated and learned on this
+  // very turn — the acknowledgement addresses them by it. The
+  // bare receipt told a visitor who had just named themselves
+  // nothing back; bar item 9 (the Interlocutor's picture,
+  // shown) is the ground. The wording stays the receipt's own,
+  // with the name in the address position; turns where no name
+  // was learned keep the bare forms exactly.
+  if (name) return turn === 1 ? `Ok. Noted, ${name}.` : `Ok, ${name}.`;
   return turn === 1 ? "Ok. Noted." : "Ok.";
 }
 
@@ -917,7 +944,120 @@ function answerHowMany(session: Session, trace: TurnTrace, text: string): TurnRe
   return { reply: `You have ${rendered}${left ? " left" : ""}.`, trace };
 }
 
-function processTurnInner(session: Session, text: string, opts?: { clarificationFallback?: boolean }): TurnResult {
+/**
+ * Split a turn's surface into its sentence segments (terminal
+ * punctuation retained), with one peel: a leading greeting
+ * segment set off by a comma ("Hello, how are you doing?") is
+ * its own segment. Segmentation is stream mechanics only — it
+ * recognises nothing; each segment is parsed and assessed by
+ * the ordinary machinery, which does the recognising.
+ */
+function splitTurnSegments(text: string): string[] {
+  const trimmed = text.trim();
+  const parts = (trimmed.match(/[^.!?]+[.!?]+["')\]]*/g) ?? []).map((s) => s.trim()).filter(Boolean);
+  let segments = parts.length && parts.join(" ") === trimmed ? parts : [trimmed];
+  const peel = (s: string): string[] | null => {
+    const m = s.match(/^(hello|hi|hey|good morning|good afternoon|good evening|good night)\s*,\s*(.+)$/i);
+    return m ? [`${m[1]}.`, m[2]] : null;
+  };
+  if (segments.length === 1) {
+    segments = peel(segments[0]) ?? segments;
+  } else if (segments.length > 1) {
+    const p = peel(segments[0]);
+    if (p) segments = [...p, ...segments.slice(1)];
+  }
+  return segments;
+}
+
+/** A segment's assessed act kind, read standalone — the same
+ *  parse and assessment the turn itself would run, read-only
+ *  against the session (assessment records nothing). Null when
+ *  the segment does not parse. */
+function segmentActKind(segment: string, session: Session): string | null {
+  try {
+    const p = parse(segment, "en");
+    const objs = assessUtterance(p, { turn: session.turnCount + 1, surface: segment, session });
+    return objs[0]?.act.kind ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Take a multi-segment turn up segment by segment (conversation-
+ * shapes C1/C2): each segment that parses as a single sentence
+ * is processed as its own turn in the stream, segments that do
+ * not parse are skipped and named, and the replies compose in
+ * order — a segment's whole-utterance rephrase request drops
+ * out of the composition when any other segment was taken up.
+ * Returns null when nothing could be taken up (no segment
+ * parses, or every taken-up segment itself ends at the
+ * rephrase): the caller then gives the turn's own answer.
+ */
+function composeSegmentTurns(session: Session, text: string, ground: string): TurnResult | null {
+  const segments = splitTurnSegments(text);
+  if (segments.length <= 1) return null;
+  const parts: { segment: string; result: TurnResult }[] = [];
+  const skipped: string[] = [];
+  for (const segment of segments) {
+    try {
+      parse(segment, "en");
+    } catch {
+      skipped.push(segment);
+      continue;
+    }
+    parts.push({ segment, result: processTurnInner(session, segment, { segmented: true }) });
+  }
+  if (parts.length === 0) return null;
+  let replies = parts.map((p) => p.result.reply);
+  const REPHRASE = "Could you put that another way?";
+  if (replies.every((r) => r === REPHRASE)) return null;
+  if (replies.includes(REPHRASE)) replies = replies.filter((r) => r !== REPHRASE);
+  const trace = parts[parts.length - 1].result.trace;
+  trace.segmented = parts.map((p) => ({ segment: p.segment, reply: p.result.reply }));
+  trace.planNote =
+    `${ground}: ${parts.length} of ${segments.length} sentence segments were taken as their own acts and the replies composed` +
+    (skipped.length ? `; not taken up (unparseable as single sentences): ${skipped.map((s) => `"${s}"`).join(", ")}` : "") +
+    (trace.planNote ? `; final segment: ${trace.planNote}` : "");
+  return { reply: replies.join(" "), trace };
+}
+
+function processTurnInner(session: Session, text: string, opts?: { clarificationFallback?: boolean; segmented?: boolean }): TurnResult {
+  /* The fused turn (conversation-shapes C1, 2026-11-18): a turn
+   * carrying several sentence segments, at least one of them a
+   * social act (a greeting, a farewell, a thanks, a self-query),
+   * is taken as what it is — a sequence of acts in one turn.
+   * Until now the whole surface went to the sentence layer as
+   * one utterance: the parse merged or dropped the segments
+   * ("Thank you. Goodbye." graphed only the thanks), and the
+   * fused forms were declined as question-type mismatches or
+   * met with the rephrase request (the sealed probe run's
+   * shapes 1, 2 and 7). Each segment is now processed as its
+   * own turn in the stream — the registers, the recording and
+   * the phase machine see each act as itself — and the replies
+   * are composed in order. A segment whose reply is the
+   * whole-utterance rephrase request is dropped from the
+   * composition when any other segment was taken up: the
+   * conversation demonstrably proceeded, and the request would
+   * deny it. A turn with no social segment takes the ordinary
+   * path below, byte for byte. */
+  if (!opts?.segmented && !opts?.clarificationFallback) {
+    const segments = splitTurnSegments(text);
+    if (segments.length > 1) {
+      const kinds = segments.map((s) => segmentActKind(s, session));
+      const socialCount = kinds.filter(
+        (k) => k === "greeting" || k === "leave-taking" || k === "thanks" || k === "self-query",
+      ).length;
+      if (socialCount >= 1 && (segments.length - socialCount >= 1 || socialCount >= 2)) {
+        const composed = composeSegmentTurns(
+          session,
+          text,
+          `fused turn (conversation-shapes C1): the turn's sentence segments (${kinds.map((k) => k ?? "unparsed").join(", ")}) carry social acts`,
+        );
+        if (composed) return composed;
+      }
+    }
+  }
   session.turnCount += 1;
   const turn = session.turnCount;
   const trace: TurnTrace = {
@@ -1001,6 +1141,32 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       (err as { tokenResolutions?: TokenResolution[] }).tokenResolutions ?? [];
     trace.parseSummary = "parse failed";
     trace.declineReason = "the sentence could not be taken apart by the sentence layer";
+    /* Statement recovery (conversation-shapes C2, 2026-11-18):
+     * the whole-utterance rephrase below is S4's trigger (d) —
+     * for a turn the system can make nothing of. A long
+     * narrative or emotional turn is not that: its whole
+     * surface defeats the sentence layer (one unknown verb in
+     * the second sentence sinks the turn), while its sentences
+     * taken one at a time are clear statements the ordinary
+     * machinery registers and answers — the sealed probe run
+     * met 45 of its 128 final replies with the rephrase
+     * request, most of them multi-sentence tellings. So before
+     * the rephrase: take the turn's segments as their own acts,
+     * exactly as the fused-turn composition does, skipping the
+     * segments that do not parse (named in the trace, never
+     * silently). If at least one segment is taken up, the turn
+     * was received; the rephrase stands only when no segment
+     * could be — the gibberish ground, unchanged. A single-
+     * sentence failure has no segments to recover and keeps
+     * the rephrase, as does a segment's own failure. */
+    if (!opts?.segmented) {
+      const recovered = composeSegmentTurns(
+        session,
+        text,
+        "statement recovery (conversation-shapes C2): the whole turn could not be taken apart by the sentence layer",
+      );
+      if (recovered) return recovered;
+    }
     // S4 (design §7d): the whole-utterance clarification — a
     // rephrase request that never names the failure (the trace
     // above keeps the located gap), with the pending opened so
@@ -1213,11 +1379,31 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
    * statement steering — the envelope build closes that
    * shortcut-shaped asymmetry.) */
   const openingObject = assessed[0];
+  if (openingObject && openingObject.act.kind === "greeting" && openingObject.act.wellbeing) {
+    /* The wellbeing answer (conversation-shapes C1, 2026-11-18):
+     * the greeting object is the ritual "How are you?" — the
+     * Planner answers it with the wellbeing predication the
+     * design names for the exchange (planWellbeingAnswer),
+     * authored as a reply object like every other move, and
+     * the authoring discharges the Social Unit's greeting-
+     * return demand. The mirror below is for the greeting
+     * proper; a wellbeing query mirrored from its own graph
+     * would generate the question back at the visitor. */
+    const authored = planWellbeingAnswer();
+    speakWithObject(session, trace, authored.graph, "wellbeing answer");
+    dischargeDemand(session, "greeting-return");
+    trace.planNote =
+      "wellbeing answer (conversation-shapes C1): the greeting's ritual exchange answered with the wellbeing predication; recorded as ritual — nothing about the system's state is banked from it";
+    trace.replyGraph = serialiseReplyGraph(authored.graph);
+    trace.wordingNotDerived = false;
+    return { reply: authored.sentence, trace };
+  }
   if (openingObject && openingObject.act.kind === "greeting") {
     speakWithObject(session, trace, parsed, "return greeting");
     // S2: the authored mirror discharges the Social Unit's
     // greeting-return demand (the unit records the discharge).
     dischargeDemand(session, "greeting-return");
+    trace.ritualReply = true;
     trace.planNote =
       openingObject.act.streamRole === "opens"
         ? "return greeting (the planner, reading the semantic object; coherence: fits)"
@@ -1241,6 +1427,7 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
   if (openingObject && openingObject.act.kind === "leave-taking") {
     speakWithObject(session, trace, parsed, "return farewell");
     dischargeDemand(session, "farewell-return");
+    trace.ritualReply = true;
     trace.planNote =
       "return farewell (the planner, reading the leave-taking object; the mirror returns the register the person chose; the Social Unit's farewell-return demand is discharged and the conversation is closed)";
     trace.replyGraph = serialiseReplyGraph(parsed);
@@ -1262,6 +1449,7 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     const receipt = planThanksReceipt();
     speakWithObject(session, trace, receipt.graph, "thanks receipt");
     dischargeDemand(session, "thanks-receipt");
+    trace.ritualReply = true;
     trace.planNote =
       "thanks receipt (the planner, answering the thanks object with the receipt move; ritual — the pending thread is untouched; the Social Unit's thanks-receipt demand is discharged)";
     trace.replyGraph = serialiseReplyGraph(receipt.graph);
@@ -1295,6 +1483,37 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
    * pass) before assessment could recognise it. */
   if (openingObject && openingObject.act.kind === "self-query") {
     const which = openingObject.act.selfQuery ?? "identity";
+    if (which === "fact") {
+      /* The self-fact answer (conversation-shapes C3, 2026-11-18):
+       * the question asks after a fact about the system the Self
+       * tables do not hold — an occupation, pets, a birthplace.
+       * The honest answer is composed from the limits facts'
+       * standing (the system is a small program, not a person
+       * with a biography): the plain denial, in visitor
+       * language, with the matter as the visitor spoke it. For
+       * the occupation the denial is joined by what the system
+       * does instead — the Capabilities table's first sentence,
+       * requested through the same address as every self fact.
+       * Like the capability presentation this branch composes
+       * from the tables and authors no reply object. */
+      const matter = openingObject.act.selfFact ?? "one";
+      let reply: string;
+      if (matter === "occupation") {
+        reply = `I don't have a job. ${requestCapabilities().capabilities[0]}`;
+      } else {
+        const anyForm =
+          parsed.connective.tokens.some((t) => t.toLowerCase() === "any") ||
+          matter.endsWith("s") ||
+          matter === "children";
+        const article = anyForm ? "any" : /^[aeiou]/.test(matter) ? "an" : "a";
+        reply = `I don't have ${article} ${matter}.`;
+      }
+      dischargeDemand(session, "self-answer");
+      trace.planNote =
+        `self answer (fact): the question asks after '${matter}' — a fact about the system the Self tables do not hold; the answer is the plain denial the limits facts support, never a decline-by-gap (conversation-shapes C3)`;
+      trace.wordingNotDerived = true;
+      return { reply, trace };
+    }
     if (which === "capability") {
       const facts = requestCapabilities();
       dischargeDemand(session, "self-answer");
@@ -1312,6 +1531,36 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     trace.replyGraph = serialiseReplyGraph(authored.graph);
     trace.wordingNotDerived = false;
     return { reply: `${authored.sentence} ${facts.kindLine}`, trace };
+  }
+
+  /* The visitor's own clarification request (conversation-
+   * shapes C5, 2026-11-18): "What do you mean?" asks what the
+   * SYSTEM meant, and the designed response is a restatement —
+   * the system's last substantive reply, re-said from the
+   * Conversation register's record of what it actually said
+   * (social.ts's lastReply, written by the turn wrapper as
+   * each substantive reply is spoken). The saying is quoted
+   * back in a plainer frame rather than re-derived: the record
+   * is the authority for what was said, and a re-derivation
+   * could drift from it. When the register holds nothing —
+   * the request opens the conversation, or everything before
+   * it was ritual or clarification — the reply says that
+   * plainly. Either way this is an answer, never the question
+   * path's decline ("nothing you have told me says what was
+   * meant" — the record asked after was the system's own). */
+  if (openingObject && openingObject.act.meanQuery) {
+    const last = session.conversation.lastReply;
+    if (last) {
+      trace.restatedReply = last;
+      trace.planNote =
+        "restatement (conversation-shapes C5): the visitor asks what the system meant; the reply re-says the last substantive reply from the Conversation register's record of what was actually said";
+      trace.wordingNotDerived = true;
+      return { reply: `I said: ${last.text}`, trace };
+    }
+    trace.planNote =
+      "restatement (conversation-shapes C5): the visitor asks what the system meant, and the register holds no substantive reply to restate — the reply says so plainly";
+    trace.wordingNotDerived = true;
+    return { reply: "I have not said anything yet that I can restate.", trace };
   }
 
   /* The return acknowledgement (Social Unit S6): this turn
@@ -1361,18 +1610,74 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       const isUnresolved = r.outcome === "unresolved";
       const applied = r.replacement[0];
       const appliedDistance = applied ? r.candidates?.find((c) => c.term === applied)?.distance : undefined;
+      /* The attested-surface rule (conversation-shapes C4,
+       * 2026-11-18): a token the shipped lexicon itself attests
+       * is not in doubt, however the resolver scored it — the
+       * record can leave an ordinary word "unresolved" for
+       * positional reasons (the surface "her." carries its
+       * sentence's period; "simple" and "fun" are attested
+       * words the matcher scored against rarer neighbours),
+       * and the probe run's spurious clarifications were
+       * exactly these ("Did you mean here, her, or hero?").
+       * The resolver's own doctrine is the same: recognised
+       * words stand. The token is passed over; the sentence
+       * proceeds on its parse. */
+      const surfaceWord = r.surface.toLowerCase().replace(/[^a-z']/g, "");
+      if (surfaceWord && isAttestedWord(surfaceWord)) continue;
+      /* The proper-name pass (C4, same ground): a capitalised
+       * token that is not sentence-initial is the parser's own
+       * proper-name signal — the same signal the self-naming
+       * reading trusts in social.ts. A name is open-class: the
+       * lexicon cannot attest it, and "correcting" it ("Roxie"
+       * → "movie, role, or rose") is not doubt but a category
+       * error. Sentence-initial capitals get no pass — every
+       * sentence opens with one, doubtful or not ("Wethr"). */
+      if (r.tokenIndex > 0 && /^[A-Z]/.test(r.surface)) continue;
       // Genuine rival readings only: a candidate that is the
       // token itself in another case ("How" → "how", distance
       // 0) is not a reading the person could choose between —
       // the record carries it because the capitalised form is
       // not in the resolver's dictionary, not because the word
       // is in doubt. Rivals are distinct words at a real
-      // distance.
-      const genuine = (r.candidates ?? []).filter((c) => c.distance >= 1 && c.term.toLowerCase() !== r.surface.toLowerCase());
+      // distance. A candidate that is a function word is not a
+      // genuine rival either (C4): "too" beside "took" and
+      // "tool" names no content choice a visitor could settle.
+      const genuine = (r.candidates ?? []).filter(
+        (c) => c.distance >= 1 && c.term.toLowerCase() !== r.surface.toLowerCase() && !enIsFunctionWord(c.term.toLowerCase()),
+      );
       const rivals = genuine.filter((c) => applied && c.term.toLowerCase() !== applied.toLowerCase() && appliedDistance !== undefined && c.distance === appliedDistance);
       const isWeak = (r.outcome === "corrected" || r.outcome === "segmented") && r.confidence < 0.6 && rivals.length > 0;
       if (!isUnresolved && !isWeak) continue;
       if (isUnresolved && !(r.candidates?.length)) {
+        /* Statement recovery at the token exit (conversation-
+         * shapes C2, 2026-11-18): this exit is the other place a
+         * whole telling sinks on one word — the sentence layer
+         * graphs what it can and leaves a token unresolved, and
+         * a multi-sentence statement was answered with the
+         * rephrase request for the whole turn. When the turn is
+         * a statement with segments that stand as their own
+         * sentences, take those up instead (the segment that
+         * carries the unresolved token is skipped and named in
+         * the trace); this turn's whole-surface object is
+         * withdrawn from the stream, superseded by the segments'
+         * own objects. A single-sentence statement keeps this
+         * exit exactly as designed — there is nothing to
+         * recover it into. */
+        if (assessed[0]?.act.kind === "statement" && !opts?.segmented) {
+          const recovered = composeSegmentTurns(
+            session,
+            text,
+            `statement recovery (conversation-shapes C2): the token '${r.surface}' stands unresolved with no candidates, sinking the whole turn at the token exit`,
+          );
+          if (recovered) {
+            for (let i = session.objects.length - 1; i >= 0; i--) {
+              if (session.objects[i].producer === "person" && session.objects[i].turn === turn) {
+                session.objects.splice(i, 1);
+              }
+            }
+            return recovered;
+          }
+        }
         openClarification(session, { openedBy: assessed[0]?.id ?? `turn:${turn}`, point: `token:${r.surface}`, question: "Could you put that another way?" });
         trace.planNote = `token clarification (S4, §7a/§3.3): the token '${r.surface}' is unresolved and no candidates exist — the reply is the rephrase request; the located gap stays in the trace`;
         return { reply: "Could you put that another way?", trace };
@@ -1738,6 +2043,18 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     };
   }
 
+  /* The name this turn's acknowledgements may address the
+   * visitor by (conversation-shapes C6): the identity stated
+   * and learned on this turn itself — the S6 check's pattern.
+   * Read once here; the acknowledgement sites below pass it to
+   * acknowledgementFor. A name learned on an earlier turn is
+   * the return acknowledgement's and the initiative's ground,
+   * not every receipt's. */
+  const ackName =
+    session.interlocutor.identity && session.interlocutor.identity.learnedAt === assessed[0]?.id
+      ? session.interlocutor.identity.name
+      : undefined;
+
   /* ---- R3 (§2.3, second gap shape): a rival split preempts
    * statement steering. The sense arithmetic cannot separate
    * two rival derivations of a word the person just used; a
@@ -1818,6 +2135,68 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
   /* ---- statements: steer by cycle ---- */
   const thisState = session.states.filter((s) => s.turn === turn && s.element).pop();
   const thisEvent = session.events.filter((e) => e.turn === turn).pop();
+
+  /* The premise stance for an ASSERTED premise (Social Unit
+   * S5's trigger, extended — conversation-shapes C7,
+   * 2026-11-18): S5 wired the stance for why-questions only,
+   * so a false premise carried as an assertion was recorded
+   * and acknowledged, and the stance never appeared (the
+   * probe run's bar-8 shape: the system neither complied nor
+   * endorsed, but said nothing). The trigger is the same
+   * degree, read the same way: this turn asserted a
+   * predication (subject predicated as quality, unnegated),
+   * and Coherence's premise degree finds it contradicted —
+   * by the GRAPH. The record source is deliberately not this
+   * trigger's: a predication the visitor's own record
+   * contradicts is a correction of their record, which the
+   * supersession machinery already answers; the stance is
+   * for what the system's own knowledge contradicts. Absence
+   * stays absence (no stance, the ordinary path), and mere
+   * tension stays annotation-only, exactly as in S5.
+   *
+   * The response reuses S5's pattern: the established ground
+   * is stated in plain words as the system's own knowledge,
+   * the assertion is not recorded as a state (the
+   * disagreement is its record — the asserted state recorded
+   * above is set aside), and a stance-repair pending opens,
+   * so an insistence on the premise meets the supposition
+   * treatment the S5 block above already gives it. */
+  {
+    const predEdgeA = parsed.meaning.edges.find((e) => e.relation === "predicated-as" || e.relation === "predicate");
+    const predSubjectA = predEdgeA ? nodeById(parsed, predEdgeA.from) : undefined;
+    const assertedIdx =
+      predSubjectA && assessed[0]?.act.kind === "statement" && !root.states?.negated
+        ? session.states.findIndex(
+            (s) => s.turn === turn && s.holder === predSubjectA.lemma.toLowerCase() && s.lemma === root.lemma && !s.negated,
+          )
+        : -1;
+    if (predSubjectA && assertedIdx >= 0) {
+      const subjectLemma = predSubjectA.lemma.toLowerCase();
+      const check = premiseDegree(session, subjectLemma, root.lemma);
+      if (check.degree === "contradiction" && check.source === "graph" && check.establishedQuality) {
+        const established = check.establishedQuality;
+        session.states.splice(assertedIdx, 1);
+        recordDisagreement(session, `${subjectLemma} is ${root.lemma}`, `${subjectLemma} is ${established}`);
+        openStanceRepair(session, {
+          openedBy: `turn:${turn}`,
+          premise: { subject: subjectLemma, quality: root.lemma, established, source: "graph" },
+        });
+        trace.stance = {
+          subject: subjectLemma,
+          presupposed: root.lemma,
+          established,
+          source: "graph",
+          outcome: "stated",
+          ground:
+            `${check.ground ?? ""}; the premise arrived as an assertion (conversation-shapes C7) — ` +
+            `the asserted state was set aside and the disagreement recorded, as an insisted premise's is`,
+        };
+        trace.planNote =
+          "premise stance on an assertion (conversation-shapes C7, S5's pattern): Coherence's premise degree is contradiction from the graph — the reply states the established ground; the assertion is not adopted and does not stand as a state";
+        return { reply: `${cap(predSubjectA.form)} is ${established}, as I have it.`, trace };
+      }
+    }
+  }
 
   // (a) The new state CONTROLS an earlier state: address the restrainer.
   // R4 (§9.1(b)): this is the steering junction where two grounded
@@ -1925,7 +2304,7 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       trace.steeringNote =
         "statement acknowledged (the acknowledgement move): the state is reported of " +
         `${thisState.holder}, not of the speaker — a telling, not a feeling to steer from`;
-      return { reply: acknowledgementFor(turn), trace };
+      return { reply: acknowledgementFor(turn, ackName), trace };
     }
     const generated = GENERATES[thisState.element];
     trace.cyclePath = `${thisState.element}→${generated} (generating)`;
@@ -2010,13 +2389,13 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
         "statement acknowledged (the acknowledgement move): the event stands recorded, no need or gap " +
         "stands open, and no steering relation claims the turn — the steering machinery stands down";
     }
-    return { reply: acknowledgementFor(turn), trace };
+    return { reply: acknowledgementFor(turn, ackName), trace };
   }
 
   trace.steeringNote =
     "statement acknowledged (the acknowledgement move): recorded, with nothing in it for the cycles " +
     "to steer by and no need or gap standing open";
-  return { reply: acknowledgementFor(turn), trace };
+  return { reply: acknowledgementFor(turn, ackName), trace };
 }
 
 /* ------------------------------------------------------------------ */
@@ -2210,6 +2589,12 @@ function applyInitiative(session: Session, result: TurnResult): void {
   // verb by the time the scan ran, and the scan excluded it
   // for that accidental reason.)
   if (trace.stance) return;
+  // Conversation-shapes C5: a restatement's reply is likewise a
+  // designed move, complete in itself — it quotes the record of
+  // what was said, and an appended steering move would garble
+  // the quotation (and falsify the record the next restatement
+  // reads).
+  if (trace.restatedReply) return;
   if (result.reply.trimEnd().endsWith("?")) return;
   const last = session.initiatives[session.initiatives.length - 1];
   if (last && turn - last.turn < 5) return;
@@ -2415,6 +2800,29 @@ export function processTurn(session: Session, text: string): TurnResult {
   persistInterlocutor(session);
   settleTurnEnvelopes(session, result.trace);
   applyInitiative(session, result);
+  /* The last-saying record (conversation-shapes C5): a
+   * substantive reply — one that says something, as opposed
+   * to a clarification question asked of the visitor, the
+   * whole-utterance rephrase request, a ritual mirror or
+   * receipt, or a restatement itself — is reported to the
+   * Social Unit's register as it stands after initiative, in
+   * the exact words spoken, so a later "What do you mean?"
+   * can be answered from the record of what was actually
+   * said. */
+  {
+    const pending = session.conversation.pending;
+    const clarificationAsk =
+      Boolean(result.trace.clarification) ||
+      (pending?.kind === "clarification" && pending.openedTurn === session.turnCount);
+    if (
+      !result.trace.ritualReply &&
+      !result.trace.restatedReply &&
+      !clarificationAsk &&
+      result.reply !== "Could you put that another way?"
+    ) {
+      recordLastReply(session, { turn: session.turnCount, text: result.reply });
+    }
+  }
   result.trace.mapPath = computeMapPath(result.trace);
   return result;
 }

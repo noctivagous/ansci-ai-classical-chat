@@ -208,7 +208,7 @@ export function createSession(graphStamp: string): SessionState {
 
 export interface SenseInfo {
   synsetId: string;
-  pos: "n" | "v" | "a";
+  pos: "n" | "v" | "a" | "r";
   lemmas: string[];
   gloss: string;
   mappedConceptId?: string;
@@ -224,7 +224,7 @@ export interface OntologyMatch {
 
 export interface TermLookup {
   surface: string;
-  lemmaCandidates: { lemma: string; pos: "n" | "v" | "a" }[];
+  lemmaCandidates: { lemma: string; pos: "n" | "v" | "a" | "r" }[];
   senses: SenseInfo[];
   ontology: OntologyMatch[];
   dictionaryPresent: boolean;

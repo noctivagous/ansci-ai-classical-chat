@@ -1725,3 +1725,581 @@ admission probes run first and are reported whatever they find;
 a failed probe is a result, not an embarrassment to be routed
 around. The demo exhibit and all prior-stage runners remain
 non-regression gates.
+
+## Part G — G0 determinations for the sealed expected-graph set (ruled 2026-11-18)
+
+The sealed expected-graph run for the frozen holdout 80 scored
+20 of 80 items because, at 53 items, what G0 should be existed
+only as parser behaviour, not as design. The seven
+determinations below close that gap for 31 items outright and
+one more conditionally. They were written as design, from this
+record's stated principles, the atom vocabulary and the
+signature contract — not reverse-engineered from parser output:
+no per-sentence parser output for any holdout item was
+consulted. Each determination is settled design, ruled
+2026-11-18 as recommended (owner's standing instruction:
+rulings on Kavi's rec, not held for item-by-item review); the
+rejected option is kept visible under each, with its
+consequence in one line. (G.7's provenance differs from
+G.1–G.6 and is stated in its own section.)
+
+### G.1 Unslottable objects: content without a licensed role
+
+An object the chosen FrameNet signature does not license is
+present in G0 as a node and absent as a role. The node carries
+everything true of it independently of the role system — its
+entity atom (classification element under the existing carriage
+conventions), its `det`/`prep`/`suffix` atoms, its
+`questionWord` atom if it is the questioned filler. No role
+edge joins it to the predicate, and no roles atom names it.
+The rule covers all three shapes: a bare-NP object; a
+questioned object (the wh-node is the unroled argument — under
+Part D's D1 the question is an operator over the clause and the
+query record carries the relation sought, but no role edge is
+asserted the signature does not license); and a clausal object
+(the subordinate clause is a full clause graph, its own
+predicate bundle and internal roles determined, with no edge
+joining its root to the matrix predicate — at the atom level a
+graph is a set of atoms, and the absence of a linking atom is
+the honest record of "content present, relation unlicensed").
+
+Two applications. The *used-for* family: *use*'s subject is its
+agent, assigned structurally under the VerbEntry convention
+(the signature's agent is evidence; subjects are assigned to it
+structurally), so agent atoms stand regardless of the
+signature's object slots; the questioned purpose rides as an
+unroled question node carrying its `prep` atom (`for`) — purpose
+is not a relation in the vocabulary and none is invented. In
+the passive shape the voice is passive and the unexpressed
+agent is a suppressed role under the H1 precedent: declared in
+`suppressedRoles`, never filled by invention. And a PP whose
+host relation the vocabulary does not license (no instrument
+relation exists; a location role cannot be sourced by a
+non-predicate host) rides as its content node with its `prep`
+atom and no edge, exactly as an unroled NP does.
+
+Grounding: C.4's evidence discipline (a WordNet-derived verb
+receives a lexical candidate, never a universal permissive
+frame — a default role would be the permissive frame returning
+by the back door); the role map's own rule (`FN_ROLE_MAP_V1` is
+explicit and finite on purpose — an unlisted FE is unmapped
+rather than guessed, and unmapped FEs are recorded, never
+silently dropped); and the H1 mirror (where a slot lacks a
+filler the design records the fact and invents none; where a
+filler lacks a slot, the symmetric honesty records the filler
+and invents no relation). Dropping the node instead would lose
+stated content from G0 — the F1 class of failure, invisible to
+every downstream instrument.
+
+Rejected: assigning the nearest generic role (`theme`) by
+default — every unslottable object would score as correctly
+roled, and the sealed set would certify the permissive frame
+C.4 abolished. Also rejected: a new "unslotted" marker atom
+family — a scoring-vocabulary change forcing re-adjudication of
+the already-scored 20 items, to record in the metric what the
+absence of a roles atom already records.
+
+### G.2 When-clauses: the `condition` link
+
+A when-clause joins its host clause by the `condition`
+relation, from the host clause's predicate to the subordinate
+clause's predicate, with the edge marker recorded (`when`):
+the connective atom is `hostLemma|condition|subordinateLemma
+= "when"`. The subordinate clause is a full clause graph with
+its own predicate bundle. In a question, the condition attaches
+to the questioned host predicate — the question is asked under
+the condition; the condition is not itself questioned. The
+same rule, with marker `if`, governs *if*-clauses: `condition`
+is the relation's home case, and a when-clause takes the same
+relation because what it contributes is the same — the
+circumstance under which the host proposition is evaluated —
+differing from *if* in presupposition, not in relation type. A
+when-clause forces no aspect bundle of its own; the
+habitual/generic colouring of the generic when-sentences comes
+from their generic subjects, not from the link.
+
+Grounding: Part D's D4 — relations are not collapsed by surface
+similarity. `time` is a node-level relation (the temporal
+location of a topic or predicate); a when-clause joins clauses,
+not a predicate to a time node. `chains-to` is sequence; a
+when-clause asserts no ordering. `condition` is the one
+clause-joining logical relation the vocabulary holds, typed
+"Metal logical" in its own right whatever it joins. Direction
+follows the record's attachment convention: edges run from the
+host to the dependent element.
+
+Rejected: the `time` attachment — a clause would be scored as a
+time node, collapsing D4's distinction and leaving the
+subordinate clause's predicate bundle with nothing to hang
+from.
+
+### G.3 Feel + adjective: a verb predicate with a qualifying quality
+
+*Feel* is a Wood verb predicate; its experiencer subject fills
+the agent role; the adjective is a quality node joined to the
+experiencer by the `qualifies` attachment. In atoms: the
+predicate bundle of *feel*; a roles atom `feel|agent =
+experiencer`; an entity atom for the adjective; an attachment
+atom `experiencerLemma|qualifies = adjectiveLemma`. Satellites
+of the adjective attach to the adjective, not to the verb: a
+degree word rides as a `degree`/`modulates` attachment on the
+quality, and a comparative quality is the quality node as
+lexicalised. In the question shape ("How am I feeling?") the
+clause keeps this shape under the interrogative: *feel* carries
+the progressive bundle ({ongoing}, per WP4's be + V-ing rule),
+and *how* questions the `qualifies` slot — the query record's
+relation is `qualifies`, its expected type a quality; the
+questioned quality itself is not supplied, so no quality node
+is asserted.
+
+Grounding: *feel* is typed a verb (Wood) by the lexicon's
+standing mapping and is not among the scaffolding kinds (the
+connective graph's scaffolding is expletives and do-support —
+forms realising no meaning node); a content verb is not demoted
+to a carrier. Its FrameNet home, Experiencer_focus, maps its
+Experiencer to `agent` in `FN_ROLE_MAP_V1` — the assignment is
+the role map's own. `qualifies` is the vocabulary's quality
+attachment, and a predicated quality attaches to what it is
+predicated of — the experiencer, not the experiencing event.
+The adjective-as-root shape under R1 governs *verbless*
+adjective predication (the desk evaluation's C2), where no verb
+exists to carry the clause; it does not govern a clause whose
+verb is present and lexical.
+
+Rejected: the adjective-as-root shape with *feel* as a
+copula-like carrier — a lexical verb would be scored as
+scaffolding, and the experiencer's role and the progressive
+would have no predicate to attach to.
+
+### G.4 Bare temporal adjuncts: the `time` edge does not wait for classification
+
+A temporal adjunct — a bare temporal NP, a temporal PP, or a
+single temporal adverb — is a node joined to its clause's
+predicate by the `time` relation, whether or not the node is
+classified. The shape is the fixture's F-001 shape, unchanged:
+edge predicate —time→ adjunct node; attachment atom
+`adjunctLemma|time = predicateLemma`; a PP adjunct's node
+carries its `prep` atom. Classification governs one thing only:
+the entity atom's element value. An adjunct resolving into an
+ontology time node carries that node's element (*winter* →
+Water); one that does not carries `none` (*Saturday*, *tonight*,
+*today*, *now*, *tomorrow*). Classification is a property of
+the node's sense; the `time` edge is a property of the phrase's
+meaning, and the second never waits for the first.
+
+Grounding: the `time` relation is defined as "temporal
+location of a topic — a meaning relation, NOT a cycle edge."
+F.4's sentence is read for what it claims: resolution into
+ontology nodes happens "where a classified node exists" — a
+claim about ontology linkage, not a precondition on the edge.
+The alternative makes G0 lose content the sentence plainly
+states, and preservation would then certify the loss — the F1
+pattern. Nor may the gap be closed from the other side by
+classifying *Saturday* into the net by fiat: classification is
+the table's business under its own protocol, not a graph-shape
+decision. (F.4's declared ontology failure stands untouched:
+precision — *exact* — has no determination in this record.)
+
+Rejected: no representation for unclassified temporals — the
+affected items would score a G0 that never mentions when the
+event happens, and the omission would be invisible to
+preservation.
+
+### G.5 Time, season and location queries: the questioned slot is the relation's filler
+
+A query over a clause-level relation takes the copular-question
+shape of the record, with the relation Part D names: the topic
+node and the question node, the question node as root carrying
+the clause's predicate bundle (mood interrogative; tense by the
+copula record, as the `predicated-as` value carries it in the
+fixture's F-005), an edge from the topic to the question node
+under the queried relation, and the query record naming that
+relation and its expected answer type (D1, amendment A2).
+
+- **When / what-time.** Topic *it* (entity `none`); question
+  node *when* or *time*, `questionWord` carried; edge *it
+  —time→ question node*; attachment atom `when|time = it` /
+  `time|time = it`; query record {relation: `time`,
+  expectedType: time}. The question node's entity element is
+  `none`: what is questioned is precisely the temporal value,
+  and an element would assert the answer.
+- **Season.** The same shape with question node *season*: *it
+  —time→ season*, query {relation: `time`, expectedType:
+  season}. Seasons are the ontology's own time nodes (F.4), so
+  the queried slot is a time slot whose filler is drawn from
+  them; the question node itself carries `none`, as above.
+- **Where over a copular clause** ("Where are you?"). Topic
+  *you*; question node *where* as root; edge *you —location→
+  where* under the `location` relation — D4's rule that
+  location is its own relation and is not collapsed into
+  `predicated-as`. **Named consequence, part of this ruling:**
+  the atomiser's attachment set carries `time` but not
+  `location`, and its roles set only fires from a predicate
+  source, so this edge emits no atom until the atomiser is
+  extended: topic-sourced `location` edges atomise as
+  attachments (`where|location = you`). The extension is a
+  build matter; the determination is the design.
+- **Where over a lexical predicate** (application: "Where
+  would I find a penguin?"). No new shape: the questioned slot
+  is the predicate's own location role (the fixture's F-002
+  gives *find* a location role), the wh-node fills it, and the
+  roles atom is `find|location = where` with no `@prep`, the
+  preposition being what is questioned. The modal rides as the
+  modal atom.
+
+Grounding: D1 — a question is an operator over an existing
+relation, never an assertion with a null filler; the questioned
+slot is the edge the question-word node fills, and the query
+record carries the relation and expected type. The only
+copular-question graph the record exemplifies (F-005) puts the
+questioned filler as root, the topic as the edge's source, and
+the copula's tense on the predicate record; this determination
+extends that shape along the relations Part D itself names for
+exactly these questions, changing the relation and nothing
+else. D4 forbids the cheaper move in terms: location is not
+`predicated-as`, as containment is not and opposition is not
+the controlling cycle.
+
+Rejected: carrying where-questions on `predicated-as` — D4's
+not-collapsed rule would be breached in the first set authored
+under it, and every location answer would be scored as a
+nominal predication.
+
+### G.6 `states.aux`: the Metal carrier of a negated, perfect, or do-supported clause
+
+The record contradicted itself: the type definition defines
+`aux` as the "surface auxiliary that carries tense for a
+negated/perfect clause (K6: the Metal carrier)," while usage
+elsewhere sets and reads `aux` for progressive *be* (the
+generator's weather line reads `aux ?? "is"` before the *-ing*
+form; its progressive branch reads `aux` before falling back to
+the computed *be*-form), and the sealed run's two extra
+`aux = is` atoms could be adjudicated as neither defect nor
+error while the record spoke both ways.
+
+**Determination: `aux` is the surface auxiliary that carries
+the clause's tense where the lexical verb does not carry it
+itself: the do-support of negated and interrogative clauses
+and the have of perfect clauses — the Metal carrier of F.2.
+The be of progressive and passive clauses is not `aux`.**
+Progressive and passive *be* is fully determined by the record
+that already exists — tense, subjectPerson, and the aspect
+bundle or voice — and is regenerated by rule (the generator's
+own fallback computes it from exactly those fields); a state
+that records only what the rest of the record cannot recompute
+is the record's standing economy — the same economy that
+records ZH `copulaForm` precisely because ZH has two
+realisations the graph must choose between, while EN *be* has
+one rule. The structured negation record is untouched:
+`NegationState.carrier` remains the negation family's own
+field, and where a negated clause's carrier is do-support, it
+and `aux` name the same surface form from their two sides, as
+F.2's mechanism describes. Under this definition the sealed
+run's two extra `aux = is` atoms are reclassified: not record
+gaps but divergences from the record as now determined — the
+adjudication's count changes in kind, not in number (the 76.1%
+stands; two of its 99 records move from "record gap" to the
+parser side).
+
+The `sentence.ts` text stands as written. **The generator's
+progressive/weather usage is the side that must conform** — it
+is recorded here as owed: a future build slice conforms the
+generator (and any other reader or writer of `aux` for
+progressive *be*) to this definition. That conforming build is
+not part of the determinations' adoption and is not authorised
+by this part; until it lands, the usage stands as a known
+divergence from the record as determined.
+
+Rejected: the broad definition (*aux* = any tense-carrying
+surface auxiliary, *be* included) — every progressive, passive
+and weather clause in every expected graph would gain an `aux`
+atom whose value the rest of the graph already determines, the
+already-sealed 20 items' graphs would be invalidated, and the
+negation record's carrier field would be left duplicating it.
+
+### G.7 The lone-object alternation
+
+When a clause gives a predicate a single object and the verb's
+signature offers more than one role that argument position
+could take:
+
+1. A role already filled in the clause is closed — no role is
+   filled twice in one clause (the uniqueness the signature
+   machinery presupposes).
+2. Among the still-open offered roles, the object takes the
+   **first in signature order** — the contract's existing order
+   does the choosing; no new machinery and no semantic guessing.
+3. If no open offered role remains, G.1 governs: the object
+   rides unroled rather than being guessed into one.
+
+Worked case ("Who won the football match last night?"): *win*
+→ Getting signature; the subject question-word fills the
+agent-mapped role, closing it; the lone object *the football
+match* takes the first open offered role — `theme`; *last night*
+takes the `time` edge per G.4.
+
+**Provenance.** G.7 differs from G.1–G.6: they were derived
+from implications already in the record; G.7 is a stipulation
+assembled from the record's existing pieces (signature order,
+slot uniqueness, G.1's fallback). The owner asked what the
+design should be and ruled it as recommended on 2026-11-18,
+under the same standing instruction. It was stated without
+reference to current parser behaviour; if the parser disagrees,
+that surfaces as an ordinary divergence in the scoring run.
+
+Rejected: (a) semantic-compatibility selection — no
+compatibility machinery exists in the record; it would be a new
+engine, not a determination. (b) A fixed default role such as
+`theme` — G.1 already rejected generic-role defaulting: the
+object would be scored as correctly roled whether or not the
+signature offered the role, and the permissive frame would
+return by the back door.
+
+## Part H — Property axes: one material, a combination of manifestations (owner's design, stated 2026-11-18)
+
+The Five Elements name manifestations along several axes, and
+a material carries a **combination** — one manifestation per
+axis. What a material is on one axis settles nothing about
+what it is on another, and no determination crosses axes: a
+fact on one axis never yields a conclusion on another. This
+part states the axes the design currently names, the worked
+cases the owner gave with them, and the one repair the
+doctrine required on arrival (H.5).
+
+### H.1 The phase axis
+
+The phase axis says what kind of matter a material is, by
+behaviour:
+
+- **Fire → gas**
+- **Water → liquid**
+- **Wood → flexible solid**
+- **Earth → dusty, flaky or aggregate solid**
+- **Metal → hard, inflexible solid**
+
+Behaviour, not chemistry: glass is Metal-phase — hard and
+inflexible — though it is made of sand-stuff; rubber is
+Wood-phase — it bends — though nothing grew. The
+classification table's entries are (concept, aspect)-scoped:
+an entry that speaks of a material as matter assigns its
+phase-axis manifestation, read by behaviour as above; entries
+under other aspects (grain, emotion, season, …) are
+correspondences on those axes and are not phase claims. A
+`HAS_ELEMENT` edge therefore always says *on which axis* its
+assignment speaks — the edge carries its aspect — and no
+consumer may read it as speaking on any other.
+
+### H.2 The temperature axis
+
+Temperature is a state a material is *in*, not a kind of
+matter it *is*; hot and warm resolve toward Fire. A material
+keeps its phase at any temperature: soup is Water-phase
+served hot or left standing cold — hot soup is Water on the
+phase axis and Fire on the temperature axis at once, neither
+deriving the other. Mercury is the standing case: a metal
+that is liquid (Water on the phase axis) at room temperature,
+the relative Yin–Yang equilibrium point for humans (neutral
+on the temperature axis).
+
+Temperature determinations are carried as temperature. The
+temperature qualities (cold, warm) hang off the polarities in
+the seed; the seasons' degree profiles state their
+temperature shares outright (winter's temperature share is
+0.85 Yin); and the classification record enters cold as
+"winter's quality" under the temperature aspect. A season or
+a time of day is not a material and has no phase: its element
+assignment is a correspondence whose temperature content is
+stated in these terms, which is why "winter is cold" is
+derivable as a temperature determination and "soup is cold" —
+as a determination, rather than as a priced prior — is not.
+
+### H.3 The reactivity axis: the noble gases
+
+The owner's second worked case, in his words (chat,
+2026-11-18): "The noble gases are all inert, so they are
+Earth but they are gases so they manifest Fire in phase of
+matter." On that statement the noble gases are Fire on the
+phase axis (they are gases) and Earth on the reactivity
+axis (inert — they do not combine or react): one material,
+two axes, two different elements — the combination principle
+in its clearest form, since the two manifestations would
+contradict each other if the axes were one.
+
+**A tension is on record, not resolved.** The owner's own
+earlier file, the science-bridge graph
+(`docs/user-ref/ai-classica-science-bridge-graph.txt`),
+reads the same inertness the other way: "The noble gases
+like Helium manifest Water in their lack of reactivity,
+being inert and unreactive… Their state, though, is one of
+Fire, being gaseous"; and stable, inert electron
+configurations are there associated with Water ("we
+associate them with Water in this way"). The two statements
+— the bridge-graph file (Water) and the chat of 2026-11-18
+(Earth) — are both the owner's, and the record keeps both,
+with their provenance, **awaiting the owner's
+reconciliation**; neither is preferred here. See H.6, where
+the same tension touches composition.
+
+### H.4 Manifestations and potentials
+
+Axes divide into **manifestations** — what a material
+currently is or is in (phase, temperature, reactivity) — and
+**potentials** — what it can manifest under enabling
+conditions. Flammability is a score of Fire on the potential
+axis: graded, not categorical, and conditional — it
+manifests only when its enabling conditions arrive (ignition,
+oxygen).
+
+Worked contrasts: gasoline is Water-phase and
+room-temperature, yet carries very high Fire potential. A hot
+stone is Metal-phase with Fire temperature and near-zero Fire
+potential — it cannot burn. Hot water carries Fire
+temperature and *negative* Fire potential — it suppresses
+Fire. The noble gases score zero Fire potential, cohering
+with their Earth reactivity (H.3).
+
+**Scope.** The potential axis is recorded doctrine; no
+machinery consumes it yet. The repair in H.5 concerns the
+temperature axis only, and the potential axis's absence from
+the code is the design's current state — not an oversight a
+later reader should improvise a consumer for.
+
+**An observed pattern** (the parent's reading, offered to
+the owner in chat; recorded as an observation of the
+doctrine, not as a rule the machinery must yet use): on each
+axis named so far, Earth appears as the neutral or
+equilibrium manifestation — room-temperature equilibrium on
+the temperature axis, chemical inertness on the reactivity
+axis.
+
+### H.5 The no-crossing rule, and the soup repair
+
+A determination on one axis never yields a conclusion on
+another. The rule binds what the system treats as
+*established*: contradiction degrees, the premise stance, and
+what stands as ground against a visitor's telling. (The
+composition engine's derivations speak as priced priors —
+"The soup may be cold." — not as established ground; this
+part does not re-found them.)
+
+The repair the rule required on arrival: Coherence's premise
+degree derived temperature contradictions by walking the
+element spine from any classification edge — soup
+—HAS_ELEMENT {food}→ Water —POLARITY_OF→ Yin —HAS_QUALITY→
+cold — so a phase-axis assignment (soup is a liquid food) was
+read as a temperature determination (soup is cold), and both
+S5's refusal of "Why is the soup hot?" and C7's stance toward
+the asserted "The soup is hot." stood on the conflation.
+Winter's cold is grounded on the temperature axis itself
+(H.2): winter enters the spine by its correspondence
+assignment (`ELEMENT_OF`), not by a classification of matter.
+The premise degree's graph check now consults, for a
+temperature predication, only paths that do not enter the
+spine through a classification (`HAS_ELEMENT`) edge; a
+material with no temperature determination is *absent* on
+the temperature axis, and its temperature tellings are
+recorded as told — no stance, no set-aside.
+
+### H.6 The composition axis (added 2026-11-18, owner's design)
+
+A further axis, distinct from matter phase (H.1):
+**composition** — what a substance is "made mostly of" in
+Wuxing terms. Phase says how a substance's matter behaves;
+composition says what it is mostly made of, and the two can
+disagree.
+
+**Provenance.** The doctrine's prior source is the owner's
+own science-bridge graph
+(`docs/user-ref/ai-classica-science-bridge-graph.txt`),
+which states it outright: periodic elements "are
+compositions of the Five Elements, with certain Elements
+predominating in each periodic element" — oxygen
+"predominantly a Fire element", phosphorus "predominantly
+composed of Fire", sulfur associated with combustive
+situations (Fire), nitrogen "predominantly made of Water…
+but also having Earth", carbon "mostly with Earth, being
+the product of Fire", silicon "mostly… the Earth element",
+magnesium with "strong Fire properties given its
+flammability", the alkali-earth metals "primarily made of
+Metal but also Earth and a lesser proportion of Wood". The
+owner's chat statements of 2026-11-18 restate and sharpen
+it: "Sulphur, Phosphorus, Oxygen are made mostly of the
+Fire element"; the noble gases "are all made mostly of the
+Earth element"; nitrogen "is made mostly of the Water
+element"; the metals "are made mostly of Metal." The cases:
+
+- **Oxygen** — Fire phase (a gas) *and* Fire composition:
+  "fire air"; combustion happens by it.
+- **Sulfur** — Earth phase (a particulate solid) but Fire
+  composition: brimstone, the burning stone.
+- **Phosphorus** — Fire composition: *phōsphóros*,
+  light-bearer; it glows and self-ignites.
+- **The metals** — Metal phase and Metal composition: the
+  agreement case, where the axes coincide.
+- **Nitrogen** — Fire phase (a gas) but Water composition
+  (with some Earth, per the bridge graph): the inert
+  diluent that damps air's burning.
+- **Carbon** — mostly Earth in composition, as Fire's
+  product (bridge graph).
+- **Silicon** — mostly Earth in composition (bridge graph).
+- **Magnesium** — strongly Fire in composition, though an
+  alkali-earth metal (bridge graph).
+- **The noble gases** — Fire phase. Their composition and
+  reactivity element is **in tension between the owner's
+  two statements**: the chat of 2026-11-18 rules them
+  Earth ("are all made mostly of the Earth element"; H.3),
+  while the bridge-graph file manifests their inertness as
+  Water ("manifest Water in their lack of reactivity, being
+  inert and unreactive"). Both stand in the record with
+  their provenance, awaiting the owner's reconciliation;
+  neither is preferred here.
+
+An observation, recorded without systematising it further:
+the three Fire compositions differ in relation — sulfur
+*burns* (fuel), phosphorus *self-kindles and bears light*,
+oxygen *enables* burning (oxidiser). Composition-Fire has
+modes.
+
+**Precedent in this record.** H5 already established that
+composition is per-object records — an artefact's
+composition and component structure are established first,
+with evidence, before any artefact-level assertion; there
+is no climb rule from components to wholes. H7's discipline
+is the fence: a derived correspondence speaks for the
+recorded aspect it was derived from — never a classification
+of the substance as a whole. A substance's composition
+record is therefore its own record, with its own provenance,
+never a whole-substance label smuggled from one aspect.
+
+**Scope.** Doctrine only, as with the potential axis (H.4):
+no table rebuild and no code in the slice that recorded it.
+The classification table predates the phase/composition
+distinction — which axis a given entry's element states for
+a substance is an open question, recorded in GAPS (§3) for a
+vocabulary/data pass; G0 entity atoms currently carry the
+table's element undifferentiated.
+
+### H.7 The reflectivity axis (added 2026-11-18, owner's design)
+
+A graded surface axis, stated by the owner: "in the Five
+Elements, reflectivity of the matter's surface increases
+from Metal to Water." Reflectivity is ordered along
+Metal → Water, increasing — a continuum across the elements,
+not a categorical assignment. Doctrine only; no machinery
+uses it in the slice that recorded it.
+
+### H.8 Processes (resolved 2026-11-18, owner's design)
+
+Processes are not materials, and take no phase or
+composition. A process is an **elemental interaction**,
+typed by the cycle relation it enacts between the elements
+involved. The owner's worked case: "Rusting is slow
+oxidation" — rusting is **Fire controlling Metal**:
+oxidation is Fire's action, enacted on Metal in the
+controlling relation. The slowness is a qualifier of the
+process — its rate — not a different relation. This settles
+the processes question raised alongside the axes: a process
+is recorded as (acting element, cycle relation, acted-on
+element, qualifiers such as rate), never as a substance
+with manifestations. Doctrine only in this slice; no
+machinery is built on it here.

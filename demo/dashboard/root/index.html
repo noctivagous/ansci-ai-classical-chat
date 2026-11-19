@@ -53,7 +53,9 @@
   .h-line1 h1{font-family:"IBM Plex Mono",monospace;font-size:clamp(20px,3.4vw,30px);line-height:1.05;margin:0;letter-spacing:-.01em;font-weight:700;text-transform:uppercase}
   .h-line1 h1 .thin{font-weight:400;color:var(--muted)}
   .h-line2{margin:0;font-size:13.5px;line-height:1.4;color:var(--muted)}
-  .h-line3{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;line-height:1.3}
+  .h-line3{display:flex;flex-wrap:nowrap;gap:8px 14px;align-items:center;line-height:1.3;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+  .h-line3>*{flex:none}
+  .h-line3 .h-note{white-space:nowrap}
   .h-note{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.04em;color:var(--muted)}
   .view-toggle{display:inline-flex;border:1.5px solid var(--line);border-radius:3px;overflow:hidden;background:var(--panel2);flex:none}
   .vt-btn{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:0;background:transparent;color:var(--ink);padding:8px 13px;min-height:36px;cursor:pointer}
@@ -483,9 +485,10 @@
       <button type="button" class="vt-btn" id="themeLightBtn" aria-pressed="false">Light</button>
     </div>
     <span class="h-note">Walk:</span>
-    <div class="view-toggle" role="group" aria-label="Walk execution mode — run or step by step">
+    <div class="view-toggle" role="group" aria-label="Walk execution mode — run, step by step or no delay">
       <button type="button" class="vt-btn on" id="walkRunBtn" aria-pressed="true">Run</button>
       <button type="button" class="vt-btn" id="walkStepBtn" aria-pressed="false">Step by step</button>
+      <button type="button" class="vt-btn" id="walkNoDelayBtn" aria-pressed="false">No Delay</button>
     </div>
     <span class="h-note">% completed to goal — set by us, assessed by the project, not measured or computed.</span>
     <a class="btn dashboard" href="/dashboard/" style="margin-left:auto;min-height:36px;padding:7px 12px">Dashboard&nbsp;→&nbsp;/dashboard/</a>
@@ -1742,7 +1745,7 @@
       if(j===i) li.scrollIntoView({block:'nearest'});
     });
   }
-  /* ----- camera follow + walk execution mode (Run / Step by step) -----
+  /* ----- camera follow + walk execution mode (Run / Step by step / No Delay) -----
      The camera lives in this walk layer, so recorded walks and live
      walks (the sibling engine) share it. On every segment the view
      animates concurrently with the ball — same duration, ease-in-out
@@ -1750,10 +1753,15 @@
      to step 0's framing, and at walk end it returns to the view saved
      when the walk began. A user drag or wheel grab holds the camera
      until the next segment begins. In Step by step mode the walk
-     waits at each step for the Step button or Space / ArrowRight. */
+     waits at each step for the Step button or Space / ArrowRight.
+     In No Delay mode the walk goes straight through to the result:
+     no per-step delay and no travel animation — completeWalkNow()
+     runs the remaining steps through showStep() back-to-back and
+     lands in finishWalk(), whose camera return is instant in this
+     mode, so the end state is exactly the one Run mode ends in. */
   var walkMode='run', stepWaiting=false, camAnim=null, camHold=false, returnView=null;
   var stepBtn=document.getElementById('stepBtn');
-  var walkRunBtn=document.getElementById('walkRunBtn'), walkStepBtn=document.getElementById('walkStepBtn');
+  var walkRunBtn=document.getElementById('walkRunBtn'), walkStepBtn=document.getElementById('walkStepBtn'), walkNoDelayBtn=document.getElementById('walkNoDelayBtn');
   function easeInOutCubic(p){ return p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2; }
   function camReducedMotion(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function cancelCamAnim(){ if(camAnim){ cancelAnimationFrame(camAnim.raf); camAnim=null; } }
@@ -1795,8 +1803,23 @@
   function userTakeCamera(){ cancelCamAnim(); if(walking) camHold=true; }
   function afterStep(){
     if(!walking) return;
+    if(walkMode==='nodelay'){ completeWalkNow(); return; }
     if(walkMode==='step'){ stepWaiting=true; if(stepBtn) stepBtn.disabled=false; }
     else segTimer=setTimeout(walkNext,1050);
+  }
+  /* No Delay: cancel any in-flight segment, timer and camera move,
+     then run every remaining step through showStep() in order —
+     the same per-step state Run mode passes through (packet place,
+     taken path, lit box, readout, log) — and finish with the shared
+     finishWalk(), so the end state is Run mode's end state. */
+  function completeWalkNow(){
+    if(!walking) return;
+    if(raf) cancelAnimationFrame(raf); raf=null;
+    clearTimeout(segTimer);
+    stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
+    cancelCamAnim(); camHold=false;
+    for(var i=cur+1;i<walkSteps.length;i++) showStep(i);
+    finishWalk();
   }
   function advanceStep(){
     if(!walking || !stepWaiting) return;
@@ -1805,11 +1828,15 @@
   }
   function setWalkMode(mode){
     walkMode=mode;
-    var isRun=(mode==='run');
+    var isRun=(mode==='run'), isStep=(mode==='step'), isNoDelay=(mode==='nodelay');
     if(walkRunBtn){ walkRunBtn.classList.toggle('on',isRun); walkRunBtn.setAttribute('aria-pressed',String(isRun)); }
-    if(walkStepBtn){ walkStepBtn.classList.toggle('on',!isRun); walkStepBtn.setAttribute('aria-pressed',String(!isRun)); }
+    if(walkStepBtn){ walkStepBtn.classList.toggle('on',isStep); walkStepBtn.setAttribute('aria-pressed',String(isStep)); }
+    if(walkNoDelayBtn){ walkNoDelayBtn.classList.toggle('on',isNoDelay); walkNoDelayBtn.setAttribute('aria-pressed',String(isNoDelay)); }
     if(!walking) return;
-    if(isRun){
+    if(isNoDelay){
+      /* go straight to the result from wherever the walk has got to */
+      completeWalkNow();
+    } else if(isRun){
       /* resume the automatic walk from the step it is waiting at */
       if(stepWaiting){ stepWaiting=false; if(stepBtn) stepBtn.disabled=true; segTimer=setTimeout(walkNext,350); }
     } else {
@@ -1820,6 +1847,7 @@
   }
   if(walkRunBtn) walkRunBtn.addEventListener('click',function(){ setWalkMode('run'); });
   if(walkStepBtn) walkStepBtn.addEventListener('click',function(){ setWalkMode('step'); });
+  if(walkNoDelayBtn) walkNoDelayBtn.addEventListener('click',function(){ setWalkMode('nodelay'); });
   if(stepBtn) stepBtn.addEventListener('click',function(){ advanceStep(); });
   document.addEventListener('keydown',function(e){
     if(!walking || !stepWaiting) return;
@@ -1859,9 +1887,12 @@
   function finishWalk(){
     walking=false; stepWaiting=false; if(stepBtn) stepBtn.disabled=true; setFormEnabled(true);
     /* the walk is over — the camera eases back to the view saved when
-       the walk began (unless the user's hand is holding it) */
+       the walk began (unless the user's hand is holding it). In No
+       Delay mode there is no easing: the camera lands on that same
+       saved view at once, so the landing view is Run mode's. */
     var rv=returnView; returnView=null;
-    if(rv) animateCameraTo(rv,800); else fitSystem();
+    if(walkMode==='nodelay'){ cancelCamAnim(); if(rv){ view.x=rv.x; view.y=rv.y; view.k=rv.k; apply(); } else fitSystem(); }
+    else if(rv) animateCameraTo(rv,800); else fitSystem();
     var turn=currentTurn, lastStep=walkSteps[walkSteps.length-1];
     /* a stopped turn — and only a stopped turn — turns red: the stopping
        node (still lit from the final step), the ports on it, and the

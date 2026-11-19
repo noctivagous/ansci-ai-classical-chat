@@ -208,7 +208,8 @@ synthetic-returner gates.
   one no harvested probe evidences — a run of the set cannot
   strike it. The unit's seam and its placement are design items
   no probe can evidence at all.
-- **Conversation now has assessment material — sealed, unrun.**
+- **Conversation now has assessment material — sealed; run
+  2026-11-18 (record below).**
   A survey of late-2010s–2021 chatbot evaluation (2026-11-18)
   yielded an inventory of 40 assessment aspects in 12 groups;
   from its shortlist, 128 probes were harvested (DailyDialog 35,
@@ -228,12 +229,174 @@ synthetic-returner gates.
   *Closes when:* nothing here closes by itself — the set is run
   only on the owner's commission, and its report is read against
   this section's checklist (the tree appendix).
-  *Note (2026-11-18, later):* still unrun. One confound the run
-  would have faced is now removed: the parser's lexicon-state
+  *Note (2026-11-18, later):* one confound the run would have
+  faced was removed before it ran: the parser's lexicon-state
   family (§5) made a sentence's parse depend on what the same
   process had parsed before it, which over 128 sequential
   probes would have made results uninterpretable; that family
   is closed.
+  *Run record (2026-11-18, on the owner's commission; full
+  report and per-probe results held outside the repo at
+  `~/workspace/ansci-probe-run-output/`):* the set was run
+  once against main `68d99d1`, unmodified, the seal verified
+  before running (sha256 `d77c072f…6a1`, matching the sealed
+  record in full). Protocol: a fresh, store-less session per
+  probe; only the visitor's turns fed, in order — the other
+  party's turns are the human partner's replies in the source
+  dialogues, not visitor input — and source formatting
+  artifacts fed verbatim. 128 probes, 385 turns, 0 machinery
+  errors. **Verdicts: 7 pass (5%), 46 partial (36%), 75 fail
+  (59%)** (per source: DailyDialog 35 → 2/12/21;
+  EmpatheticDialogues 32 → 2/6/24; Persona-Chat 28 → 2/10/16;
+  BlendedSkillTalk 18 → 1/8/9; Wizard of Wikipedia 15 →
+  0/10/5). Read against the bar above, counting each probe
+  toward every item it evidences (pass/partial/fail): (1)
+  opens/closes 1/8/6 of 15; (2) self-answers 1*/3/4 of 8 —
+  *the one pass is a mapping artifact; no probe asked the two
+  exact shapes S3 built ("Who are you?", "What can you do?",
+  both verified working on non-probe inputs), and every
+  variant asked was declined or met with a token
+  clarification; (3) thanks 2/3/5 of 10; (4) attribution and
+  acknowledgement 2/17/36 of 55; (5) testimony/grounding
+  0/11/9 of 20; (6) clarification 0/3/8 of 11; (7) decline
+  form: of 71 decline/rephrase finals, none surfaced a raw
+  parse failure, 6 were garbled in wording; (8) false premise
+  0/2/0 of 2; (9) interlocutor's picture 0/9/14 of 23 — the
+  "first contact or returning" part remains unevidenced by
+  any probe, as the coverage note said; (10) turn-taking
+  4/17/28 of 49. Two negatives held across all 385 turns:
+  **zero confabulation and zero misattribution** — testimony
+  discipline's negative half held everywhere, including under
+  the two false-premise pressure probes, which scored partial
+  because the designed stance did not appear either. The
+  passes share one shape: a single formulaic move in the
+  exact form the slices built for. The located failure
+  shapes, in the report's order: the rephrase request as the
+  default answer to ordinary emotional and narrative turns
+  (45 of 128 finals); greetings fused with further content
+  declined as question-type mismatches (47 turns, 37 probes);
+  spurious token clarifications on correctly-spelled words
+  (12 finals); self-questions beyond the two built shapes
+  declining (shape 4 under bar 2); the visitor's own "What do
+  you mean?" declined (4 probes); bare "Ok." where the note
+  required recognition of content (36 finals — the gap
+  between bar 4's negative half, held, and its positive half,
+  not shown); fused thanks + closing receiving the thanks
+  only; garbled steering/decline wording (small counts, the
+  run's only unreadable replies). *Limits, as the report
+  states them:* scoring was in-loop judgment by the runner
+  against the probes' pre-written notes — nobody independent
+  scored this run; because partner turns were not fed, notes
+  needing partner-supplied facts could not fully pass (a
+  different protocol would need its own commission); bar 9's
+  first-contact/returning part is unevidenced. These numbers
+  are the record of the run; they do not by themselves strike
+  the Social Unit item above or below — what they show is
+  where the bar stands unmet, item by item.
+  *Run 2 record (2026-11-19, on the owner's commission; full
+  report and per-probe results held outside the repo at
+  `~/workspace/ansci-probe-run2-output/`):* the set was run
+  once against the merged pre-push tree (`merge/programme`
+  at `2f328fb`, unmodified — the C1–C8 conversation-shapes
+  stack, the eight parser mechanisms, the §6 adverbs
+  restoration, the Part G determinations and the
+  property-axes repair), the seal verified before running
+  (sha256 `d77c072f…6a1`, unchanged). Protocol identical to
+  run 1: fresh, store-less session per probe; only the
+  visitor's turns fed, in order; artifacts verbatim.
+  Baseline gates on the tested tree: suite 836 counted /
+  833 pass / 0 fail / 3 skipped; `ai:check` OK. 128 probes,
+  385 turns, 0 machinery errors. **Verdicts: 18 pass (14%),
+  64 partial (50%), 46 fail (36%)** — against run 1's 7 /
+  46 / 75 (per source: DailyDialog 35 → 7/19/9,
+  EmpatheticDialogues 32 → 2/12/18, Persona-Chat 28 →
+  7/13/8, BlendedSkillTalk 18 → 2/8/8, Wizard of Wikipedia
+  15 → 0/12/3). Movement: 22 probes fail → partial, 8 fail
+  → pass, 3 partial → pass, all 7 run-1 passes held, and
+  one regression (P-087, partial → fail: the bidding-worry
+  turn drew a bare "Ok." in run 1 and the rephrase request
+  in run 2). Read against the bar (pass/partial/fail, run 1
+  beside): (1) opens/closes 4/7/4 of 15 (was 1/8/6); (2)
+  self-answers 4/4/0 of 8 (was 1*/3/4 — run 2's passes are
+  substantive: the occupation, rank and degree variants
+  the probes actually ask are answered from the Self
+  tables' limits facts; 22 self-answer turns against run
+  1's 0); (3) thanks 5/4/1 of 10 (was 2/3/5 — fused thanks
+  + closing now discharges both halves, P-067/P-071;
+  quantified thanks received, P-074); (4) attribution and
+  acknowledgement 5/24/26 of 55 (was 2/17/36); (5)
+  testimony/grounding 0/15/5 of 20 (was 0/11/9 — still no
+  passes, and still no confabulation); (6) clarification
+  0/8/3 of 11 (was 0/3/8 — the visitor's "What do you
+  mean?" is no longer declined: all four probes moved
+  fail → partial on C5 restatements, two of them
+  restating an acknowledgement, two drawing the plain
+  nothing-to-restate answer the protocol makes true); (7)
+  decline form: of 47 decline/rephrase finals (was 71),
+  none surfaced a raw parse failure, and the garbled
+  "what was did" occurs 0 times (its corrected form once)
+  — the garble moved to steering-shaped finals, in about
+  the same count; (8) false premise 0/2/0 of 2 —
+  unchanged: neither probe complied or endorsed, and the
+  designed stance appeared on neither (C7's trigger is
+  graph contradiction; the husky claim is unsupported,
+  not contradicted, and the arrest-flip is a role
+  reversal, not an asserted predication); (9)
+  interlocutor's picture 4/11/8 of 23 (was 0/9/14 — the
+  four passes are self-answer probes, the system's
+  picture of itself; recognition from retained visitor
+  facts remains mostly absent, and first-contact/
+  returning remains unevidenced, as the coverage note
+  said); (10) turn-taking 7/23/19 of 49 (was 4/17/28).
+  The two negatives held again across all 385 turns:
+  **zero confabulation and zero misattribution**, counted
+  explicitly. The located failure shapes, in the report's
+  order: the rephrase request, halved and still the
+  largest fail shape (27 finals, was 45; 81 turns, was
+  129 — what remains is the multi-clause emotional and
+  narrative core whose every segment defeats the sentence
+  layer); the bare acknowledgement as the modal final
+  (40 finals "Ok."/"Ok. Noted.", was 36, plus a form run
+  1 did not produce — per-segment acknowledgement piles,
+  five finals — C2's conversion of rephrase requests into
+  acknowledgements, with the recognition the notes ask
+  for still not shown: bar 4's positive half, C6's wider
+  unbuilt part); question-type declines persisting behind
+  received greetings (43 turns, 36 probes, contains-basis;
+  greeting-receipt turns 1 → 21 — the decline moved to
+  the fused turn's content segment: un-drawn how-are-you
+  phrasings, the "Can I help you?" offer, plain either/or
+  social questions); spurious token clarifications cut to
+  2 finals (was 12 — "replicate", "Dang") and at least 9
+  turns, on correct words the shipped lexicon does not
+  attest; self-questions beyond C3's drawn family
+  (birthplace as "What about yours?", family size, the
+  have-phrasing of the pets question) and two C3
+  over-firings ("What do you do for fun?" answered as
+  occupation; a fused greeting + health enquiry answered
+  with the full self-introduction); steering tails
+  appended by the R6 initiative move to receipts and
+  declines that should close, and one stance-form reply
+  with no premise to answer ("Winter is winter, as I have
+  it.", P-103). *Limits, as the report states them:*
+  scoring was in-loop judgment against the pre-written
+  notes, by the same operator standard as run 1 — nobody
+  independent scored either run; partner turns were not
+  fed, so notes needing partner-supplied facts could not
+  fully pass; bar 9's first-contact/returning part is
+  unevidenced. *Judgment on striking:* these numbers do
+  not strike the Social Unit item either. The bar is the
+  item's acceptance standard, and it stands unmet in
+  full on every point — bar 2 comes closest (no fails,
+  half partial), bars 4, 5 and 9 stand on their negative
+  halves with the positive halves (recognition shown,
+  answers grounded in what the exchange established)
+  still not evidenced, and bar 8 is unmoved. What run 2
+  shows is the bar's social layer substantially built —
+  greetings, thanks, closings and self-answers now work
+  in their natural fused forms, not only their exact
+  ones — and its recognition layer still open. The item
+  stands, with this run as its second record.
 - **Found ahead of the checklist — gaps of record (accepted
   2026-11-18).** 18 of the sealed probes test things this
   section did not name. They cluster where conversation meets
@@ -281,6 +444,65 @@ synthetic-returner gates.
     re-offers the question under it, and on insistence answers
     under supposition framing without adopting the premise;
     the disagreement is recorded.
+    *Extension (2026-11-18):* conversation-shapes slice C7
+    extended the stance to asserted premises the graph
+    contradicts (the probe run's two bar-8 probes carried
+    theirs as assertions, where S5's why-question wiring never
+    met them); the extension stands.
+    *Reopening — the soup derivation (owner, 2026-11-18):*
+    **not accepted as built.** C7's stance fired on a premise
+    of the form "soup is cold", derived through soup → Water
+    → Yin → cold. The owner reopened that consequence on
+    design grounds: soup's Water correspondence is its
+    *matter phase* — its constitution — while temperature is
+    a separate property axis (hot/warm resolving toward
+    Fire); deriving a temperature from the matter phase
+    conflates the two axes. What is under repair is therefore
+    not the stance but which derivations count as temperature
+    contradictions. *Status:* open again on that point; a
+    property-axes fix slice is to be built on the merged
+    programme tree. Until it lands, the derivation stands in
+    the build as C7 left it, recorded here as known-wrong in
+    this respect.
+    *Repair (2026-11-18, property-axes slice on the merged
+    tree):* the doctrine is recorded as Part H of the repair
+    programme — a material carries a combination of
+    manifestations, one per axis (phase, temperature,
+    reactivity, potential, composition, reflectivity), and no
+    derivation crosses axes. premiseDegree's temperature
+    check now consults temperature-axis determinations only:
+    for a temperature predication the graph walk may enter
+    the element spine only through a correspondence
+    assignment (ELEMENT_OF / POLARITY_OF), never through a
+    classification edge (HAS_ELEMENT) — a material's
+    classification assigns its element on the entry's own
+    aspect (for matter, its phase), and a phase path alone
+    yields no temperature contradiction. Soup and rice
+    temperature predications are now absence: "The soup is
+    hot." is recorded as told, with no stance, and "Why is
+    the soup hot?" declines as a don't-know. Winter's cold
+    was and remains grounded on the temperature axis —
+    winter enters by its correspondence assignment (winter →
+    Water → Yin → cold; the seed states its temperature
+    share, and cold is entered in the classification record
+    as winter's quality under the temperature aspect) — and
+    the bar-8 season assertions ("Summer is the coldest.",
+    "Winter is the hottest.") still meet the stance,
+    verified explicitly. The soup-pair specimen is restored
+    to its original pins, with the premise correction
+    recorded in place: C7's correction rested on the
+    conflated derivation, and the stance's protected claim
+    stands on the season cases. The eleven C7-era fixtures
+    that had swapped telling subjects to the garden are
+    restored to their natural subjects (soup; tea in one),
+    each decision recorded in place. One consumer noted and
+    left out of the repair's scope: the question-answerer
+    and the composition engine still derive soup → cold as
+    priced priors that speak hedged ("The soup may be
+    cold."), not as established ground against a telling —
+    re-founding them is the derivation layer's own
+    programme. *Status:* **closed** on the reopened point;
+    the stance machinery and C7's extension stand.
   - *Also found ahead, not drafted:* relevance / maintaining
     context (5 probes), informativeness (5), error recovery (2),
     question-asking balance (2), recognising the interlocutor's
@@ -289,6 +511,25 @@ synthetic-returner gates.
     adversarial provocation (1). These remain candidates in the
     harvest record (`HARVEST.md` in the sealed set's folder),
     not gaps of record.
+- **Initiative steering can append a stale predication.**
+  (Located by the conversation-shapes build, 2026-11-18;
+  open.) The R6 initiative machinery sometimes appends
+  predications built from stale candidates to a reply — the
+  probe run's garbled steering turns ("You agreed in the
+  you…", P-011; also P-037, P-044) are this shape: readable
+  moves carrying content the current turn never settled.
+  *Closes when:* initiative draws only on the current turn's
+  settled candidates, with a pinning test on the probe shapes.
+- **Recognition in acknowledgements covers the name only.**
+  (Located 2026-11-18; open.) Slice C6 made an acknowledgement
+  address the visitor by name when the name was learned that
+  turn. Naming what the conversation has established —
+  retained topics, registered feelings — is the larger part
+  of bar item 9, and it remains unbuilt: the Interlocutor's
+  picture is kept and, the name aside, still not shown.
+  *Closes when:* acknowledgements can name an established
+  topic or a registered feeling from the record, in the reply
+  programme's own forms.
 - **The situated self is mostly unbuilt.** On the system map:
   Awareness 35% (self 15%, identity and capabilities 0%),
   Session & Situation's open-unknowns 50%, Coherence as a whole 0%
@@ -352,6 +593,22 @@ report: the coverage measurement of 2026-11-18.
   (nouns/adjectives only, by design) says nothing about them.
   Verb classification waits on the classification programme, not
   on the dictionary.
+- **Which axis the classification table's element states is
+  undetermined.** The doctrine now distinguishes a substance's
+  matter phase from its composition (repair programme,
+  Part H.6); the table predates the distinction, and G0 entity
+  atoms currently carry the table's element undifferentiated.
+  Some entries plausibly state phase, others composition;
+  nothing in the table says which.
+  *Closes when:* a vocabulary/data pass rules the table's
+  axis (or axes, per entry) and the atoms carry it.
+  *Standing rule (owner, 2026-11-18):* where an alchemical
+  fitting into Wuxing is needed beyond what the record
+  states, the fitting is referred to the owner — asked, not
+  improvised; a future slice packages the question instead of
+  inventing the answer.
+  *Status:* open; resolution belongs to a vocabulary/data
+  pass, not the current push.
 
 ## 4. Slice A's own located gaps (design, 2026-11-18)
 
@@ -553,7 +810,7 @@ visible in the record.
   obligations (fewer arguments than a frame allows is never
   flagged), lexicalised frames excluded, and VerbNet's own sense
   splits can flag ordinary English (the "ferment" case).
-- **Sealed-run divergences (from §7's expected-graph run,
+- ~~**Sealed-run divergences (from §7's expected-graph run,
   2026-11-18) — adjudicated the same day.** Against
   expectations authored blind and sealed before the run, G0
   accuracy on the 20 scored holdout items is 76.1%.
@@ -605,13 +862,100 @@ visible in the record.
   is not in dispute.
   *Closes when:* the eight mechanisms are fixed, each as its
   own slice, and a re-run of the sealed set (a new run against
-  the unchanged seal) shows them gone.
+  the unchanged seal) shows them gone.~~ **Closed 2026-11-18:**
+  all eight mechanisms fixed, each as its own slice on
+  `track/eight-mechanisms` (eight commits, each with its tests
+  and full gates green at its commit: suite 792 pass / 0 fail
+  at the last). The custodian re-run against the unchanged
+  seal (seal verified intact first; run + scores at
+  `scripts/sealed-holdout80-rerun.json` /
+  `sealed-holdout80-rerun.scores.json`, build 5da3ad8) scores
+  **G0 accuracy 99.6% (254/255 atoms), up from 76.1%
+  (194/255)**, with all eight mechanism items at 100%:
+  H-004 14%→100%, H-047 7%→100%, H-070 18%→100%, H-007 /
+  H-008 / H-012 62%→100%, H-003 87%→100%, H-062 71%→100%.
+  One atom of the 255 still diverges — see the residual item
+  below; it is the one value this item already carried as
+  undecided, not a mechanism.
+- **Residual: *cold*'s element is a sense-priority question,
+  not a parser seam.** The re-run's only divergent atom is
+  H-058 ("What is a cold?"): expected Metal (the illness
+  reading), the parser now returns Water. Before the fix the
+  atom read `none` — mechanism (7)'s seam — and the seam is
+  closed: the table's classification reaches the node. What
+  reaches it is the table's own primary entry (temperature,
+  Water, listed first in the table), while the sealed author
+  scored the illness sense (Metal). Which sense an
+  uncontextualised lookup should lead with is the value the
+  adjudication left undecided, and it stays undecided here:
+  nothing in the eight slices rules on it. *Closes when:* the
+  cold sense-priority is decided on the record (table order,
+  or sense selection by construction — "a cold" as a count
+  noun naming the illness), and a re-run shows H-058's atom
+  preserved. The v2 custodian run (2026-11-19, §7) landed
+  the same way on the enlarged set: H-058 at 90.9%, this
+  atom the carried-over items' only divergence.
+- **A multi-sentence turn parsed as one graph can drop
+  content silently.** (Located by the conversation-shapes
+  build, 2026-11-18; open.) Slice C2 taught the turn layer
+  to receive a telling through its parseable segments when a
+  turn is segmented; where a multi-sentence turn instead
+  parses as a single graph, part of its content can fail to
+  reach any node and nothing records the loss — no decline,
+  no note, no trace entry. *Closes when:* a merged parse
+  accounts for every sentence's content or records what it
+  dropped, with a pinning test.
 
 ## 6. Lexical and token layer
 
-- **Adverbs are absent from the extract.** The WordNet extract
+- ~~**Adverbs are absent from the extract.** The WordNet extract
   was trimmed to n/v/a; an adverb token (usually, indoors) has
-  no synset in the shipped data even though full WordNet has it.
+  no synset in the shipped data even though full WordNet has it.~~
+  **Closed 2026-11-18:** the extract was rebuilt by its own
+  importer (`scripts/import-wordnet.py`, same OEWN 2024 source,
+  same construction — the POS trim removed, nothing hand-made):
+  synsets 117,008 → 120,630 (+3,622 adverb synsets), relations
+  153,758 → 154,470 (+712 pointers to adverb synsets now
+  resolve); the n/v/a parts are byte-identical, so existing
+  indices stand. The provider derives adverb entries
+  (`wordnetAdverb`, Water, no classification invented — the
+  climb and the table are noun/adjective machinery), the
+  classifier consults them between the adjective's exact and
+  morphological readings, and the token recogniser counts them
+  as known. The two recorded interactions: (1) *indoors* now
+  resolves as the adverb itself — its exact adverb lemma
+  answers before the -s-stripped adjective *indoor* the
+  inflection slice recorded, and in "She waited indoors." it
+  modulates the verb instead of landing as a result state;
+  (2) *about* — the lexicon-state report's adverb/preposition
+  hole — now carries adverb synsets (7) and a derived reading:
+  "Tell her about winter." parses whole (her recipient, winter
+  theme) where it fell through before, and the imperative's
+  about-PP check now precedes its adverb check so "Tell me
+  about winter." keeps its PP. *About*'s classification-table
+  entry is still absent — the table is noun/adjective
+  machinery — so that half of the hole stands as it was. One
+  exception, by design: *between* is not claimed — the parser
+  leaves a between-node in the graph and senses-scening builds
+  its two-landmark relation from it, so the derivation does
+  not reach the token (recorded in enItems). Blast-radius
+  audit over a population reconstructed from this section's
+  named sources (holdout corpora + sealed set + test suite +
+  the 500-object sample files; 5,522 tokens — the original
+  2,841-token list is held in the external measurement
+  folder): 5,308 unchanged, 82 gained (no resolution → an
+  adverb reading: usually, about, again, always, often…),
+  132 changed — 128 of them the pure addition of an `:r`
+  candidate beside the existing ones, and 4 the exact-lemma
+  shortcut answering with an adverb lemma that is itself the
+  surface (indoors, later, nearest, needs — each verified;
+  the parser's per-POS lemma paths still reach needs'
+  noun/verb readings where it asks for them) — and 0 lost.
+  Two count pins restated for the larger extract (the
+  definitions store's synset count; the merged graph's node
+  and edge counts, +3,622 / +712 exactly). Gates: suite 797
+  pass / 0 fail (800 counted), demo 29/29, holdout 80/80 ·
+  exact 29 · 0 regressions, sense A 11/11 · B 5/6, ai:check OK.
 - ~~**Inflection gaps in the forms index.** Regular pasts the
   index does not list (happened → happen) do not resolve through
   the surface lookup, though wordnet-lex's morphology fallback
@@ -654,11 +998,11 @@ visible in the record.
   construction set is the precedent), and WP2's
   independent-human benchmark remains open below. Scored pool:
   20 of 80 items — see the next item for why.
-- **The design record underdetermines G0 for most of the
+- ~~**The design record underdetermines G0 for most of the
   holdout.** Of the 80 items, 53 were sealed as indeterminate:
   blind authoring from the documents capped at 25% of the
   corpus, because what G0 should be exists, at those places,
-  only as parser behaviour. The named blockers: unslottable
+  only as parser behaviour.~~ The named blockers: unslottable
   objects — what the graph does when a verb's object fits no
   FrameNet slot (~12 items); when-clause link type (5);
   feel + adjective complement shape (5); bare temporal
@@ -671,10 +1015,119 @@ visible in the record.
   items were exposed before authoring (named in the baseline
   and stage-5 records, or present in the tooling's own
   fixture), declared in the manifest and excluded.
+  *Determinations written and entered (2026-11-18):* the
+  seven determinations are now settled design in the record —
+  `docs/fork/repair-programme.md` Part G (G.1–G.7), each ruled
+  2026-11-18 as recommended under the owner's standing
+  instruction, written from the record's stated principles
+  without reference to parser output (G.7, the lone-object
+  alternation, is recorded there as a stipulation assembled
+  from the record's existing pieces, its provenance stated).
+  G.5's named atomiser extension is built (2026-11-18):
+  topic-sourced `location` edges now atomise as attachments
+  (`where|location = you`), gated green (suite 775 pass /
+  0 fail; demo 29/29; holdout 80/80, no regressions; sense
+  A 11/11, B 5/6; ai:check OK). G.6 resolves `states.aux` to
+  the narrow Metal-carrier definition; the generator's
+  progressive/weather usage is the side that must conform,
+  recorded in Part G as owed to a future build slice — not
+  yet done. *Scored-pool effect:* determinable items go from
+  20 of 80 to 50 of 80 under G.1–G.6, 51 with the atomiser
+  extension built, and 52 of 80 with G.7 (H73). *Still
+  blocked (21):* discourse acts (H59, H60, H61, H68 — an
+  atom-vocabulary decision, not a determination); relation
+  and opposition questions (H53, H57, H66 — no opposition or
+  relatedness relation in the vocabulary; H57 also lacks
+  bicycle material data); event ordering (H18, H20, H21 — no
+  ordering relation; extending `chains-to` is the named first
+  candidate for a second determinations pass); manner (H25 —
+  no manner relation); containment (H14 — the atomiser emits
+  no atom for `contains`, the uncommissioned sibling of
+  G.5's fix); causal adjunct (H2 — no cause relation);
+  resultative *go* (H32), definite description + *here*
+  (H33), possessive NP structure (H72), existential quantity
+  query (H75), compounded PP/adjective atomisation (H77);
+  and H76 (relation-question root), H78 (weather-question
+  and future shapes), H79 (*exact* — F.4's declared ontology
+  failure; no determination exists in the record to write).
+  H73 was the remaining member of this list — its alternation
+  rule existed only in parse code — and is unblocked by G.7,
+  now stated as design. Each still-blocked family waits on a
+  vocabulary change or on a rule being brought into the
+  record, not on authoring effort. *Re-authored and sealed
+  (2026-11-19):* the v2 set now exists —
+  `scripts/sealed-holdout80-v2.json`, manifest
+  `wp2-holdout80-g0-v2-2026-11-19`, hash `ee9f0ca7…77c`
+  (file sha256 `09292b6d…40ad`), authored blind in a separate
+  context from the enlarged record (Part G) and the first
+  author's stated conventions, under the same recorded
+  demotion as v1, and sealed before any run of this set. The
+  20 items scored under v1 are carried over verbatim (their
+  content hashes reproduce exactly under the v2 seal); 32
+  more are authored — 29 determinate and 3 finite-ambiguity
+  (H49 on its sub-gate classification, as G.1 directed; H11
+  and H30 on the noun-internal of-PP `links` atom, the first
+  author's uniform precedent at H56/H67/H80). Scored pool:
+  **52 of 80** (44 determinate, 8 finite-ambiguity; 799
+  primary expected atoms against v1's 255). The remaining 28
+  stay unresolved, their blockers restated in current terms
+  in the manifest (the 7 exposed items keep their exposure
+  records verbatim). Suite green with the set present (775
+  pass / 0 fail).
+  *Custodian scoring run (2026-11-19, against the merged
+  programme tree — `merge/programme` at `05ef562`, the union
+  of the mechanisms, determinations/sealed-v2,
+  conversation-shapes and page branches, gates green):* the
+  seal was verified before running (manifest
+  `wp2-holdout80-g0-v2-2026-11-19`, hash `ee9f0ca7…77c` —
+  seals intact); the set was run once and scored once, no
+  re-runs. **G0 accuracy 74.6% pooled over the 52 scored
+  items**, beside v1's **76.1%** over its 20 items and the
+  v1-set re-run's **99.6%** (§5). The pooled figure is not a
+  trend reading: the 32 newly authored items are the corpus's
+  harder shapes — the ones that were indeterminate — and
+  score 66.3% mean per item, while **the 20 carried-over v1
+  items score 99.6% mean again (99.55%), with exactly one
+  atom diverging: H-058's *cold*** — expected Metal (the
+  sealed record's illness sense), the parser produced Water
+  (temperature); the item scores 90.9%. That is the
+  adjudication's one undecided value, landing as §5's
+  residual item already records it: mechanism 7's seam is
+  closed and the table reaches the node; the remaining
+  divergence is the sense choice itself, which no
+  determination settled. Preservation 97.5% pooled. By
+  family, the new items' losses concentrate in attachment
+  (26.9% of 26 atoms) and suppressed (0 of 3), then number
+  (68.9%), roles (70.8%) and negation (70.0%); predicate
+  82.0%, entity 77.2%, connective 89.7%, mood 75.8%, tense /
+  aspect / voice 77.0%. A per-determination breakdown is not
+  given by the scoring machinery — the manifest carries no
+  per-item determination tag — and the carried/new split
+  above is the finest cut the record supports. The run is
+  recorded in the repo at `scripts/sealed-holdout80-v2-run.json`
+  with its scores beside it, following the v1 re-run's
+  pattern. **Closed 2026-11-19:** the determinations are
+  written into the design record as design, and the
+  re-authored set has scored a materially larger share of
+  the corpus (52 of 80 against 20). The 21 still-blocked
+  items carry forward as their own item, next.
   *Closes when:* the missing determinations are written into
   the design record — as design, not reverse-engineered from
   parser output — and a re-authored set scores a materially
   larger share of the corpus.
+- **The 21 still-blocked holdout items wait on vocabulary,
+  not determinations.** (Carried forward from the item above
+  on its closure, 2026-11-19.) Discourse acts (H59–H61,
+  H68), relation and opposition questions (H53, H57, H66),
+  event ordering (H18, H20, H21), manner (H25), containment
+  (H14), causal adjunct (H2), and the single-shape items
+  named in the item above each need a relation or atom the
+  vocabulary does not contain, or a rule brought into the
+  record. Extending `chains-to` for event ordering is the
+  named first candidate. *Closes when:* a second
+  determinations pass is commissioned on a vocabulary
+  decision, the determinations are entered, and a further
+  re-authored set scores these items.
 - **Sealed-run divergences — adjudicated (§5 holds the
   detail).** Of the run's 99 non-preserved atoms, adjudication
   found 93 to be parser defects in eight mechanisms, 4 author
@@ -858,10 +1311,23 @@ AnSci — GAPS
 │              the Interlocutor moved in, Conversation — map check
 │              passes); confirm Awareness placement at design time
 │              (confirmed: ruling 1a, design as ruled)
-│   ├─ [ ] Run the sealed conversation probe set — 128 probes,
-│   │        sealed 2026-11-18, held outside the repo; commission
-│   │        only, and report against this checklist. Note: no
-│   │        probe evidences "first contact or returning"
+│   ├─ [x] Run the sealed conversation probe set (run 2026-11-18
+│   │        on the owner's commission, against main 68d99d1, seal
+│   │        verified: 128 probes / 385 turns / 0 machinery errors;
+│   │        verdicts 7 pass / 46 partial / 75 fail; zero
+│   │        confabulation and zero misattribution in 385 turns;
+│   │        per-bar record in §2 — the numbers are the record,
+│   │        not a striking of the bar. "First contact or
+│   │        returning" remains unevidenced by any probe)
+│   ├─ [x] Run 2 of the sealed set (run 2026-11-19 on the owner's
+│   │        commission, against the merged pre-push tree
+│   │        2f328fb, seal verified, protocol identical: 128
+│   │        probes / 385 turns / 0 machinery errors; verdicts
+│   │        18 pass / 64 partial / 46 fail; zero confabulation
+│   │        and zero misattribution again; one regression,
+│   │        P-087; per-bar record in §2 — the bar stands
+│   │        unmet in full, its social layer substantially
+│   │        built, its recognition layer still open)
 │   ├─ [ ] Grounding in conversation — testimony discipline has
 │   │        no conversational form (found ahead; accepted 2026-11-18;
 │   │        premise/record cases covered by S5, general form open)
@@ -871,6 +1337,17 @@ AnSci — GAPS
 │   ├─ [x] False-premise inputs — a designed stance toward a false
 │   │        assertion inviting agreement (found ahead; built as
 │   │        Social Unit S5, pushed in 67341f9)
+│   ├─ [x] Property axes: matter phase ≠ temperature — the soup
+│   │        derivation reopened by the owner (2026-11-18) and
+│   │        repaired the same day on the merged tree:
+│   │        premiseDegree consults the temperature axis only,
+│   │        soup tellings are recorded as told, and the season
+│   │        stance stands on correspondence ground; doctrine
+│   │        at repair-programme Part H (§2)
+│   ├─ [ ] Initiative steering appends stale-candidate
+│   │        predications to some replies (R6; located 2026-11-18)
+│   ├─ [ ] Recognition in acknowledgements beyond the name —
+│   │        retained topics and feelings (bar 9's larger part)
 │   └─ [ ] Build out the situated self the planner plans with
 │          (identity/capabilities now 75% · Interlocutor 75% ·
 │           Conversation 70% · Coherence fuller levels unbuilt ·
@@ -888,8 +1365,14 @@ AnSci — GAPS
 │           further batches take their own commission)
 │   ├─ [ ] Create a gold sense sample so "works" can be audited
 │   │      (correctness inside D is currently unproven)
-│   └─ [ ] Give verbs a classification route
-│          (202 tokens parse-only; the climb is nouns/adjectives only)
+│   ├─ [ ] Give verbs a classification route
+│   │      (202 tokens parse-only; the climb is nouns/adjectives only)
+│   └─ [ ] Rule which axis the classification table's element
+│          states — phase vs composition (doctrine at repair-
+│          programme Part H.6; the table predates the
+│          distinction and G0 atoms carry it undifferentiated;
+│          fittings beyond the record are referred to the
+│          owner — asked, not improvised)
 │
 ├─ 4. Slice A's own located gaps
 │   ├─ [x] Rule on the classes with no P2 leg, or leave T5
@@ -930,16 +1413,27 @@ AnSci — GAPS
 │   ├─ [x] Adjudicate the sealed-run divergences (done 2026-11-18:
 │          93 of 99 records are parser defects in 8 mechanisms;
 │          4 author errors; 2 record gaps; the 76.1% stands)
-│   ├─ [ ] Fix the eight adjudicated parser mechanisms, each as its
-│          own slice (verb-slot capture · fallback-scan off-by-one ·
-│          noun–noun compounds · wh-branch subject recovery ·
-│          wh-branch aspect · did-question tense · table-owned
-│          classification seam · that-object drop)
+│   ├─ [x] Fix the eight adjudicated parser mechanisms, each as its
+│          own slice (closed 2026-11-18: eight slice commits on
+│          track/eight-mechanisms; custodian re-run against the
+│          unchanged seal scores G0 99.6%, up from 76.1%, all
+│          eight items at 100%)
+│   ├─ [ ] Decide cold's sense priority (H-058's atom: the table
+│          leads with Water/temperature, the sealed record scores
+│          Metal/illness — the adjudication's one undecided value)
+│   ├─ [ ] Merged-parse turns can drop content silently
+│   │        (multi-sentence turn parsed as one graph; located
+│   │        2026-11-18 by the conversation-shapes build)
 │   └─ [ ] Valency residue: sense-split the union-of-classes check,
 │          add obligations, admit lexicalised frames (ferment case)
 │
 ├─ 6. Lexical and token layer
-│   ├─ [ ] Restore adverbs (extract trimmed to n/v/a — usually, indoors)
+│   ├─ [x] Restore adverbs (closed 2026-11-18: extract rebuilt by
+│          its own importer with the adverb block — +3,622 synsets;
+│          indoors resolves as the adverb, about's hole half-closed;
+│          audit 5,308 unchanged / 82 gained / 132 changed / 0 lost
+│          over the reconstructed population; between excepted by
+│          design — the scening landmark interface)
 │   ├─ [x] Close forms-index inflection gaps (happened → happen)
 │          (closed 2026-11-18: regular-morphology fallback in the
 │           surface lookup; audit 18 gained / 0 changed / 0 lost)
@@ -952,10 +1446,17 @@ AnSci — GAPS
 │   ├─ [x] Produce sealed expected graphs (done 2026-11-18 for the
 │          frozen holdout: G0 accuracy 76.1% beside 98.3%
 │          preservation; blind in-loop author — demotion recorded)
-│   ├─ [ ] Write the missing design determinations so a re-authored
-│          set can score more of the corpus (53 of 80 indeterminate:
-│          unslottable objects · when-clauses · feel+adjective ·
-│          bare temporals · query shapes · states.aux definition)
+│   ├─ [x] Write the missing design determinations so a re-authored
+│          set can score more of the corpus (closed 2026-11-19:
+│          determinations in repair-programme Part G.1–G.7, ruled
+│          as recommended; G.5 atomiser extension built; v2 set
+│          sealed and scored once on the merged tree — G0 74.6%
+│          pooled over 52 items; the 20 v1 items at 99.6% again,
+│          H-058's cold atom their only divergence)
+│   ├─ [ ] Second determinations pass for the 21 vocabulary-blocked
+│          items (discourse acts · opposition · event ordering ·
+│          manner · containment · cause; chains-to extension the
+│          named first candidate)
 │   ├─ [ ] WP2's independent-human benchmark (the full WP2 claim;
 │          human-shaped, cannot be supplied inside this loop)
 │   ├─ [ ] Get judgment from outside this loop (evaluator-shaped evidence;

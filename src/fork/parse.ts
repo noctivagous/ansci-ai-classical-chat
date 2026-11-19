@@ -44,7 +44,7 @@ import {
   cycleOf,
   type LexEntry,
 } from "./sentence";
-import { registerDerivedEntry, wordnetAdjective, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { registerDerivedEntry, wordnetAdjective, wordnetAdverb, wordnetNoun, wordnetVerb } from "./wordnet-lex";
 import { resolveTokenList, type TokenClass } from "./token-resolve";
 import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
@@ -118,6 +118,37 @@ const EN_BE: Record<string, "present" | "past"> = { is: "present", are: "present
 const EN_AUX = new Set(["had", "did", "does", "do", "has", "have", "can"]);
 const EN_WH = new Set(["what", "who", "where", "when", "which"]);
 const EN_MODAL = new Set(["would", "could", "should"]);
+
+/**
+ * Whether a word is one of the closed-class function words —
+ * the parser's own closed sets above, the pronoun-kind entries
+ * of the hand lexicon, and the closed particle/adverb set
+ * stated here. Exported for the turn layer's clarification
+ * discipline (conversation-shapes C4, 2026-11-18): a function
+ * word offered as a spelling rival ("too" beside "took") is
+ * not a reading the visitor could have meant as a content
+ * choice, so it is not genuine doubt.
+ */
+const EN_PARTICLES = new Set([
+  "too", "so", "very", "much", "just", "also", "not", "n't", "there", "here", "then", "now",
+  "as", "if", "than", "but", "and", "or", "of", "for", "about", "into", "over", "under",
+  "again", "once", "how", "why", "when", "while", "because", "per", "via",
+]);
+export function enIsFunctionWord(lower: string): boolean {
+  if (
+    EN_DET.has(lower) ||
+    EN_PREP.has(lower) ||
+    EN_AUX.has(lower) ||
+    EN_WH.has(lower) ||
+    EN_MODAL.has(lower) ||
+    lower in EN_BE ||
+    EN_PARTICLES.has(lower)
+  ) {
+    return true;
+  }
+  const entry = EN_LEXICON[lower];
+  return entry?.kind === "pronoun";
+}
 
 /** The -ing form of a verb lemma (rain -> raining, make -> making). */
 export function ingForm(lemma: string): string {
@@ -204,7 +235,30 @@ function enItems(tokens: string[]): EnItem[] {
           registerDerivedEntry(noun, lower);
         } else {
           const adj = wordnetAdjective(lower);
-          if (adj) {
+          // Adverb derivation sits between the adjective's exact
+          // reading and its morphological one (GAPS §6, adverb
+          // restoration 2026-11-18): a surface that IS an adverb
+          // lemma ('indoors') resolves as the adverb, not as the
+          // adjective a stripping rule reaches ('indoor'); a
+          // surface that is exactly an adjective lemma ('daily')
+          // keeps the adjective; and a merely inflected adjective
+          // surface ('colder') still resolves after the adverb
+          // check, which has no inflectional readings to offer it.
+          // One token is excepted: 'between'. The parser
+          // deliberately leaves a between-NODE in the meaning
+          // graph (an unclassified token the chunker cannot
+          // take, landing as excess), and senses-scening builds
+          // its two-landmark relation from that node — an
+          // interface recorded in senses-scening.ts. Claiming
+          // the token as an adverb (or a preposition) removes
+          // the node and the landmark reading with it, so the
+          // derivation does not reach it.
+          const adv = adj && adj.lemma === lower ? undefined : lower === "between" ? undefined : wordnetAdverb(lower);
+          if (adv) {
+            item.entry = adv;
+            item.kind = "adverb";
+            registerDerivedEntry(adv, lower);
+          } else if (adj) {
             item.entry = adj;
             item.kind = "adjective";
             registerDerivedEntry(adj, lower);
@@ -246,6 +300,31 @@ function enItems(tokens: string[]): EnItem[] {
     if (!canHeadChunk) {
       const entry = EN_LEXICON["her"];
       if (entry) { it.entry = entry; it.kind = "pronoun"; }
+    }
+  }
+  // "that" is classified as a determiner by EN_DET before any
+  // lexicon lookup, but it is the demonstrative pronoun when no
+  // noun phrase can follow it — sentence-finally, or before an
+  // adverb ("Say that again"). A lone determiner cannot chunk,
+  // so the token was silently dropped and the clause lost its
+  // object ("Why did you say that?" — sealed-run mechanism 8,
+  // H-062). The re-read is the "her" precedent above, with the
+  // same can-head test: a following noun keeps the demonstrative
+  // determiner ("that book"), and a following pronoun subject
+  // keeps the relative/complementiser reading ("the book that
+  // he read") — the relative branch keys on the word itself,
+  // not its kind, so it is unaffected either way. There is no
+  // hand pronoun entry for "that"; the pronoun kind alone is
+  // what the chunker needs, and the node takes the word as its
+  // lemma, unclassified, as the record expects.
+  for (let k = 0; k < items.length; k++) {
+    const it = items[k];
+    if (it.lower !== "that" || it.kind !== "det") continue;
+    const next = items[k + 1];
+    const canHeadChunk = next && (next.kind === "noun" || next.kind === "pronoun" || (next.kind === "proper" && next.entry !== undefined) || next.kind === "adjective");
+    if (!canHeadChunk) {
+      it.kind = "pronoun";
+      it.entry = undefined;
     }
   }
   // "has/have/had" is classified as an auxiliary by EN_AUX, but it is
@@ -298,6 +377,13 @@ function enAspectBundle(
   if (perfect && ongoing) return { aspect: { perfect: true, ongoing: true } };
   if (perfect) return { aspect: { perfect: true } };
   if (ongoing) return { aspect: { ongoing: true } };
+  // A did-carrier carries the past itself (F.2: the carrier
+  // takes the tense, the verb stays in base form), and a
+  // did-carried simple past is bounded by the same rule the
+  // past-form branch below applies — the carrier's clause is
+  // a completed event, not an unmarked one (sealed-run
+  // mechanism 6, H-003/H-062).
+  if (auxItem?.lower === "did") return { aspect: { bounded: true } };
   if (verbItem.formTag === "past" || verbItem.formTag === "past/participle") return { aspect: { bounded: true } };
   return {};
 }
@@ -324,6 +410,9 @@ const MEASURABLE_HEADS = new Set([
 interface EnChunk {
   head: EnItem;
   adjectives: EnItem[];
+  /** Noun modifiers absorbed into a compound ("ginger tea"):
+   *  every noun before the head, in surface order. */
+  compoundMods?: EnItem[];
   det?: string;
   start: number;
   end: number;
@@ -362,6 +451,20 @@ function enChunk(items: EnItem[], i: number, absorbPP = false): { chunk: EnChunk
   return { chunk, next };
 }
 
+/** Numeral tokens (digits, or the number words of
+ *  quantification-language.ts's NUMBER_WORDS, mirrored here in
+ *  the parser's closed-set style): a numeral stands as its own
+ *  node and never joins a compound chunk. */
+const EN_NUMBER_WORDS = new Set([
+  "zero", "one", "two", "three", "four", "five", "six", "seven",
+  "eight", "nine", "ten", "eleven", "twelve", "thirteen",
+  "fourteen", "fifteen", "sixteen", "seventeen", "eighteen",
+  "nineteen", "twenty", "hundred", "thousand",
+]);
+function isNumeralToken(item: EnItem): boolean {
+  return /^\d+$/.test(item.text) || EN_NUMBER_WORDS.has(item.lower);
+}
+
 function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number } | null {
   let det: string | undefined;
   const adjectives: EnItem[] = [];
@@ -384,7 +487,38 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
     }
   }
   if (!head || (head.kind !== "noun" && head.kind !== "pronoun" && head.kind !== "proper")) return null;
-  const chunk: EnChunk = { head, adjectives, det, start: i, end: j };
+  // Noun–noun compound absorption (sealed-run mechanism 3,
+  // H-047): a bare noun immediately after the head is a compound
+  // modifier, and the LAST noun is the head — "ginger tea" is a
+  // tea. Without this the chunk stopped at 'ginger', the next
+  // branch rooted on 'tea', and the complement after it was
+  // never consumed. Only noun-kind items absorb (a pronoun or
+  // proper head ends the NP as before), and the of-PP check
+  // below still sees the item after the full compound. One
+  // guard, learned from H-070: a following noun WITH a verb
+  // derivation never absorbs — in subject position it is the
+  // pending clause verb the fallback scan exists to upgrade
+  // ("people take…"), and absorbing it left the sentence with
+  // no verb at all. Compounds whose head carries a verb reading
+  // ("water bottle") therefore stay unabsorbed, as before.
+  // Second guard, learned from the apples specimens: a numeral
+  // never takes part — by the QuantificationLanguageUnit's
+  // design (quantification-language.ts) a numeral stands as
+  // its own node beside the noun it counts ("I have 5 apples"
+  // is numeral-theme + noun), and absorbing it into the chunk
+  // starved the quantity ledger.
+  const compoundMods: EnItem[] = [];
+  while (
+    items[j + 1]?.kind === "noun" &&
+    wordnetVerb(items[j + 1].lower) === undefined &&
+    !isNumeralToken(head) &&
+    !isNumeralToken(items[j + 1])
+  ) {
+    compoundMods.push(head);
+    j++;
+    head = items[j];
+  }
+  const chunk: EnChunk = { head, adjectives, ...(compoundMods.length ? { compoundMods } : {}), det, start: i, end: j };
   // Of-PP absorption: "the population of Chicago" is ONE noun phrase.
   // Only "of" is absorbed, and only immediately after the head — verb
   // arguments keep their own prepositions, so this cannot swallow a
@@ -420,8 +554,24 @@ function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode
       ...(role ? { role } : {}),
       ...(chunk.det ? { det: chunk.det } : {}),
     },
-    [chunk.head.index, ...chunk.adjectives.map((a) => a.index)],
+    [chunk.head.index, ...chunk.adjectives.map((a) => a.index), ...(chunk.compoundMods ?? []).map((m) => m.index)],
   );
+  for (const mod of chunk.compoundMods ?? []) {
+    // A compound modifier qualifies its head, as an adjective
+    // does — but it stays an Earth (nominal) node with its own
+    // classification, not a Fire quality.
+    const mEntry = mod.entry;
+    const mNode = b.node(
+      {
+        lemma: mEntry ? mEntry.lemma : mod.lower,
+        form: mod.text,
+        syntacticElement: "Earth",
+        ...(mEntry && "semanticElement" in mEntry && mEntry.semanticElement ? { semanticElement: mEntry.semanticElement } : {}),
+      },
+      [mod.index],
+    );
+    b.edge(mNode, node, "qualifies"); // modifier → head
+  }
   for (const adj of chunk.adjectives) {
     const aEntry = adj.entry;
     const aNode = b.node(
@@ -455,7 +605,11 @@ function parseEn(text: string): ParsedSentence {
   // segmentation — before item classification, and every resolution
   // is recorded on the sentence. The recognition test is enItems'
   // own classification, reused: function words, the hand lexicon,
-  // and WordNet-derivable nouns/adjectives need no help.
+  // and WordNet-derivable nouns/adjectives/adverbs need no help.
+  // (The adverb clause is the §6 restoration's other half: while
+  // the extract carried no adverb synsets, 'indoors' counted as
+  // unrecognised here and the resolver rewrote it to 'indoor'
+  // before classification ever saw it.)
   const recognize = (lower: string): TokenClass => {
     if (
       lower === "," ||
@@ -474,7 +628,8 @@ function parseEn(text: string): ParsedSentence {
     if (
       EN_LEXICON[lower] !== undefined ||
       wordnetNoun(lower) !== undefined ||
-      wordnetAdjective(lower) !== undefined
+      wordnetAdjective(lower) !== undefined ||
+      (lower !== "between" && wordnetAdverb(lower) !== undefined)
     ) {
       return "known";
     }
@@ -557,12 +712,12 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
         let i = contentStart + 1;
         while (i < items.length) {
           const item = items[i];
-          if (item.kind === "adverb") {
-            const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
-            b.edge(aNode, root, "modulates");
-            i++;
-            continue;
-          }
+          // The about-PP check precedes the adverb check: 'about'
+          // before a chunk is the preposition-like marker this
+          // branch has always special-cased, and since the §6
+          // adverb restoration the token also carries an adverb
+          // reading — position decides, as elsewhere in this
+          // parser, and here the chunk follows it.
           if (item.kind === "prep" || item.lower === "about") {
             const pc = enChunk(items, i + 1);
             if (pc) {
@@ -574,6 +729,12 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
               i = pc.next;
               continue;
             }
+            i++;
+            continue;
+          }
+          if (item.kind === "adverb") {
+            const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
+            b.edge(aNode, root, "modulates");
             i++;
             continue;
           }
@@ -589,6 +750,66 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
         }
         return { meaning: b.graph(root), connective: connective("en", tokens, spans), realizes: b.realizes, scopeAttachments: scope };
       }
+    }
+  }
+
+  /* --- Verb-slot capture recovery (sealed-run mechanism 1,
+   *     H-004): a subject noun whose HAND entry is verb-only
+   *     ('rain' — the hand lexicon carries it only as a verb)
+   *     sits in the subject chunk's head position wearing the
+   *     verb classification, so items.find below takes it as
+   *     the clause's verb and the real verb is demoted to an
+   *     attachment ("The rain flooded the garden." rooted on
+   *     rain). The signature is exact: the first verb item is
+   *     preceded only by determiners — a chunk head position —
+   *     the word has a noun reading, and a later item can serve
+   *     as the clause's verb. Then the noun reading is adopted
+   *     for the item and the verb search proceeds past it. A
+   *     genuine clause verb is never preceded only by
+   *     determiners (a determiner requires its noun), so the
+   *     recovery cannot fire on one. --- */
+  {
+    const captured = items.find((i) => i.kind === "verb");
+    if (captured && captured.index > contentStart) {
+      const before = items.slice(contentStart, captured.index);
+      if (before.length > 0 && before.every((i) => i.kind === "det")) {
+        const nounEntry = wordnetNoun(captured.lower);
+        const laterVerb = items
+          .slice(captured.index + 1)
+          .some((x) => x.kind === "verb" || wordnetVerb(x.lower) !== undefined);
+        if (nounEntry && laterVerb) {
+          captured.entry = nounEntry;
+          captured.kind = "noun";
+          captured.formTag = undefined;
+          registerDerivedEntry(nounEntry, captured.lower);
+        }
+      }
+    }
+  }
+  /* --- Daypart greeting fragment (Social Unit, conversation-shapes
+   *     C1, 2026-11-18): "Good morning." / "Good afternoon." /
+   *     "Good evening." / "Good night." — a verbless social form,
+   *     exactly two items. It never reached the bare-fragment path
+   *     below: the daypart noun's -ing/-night shapes draw verb
+   *     classifications with no entry, so the sentence died at
+   *     "no verb found". The signature is exact (the closed form
+   *     itself), and the graph is the fragment's: the daypart as
+   *     topic, "good" qualifying it — the shape SemanticAssessment
+   *     recognises as the daypart greeting (or, for "night", the
+   *     daypart farewell). --- */
+  {
+    const rest = items.slice(contentStart);
+    const DAYPARTS = new Set(["morning", "afternoon", "evening", "night"]);
+    if (
+      rest.length === 2 &&
+      rest[0].lower === "good" &&
+      DAYPARTS.has(rest[1].lower) &&
+      !items.some((i) => i.kind === "be" || i.kind === "aux")
+    ) {
+      const root = b.node({ lemma: rest[1].lower, form: rest[1].text, syntacticElement: "Earth", role: "topic" }, [rest[1].index]);
+      const good = b.node({ lemma: "good", form: rest[0].text, syntacticElement: "Fire" }, [rest[0].index]);
+      b.edge(good, root, "qualifies");
+      return { meaning: b.graph(root), connective: connective("en", tokens, spans, rest[1].index), realizes: b.realizes, scopeAttachments: scope };
     }
   }
 
@@ -611,7 +832,38 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       beItem && beItem.index === contentStart
         ? enChunk(items, beItem.index + 1)
         : enChunk(items, contentStart, true);
-    const scanFrom = subjChunk ? subjChunk.next : contentStart + 1;
+    let scanFrom = subjChunk ? subjChunk.next : contentStart + 1;
+    if (!subjChunk && auxItem && items[contentStart]?.kind === "wh") {
+      // Wh-fronted order (sealed-run mechanism 2, H-070): the
+      // chunk at contentStart fails on the question word itself,
+      // so the fallback above started the scan one token into
+      // the inverted subject — "What do people take…?" upgraded
+      // 'people' (it has verb synsets) ahead of the real verb,
+      // against the scan's own stated intent (only AFTER the
+      // subject chunk). The subject of an inverted question
+      // follows its auxiliary; start the scan after THAT chunk.
+      // The auxiliary's presence is part of the signature: a
+      // subject question ("Which happened first?") has none,
+      // and the item after the wh-word there IS the verb —
+      // skipping it left the sentence with no verb at all.
+      const invSubj = enChunk(items, (auxItem?.index ?? contentStart) + 1);
+      if (invSubj) scanFrom = invSubj.next;
+      if (invSubj && invSubj.next >= items.length) {
+        // The chunk ran to the end of the sentence: it has
+        // swallowed the clause's verb as its head noun — an
+        // adjective-led subject chunk needs a head, and a
+        // noun-attested verb supplies it ("What does cold
+        // mean?": the chunk is 'cold mean', 'mean' the head).
+        // A do-question's subject is never the whole remainder
+        // of the clause — a verb must follow it — so the scan
+        // starts at the chunk's last item, the only place the
+        // verb can be. (Merge fix, 2026-11-19: mechanism 2's
+        // scan start regressed this sentence, which the main
+        // path parsed before; the preference above still
+        // governs whenever anything follows the chunk.)
+        scanFrom = items.length - 1;
+      }
+    }
     for (let k = scanFrom; k < items.length; k++) {
       const it = items[k];
       // Candidates: nouns, proper nouns, and PROVIDER-derived
@@ -625,7 +877,18 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       if (items[k - 1]?.kind === "det") continue;
       const derived = wordnetVerb(it.lower);
       if (!derived) continue;
-      const f = derived.forms;
+      // A hand entry for the derived LEMMA outranks the
+      // derivation: the hand lexicon registers only some
+      // surfaces (make/makes/made — not 'making'), so an
+      // unregistered inflected surface of a hand verb fell
+      // through to the WordNet frame (make: theme) where the
+      // curated frame says patient — the same verb parsed with
+      // two frames depending on its surface. Derivation is the
+      // fallback for lemmas the hand lexicon lacks, not an
+      // override of it (part of H-012's role divergence).
+      const handEntry = EN_LEXICON[derived.lemma];
+      const verbEntry = handEntry && handEntry.kind === "verb" && !("source" in handEntry && handEntry.source === "wordnet") ? (handEntry as VerbEntry) : derived;
+      const f = verbEntry.forms;
       const formTag =
         it.lower === ingForm(f.base) ? "ing"
         : it.lower === f.base ? "base" : it.lower === f.third ? "third" : it.lower === f.past && it.lower === f.participle ? "past/participle" : it.lower === f.past ? "past" : it.lower === f.participle ? "participle" : "base";
@@ -636,10 +899,10 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       // verb synsets ("doctor"), and upgrading it steals the clause
       // from the copula path.
       if (beItem && formTag !== "participle" && formTag !== "past/participle" && formTag !== "ing") continue;
-      it.entry = derived;
+      it.entry = verbEntry;
       it.kind = "verb";
       it.formTag = formTag;
-      registerDerivedEntry(derived);
+      registerDerivedEntry(verbEntry);
       verbItem = it;
       break;
     }
@@ -762,14 +1025,38 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       verbForm: verbItem.formTag,
       voice: "active",
       ...(auxItem ? { aux: auxItem.lower } : {}),
+      // Aspect comes from the same bundle the main path uses
+      // (sealed-run mechanism 5): this branch built its states
+      // by hand and never called it, so the progressive of
+      // "What is he bringing?" read as unmarked aspect.
+      ...enAspectBundle(auxItem, beItem, verbItem, false, !!items.find((i) => i.lower === "been" && auxItem && i.index > auxItem.index && i.index < verbItem.index)),
     };
     const agentStart = (auxItem?.index ?? first.index) + 1;
-    const subjC = enChunk(items, agentStart);
+    let subjC = enChunk(items, agentStart);
+    if (!subjC && items[agentStart]?.kind === "be") {
+      // Inverted progressive/passive order (sealed-run
+      // mechanism 4, H-007/H-008/H-012): the subject sits AFTER
+      // the be-carrier — "What is HE bringing?" Attempting the
+      // chunk at the carrier itself failed, the wh-word took
+      // the agent slot, and the pronoun was dropped entirely.
+      // The main path's inverted-subject recovery (below) reads
+      // the subject after the boundary auxiliary/copula; this
+      // branch now does the same. A subject question ("Who is
+      // bringing him?") still finds no chunk after the carrier
+      // (the verb is there) and keeps the wh-as-agent reading.
+      subjC = enChunk(items, agentStart + 1);
+    }
     let slot: string;
     if (subjC) {
       const agent = enNodeFromChunk(b, subjC.chunk, "agent");
       b.edge(root, agent, "agent");
-      root.states.subjectPerson = subjC.chunk.head.entry && "person" in subjC.chunk.head.entry ? (subjC.chunk.head.entry as { person?: string }).person : "3sg";
+      // Person: the entry's own record, else agreement read in
+      // reverse — a base-form do-carrier ("do", not "does") with
+      // a third-person subject is plural ("What do people
+      // take…?": 'people' carries no person record anywhere).
+      root.states.subjectPerson = subjC.chunk.head.entry && "person" in subjC.chunk.head.entry
+        ? (subjC.chunk.head.entry as { person?: string }).person
+        : auxItem?.lower === "do" ? "3pl" : "3sg";
       slot = verb.required[0] ?? verb.slots[0] ?? "patient";
     } else {
       // No overt subject chunk: the question word IS the subject
@@ -783,6 +1070,33 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       [first.index],
     );
     b.edge(root, qNode, slot as Relation);
+    if (slot !== "agent") {
+      // Post-gap PPs of an object question ("What do people take
+      // TO THE BEACH?"): the gap is the questioned slot, but a
+      // trailing PP is ordinary clause material with its own
+      // slot — the main path's PP rule, applied here. Until this
+      // existed the branch returned at the gap and the PP was
+      // silently dropped (part of H-070's cascade: with the
+      // subject noun upgraded to root, no take-clause formed at
+      // all; with the root restored, the PP still had no path).
+      let i = verbItem.index + 1;
+      while (i < items.length) {
+        const item = items[i];
+        if (item.kind !== "prep") break;
+        const c = enChunk(items, i + 1);
+        if (!c) break;
+        let pslot = verb.prepSlot && verb.prepSlot.preps.includes(item.lower) ? verb.prepSlot.slot : item.lower === "to" ? "goal" : "location";
+        if (pslot === "location") {
+          const headLemma = c.chunk.head.entry?.lemma ?? c.chunk.head.lower;
+          const cls = lookupClassification(headLemma);
+          if (cls && (cls.aspect === "season" || cls.aspect === "time")) pslot = "time";
+        }
+        const n = enNodeFromChunk(b, c.chunk, pslot);
+        n.prep = item.lower;
+        b.edge(root, n, pslot as Relation);
+        i = c.next;
+      }
+    }
     if (slot === "agent") {
       // Post-verbal material of a subject question: bare chunks fill
       // the frame's slots in order; adverbs modulate ("happened
@@ -1088,6 +1402,26 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       const root = enNodeFromChunk(b, c.chunk, "topic");
       return { meaning: b.graph(root), connective: connective("en", tokens, spans, c.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
     }
+    // The thanked fragment with its intensifier tail (conversation-
+    // shapes C1, 2026-11-18): "Thanks so much." / "Thanks very
+    // much." / "Thanks a lot." — the nominal chunk is complete at
+    // "thanks" and what follows is only the adverbial tail (or the
+    // "a lot" chunk), which the fragment's graph does not carry,
+    // as a fragment's trailing modifiers are not its content. The
+    // signature is the head itself: no other fragment head takes
+    // this tail in the closed social vocabulary.
+    if (c && c.chunk.head.lower === "thanks") {
+      const rest = items.slice(c.next);
+      const INTENSIFIERS = new Set(["so", "very", "much", "really", "truly"]);
+      const adverbialTail =
+        rest.length > 0 && rest.every((i) => i.kind === "adverb" || INTENSIFIERS.has(i.lower));
+      const aLotTail =
+        rest.length === 2 && rest[0].lower === "a" && rest[1].lower === "lot";
+      if (adverbialTail || aLotTail) {
+        const root = enNodeFromChunk(b, c.chunk, "topic");
+        return { meaning: b.graph(root), connective: connective("en", tokens, spans, c.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
+      }
+    }
   }
   if (!verbItem || !verbItem.entry) throw new Error(`no verb found in: ${text}`);
   const verb = verbItem.entry as VerbEntry;
@@ -1101,7 +1435,11 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
   );
   root.states = {
     voice: isPassive ? "passive" : "active",
-    tense: verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
+    // Tense rides the carrier when there is one (F.2): 'did'
+    // is past though the verb it carries stays in base form —
+    // reading tense off the verb's form alone reported a
+    // did-question as present (sealed-run mechanism 6).
+    tense: auxItem?.lower === "did" || verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
     verbForm: verbItem.formTag,
     mood: interrogative ? "interrogative" : "indicative",
     ...(negItem ? { negated: true } : {}),
