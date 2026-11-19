@@ -504,6 +504,275 @@ synthetic-returner gates.
   not the current segment. The item stands, with this run
   as its third record; run 4, against the X tip, is the
   run that judges it.
+  *Run 4 record (2026-11-19, on the owner's commission; full
+  report and per-probe results held outside the repo at
+  `~/workspace/ansci-probe-run4-output/`):* the set was run
+  once against `d867a8b` — the tip of
+  `track/recognition-programme`, the R, E, S and X
+  programmes stacked — unmodified, in its own worktree, the
+  seal verified before running (sha256 `d77c072f…6a1`,
+  unchanged). Protocol identical to runs 1–3; this run's
+  baseline is run 3, the staircase R-tip → run 3 → run 4
+  isolating the X programme. Baseline gates on the tested
+  tree: suite 965 pass / 0 fail / 3 skipped; demo 29/29;
+  holdout clean; sense A 11/11 · B 5/6; `ai:check` OK. 128
+  probes, 385 turns, 0 machinery errors. **Verdicts: 26
+  pass (20%), 65 partial (51%), 37 fail (29%)** — against
+  run 3's 25 / 64 / 39 (per source: DailyDialog 35 →
+  9/20/6, its membership changed though its counts did
+  not; EmpatheticDialogues 32 → 3/12/17 — moved for the
+  first time since run 2, both movements on probes whose
+  notes turn on retained material; Persona-Chat 28 →
+  10/12/6; BlendedSkillTalk 18 → 4/9/5; Wizard of
+  Wikipedia 15 → 0/12/3, unmoved for the fourth
+  consecutive scoring — its notes turn on
+  testimony-bounded knowledge answers no slice in this
+  stack addressed). **Movement: four up, one down** —
+  P-030 partial → pass (the name referred back to at last:
+  "Ok. Ok. Her name is roxie." — the stack's first pass
+  earned purely by referring back), P-079 partial → pass
+  (the apology is no longer cross-examined at the final),
+  P-027 and P-042 fail → partial; of run 3's 25 passes, 24
+  hold. The one regression is **P-072, pass → partial**: a
+  garbled attributed tail ("You are welcome. You watched
+  the now.") appended to a thanks receipt by the
+  receipt-link machinery — recorded as a located item
+  against X1 below. Read against the bar (pass/partial/
+  fail, run 3 beside): (1) opens/closes 6/8/1 of 15 (was
+  5/9/1); (2) self-answers 6/2/0 of 8 (unchanged); (3)
+  thanks 6/4/0 of 10 (unchanged); (4) attribution and
+  acknowledgement 6/25/24 of 55 (was 5/25/25); (5)
+  testimony/grounding 0/15/5 of 20 (unchanged — zero
+  passes in five consecutive scorings; see the
+  instrument-blindness note below); (6) clarification
+  0/8/3 of 11 (unchanged); (7) decline form 0/9/20 of 29
+  (its population drops by one — P-042's final no longer
+  declines); (8) false premise 0/2/0 of 2 (unchanged — the
+  absence stance fired nowhere again, zero firings for the
+  fourth consecutive run, by the design record's own
+  scope); (9) interlocutor's picture 5/11/7 of 23 (was
+  4/11/8); (10) turn-taking 10/25/14 of 49 (was 10/24/15).
+  The two negatives held again across all 385 turns,
+  counted explicitly: **zero confabulation and zero
+  misattribution** — the fifth consecutive scoring at
+  zero, on the run where receipts first drew on retained
+  material, the place a confabulation would appear if one
+  were coming; every retained-material reference traces to
+  something the visitor actually said in that probe's fed
+  turns. Run 3's most serious near-case class is
+  **mechanically absent**: a scan for the visitor's facts
+  rendered in the system's first person finds zero
+  instances (run 3: two) — P-068 now "Ok. Your major is
+  science.", P-103 "Ok. Yours is green."; X1's person
+  discipline is verified across the whole set, not only on
+  its specimens. **Steering discipline verified
+  mechanically:** replies carrying two or more steering
+  markers fell 2 → 0, steering finals 4 → 2 (both single,
+  standalone moves identical to run 3 — not composition
+  leaks), and no boundary segment — thanks, closing,
+  receipt — carries a steering move anywhere in the run;
+  X3's composition discipline holds in the wild. Of 47
+  ack+receipt finals, **9 reference material from an
+  earlier turn** (run 3: effectively none) — five by
+  explicit marker ("We were talking about…", "You told
+  me…"), four by inspection (P-001's standing feeling,
+  P-030's name, P-047's told fact, P-124's want): roughly
+  one ack+receipt final in five now reaches back; the rest
+  remain current-turn receipts. The particle/clitic echo
+  family run 3 named is gone everywhere it appeared — most
+  of the 41 behaviour changes are deletions of garble.
+  P-008's composed final is clean and empty where it was
+  dirty and empty: the tails are gone, recognition did not
+  take their place. The run's most serious near-case is
+  P-042's false denial of a same-turn telling, recorded
+  against X2 at the grounding item below; the topic-link
+  discrimination gap and the attributed-rendering garbles
+  are recorded against X1 at the recognition item below.
+  Failure shapes: rephrase finals 14 (11 in the `_comma_`
+  artifact family, 3 outside it — identical to run 3);
+  bare-"Ok." finals 22; ack+receipt finals 47; ack piles
+  0; decline finals 16; token-clarification finals 0;
+  greeting-receipt turns 30. *The instrument-blindness
+  finding, recorded as a fact about the instrument, not
+  the mechanisms:* a mechanical scan of the sealed set
+  finds **no probe, at any turn, asking a feeling-history
+  question, a mention-check question, or any question
+  about the visitor's own earlier statements** — no "Did I
+  mention…?", no "How did I feel?", no "Was I worried?",
+  no "What did I say?", no "Do you remember…?" — and no
+  negated-feeling input exists in the set either. X2's
+  record answers, X4's readers-as-answers and X0's
+  refinement are therefore unevidenced by this instrument
+  either way, in the same position as S3's absence stance
+  and R1 before them; what this run evidences of X is X1's
+  receipt links, X3's steering discipline and the person
+  discipline. If those mechanisms are to be measured, they
+  need a targeted instrument of their own. *Limits, as the
+  report states them:* scoring was in-loop judgment under
+  run 1's rubric — nobody independent scored this run; 87
+  verdicts carried from run 3's scoring on identical
+  behaviour rather than re-judged; partner turns were not
+  fed; bar 9's first-contact/returning part is
+  unevidenced. *On striking:* no judgement is entered
+  here. Five scorings in, bars 4, 5 and 9 stand on their
+  negative halves — bar 5 without a pass in any scoring —
+  and whether the item is struck is the owner's to judge.
+  The item stands, with this run as its fourth record.
+  *Run 5 record (2026-11-19, on the owner's commission; full
+  report and per-probe results held outside the repo at
+  `~/workspace/ansci-probe-run5-output/`):* first, the
+  integration it ran against. The two programme branches
+  from `9486833` — `track/recognition-programme` at
+  `2e56956` (IMP-1..4) and `build/discourse-uptake` at
+  `510f82b` (the Discourse Record reader and the uptake
+  move family) — were merged on `integrate/imp-discourse`
+  (merge commit `d032908`) in a separate worktree. One
+  textual conflict, in `src/fork/turn.ts`: the trace's
+  recognition-link record and `earlierLink` — resolved by
+  keeping both programmes' fields (IMP-3's link sentence,
+  DR-2's history spine) and both legs (DR-2's history leg
+  ahead of X1's event leg, under IMP-3's standing-topic
+  discipline, which the history leg now also observes);
+  `GAPS.md`, `session.ts` and `plan.ts` merged cleanly,
+  both programmes' §2 entries whole. The seam was audited
+  against the uptake design's gating: IMP's new reply
+  paths are all question-answerers (the self-query,
+  possession, tellings, mention and feeling-history
+  routes) and declines — not acknowledgement sites — and
+  its statement paths (tag questions taken up as
+  statements, IMP-4's clause-boundary split) flow through
+  the ordinary composition that holds the four wired
+  `tryUptakeReply` sites; **no seam wiring was added, and
+  none was improvised.** Gates on the integrated tip:
+  suite 1052 pass / 0 fail / 3 skipped (1055 tests — the
+  union of both branches); demo 29/29; holdout clean;
+  sense A 11/11 · B 5/6; `ai:check` OK. The set was then
+  run once against `d032908`, unmodified, in its own
+  worktree, the seal verified before running (sha256
+  `d77c072f…6a1`, unchanged; the runner recomputes and
+  aborts on mismatch). Protocol identical to runs 1–4,
+  with one behaviour-neutral capture addition (the uptake,
+  recognition and closingFact trace records, so firings
+  can be counted from traces). 128 probes, 385 turns, 0
+  machinery errors. **Verdicts: 30 pass (23%), 72 partial
+  (56%), 26 fail (20%)** — against run 4's 26 / 65 / 37
+  (per source: DailyDialog 35 → 12/18/5;
+  EmpatheticDialogues 32 → 3/19/10; Persona-Chat 28 →
+  11/12/5; BlendedSkillTalk 18 → 4/10/4; Wizard of
+  Wikipedia 15 → 0/13/2, its pass count unmoved for the
+  fifth consecutive scoring). **Movement: fifteen up, one
+  down.** The invariants held for the sixth consecutive
+  scoring: **zero confabulation and zero
+  misattribution** across all 385 turns. Read against the
+  bar (pass/partial/fail, run 4 beside, on the scoring
+  script's assignment): (1) opens/closes 6/8/1 of 15
+  (unchanged); (2) self-answers 6/2/0 of 8 (unchanged);
+  (3) thanks 8/2/0 of 10 (was 6/4/0); (4) attribution and
+  acknowledgement 7/32/16 of 55 (was 6/25/24); (5)
+  testimony/grounding 0/18/2 of 20 (was 0/15/5 — **zero
+  passes in six consecutive scorings**); (6)
+  clarification 2/6/3 of 11 (was 0/8/3 — **the bar's first
+  passes in any scoring**: P-090's person clarification
+  and P-076); (7) decline form 1/9/6 of 16 (was 0/10/6 —
+  its first pass, P-076); (8) false premise 0/2/0 of 2
+  (unchanged, by Part I's recorded scope); (9)
+  interlocutor's picture 5/13/5 of 23 (was 5/11/7); (10)
+  turn-taking 12/25/12 of 49 (was 10/25/14). Failure
+  shapes: **rephrase finals fell 14 → 1** (the last, P-121,
+  is instrument-family); bare-"Ok." finals 25;
+  ack+receipt finals 58; decline finals 16.
+  *Per family, against the causal analysis's counted
+  upside:* **IMP's sentence layer (C3, 12 primaries)
+  delivered at partial grade** — the family went from
+  10 fail / 2 partial to 2 fail / 10 partial, eight probes
+  converting fail → partial as their turns were taken up;
+  the two standing fails are P-009 (the 'rest' sense split
+  — IMP-1's named residual, fired here and priced: neither
+  offered sense is the visitor's meaning) and P-029 (a C6
+  rendering garble). **IMP's decline routing (C5, 9)
+  delivered** — three conversions to pass (P-056's
+  either/or form fires at last; P-076's wondering question
+  routed to its located admission; P-090's clarification),
+  P-119 fail → partial, and located declines across the
+  family; bars 6–7's standing zero lines are broken.
+  **IMP's gating completion (~7) delivered on its named
+  specimens** — P-072's run-4 regression is repaired (the
+  thanks receipt stands alone; the probe passes again),
+  P-005's and P-013's steering stand-downs hold, P-086's
+  gap questions are gone, P-127's 'wow' link is gone; its
+  named remainders stand exactly as recorded (P-050's
+  possession answer does not fire in context; P-053's
+  'day' link is byte-identical to run 4). **The design
+  families moved nothing at verdict grain, and the run
+  prices why.** *C1 uptake (19 primaries): zero movement*
+  (13 partial / 6 fail in both runs). Uptake fired on
+  three turns in the whole set (P-044, P-059, P-079) and
+  stood down on four (P-001, P-005, P-014, P-037 — every
+  one the phase gate, in 'opening'); only P-059's firing
+  is visible in a reply. Two firings (P-044's 'dream',
+  P-079's 'hope') were **built, recorded in the trace and
+  in the episode register, then discarded** — both
+  feelings are verb-carried, and branch (c)'s verb-carried
+  early return runs after `tryUptakeReply` has registered
+  the firing: a composition-order defect at UP-2's seam
+  with the verb-carried shape, located here, not yet
+  repaired. And the priced remainder: **the unfiled-words
+  class ('disappointed', 'upset', 'devastated', 'proud')
+  costs 0 of the 19 on this set** — no C1 telling speaks
+  in it; only 2 of the 19 contain any filed feeling word
+  at all. The other 17 carry their register narratively,
+  in events and evaluations, with no predicated visitor
+  feeling — UP-1's recorded scope line (event-carried
+  registers are not claimed in v1) is what bounds the
+  family's reach here, not the vocabulary. Empathetic-
+  Dialogues' fails halved (17 → 10) on the sentence
+  layer's conversions; its pass count has not moved
+  since run 4. *C4 discourse (9 primary / 15 touched):
+  zero movement on both rings.* The type specimen is
+  byte-identical to run 4: **P-036** — "Ok. You injured
+  the leg. We were talking about the leg." The history
+  leg needs two earlier items in which the topic fills a
+  rendered role; this record holds the injury inside a
+  clause the ledger took up as 'used the weight', so the
+  spine is not served and the lemma-grade link answers as
+  before — the history-grade link verified on the build's
+  constructed sessions does not fire at this set's
+  recording grain. P-068's closing fact likewise did not
+  fire. Where the reader's servings did show: P-110's
+  told-me garble tail is gone and its loss is referred
+  back accurately ("You told me the parent died."), and
+  P-103's noise-grade link is dropped. *The run's one
+  regression is **P-024, partial → fail**:* the visitor's
+  sympathy turn ("I am sorry… I truly hope you find a
+  resolution") now draws the venting steering
+  cross-examination ("You were sorry. What did you say
+  or do?") where run 4 receipted it ("You hope.") — the
+  turn's 'sorry', filed as grief under E1's climb, is
+  registered as a steering state where run 4's parse
+  carried the turn on 'hope'; the steering is the family's
+  ordinary move over a fresh visitor feeling, misapplied
+  to a formula of sympathy. Attributed to the
+  implementation side (the registration/segmentation
+  interplay), not to uptake, which never assessed the
+  turn. Turn-level regressions without verdict change:
+  P-014's first turn, P-043's "I don't work fine.",
+  P-050's second turn, P-025's added 'right' link. *The
+  instrument family (C2, 17) is unchanged, as expected* —
+  all movement above is read net of it. *Limits, as the
+  report states them:* scoring was in-loop judgment under
+  run 1's rubric — nobody independent scored this run;
+  60 verdicts carried from run 4 on identical behaviour;
+  partner turns were not fed; bar 9's
+  first-contact/returning part is unevidenced. The two
+  design families' zero movement is a statement about
+  this instrument's grain as much as about the machinery:
+  the record-probes instrument (56/0/0 at the IMP tip)
+  and the builds' specimens show the mechanisms working
+  where records are rich and feelings are filed; this
+  set's harvested grain is thinner on both counts. *On
+  striking:* no judgement is entered here; the bar is
+  the owner's to strike or not. The item stands, with
+  this run as its fifth record.
 - **Found ahead of the checklist — gaps of record (accepted
   2026-11-18).** 18 of the sealed probes test things this
   section did not name. They cluster where conversation meets
@@ -582,6 +851,311 @@ synthetic-returner gates.
     sources now built — and bar 5's verdict is run 4's to
     give (run 3 left it at 0/15/5, zero passes in four
     runs; any pass at all is signal).
+    *Run 4 note (2026-11-19, located by probe run 4
+    against this slice):* **the mention check reads the
+    wrong record for a question whose own turn contains a
+    telling.** P-042: the visitor stated their favourite
+    drink (iced tea) in the same turn, and the check —
+    answering from the record as it stood BEFORE the turn
+    — replied "No. You have not told me you have one.": a
+    false denial of a telling that had already happened,
+    the first time in five scorings the memory machinery
+    has asserted something false about what the visitor
+    said. The pre-turn snapshot is the right record
+    against a question's own mention masquerading as a
+    telling; it is the wrong record where the turn itself
+    registered tellings before the question. The check
+    must run against the record including the current
+    turn's own registered tellings. (The probe still
+    improved fail → partial on its other turns — the
+    either/or drink question is now answered at all — and
+    both facts stand.) Run 4 also establishes this
+    slice's evidence position: the sealed set asks no
+    mention-check, feeling-history or record question at
+    any turn (the mechanical scan recorded in the run 4
+    record above), so the slice's answers stand
+    unevidenced by that instrument either way.
+  - *The implementation programme (IMP; owner's rulings,
+    2026-11-19).* After run 4 the owner commissioned a
+    causal analysis before any further building (diagnosis
+    before fixes: every non-passing run-4 probe attributed
+    by cause — system design, implementation, knowledge,
+    instrument; the analysis is held outside the repo at
+    `~/workspace/ansci-causal-analysis.md`). The owner's
+    rulings on it: **the implementation programme runs
+    first** — the located implementation causes, priced and
+    certain — **with the design phase widened to cover both
+    design items** (the Discourse Record reader; the
+    empathic-uptake move family) **running in parallel as a
+    design-only track**; and **empathic uptake is
+    CHARTERED** — a capability whose owner is to be
+    designed in that parallel phase, not a charter
+    exclusion, and not this programme's to build. IMP's
+    slices are the analysis's implementation causes in its
+    order: IMP-1 the sentence layer (C3), IMP-2 decline
+    routing and location (C5), IMP-3 initiative/link gating
+    completion (the C4/C6 gating remainder), IMP-4 the
+    parse and record-answer completions the record-probes
+    instrument priced. Statuses are recorded per slice
+    below, against the analysis's cause items.
+    *Status (2026-11-19, IMP-1 — causal analysis C3, the
+    sentence layer sinks receivable turns; 12 primaries:
+    P-009, P-010, P-018, P-019, P-021, P-025, P-028, P-029,
+    P-032, P-081, P-087, P-113):* **the sinks are closed,
+    by general mechanisms, none keyed to probe wording.**
+    The glued-comma transcription ("_comma_") is a comma,
+    normalised where commas are normalised; sentence
+    punctuation glued to a word mid-text is the sentence's
+    mark, split off as the final mark is stripped
+    (abbreviations keep their periods); "won't" splits as
+    will + n't (the "can't" precedent, both tokenisers);
+    segmentation keeps the marks where they stand —
+    missing-space boundaries and unpunctuated tails segment,
+    a decimal point is no boundary (the old splitter's
+    exact-rejoin test discarded the whole segmentation on
+    any of these, merging receivable turns into one
+    unparseable whole); a sentence-initial coordinating
+    conjunction is scaffolding and content begins after it
+    (P-087's plain declarative); verbless fragments widen
+    to the bare nominal's kin — a prepositional fragment
+    and a fragment behind discourse markers are complete
+    discourse acts (P-081's "Yes, in most circumstances.");
+    the bare quantifiers (most/all/any) stand in a chunk's
+    determiner slot on positional evidence — they are
+    degree adverbs elsewhere ("gone all brown" keeps its
+    modulating 'all', a demo pin) and determiners only
+    where a noun phrase follows; a hyphenated compound of
+    attested parts is a formed word, not a doubtful one;
+    and the token exit's arbitration is completed — a
+    rival reading must preserve the sentence's root (a
+    candidate that re-reads the sentence as a different
+    event was never a reading of the token: "recall" in
+    P-009's "hopes reall high"), the token that IS the
+    root excepted, and rivals that are one lexeme in
+    several word classes (real/really) are one reading.
+    All twelve primaries' turns are taken up; controls
+    hold (wethr still asks with/water/weather; a mistyped
+    root still asks). Two admission vetoes the uptake
+    exposed were completed in their own families: a state
+    whose lemma is a closed-class function word is
+    recorded as parsed but never receipted (R2) nor
+    returned to (X3's topic-return) — the resultative
+    "so" mis-read as a quality ("It is so." / "The roof is
+    so.", on P-030's third turn, whose pinned replies the
+    veto restores exactly). *One residual stands, located:*
+    P-009's final turn now meets the §2.3 rival split over
+    'rest' (sleep vs relief) where it once sank — the
+    sense-split family the analysis counts under C6, not
+    C3; the sentence layer's part is done. *Gates:* suite
+    985 pass / 0 fail / 3 skipped (965 baseline + 20 new);
+    demo 29/29; holdout clean; sense A 11/11 · B 5/6;
+    ai:check OK. *One re-pin:* the E1 verb-carried-feeling
+    test — its turn's unpunctuated second sentence is now
+    segmented and its found event earns the receipt it
+    earns as its own turn; the feeling registration and
+    steering shape the test pins are untouched, and the
+    reason stands in place.
+    *Status (2026-11-19, IMP-2 — causal analysis C5, decline
+    routing and location; 9 primaries: P-041, P-050, P-056,
+    P-076, P-090, P-115, P-116, P-119, P-126):* **the
+    declines are located and the questions routed, by
+    general mechanisms.** A decline now names the gap it
+    stands at: a tag question is a statement with a tag
+    (the tag is scaffolding, stripped at the parse under an
+    onset guard — P-116's "It must be a very stressful job
+    right?" is taken up as the statement it is); the
+    possession answer routes on the possession-verb class
+    (have/own/possess), the matter read from an excess fill
+    where the verb carries no valency frame ("Do you own
+    guns?" — "I don't have any guns."); a polar verb
+    question to the system, modal or bare present, is a
+    self-query in the ability flavour and draws the plain
+    denial in the question's own frame ("Can you swim?" —
+    "I can't swim."; "Do you eat meat?" — "I don't eat
+    meat."), cognition and telling verbs excepted, and an
+    unanchored person pronoun in its patient draws the
+    clarification that owns it ("Can you take he away from
+    me?" — "Who do you mean by 'he'?", P-090); the
+    self-presentation request routes to the identity
+    presentation in its imperative, modal and
+    wondering-wrapped frames (P-041); the wondering frame's
+    posed question and the tell-me request's about-phrase
+    are recorded as matters and discharged at the knowledge
+    location, the net's absence verified before the decline
+    names them ("I have nothing on life insurance in what I
+    know.", P-076; "the Prisoner of Azkaban", P-119); and
+    the question path's fallthrough locates at knowledge
+    when the question names a subject the net holds nothing
+    on (paramedics, P-116's segment; restaurants, P-056's
+    greeting segment; strike, P-115) — the shape text stands
+    only where no subject can be named. P-056's either/or
+    specimen itself already answered at the IMP-1 tip: its
+    run-4 failure was the old segmentation merging the
+    question into its turn, IMP-1's cause, not the built
+    form's firing conditions, which inspection verified
+    whole. Two completions the routing exposed: 'her'
+    before a lone adjective is the object pronoun (an
+    adjective evidences a noun phrase only when a head
+    follows it — "You took her away." keeps its patient),
+    and the ability flavour's object renders under the S0
+    admission. *Two residuals stand, located:* P-050 in
+    context — its turn is an unpunctuated run-on whose
+    merged parse roots on 'hunt', so the possession answer
+    does not fire (the decline it draws is at least located
+    at knowledge, naming 'hunting'); no run-on
+    clause-splitting mechanism exists, and none was carved
+    for the specimen. And the either/or form's bars 6–7
+    record is unchanged by this slice — the routing to the
+    built forms is repaired; what the sealed set asks of
+    them is run 5's to measure. *Gates (with IMP-3, built in
+    the same working pass):* suite 1006 pass / 0 fail / 3
+    skipped (985 at IMP-1 + 11 new IMP-2 tests + 10 new
+    IMP-3 tests); demo 29/29; holdout clean; sense A 11/11
+    · B 5/6; ai:check OK. *One re-pin:* the C3
+    not-captured test — "Do you eat meat?" leaves the
+    ordinary-questions list because the routing now owns
+    it as a self-query by design (the plain denial is
+    asserted positively in this slice's tests); the other
+    four controls stand.
+    *Status (2026-11-19, IMP-3 — the initiative/link
+    gating completion, the analysis's §7 item 5; ~7
+    primaries across C5's sibling and C6's groups):*
+    **the gating is completed, by general mechanisms.**
+    (i) The X1 receipt link stands under the composition's
+    boundary discipline: the link's rendered sentence is
+    recorded on its trace, and in a composition carrying a
+    boundary reply (thanks/farewell/decline/closing) the
+    shaping strips it and counts the strip — P-072's
+    regression family; the receipt itself, the segment's
+    own content, stands. Beside it, a deictic time word is
+    not a thing fill at either admission (soundThingFill,
+    soundBareFill): "You watched the now." no longer
+    stands to be kept — P-072's final turn is now the
+    thanks receipt alone. (ii) Steering over a feeling the
+    telling itself binds to its object, or occasions by a
+    mediated report, stands down in every branch of the
+    family: the of-phrase after the feeling's own word
+    ("scared of bugs"), or a read/heard/watched/learned
+    event of the visitor's standing on the feeling's turn
+    (P-005's grief over a news story — the read event is
+    the turn's own record), judged for the fresh-state and
+    restrainer branches on the turn's parse and for the
+    venting branch on the standing feeling's own turn's
+    retained surface, so no branch of the family steers
+    from a feeling another branch stood down over. The
+    feeling stands registered either way; an unbound
+    feeling steers as before (the P-008 control). (iii)
+    The topic leg discriminates above the bare lemma: a
+    topic raised inside the visitor turn being composed is
+    that turn's own material and grounds no link inside it
+    (P-034's 'meat', raised by a sibling segment); the
+    admission refuses the scaffolding and time-frame
+    classes (P-127's 'wow'); the event leg — an earlier
+    event's own structure, X1's priced shape — is
+    unchanged, and P-036's 'leg' link stands. The
+    consumed-object possession shape ("I have a cell
+    phone" drawn as an event of phoning) premises neither
+    an echo nor a gap question, at the plain-event branch
+    or in the initiative scan, where the persisting gap
+    over it was P-086's second specimen; the shape is
+    judged on the parse's tokens at the branch and on the
+    event record's retained surface in the scan. *One
+    residual stands, located:* P-053's 'day' link — the
+    topic's only path into the receipt's content is a
+    mis-resolved fill (the recording resolved a dropped
+    slot to a time adjunct's noun), and in the record as
+    recorded that is indistinguishable from a sound
+    return; the link stands or falls with the resolution,
+    which is the rendering family's (C6) account, and the
+    same mis-resolution produces the receipt clause "You
+    typed the day." beside it. *Three re-pins, each with
+    its reason in place:* the E1 P-005 test (the steering
+    tail is this slice's intended target; the registration
+    assertions are untouched), the E1 P-013 test (the same
+    stand-down over the object-bound feeling; the found
+    event's receipt stands), and the R3 P-072 test (the
+    segment's echo fails the fill admission, so no steering
+    reply is produced to stand down — the discipline holds
+    a fortiori); the X1 link-trace assertions carry the
+    link's sentence since (i).
+    *Status (2026-11-19, IMP-4 — the parse and record-answer
+    completions the record-probes instrument priced; its
+    run-1 record was 50 pass / 2 partial / 4 fail):* **the
+    completions are built, each a general mechanism.**
+    (a) The accumulated-tellings reader (X2's located
+    remainder, built): "What did I tell you about X?" reads
+    its topic from the token stream after "about" — the
+    phrase the wh- parse drops — and answers with the
+    record's accumulation over the topic: states predicated
+    of it (standing and superseded, in turn order) and
+    events it fills in any role, its agent included, each
+    rendered under the family's admissions and spoken under
+    the told-me attribution; nothing told answers so,
+    plainly. The instrument's family stood 1 control pass /
+    4 fail on the identical missing-role decline ("nothing
+    you have told me says who it was told to"); all four now
+    answer with the accumulation, and the control stands.
+    Two rendering grains stand as the family's own, not
+    this reader's: a lone location drops from the event
+    clause ("the sister lived" — Chicago unnamed), and a
+    role noun predicated of a third person drops its
+    article (the planner's standing 3sg grain). (b) A
+    comma-joined telling + question composes at the
+    interrogative clause boundary — the S5 principle at the
+    clause's scale: the telling registers before the
+    question is answered, so the mention configuration
+    affirms in one turn ("I put the salt in the soup, did I
+    mention the soup?" — "Yes. You mentioned the soup."),
+    and P-042's question reaches the self answerer that
+    owns it instead of the merged parse's mis-drawn
+    possession denial; its first segment's uptake exposes a
+    steering garble over the mis-predicated 'sleeper' state
+    that the merged parse previously hid — the rendering
+    family's account, recorded here. (c) The feeling
+    history's negative branch: "Was I sad?" over a record
+    holding feelings but no sadness answers "No." with the
+    standing feeling beside it (RP-008, RP-051 — the
+    instrument's two partials); the asked feeling standing
+    in the record still answers from it, and a feeling-less
+    record is untouched. (d) The mention check and the
+    possession check render the visitor's possessive back
+    as the second person: "You told me about your
+    favourite." (e) The told-me attributed constructions
+    stand under the S0-family admission, completed against
+    the event's own retained surface: a determiner-spoken
+    fill whose word stands only preposition-led ("went to
+    work") or degree-adverb-led ("so well") in its telling
+    did not stand as the clause's object there, and the
+    clause stands down whole — P-110's "The accident got
+    the well." and its told-me repetition both fall; sound
+    fills render as before (the soup control). P-071's
+    specimen no longer reproduces on the current record
+    (IMP-1..3 changed what its turns record); the mechanism
+    is verified on the constructed shape and on P-110.
+    *Gates:* suite 1018 pass / 0 fail / 3 skipped (1006 at
+    IMP-3 + 12 new IMP-4 tests); demo 29/29; holdout clean;
+    sense A 11/11 · B 5/6; ai:check OK. *One test rewritten,
+    with its reason in place:* X2c, which pinned this
+    remainder as unbuilt, now pins the built behaviour.
+    *Verification (the programme's close):* the
+    record-probes instrument re-run against this
+    programme's tip (`2134dcd`, in a separate checkout;
+    seal verified by the runner before running; the
+    instrument unmodified) — **56 pass / 0 partial / 0
+    fail, against run 1's 50 / 2 / 4; invariants zero;
+    0 machinery errors.** Accumulated tellings 5/0/0 (from
+    1/0/4); feeling-history 8/0/0 (RP-008's negative
+    branch); controls 6/0/0 (RP-051); the mention checks
+    hold 9/0/0 with the person conversion in place
+    (RP-013/014/050). Forty-six probes' replies are
+    byte-identical to run 1 — the movement is confined to
+    the ten probes in IMP-4's families. Outputs at
+    `~/workspace/ansci-record-probes-run2-output/`
+    (REPORT.md, results.jsonl, raw-results.jsonl,
+    run-probes.mjs, score.py). The run prices record
+    answers only: IMP-4(b) and (e) are evidenced by the
+    programme's tests and specimens, and IMP-1..IMP-3's
+    families are sealed run 5's to measure.
   - *Clarification behaviour.* The decline discipline locates a
     gap and stops; nothing in the conversation layer asks the
     interlocutor what was meant instead of guessing or stopping
@@ -1151,6 +1725,40 @@ synthetic-returner gates.
   re-pinned to the linked and as-told forms with their
   reasons recorded — each verified as the designed
   behaviour against the trace, not merely accepted.
+  *Run 4 remainder (2026-11-19, located by probe run 4
+  against this slice):* **the link machinery renders
+  recognition past the point the record or the moment
+  supports.** Three shapes. (i) *The link path is
+  apparently not under R3's boundary discipline the way
+  initiative is:* P-072's final was the clean "You are
+  welcome." in run 3; run 4 appends a garbled attributed
+  tail — "You are welcome. You watched the now." — to the
+  THANKS receipt, and the probe's pass went with it (pass
+  → partial, the run's only regression). A receipt link
+  must stand down on a boundary reply as a steering move
+  does. (ii) *The topic link does not yet discriminate a
+  conversation's topic from any word the conversation
+  contained:* it fires on content lemmas — true topics
+  (the leg, P-036; the tea, P-080; the seed, P-097; the
+  summer, P-103); thin (the meat, P-034 — the current
+  turn's own word echoed back as if it were history);
+  noise-grade (the day, P-053; the wow, P-127 — the
+  visitor's exclamation rendered as a topic). (iii) *The
+  attributed rendering runs ahead of the rendering it
+  carries:* "You told me…" turns rose 1 → 3 in run 4 and
+  two of the three are garbled — "You told me the accident
+  got the well." (P-110), "You told me you went the work."
+  (P-071) — genuinely held material scrambled under
+  attribution (S0-adjacent: the attribution form is
+  admitted where the clause it carries would not be). And
+  the standing specimen of the slice's limit: P-036's link
+  fires in its designed form — "Ok. You injured the leg.
+  We were talking about the leg." — and the probe does
+  not move, because the note demands connection to the
+  HISTORY (the pain, the stopped weightlifting), and a
+  topic-grade link is not a history-grade connection. That
+  gap — topic-grade against history-grade recognition —
+  is where this item now stands.
   *Status (2026-11-19, X4 of the X programme, in the
   worktree, unpushed):* **the Interlocutor's picture is
   used continuously, not only at the naming turn.** The
@@ -1407,6 +2015,203 @@ synthetic-returner gates.
   fuller degree levels and boundary specifics (S5 consumed
   the contradiction degree only), Session & Situation's
   open-unknowns, and the Verbalizer.
+- **The accumulated record had no reader, and the current
+  telling's register no answerer.** (Causal analysis,
+  2026-11-19, causes C4 and C1; the analysis and the design
+  record are held outside the repo. The owner's rulings of
+  2026-11-19 commission the build: the reader as an
+  Awareness unit beside the Social Unit, raising no
+  demands; uptake as a Planner move family; one
+  acknowledgement head per reply.) C4: the session ledgers
+  held every fact, but no unit read them into a discourse
+  structure — `TopicRecord` carried a lemma and two turn
+  numbers with no linkage to its events or predications,
+  and X1's link reconstructed connection by lemma-scan at
+  render time. C1: empathic uptake of the current telling
+  had no owner — the acknowledgement family's positive
+  half was receipts, which show the record neutrally
+  whatever register the telling carried. C4's primaries:
+  P-001, 008, 033, 036, 061, 068, 105, 107, 112. C1's
+  primaries: P-004, 007, 015–017, 020, 026, 027, 031, 044,
+  082, 083, 085, 108–110, 120, 123, 128. Neither closes
+  here: each closes on a commissioned sealed run meeting
+  its primaries, invariants at zero (the design record's
+  closes-when); the statuses below are build records, not
+  verdicts.
+  *Status (2026-11-19, DR-1 of the discourse/uptake
+  programme, branch `build/discourse-uptake`, unpushed):*
+  **the reader core is built** —
+  `src/fork/discourse-record.ts` (unit
+  awareness/discourse-record): topic histories (a topic →
+  its events, standing states, and superseded states
+  recovered from the supersession deltas, sequenced by
+  turn and stream order), state movements (supersession
+  chains as first-class objects), a per-holder state
+  timeline, salience, and open threads (standing subject
+  matter available for return, owed by nobody — not the
+  Conversation register's pending). Every serving is a
+  pure derivation on consult over the ledgers — no second
+  store — and every served item carries a pointer to its
+  ledger source; the unit tests audit the pointers to the
+  records they name. The reader never speaks, never
+  authors, never originates a claim, and raises no
+  demands; consultees pull (DR-2 wires them).
+  *Salience determination (owner ruling 5, 2026-11-19 —
+  the weights set at build, recorded here as the
+  determination):* standing-ness is the gate (a topic
+  with no standing state held by it and no event
+  mentioning it scores 0 and opens no thread); recurrence
+  is the spine term, +1.0 per history item (events,
+  standing states, superseded states alike — each is a
+  turn the conversation spent on the topic); recency is
+  a bounded bonus, +2.0 × 1/(1 + age in turns since the
+  topic was last touched) — worth at most two returns and
+  decaying hyperbolically, so freshness alone never
+  outranks recurrence, and an old recurrent topic stays
+  reachable at a closing many turns later.
+  Visitor-emphasis is named and excluded from v1: the
+  record carries no emphasis signal distinct from
+  recurrence and the Social reading, and inventing one
+  would file evidence nobody recorded. Gates at DR-1:
+  suite 973 pass / 0 fail / 3 skipped (baseline 965 + 8
+  reader tests); demo 29/29; holdout clean; sense
+  A 11/11 · B 5/6; `ai:check` OK.
+  *Status (2026-11-19, DR-2, same branch, unpushed):*
+  **the consultees are wired** — the reader never speaks;
+  each consultee pulls. (i) *Receipts:* X1's link consults
+  the reader through the Planner's priced history source
+  (plan.ts's `historySource` — a topic's history served
+  with its salience as the source's price): where the
+  established state's subject names a topic with a served
+  history, the link renders the history's salient spine —
+  the topic sentence plus its earliest and latest earlier
+  events under S0's admission (P-036's shape: "We were
+  talking about the leg. You told me you hurted the leg.
+  You told me you rested the leg."), the spine's ledger
+  pointers recorded in the trace. The leg is gated on the
+  state-receipt call: on the event-receipt call the event
+  leg's specific link (the earlier event sharing this
+  event's fills) already is history-grade and is not
+  displaced (the soup scenario's pin, re-pinned nowhere —
+  it failed once in development and the gate is the fix).
+  Lemma legs remain the fallback where no history
+  qualifies. (ii) *Initiative:* the scan gains movement
+  grounds — a feeling that moved (supersession chain,
+  reader-served) whose head stands grounds a
+  standing-feeling candidate its head's classified origin
+  bars from shape (c) — and topic-return grounds are
+  ranked by the reader's salience within their shape (the
+  T-R6 cross-shape order untouched). (iii) *The Planner:*
+  the priced source itself is the wiring (consumed by the
+  receipt link and the closing); grounding question
+  ANSWERS on histories — bar 5's full ask — remains the
+  recorded remainder, not built here. (iv) *Closings:* the
+  farewell mirror carries the reader's top-ranked standing
+  fact where a topic's salience clears 3.0 under the
+  determination and its latest standing state is
+  unnegated, predicable and not the closing turn's own
+  (P-068's shape: "Goodbye. The daughter is tall."), the
+  serving named in trace.closingFact; a thin record closes
+  with the mirror alone. Gates at DR-2: suite 979 pass /
+  0 fail / 3 skipped (+6 wiring tests, no re-pins); demo
+  29/29; holdout clean; sense A 11/11 · B 5/6; `ai:check`
+  OK.
+  *Status (2026-11-19, UP-1 + UP-2, same branch,
+  unpushed):* **the uptake move family is built** —
+  `src/fork/uptake.ts`, a Planner move family whose ground
+  is the register authorities' filings as evidence with
+  provenance, read by the same walk in the same order as
+  E1's filing (the classification table's emotion aspect,
+  the EDU canonical filings by way of the LEDU's canonical
+  face map, the LEDU uncategorised register), joined with
+  the telling's own predications (the feeling; the states
+  it stands among — a third party's state is the move's
+  object where the visitor's own reaction is the register;
+  the event the telling rides with) and the reader's
+  servings (the register's state timeline: a returning
+  grief is not a new grief; and the event the register's
+  earlier telling itself carried, served by the reader's
+  event timeline, rides as a return's object — P-020's
+  congratulation carries the achievement from the record).
+  Rendering is generated from those inputs by the
+  Planner's transforms — a stance predication (the record
+  files exactly two stance qualities: 'glad' for joy,
+  'sorry', the sympathy stance, for the rest; the matching
+  lives in the object and in the degree modulator the high
+  degree carries), the feeling predicated, the object
+  after it under S0's admission. No stored phrases exist
+  anywhere in the family, and the no-template audit is a
+  test: same-register replies across different tellings
+  share only what the shared inputs derive. The move
+  never asks a question, and asserts nothing about the
+  world — it takes a stance toward what the visitor
+  supplied. Its record (the register episodes met) is the
+  Planner's move record, kept in the session beside the
+  initiative records — not the reader's.
+  *Determinations recorded at build:* the ground's weight
+  — degree (high 3, plain 2, low 1), +1 for a returning
+  register, +1 for a riding event — and the threshold at
+  2: a plain first telling is owed the move, a low-degree
+  passing mention alone is receipt matter. The episode
+  discipline: a restatement on the very next turn is the
+  same episode (P-110's must-not) unless the record moved
+  — a new word in the register, or a family supersession
+  changing lemma or polarity, re-arms; a return after
+  other conversation is a new episode, met on its
+  returning ground. Grief's pace: where the move fires
+  for grief it is the reply's whole acknowledgement — the
+  generating follow stands down unpriced; for the other
+  registers the follow may follow the head under its own
+  derivation, the steering's ack half standing down (one
+  acknowledgement head per reply, owner's ruling 4).
+  *Gating as designed:* owed in an open-phase content
+  statement with no higher business; stood down by a
+  pending clarification or stance-repair, a non-open
+  phase (ritual segments and closing boundaries), a
+  matcher-substituted feeling (S0's discipline), the
+  threshold, and the episode rule; question and request
+  turns never reach the family's sites at all (P-086's
+  limiting case holds by construction), and a third
+  party's feeling with no marked visitor register grounds
+  nothing (P-005's shape). Wired at four acknowledgement
+  sites: the feeling-steering branch (composed; whole for
+  grief), the third-person branch (the visitor's own
+  reaction, the third party's state as object — P-083's
+  shape), the event branch (a feeling riding with an
+  event), and the acknowledgement fallback (the registers
+  no steering branch can claim — the uncategorised, the
+  unsettled canonical). The restrainer and venting
+  branches are NOT wired: their business is relational
+  steering over two records — higher business — and the
+  move stands down there by the design's ordering.
+  *Scope lines, recorded as built:* event-carried
+  registers with no visitor feeling filed are not claimed
+  in v1 — no existing authority files loss, achievement
+  or threat on events, and inventing a verb-list authority
+  would be an improvised filing; negated feelings ground
+  nothing (X0's discipline generalised); the apology
+  formula ('sorry' as the visitor's own word) is excluded
+  by name — its meeting belongs to the social layer's
+  forms, and the move over it would only echo. *Located
+  remainders the sealed run will meet:* 'disappointed',
+  'upset', 'devastated' and 'proud' file under NO
+  authority (no classification entry, no canonical face),
+  so the commiseration specimen's natural words draw no
+  register — a vocabulary pass's business, recorded here
+  rather than improvised; 'tired' files an emotion aspect
+  at low degree and falls under the threshold as a passing
+  mention. Three re-pins, all the same intended change of
+  head (the E1 uncategorised-feeling pin, the X4
+  restated-feeling pin, the R3 fused-feeling pin), each
+  with its reason in place. Gates at UP-1 + UP-2: suite
+  999 pass / 0 fail / 3 skipped (979 + 20 uptake tests +
+  the reader's event-timeline test); demo 29/29; holdout
+  clean; sense A 11/11 · B 5/6; `ai:check` OK. C1's
+  closes-when stands as the design record states it — a
+  commissioned sealed run meeting the 19 primaries at
+  register, the negative gating specimens demonstrably not
+  firing, the no-template audit passing; this build is
+  the mechanism, not the judgement.
 
 ## 3. Classification coverage (measured 2026-11-18)
 

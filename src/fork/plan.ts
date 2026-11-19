@@ -63,6 +63,8 @@ import { SUPPORT_FLOOR, type PricingRecord, type StrengthLevel, type Tier } from
 import { SUPPORT_CONTROLLING, SUPPORT_GENERATING, SUPPORT_SAME } from "./sense";
 import { applyLength, arbitrateOrder, priceWithBoundary, type BiasRecord } from "./disposition";
 import type { Composition } from "./composition";
+import type { Session } from "./session";
+import { salienceOf, topicHistory, type Salience, type TopicHistory } from "./discourse-record";
 
 /**
  * The level → graph-states table (§9.2's speech pricing, made
@@ -955,6 +957,86 @@ export function planRecordPredication(input: PlanRecordPredicationInput): { sent
     scopeAttachments: [],
   };
   return { sentence: generate(graph), graph };
+}
+
+/**
+ * Build the reply graph for a STANCE predication (UP-1 of the
+ * discourse/uptake programme, 2026-11-19): the predication
+ * construction in its first-person form — the
+ * system-as-speaker predicated with a stance quality the
+ * uptake move family derived from the telling's register
+ * filing (uptake.ts: 'sorry', grief's face; 'glad', joy's
+ * everyday face), the register's degree riding as the
+ * predicate's modulator where the degree is high ('very').
+ * Constructed, not parsed, like the record predication it
+ * mirrors; no pricing — no derivation backs a stance, and
+ * none is fabricated (the thanks receipt's doctrine).
+ */
+export function planStancePredication(input: {
+  stanceLemma: string;
+  degree?: "high" | "plain" | "low";
+}): { sentence: string; graph: ParsedSentence } {
+  const subject: MeaningNode = {
+    id: "reply-subject",
+    lemma: "i",
+    form: "I",
+    syntacticElement: "Earth",
+  };
+  const entry = EN_LEXICON[input.stanceLemma];
+  const quality: MeaningNode = {
+    id: "reply-predicate",
+    lemma: input.stanceLemma,
+    form: input.stanceLemma,
+    syntacticElement: "Fire",
+    role: "predicate",
+    ...(entry && "semanticElement" in entry && entry.semanticElement ? { semanticElement: entry.semanticElement } : {}),
+    states: { copulaTense: "present", mood: "indicative", subjectPerson: "1sg" },
+  };
+  const nodes: MeaningNode[] = [subject, quality];
+  const edges: MeaningEdge[] = [
+    { from: subject.id, to: quality.id, relation: "predicate", cycle: cycleOf("Earth", "Fire") },
+  ];
+  if (input.degree === "high") {
+    nodes.push({ id: "reply-degree", lemma: "very", form: "very", syntacticElement: "Water" });
+    edges.push({ from: "reply-degree", to: quality.id, relation: "modulates", cycle: cycleOf("Water", "Fire") });
+  }
+  const graph: ParsedSentence = {
+    meaning: { nodes, edges, rootId: quality.id, entryElement: "Fire" },
+    connective: { language: "en", tokens: [], next: [], spans: [] },
+    realizes: {},
+    scopeAttachments: [],
+  };
+  return { sentence: generate(graph), graph };
+}
+
+/**
+ * The Planner's priced RECORD source (DR-2 of the
+ * discourse/uptake programme, 2026-11-19): a topic's history
+ * from the Discourse Record reader (awareness/discourse-record),
+ * served with its salience as the source's price — the
+ * derivation (recurrence, recency, standing-ness) travels with
+ * the serving, so a move grounded on the history is priced by
+ * the same evidence that ranked it, beside the graph's own
+ * derivation pricing, which this does not touch. The history's
+ * items carry their ledger pointers; a grounding that cites
+ * the history can be audited to the records themselves.
+ *
+ * Bar 5's consultee, wired at its source: the receipt link
+ * (turn.ts's earlierLink) and the closing's standing fact
+ * consult histories through here. Grounding QUESTION answers
+ * on histories — the bar's full ask — is the recorded
+ * remainder, not built here.
+ */
+export function historySource(
+  session: Session,
+  lemma: string,
+  currentTurn: number,
+): { history: TopicHistory; salience: Salience } | undefined {
+  const history = topicHistory(session, lemma);
+  if (!history) return undefined;
+  const salience = salienceOf(session, lemma, currentTurn);
+  if (!salience) return undefined;
+  return { history, salience };
 }
 
 /**

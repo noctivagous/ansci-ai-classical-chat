@@ -92,14 +92,18 @@ test("X1: a later telling links to the established topic it touches (the P-036 s
   // weight-lifting telling raised it as a topic) and the
   // receipt now shows the connection, from the record.
   assert.equal(r.reply, "Ok. You injured the leg. We were talking about the leg.");
-  assert.deepEqual(r.trace.recognition?.link, { kind: "topic", turn: 3, lemma: "leg" });
+  // The link record carries its rendered sentence since
+  // IMP-3 (the implementation programme, 2026-11-19): the
+  // composition's boundary discipline strips a link by the
+  // sentence its own trace records.
+  assert.deepEqual(r.trace.recognition?.link, { kind: "topic", turn: 3, lemma: "leg", sentence: "We were talking about the leg." });
 });
 
 test("X1: a state receipt links to the earlier event that established its subject (the soup control)", () => {
   const s = newSession();
   const [, r] = run(s, ["I put the salt in the soup.", "The soup is hot."]);
   assert.equal(r.reply, "Ok. The soup is hot. You told me you put the salt in the soup.");
-  assert.deepEqual(r.trace.recognition?.link, { kind: "event", turn: 1, lemma: "soup" });
+  assert.deepEqual(r.trace.recognition?.link, { kind: "event", turn: 1, lemma: "soup", sentence: "You told me you put the salt in the soup." });
 });
 
 test("X1: an event receipt links to an earlier event sharing a fill", () => {
@@ -406,18 +410,31 @@ test("X4: a restated self-state is receipted under the told-me attribution", () 
     "The garden is cold.",
     "I felt guilty but realized it was his fault.",
   ]);
-  assert.equal(restatedFeeling.reply, "Ok. You told me you are guilty.");
+  // Re-pinned 2026-11-19 (UP-2 of the discourse/uptake
+  // programme): a restated FEELING is met by the uptake move
+  // on its returning ground — the move owns the
+  // acknowledgement head, ahead of the restated receipt.
+  // The told-me receipt still owns restated non-feeling
+  // states (the teacher assertions above stand as pinned).
+  assert.equal(restatedFeeling.reply, "I am sorry. You are guilty.");
   assert.equal(restatedFeeling.trace.initiative, undefined, "the turn took the feeling up itself — no initiative repeats it");
 });
 
-test("X2c: the accumulated-tellings question's shape cannot reach the answerer (located remainder)", () => {
+test("X2c: the accumulated-tellings question reaches its answerer (IMP-4(a) — the X2 remainder, built)", () => {
   const s = newSession();
   const [, , r] = run(s, ["I put the salt in the soup.", "The soup is hot.", "What did I tell you about the soup?"]);
-  // The about-phrase drops at parse in the wh- shape (the
-  // parse holds tell/i/what — the asked lemma never
-  // reaches an answerer), so no record reader can answer
-  // it; the turn takes the record-shaped decline. Recorded
-  // in GAPS §2 as X2's located remainder, not forced.
-  assert.match(r.reply, /^I can't answer that from what I know: /);
-  assert.equal(r.trace.recordAnswer, undefined);
+  // This test pinned the remainder while it stood: the
+  // about-phrase drops at parse in the wh- shape (the parse
+  // holds tell/i/what — the asked lemma never reached an
+  // answerer), and the turn took the record-shaped decline.
+  // IMP-4(a) of the implementation programme (2026-11-19)
+  // built the reader: the topic is read from the token
+  // stream after "about", and the record answers with the
+  // accumulation — the state predicated of the soup and the
+  // event it fills, under the told-me attribution. The
+  // decline this test used to pin is the behaviour the
+  // slice exists to replace (the record-probes instrument's
+  // accumulated-tellings family priced it 1 pass / 4 fail).
+  assert.equal(r.reply, "You told me you put the salt in the soup. You told me the soup is hot.");
+  assert.equal(r.trace.recordAnswer?.source, "tellings");
 });

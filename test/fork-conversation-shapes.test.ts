@@ -194,7 +194,16 @@ test("C3: 'What is your name?' routes to the identity answer, not the denial", (
 });
 
 test("C3: ordinary questions about other subjects are not captured", () => {
-  for (const text of ["Do you like dogs?", "Do you know the garden?", "What did you say?", "What did you do?", "Do you eat meat?"]) {
+  // "Do you eat meat?" left this list at IMP-2 (the
+  // implementation programme, 2026-11-19): a polar verb
+  // question addressed to the system is not an ordinary
+  // other-subject question — the decline-routing work routes
+  // it to the answerer that owns it, the self answerer,
+  // which answers it plainly ("I don't eat meat."). The
+  // remaining cases are the discipline's controls: liking
+  // and knowing are not self-facts, and wh- questions about
+  // the system's own past speech stay ordinary questions.
+  for (const text of ["Do you like dogs?", "Do you know the garden?", "What did you say?", "What did you do?"]) {
     const s = newSession();
     run(s, [text]);
     assert.equal(person(s)[0].act.kind, "question", text);

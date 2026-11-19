@@ -437,6 +437,14 @@ export interface QuantityFlag {
 export interface Session {
   graph: Graph;
   turnCount: number;
+  /** A processing transient, not a record (IMP-3, 2026-11-19):
+   *  while a segmented visitor turn is being composed, the
+   *  internal turn its first segment will take — so a reader
+   *  can tell material this same visitor turn raised from
+   *  material earlier turns established. Set by the
+   *  composition loop for its duration and cleared after;
+   *  never read outside it. */
+  compositionStartTurn?: number;
   /** The session's disposition (§9.1): setup, set at session
    *  start, changeable only between sessions in v1. */
   disposition: Composition;
@@ -485,6 +493,29 @@ export interface Session {
   quantityFlags: QuantityFlag[];
   /** The initiative moves made in this session (§8.10). */
   initiatives: InitiativeRecord[];
+  /** The uptake moves made in this session (UP-1/UP-2 of the
+   *  discourse/uptake programme, 2026-11-19): the Planner's
+   *  move record for the uptake family, kept where the
+   *  initiative records are kept — the register-episode
+   *  discipline reads it (a move does not fire twice over the
+   *  same standing material; a movement re-arms it). */
+  uptakes: UptakeRecord[];
+}
+
+/**
+ * One uptake move as made (the Planner's move record for the
+ * uptake family): the register it answered, its degree, and
+ * the feeling record that grounded it.
+ */
+export interface UptakeRecord {
+  turn: number;
+  /** The register key (uptake.ts's registerKeyOf): a canonical
+   *  emotion name, or "uncategorised:<word>". */
+  register: string;
+  degree: "high" | "plain" | "low";
+  /** The grounded feeling: its lemma and its record's turn. */
+  feelingLemma: string;
+  feelingTurn: number;
 }
 
 /** The running scene: the scene fragments are placed into. */
@@ -563,6 +594,7 @@ export function newSession(
     quantities: [],
     quantityFlags: [],
     initiatives: [],
+    uptakes: [],
   };
 }
 

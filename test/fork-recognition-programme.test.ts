@@ -236,9 +236,22 @@ test("R3: steering does not ride on a receipt inside a composition (the P-072 sh
   // under X3's stand-down form the segment keeps its own
   // content (the echo its steering rode on) rather than
   // vanishing into the plain acknowledgement.
-  assert.equal(last.reply, "You are welcome. You watched the now.", "the venting tail stood down from the receipt; the segment's echo stands");
+  // Re-pinned again 2026-11-19 (IMP-3 of the implementation
+  // programme): the segment's echo itself no longer stands.
+  // Its only content was "You watched the now." — the time
+  // word 'now' mis-slotted as the watch event's theme, and
+  // the fill admission now refuses a deictic time word as a
+  // thing fill, so there is no sound echo for the segment
+  // to keep: its acknowledgement is what remains, and the
+  // shaping collapses it (acksCollapsed 1), leaving the
+  // thanks receipt alone. X3's keep-the-content doctrine
+  // stands for sound content; and because no steering reply
+  // is produced at all, steeringStoodDown is 0 — the
+  // discipline this test exists for (no steering rides on
+  // the receipt) holds a fortiori.
+  assert.equal(last.reply, "You are welcome.", "no steering rides on the receipt, and the segment's unsound echo does not stand");
   assert.equal(last.trace.segmentComposition?.boundaryReplies, 1);
-  assert.equal(last.trace.segmentComposition?.steeringStoodDown, 1);
+  assert.equal(last.trace.segmentComposition?.steeringStoodDown, 0);
 });
 
 test("R3: steering does not ride on a decline inside a composition (the P-124 shape)", () => {
@@ -333,7 +346,12 @@ test("R3: the initiative never appends to a composition carrying a boundary segm
 test("R3: a greeting is not a boundary — a fused feeling statement still steers", () => {
   const s = newSession();
   const [r] = run(s, ["Hello. I am worried."]);
-  assert.equal(r.reply, "Hello. You were worried. What did you say or do?");
+  // Re-pinned 2026-11-19 (UP-2 of the discourse/uptake
+  // programme): the segment's acknowledgement head is the
+  // uptake move's where the register is owed — the steering
+  // follow still follows, and the boundary point of this
+  // test (steeringStoodDown 0) stands as pinned.
+  assert.equal(r.reply, "Hello. I am sorry. You are worried. What did you say or do?");
   assert.equal(r.trace.segmentComposition?.steeringStoodDown, 0);
 });
 

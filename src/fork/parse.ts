@@ -163,12 +163,28 @@ export function ingForm(lemma: string): string {
 
 function enTokenize(text: string): { tokens: string[]; interrogative: boolean } {
   const interrogative = /\?\s*$/.test(text);
-  const cleaned = text.trim().replace(/[.?!]\s*$/, "").replace(/,/g, " , ");
+  // The glued-comma transcription (IMP-1, the implementation
+  // programme, 2026-11-19): the harvested corpora spell a comma
+  // as the suffix "_comma_" glued to the word before it
+  // ("Yes_comma_", "time_comma_"). A comma spelled that way is
+  // a comma — the same punctuation this line has always
+  // normalised to a token of its own — and leaving it glued
+  // made the word before it an unrecognisable token that sank
+  // whole tellings at the token exit (causal analysis C3: most
+  // of its twelve primaries carry the suffix on the sinking
+  // token). The normalisation lives here, where the comma's
+  // own normalisation lives.
+  const cleaned = text.trim().replace(/[.?!]\s*$/, "").replace(/_comma_/gi, " , ").replace(/,/g, " , ");
   const raw = cleaned.split(/\s+/).filter(Boolean);
   const tokens: string[] = [];
   for (const t of raw) {
     if (/^can't$/i.test(t)) {
       tokens.push("can", "n't"); // can + n't contracts by apostrophe only
+    } else if (/^won't$/i.test(t)) {
+      tokens.push("will", "n't"); // will + n't: the irregular stem is
+      // not "wo" — left to the generic n't rule it produced the stem
+      // "wo", which the variant graph then read as the shortform of
+      // "without" (IMP-1, 2026-11-19).
     } else if (/n't$/i.test(t) && t.length > 3) {
       tokens.push(t.slice(0, -3), "n't");
     } else if (/^(what|where|when|who|how|it|that|there|he|she)'s$/i.test(t)) {
@@ -181,7 +197,24 @@ function enTokenize(text: string): { tokens: string[]; interrogative: boolean } 
     } else if (/^i'm$/i.test(t)) {
       tokens.push("I", "am");
     } else {
-      tokens.push(t);
+      // Sentence punctuation glued to a word mid-text (IMP-1,
+      // 2026-11-19): the strip above removes only the text-final
+      // mark, so in a multi-sentence surface the inner marks ride
+      // on their words ("died.", "wallmart.", "soul-sapping.")
+      // and the token layer meets a word-plus-period it cannot
+      // file — the matcher luckily corrects some ("died." →
+      // "died") and finds nothing for others, and the token exit
+      // sinks the turn on the unfiled remainder. The mark is the
+      // sentence's, not the word's: split it off as its own
+      // token, as the final mark is stripped. A word part that
+      // itself contains a period (an abbreviation, "e.g.",
+      // "U.S.A.") is not split — its periods are its own.
+      const glued = t.match(/^([^.?!]+?)([.?!]+)$/);
+      if (glued && /[a-zA-Z]/.test(glued[1]) && !glued[1].includes(".")) {
+        tokens.push(glued[1], glued[2]);
+      } else {
+        tokens.push(t);
+      }
     }
   }
   return { tokens, interrogative };
@@ -296,7 +329,15 @@ function enItems(tokens: string[]): EnItem[] {
     // pronoun re-read in "Tell her about winter." (2026-11-18:
     // her stayed a determiner, the imperative signature's
     // pronoun test failed, and the sentence fell through).
-    const canHeadChunk = next && (next.kind === "noun" || next.kind === "pronoun" || (next.kind === "proper" && next.entry !== undefined) || next.kind === "adjective");
+    // An adjective is evidence only when a head follows IT
+    // (IMP-2, 2026-11-19): "her red car" keeps the determiner,
+    // but a lone adjective heads no noun phrase — "take her
+    // away" read 'away' as the phantom NP's head, the chunk
+    // failed, and 'her' was dropped whole.
+    const afterNext = items[k + 2];
+    const headsChunk = (x: EnItem | undefined): boolean =>
+      Boolean(x && (x.kind === "noun" || x.kind === "pronoun" || (x.kind === "proper" && x.entry !== undefined)));
+    const canHeadChunk = headsChunk(next) || (next?.kind === "adjective" && headsChunk(afterNext));
     if (!canHeadChunk) {
       const entry = EN_LEXICON["her"];
       if (entry) { it.entry = entry; it.kind = "pronoun"; }
@@ -321,7 +362,10 @@ function enItems(tokens: string[]): EnItem[] {
     const it = items[k];
     if (it.lower !== "that" || it.kind !== "det") continue;
     const next = items[k + 1];
-    const canHeadChunk = next && (next.kind === "noun" || next.kind === "pronoun" || (next.kind === "proper" && next.entry !== undefined) || next.kind === "adjective");
+    const afterNext = items[k + 2];
+    const headsChunk = (x: EnItem | undefined): boolean =>
+      Boolean(x && (x.kind === "noun" || x.kind === "pronoun" || (x.kind === "proper" && x.entry !== undefined)));
+    const canHeadChunk = headsChunk(next) || (next?.kind === "adjective" && headsChunk(afterNext));
     if (!canHeadChunk) {
       it.kind = "pronoun";
       it.entry = undefined;
@@ -454,6 +498,9 @@ const SUBJECT_PP_MODS = new Set(["in", "on", "at", "near", "from", "with"]);
  *  With absorbPP, trailing PP modifiers are absorbed into the chunk
  *  (subject call sites only — object chunks must leave their PPs to
  *  the verb's argument filling). */
+/** The bare quantifiers that can stand in a chunk's determiner
+ *  slot on positional evidence (see enChunkCore). */
+const QUANTIFIER_DETS = new Set(["most", "all", "any"]);
 function enChunk(items: EnItem[], i: number, absorbPP = false): { chunk: EnChunk; next: number } | null {
   const base = enChunkCore(items, i);
   if (!base || !absorbPP) return base;
@@ -490,6 +537,31 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
   const degreeMods: { adverb: EnItem; adjective: EnItem }[] = [];
   let j = i;
   if (items[j]?.kind === "det") { det = items[j].lower; j++; }
+  /* The bare quantifiers take the determiner slot positionally
+   * (IMP-1, the implementation programme, 2026-11-19): "most",
+   * "all" and "any" head a quantified noun phrase with no
+   * article — "most circumstances", "all dogs", "any help" —
+   * but the WordNet provider derives them as adjective/adverb
+   * only, so no chunk could open with one: "All dogs are good."
+   * failed on its subject and "In most circumstances." on "no
+   * verb found" (the one specimen that parsed, "Most dogs.",
+   * did so by upgrading "dogs" to a verb). They are NOT
+   * determiners outright: "all" is a degree adverb in "gone
+   * all brown" (it modulates the result adjective there, a
+   * reading the demo corpus pins), and a predeterminer in
+   * "all the cake". So the slot accepts the quantifier only
+   * on position's evidence — a noun, pronoun, proper name or
+   * adjective follows, and no true determiner does — the
+   * same position-is-the-evidence idiom as the re-reads
+   * below. */
+  if (det === undefined && items[j] && QUANTIFIER_DETS.has(items[j].lower)) {
+    const after = items[j + 1];
+    if (after && after.kind !== "det" &&
+        (after.kind === "noun" || after.kind === "pronoun" || after.kind === "proper" || after.kind === "adjective")) {
+      det = items[j].lower;
+      j++;
+    }
+  }
   /* Degree adverbs inside the noun phrase (E2, the emotional-
    * uptake programme, 2026-11-19): a degree adverb before a
    * quality grades it — "a very good teacher", "a really bad
@@ -726,45 +798,96 @@ function parseEn(text: string): ParsedSentence {
     return undefined;
   };
   const resolved = resolveTokenList(tokens, recognize);
-  try {
-    const result = parseEnBody(text, resolved.tokens, interrogative);
-    if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
-    return result;
-  } catch (err) {
-    // Parse-arbitrated candidate selection (v1): a context-free
-    // correction can pick a word the sentence cannot use — "hto"
-    // corrects to "to" on frequency where "hot" was meant. If the
-    // first corrected token has a runner-up candidate, retry the
-    // parse once with it: the sentence layer arbitrates between
-    // the token layer's candidates. The record is updated to the
-    // applied candidate at a discounted confidence, and its rule
-    // names the retry.
-    const rec = resolved.resolutions.find(
-      (r) => r.outcome === "corrected" && (r.candidates?.length ?? 0) > 1,
-    );
-    if (rec) {
-      const next = rec.candidates![1].term;
-      const retryTokens = [...resolved.tokens];
-      retryTokens[rec.tokenIndex] = next;
-      try {
-        const result = parseEnBody(text, retryTokens, interrogative);
-        rec.replacement = [next];
-        rec.confidence = Math.round(rec.confidence * 0.8 * 100) / 100;
-        rec.rule = "matcher:symspell+parse-retry";
-        if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
-        return result;
-      } catch {
-        // The retry failed too: the original failure stands.
+  /* The tag question (IMP-2, the implementation programme,
+   * 2026-11-19): a statement carrying a confirmation tag —
+   * "It must be a very stressful job, right?", "You are
+   * coming, aren't you?" — is a statement with a tag, not a
+   * question: the tag asks the hearer to confirm the
+   * speaker's own assertion, and the turn's content is the
+   * assertion's. The sentence layer read the tag's question
+   * mark as the clause's mood and the question path declined
+   * the turn as a question-shape mismatch (causal analysis
+   * C5, P-116) — a routing error at the sentence layer: the
+   * tag is scaffolding, as the sentence-initial conjunction
+   * is, and the clause is read without it. The strip is
+   * narrow: a closed tag inventory at the token stream's
+   * end (a lone "right", or a negated auxiliary + pronoun,
+   * the auxiliary whole or split), a clause's worth of
+   * tokens before it, and no interrogative onset at the
+   * sentence's head (a genuine question keeps its tag-shaped
+   * content: "Is the answer right?" opens with its verb).
+   * If the stripped reading fails to parse, the original
+   * reading stands — the attempt falls back whole. */
+  const tagStripped = ((): { tokens: string[] } | undefined => {
+    if (!interrogative) return undefined;
+    const toks = resolved.tokens;
+    const lower = toks.map((t) => t.toLowerCase());
+    const onset = lower[0];
+    if (!onset || EN_WH.has(onset) || onset in EN_BE || EN_AUX.has(onset) || EN_MODAL.has(onset) || onset === "do" || onset === "did") {
+      return undefined;
+    }
+    let end = lower.length;
+    if (lower[end - 1] === ",") end--;
+    const TAG_PRONOUNS = new Set(["it", "you", "he", "she", "we", "they"]);
+    const TAG_AUX = new Set(["isn't", "aren't", "don't", "won't", "can't", "couldn't", "didn't", "wasn't", "weren't"]);
+    let cut = -1;
+    if (lower[end - 1] === "right" && end >= 4) cut = end - 1;
+    else if (end >= 4 && TAG_PRONOUNS.has(lower[end - 1]) && TAG_AUX.has(lower[end - 2])) cut = end - 2;
+    else if (end >= 5 && TAG_PRONOUNS.has(lower[end - 1]) && lower[end - 2] === "n't" && (lower[end - 3] in EN_BE || EN_AUX.has(lower[end - 3]))) cut = end - 3;
+    if (cut < 3) return undefined;
+    const stripped = toks.slice(0, cut);
+    if (stripped[stripped.length - 1] === ",") stripped.pop();
+    return { tokens: stripped };
+  })();
+  const attempt = (bodyTokens: string[], bodyInterrogative: boolean): ParsedSentence => {
+    try {
+      const result = parseEnBody(text, bodyTokens, bodyInterrogative);
+      if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
+      return result;
+    } catch (err) {
+      // Parse-arbitrated candidate selection (v1): a context-free
+      // correction can pick a word the sentence cannot use — "hto"
+      // corrects to "to" on frequency where "hot" was meant. If the
+      // first corrected token has a runner-up candidate, retry the
+      // parse once with it: the sentence layer arbitrates between
+      // the token layer's candidates. The record is updated to the
+      // applied candidate at a discounted confidence, and its rule
+      // names the retry.
+      const rec = resolved.resolutions.find(
+        (r) => r.outcome === "corrected" && (r.candidates?.length ?? 0) > 1,
+      );
+      if (rec && rec.tokenIndex < bodyTokens.length) {
+        const next = rec.candidates![1].term;
+        const retryTokens = [...bodyTokens];
+        retryTokens[rec.tokenIndex] = next;
+        try {
+          const result = parseEnBody(text, retryTokens, bodyInterrogative);
+          rec.replacement = [next];
+          rec.confidence = Math.round(rec.confidence * 0.8 * 100) / 100;
+          rec.rule = "matcher:symspell+parse-retry";
+          if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
+          return result;
+        } catch {
+          // The retry failed too: the original failure stands.
+        }
       }
+      // A parse failure keeps its token resolutions: the trace can
+      // then locate the gap at the tokens that stayed unresolved,
+      // not just at the sentence layer as a whole.
+      if (resolved.resolutions.length > 0) {
+        (err as { tokenResolutions?: unknown }).tokenResolutions = resolved.resolutions;
+      }
+      throw err;
     }
-    // A parse failure keeps its token resolutions: the trace can
-    // then locate the gap at the tokens that stayed unresolved,
-    // not just at the sentence layer as a whole.
-    if (resolved.resolutions.length > 0) {
-      (err as { tokenResolutions?: unknown }).tokenResolutions = resolved.resolutions;
+  };
+  if (tagStripped) {
+    try {
+      return attempt(tagStripped.tokens, false);
+    } catch {
+      // The stripped reading failed: the original stands.
     }
-    throw err;
   }
+  return attempt(resolved.tokens, interrogative);
 }
 
 function parseEnBody(text: string, tokens: string[], interrogative: boolean): ParsedSentence {
@@ -777,7 +900,22 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
   const auxItem = items.find((i) => i.kind === "aux");
   const negItem = items.find((i) => i.kind === "neg");
   const whyItem = items.find((i) => i.kind === "why");
-  const contentStart = whyItem ? whyItem.index + 1 : 0;
+  let contentStart = whyItem ? whyItem.index + 1 : 0;
+  /* A sentence-initial coordinating conjunction is connective
+   * scaffolding, not content (IMP-1, the implementation
+   * programme, 2026-11-19): "But there are two more days." opens
+   * with the link to the previous discourse, and the chunker —
+   * asked to parse a subject from the conjunction — failed the
+   * whole sentence ("cannot parse subject of"). The content the
+   * branches below address begins after it, exactly as it begins
+   * after the why item. One conjunction is skipped; a doubled
+   * opening is not a shape running text takes. */
+  if (
+    contentStart < items.length &&
+    (items[contentStart].lower === "but" || items[contentStart].lower === "and" || items[contentStart].lower === "so")
+  ) {
+    contentStart += 1;
+  }
 
   /* --- Imperative (stage 3): a sentence-initial verb with no subject
    *     ("Tell me about winter."). The initial word is classified as a
@@ -1540,6 +1678,41 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     if (c && c.next >= items.length) {
       const root = enNodeFromChunk(b, c.chunk, "topic");
       return { meaning: b.graph(root), connective: connective("en", tokens, spans, c.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
+    }
+    /* The prepositional and marker-led fragments (IMP-1, the
+     * implementation programme, 2026-11-19): a verbless turn is
+     * not always a bare nominal. An answer fragment is routinely
+     * a prepositional phrase ("In most circumstances.") or a
+     * nominal behind a discourse marker ("Yes, in most
+     * circumstances.") — both complete discourse acts of the
+     * same kind as the bare nominal, and both sank on "no verb
+     * found" because the fragment path above only chunks from
+     * the content start. The extension is the same shape, twice
+     * widened: leading discourse markers and commas are
+     * scaffolding (the answer's polarity carrier, not its
+     * content), and a preposition before the chunk is the
+     * fragment's own relation, recorded on the root as the
+     * locative complement records it. Nothing else changes: the
+     * chunk must still consume the turn entire, and no discourse
+     * act is assigned. */
+    {
+      let fs = contentStart;
+      const MARKERS = new Set(["yes", "no", "well", "ok", "yeah"]);
+      while (fs < items.length && (items[fs].kind === "comma" || MARKERS.has(items[fs].lower))) fs++;
+      if (fs < items.length && items[fs].kind === "prep") {
+        const pc = enChunk(items, fs + 1);
+        if (pc && pc.next >= items.length) {
+          const root = enNodeFromChunk(b, pc.chunk, "topic");
+          root.prep = items[fs].lower;
+          return { meaning: b.graph(root), connective: connective("en", tokens, spans, pc.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
+        }
+      } else if (fs > contentStart && fs < items.length) {
+        const mc = enChunk(items, fs);
+        if (mc && mc.next >= items.length) {
+          const root = enNodeFromChunk(b, mc.chunk, "topic");
+          return { meaning: b.graph(root), connective: connective("en", tokens, spans, mc.chunk.head.index), realizes: b.realizes, scopeAttachments: scope };
+        }
+      }
     }
     // The thanked fragment with its intensifier tail (conversation-
     // shapes C1, 2026-11-18): "Thanks so much." / "Thanks very

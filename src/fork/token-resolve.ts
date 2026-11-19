@@ -195,6 +195,7 @@ export function isAttestedWord(lower: string): boolean {
  *  parse.ts's contraction rules; keep the two in step. */
 function splitCanonical(form: string): string[] {
   if (/^can't$/i.test(form)) return ["can", "n't"];
+  if (/^won't$/i.test(form)) return ["will", "n't"];
   if (/n't$/i.test(form) && form.length > 3) return [form.slice(0, -3), "n't"];
   if (/^(what|where|when|who|how|it|that|there|he|she)'s$/i.test(form)) return [form.slice(0, -2), "is"];
   if (/^(you|we|they)'re$/i.test(form)) return [form.slice(0, -3), "are"];

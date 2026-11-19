@@ -32,6 +32,7 @@ import { tierOfProvenance } from "./pricing";
 import { compositionFromRanks, type Composition } from "./composition";
 import { consultSituation, createInformationObject, type InformationObject } from "./info-object";
 import { enIsFunctionWord } from "./parse";
+import { wordnetAdjective, wordnetNoun } from "./wordnet-lex";
 
 /**
  * The object's aspect readings (slice 3): every content word the
@@ -386,14 +387,40 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     );
     const rootId = parsed.meaning.rootId;
     if (root?.role === "verb" && agentToYou) {
-      if (root.lemma.toLowerCase() === "have") {
+      if (root.lemma.toLowerCase() === "have" || root.lemma.toLowerCase() === "own" || root.lemma.toLowerCase() === "possess") {
         // (a) Possession: "Do you have a cat?" — the theme or
-        // patient the having ranges over is the matter.
+        // patient the having ranges over is the matter. The
+        // shape keys on the possession-verb class, not on
+        // 'have' alone (IMP-2, the implementation programme,
+        // 2026-11-19): "Do you own guns?" drew the
+        // question-shape decline although the system's
+        // possession answer stood built — the decline was
+        // mislocated at the question's shape when the gap
+        // was the routing (causal analysis C5, P-050).
         const m = edges
           .filter((e) => e.from === rootId && (e.relation === "theme" || e.relation === "patient"))
           .map((e) => nodes.find((n) => n.id === e.to))
           .find((n) => n && n.lemma.toLowerCase() !== "any" && n.lemma.toLowerCase() !== "what");
         if (m) selfFactMatter = m.form.toLowerCase();
+        // The possession verbs outside 'have' carry no
+        // valency frame the sentence layer slots an object
+        // into, so the possessed noun stands in the graph as
+        // excess ("Do you own a gun?" — gun:excess). In a
+        // polar possession question the excess content noun
+        // is the matter the question ranges over — the only
+        // one there is — and the shape reads it there, as
+        // shape (b) below reads the root-drawn variant.
+        if (!selfFactMatter && root.lemma.toLowerCase() !== "have") {
+          const excess = nodes.find(
+            (n) =>
+              n.id !== rootId &&
+              n.role === "excess" &&
+              !n.questionWord &&
+              n.lemma.toLowerCase() !== "you" &&
+              !enIsFunctionWord(n.lemma.toLowerCase()),
+          );
+          if (excess) selfFactMatter = excess.form.toLowerCase();
+        }
         // S1 (the S programme, 2026-11-19): the wh-NP form —
         // "What pets do you have?" questions the having
         // itself, and the graph keeps only the question word
@@ -570,6 +597,221 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   }
   const isSelfFactQuery = Boolean(selfFactMatter) || selfFactName;
 
+  // The telling verbs, shared by the IMP-2 recognitions
+  // below (the ability exclusion, the identity request, the
+  // tell-me request): a telling asks for content, and its
+  // discharge is the knowledge routing, not a denial of the
+  // act of telling.
+  const TELLING_VERBS = new Set(["tell", "describe", "explain", "introduce", "show"]);
+
+  /* IMP-2 (the implementation programme, 2026-11-19): two
+   * question families the routing never drew, which fell to
+   * the question path's shape decline although their
+   * answerers stand built — the decline was mislocated at
+   * the question's shape when the gap was the routing
+   * (causal analysis C5). Both are recognised here, in the
+   * self-fact family's manner: closed shapes read off the
+   * parse, the matter recorded on the act, the Planner's
+   * answer composed from the limits facts.
+   *
+   * (i) The polar verb question to the system: an
+   * interrogative agented by "you" over an ordinary lexical
+   * verb, in the modal frame ("Can you swim?") or the bare
+   * present frame ("Do you eat meat?"). The system does
+   * none of these things — it has no body and no habits —
+   * and the plain denial in the verb's own frame IS the
+   * answer the limits facts support, never a decline. The
+   * drawn families keep their precedence (this block runs
+   * after them): possession, occupation, choice and the
+   * capability presentation are not this shape. Past tense
+   * is excluded (an event question — the record's
+   * answerers own it), and the conversation-cognition verbs
+   * are excluded (knowing, understanding, remembering are
+   * the conversation's own claims, not bodily acts).
+   *
+   * (ii) The self-presentation request: "yourself" standing
+   * as the matter of a telling — the imperative ("Tell me
+   * about yourself."), the modal frame ("Can you tell me
+   * about yourself?"), or the wondering wrap ("I was
+   * wondering if you could tell me a bit about yourself?",
+   * P-041 — whose graph roots on the mis-read 'bite', so
+   * the token record carries the telling verb, as it
+   * carries the other shapes' dropped matter). The answerer
+   * is the identity presentation the direct forms already
+   * reach. A past-tense telling question ("Did you tell me
+   * about yourself?") asks over an event and is not
+   * captured. */
+  let abilityVerb: string | undefined;
+  let abilityModal = false;
+  let identityRequest = false;
+  {
+    const nodes = parsed.meaning.nodes;
+    const edges = parsed.meaning.edges;
+    const rootNow = nodes.find((n) => n.id === parsed.meaning.rootId);
+    const youAgent = Boolean(
+      rootNow &&
+        edges.some(
+          (e) =>
+            e.from === rootNow.id &&
+            e.relation === "agent" &&
+            nodes.some((n) => n.id === e.to && n.lemma.toLowerCase() === "you"),
+        ),
+    );
+    if (!selfFactMatter && !isSelfQuery && interrogative && rootNow?.role === "verb" && youAgent) {
+      const lemma = rootNow.lemma.toLowerCase();
+      const COGNITION_VERBS = new Set(["know", "understand", "remember", "mean", "think", "believe", "see", "hear", "feel"]);
+      const modal = rootNow.states?.aux === "can" || rootNow.states?.modal === "can";
+      const barePresent = rootNow.states?.aux === "do" && rootNow.states?.tense !== "past";
+      if (
+        (modal || barePresent) &&
+        rootNow.states?.tense !== "past" &&
+        !COGNITION_VERBS.has(lemma) &&
+        !TELLING_VERBS.has(lemma) &&
+        lemma !== "do" &&
+        lemma !== "have" &&
+        lemma !== "own" &&
+        lemma !== "possess" &&
+        lemma !== "prefer" &&
+        lemma !== "like"
+      ) {
+        abilityVerb = lemma;
+        abilityModal = modal;
+      }
+    }
+    const yourselfMatter = nodes.some(
+      (n) => n.lemma.toLowerCase() === "yourself" && (n.role === "theme" || n.role === "patient"),
+    );
+    if (yourselfMatter && rootNow) {
+      const imperative = rootNow.states?.mood === "imperative";
+      const modalFrame = tokens.includes("could") || tokens.includes("would") || rootNow.states?.aux === "can";
+      const rootTelling = TELLING_VERBS.has(rootNow.lemma.toLowerCase());
+      const tokenTelling = tokens.some((t) => TELLING_VERBS.has(t));
+      // The past-tense exclusion guards the root-telling leg
+      // (a past telling question asks over an event); the
+      // token-frame leg keys on the modal, which is the
+      // request's own frame — the wondering wrap's root
+      // carries the FRAME's past ("I was wondering…"), not
+      // the telling's, and excluding on it would lose the
+      // very specimen the leg exists for.
+      if (
+        (rootTelling && rootNow.states?.tense !== "past" && (imperative || modalFrame || interrogative)) ||
+        (tokenTelling && modalFrame && interrogative)
+      ) {
+        identityRequest = true;
+      }
+    }
+  }
+  const isAbilityQuery = abilityVerb !== undefined;
+
+  /* IMP-2 (continued): the indirectly posed question and
+   * the tell-me request — two more forms whose matter is a
+   * knowledge question the routing never carried to an
+   * answerer (causal analysis C5: P-076, P-119, P-126).
+   *
+   * (iii) The wondering frame: "I wonder whether I can
+   * enjoy the life insurance and health insurance." is a
+   * statement in form whose whether-clause poses a question
+   * about the world. The assessment records the posed
+   * matter — the embedded clause's first content-noun
+   * cluster, which the graph holds as excess — and the
+   * Planner discharges it at the knowledge location when
+   * the net holds nothing on it. A wondering with no
+   * whether-clause, or whose matter the net does hold, is
+   * not captured.
+   *
+   * (iv) The tell-me request: a telling verb in a request
+   * frame (imperative or modal) with an about-phrase —
+   * "Can you tell me more about the Prisoner of Azkaban?"
+   * The matter is the about-phrase as spoken, read from the
+   * token record (the graph's theme keeps only its head,
+   * 'prisoner'; the name the visitor asked after is the
+   * phrase). The Planner discharges it as (iii): the
+   * knowledge location, naming the matter, when the net
+   * holds nothing on the phrase's head. "Tell me about
+   * yourself." composes no phrase (a pronoun is no matter)
+   * and stays the identity request's. */
+  let posedMatter: string | undefined;
+  let posedMatterHead: string | undefined;
+  let tellMatter: string | undefined;
+  let tellMatterHead: string | undefined;
+  {
+    const nodes = parsed.meaning.nodes;
+    const rootNow = nodes.find((n) => n.id === parsed.meaning.rootId);
+    if (
+      rootNow?.lemma.toLowerCase() === "wonder" &&
+      !interrogative &&
+      (rootNow.states?.mood ?? "indicative") === "indicative" &&
+      tokens.includes("whether")
+    ) {
+      const excess = nodes
+        .filter(
+          (n) =>
+            n.role === "excess" &&
+            !n.questionWord &&
+            !enIsFunctionWord(n.lemma.toLowerCase()) &&
+            // The matter is a content noun: the clause's own
+            // scaffolding stands in excess too ("whether"
+            // itself stood first in the specimen's excess and
+            // was nearly named as the matter).
+            wordnetNoun(n.lemma.toLowerCase()) !== undefined &&
+            (parsed.realizes[n.id]?.length ?? 0) > 0,
+        )
+        .sort((a, b) => (parsed.realizes[a.id][0] ?? 0) - (parsed.realizes[b.id][0] ?? 0));
+      const first = excess[0];
+      if (first) {
+        const cluster = [first];
+        let lastAt = parsed.realizes[first.id][0] ?? 0;
+        for (const n of excess.slice(1)) {
+          const at = parsed.realizes[n.id][0] ?? 0;
+          if (at === lastAt + 1) {
+            cluster.push(n);
+            lastAt = at;
+          } else break;
+        }
+        // A qualifier the graph drew on the matter's head is
+        // part of the matter as spoken ("life" qualifying
+        // 'insurance' — the compound the excess reading alone
+        // would thin to the head).
+        const qualifiers = parsed.meaning.edges
+          .filter((e) => e.to === first.id && e.relation === "qualifies")
+          .map((e) => nodes.find((n) => n.id === e.from))
+          .filter((n): n is NonNullable<typeof n> => n !== undefined && (parsed.realizes[n.id]?.length ?? 0) > 0)
+          .sort((a, b) => (parsed.realizes[a.id][0] ?? 0) - (parsed.realizes[b.id][0] ?? 0));
+        posedMatter = [...qualifiers.map((n) => n.form.toLowerCase()), ...cluster.map((n) => n.form.toLowerCase())].join(" ");
+        posedMatterHead = cluster[cluster.length - 1].lemma.toLowerCase();
+      }
+    }
+    if (rootNow && TELLING_VERBS.has(rootNow.lemma.toLowerCase()) && rootNow.states?.tense !== "past") {
+      const raw = parsed.connective.tokens;
+      const aboutAt = raw.findIndex((t) => t.toLowerCase() === "about");
+      if (aboutAt >= 0) {
+        const phrase: string[] = [];
+        for (let k = aboutAt + 1; k < raw.length; k++) {
+          const w = raw[k];
+          const lw = w.toLowerCase().replace(/[^a-z']/g, "");
+          if (phrase.length === 0 && (lw === "the" || lw === "a" || lw === "an")) {
+            phrase.push(w);
+            continue;
+          }
+          if (/^[A-Z]/.test(w) || wordnetNoun(lw) !== undefined || wordnetAdjective(lw) !== undefined) {
+            phrase.push(w);
+            continue;
+          }
+          if (lw === "of" && k + 1 < raw.length && (/^[A-Z]/.test(raw[k + 1]) || wordnetNoun(raw[k + 1].toLowerCase()) !== undefined)) {
+            phrase.push(w);
+            continue;
+          }
+          break;
+        }
+        const head = [...phrase].reverse().find((w) => /^[A-Z]/.test(w) || wordnetNoun(w.toLowerCase().replace(/[^a-z']/g, "")) !== undefined);
+        if (head && phrase.length > 0) {
+          tellMatter = phrase.join(" ");
+          tellMatterHead = head.toLowerCase().replace(/[^a-z']/g, "");
+        }
+      }
+    }
+  }
+
   // The visitor's own clarification request (conversation-
   // shapes C5, 2026-11-18): "What do you mean?" / "What did
   // you mean?" — an interrogative whose verb root is "mean",
@@ -740,7 +982,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         ? "leave-taking"
         : isThanks
           ? "thanks"
-          : isSelfQuery || isCapabilityQuery || isSelfFactQuery
+          : isSelfQuery || isCapabilityQuery || isSelfFactQuery || isAbilityQuery || identityRequest
             ? "self-query"
             : parsed.query || interrogative
               ? "question"
@@ -823,16 +1065,21 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         ? {
             selfQuery: (isCapabilityQuery
               ? "capability"
-              : selfFactMatter
-                ? "fact"
-                : "identity") as "identity" | "capability" | "fact",
+              : isAbilityQuery
+                ? "ability"
+                : selfFactMatter
+                  ? "fact"
+                  : "identity") as "identity" | "capability" | "fact" | "ability",
             ...(selfFactMatter ? { selfFact: selfFactMatter } : {}),
+            ...(isAbilityQuery ? { selfFact: abilityVerb, abilityModal } : {}),
           }
         : {}),
       ...(isWellbeingQuery ? { wellbeing: true } : {}),
       ...(isMeanQuery ? { meanQuery: true } : {}),
       ...(isOfferHelp ? { offerHelp: true } : {}),
       ...(choiceQuery ? { choiceQuery, ...(choiceAlternatives ? { choiceAlternatives } : {}) } : {}),
+      ...(posedMatter ? { posedMatter, ...(posedMatterHead ? { posedMatterHead } : {}) } : {}),
+      ...(tellMatter ? { tellMatter, ...(tellMatterHead ? { tellMatterHead } : {}) } : {}),
     },
     content: { meaning: parsed.meaning, connective: parsed.connective, holes, grounding },
     aspects,

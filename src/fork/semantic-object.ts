@@ -208,15 +208,33 @@ export interface SemanticObject {
      *  you?", "What are you?"); "capability" is reserved — the
      *  modal shapes it needs ("What can you do?") do not parse
      *  yet, a located sentence-layer gap. */
-    selfQuery?: "identity" | "capability" | "fact";
+    selfQuery?: "identity" | "capability" | "fact" | "ability";
     /** Present on self-query objects of the "fact" flavour
      *  (conversation-shapes C3, 2026-11-18): the matter the
      *  question asks after, as spoken ("pets", "rank",
      *  "birthplace", "occupation") — a fact about the system
      *  the Self tables do not hold, whose honest answer is the
      *  plain denial the Planner composes from the limits
-     *  facts. */
+     *  facts. On "ability" objects (IMP-2, 2026-11-19) it
+     *  carries instead the lexical verb of the polar verb
+     *  question ("swim", "eat"), and abilityModal records the
+     *  frame — modal ("Can you swim?") or bare present ("Do
+     *  you eat meat?") — the denial is composed in. */
     selfFact?: string;
+    abilityModal?: boolean;
+    /** Present on statement objects whose wondering frame
+     *  poses a question about the world (IMP-2, 2026-11-19):
+     *  the embedded matter as spoken ("life insurance") and
+     *  its head lemma, against which the Planner verifies
+     *  the net's absence before locating the decline at
+     *  knowledge. */
+    posedMatter?: string;
+    posedMatterHead?: string;
+    /** Present on tell-me request objects (IMP-2,
+     *  2026-11-19): the about-phrase as spoken ("the
+     *  Prisoner of Azkaban") and its head lemma. */
+    tellMatter?: string;
+    tellMatterHead?: string;
     /** Present on greeting objects that are the wellbeing query
      *  ("How are you?" — conversation-shapes C1, 2026-11-18): the
      *  greeting's ritual exchange, recognised as a greeting in

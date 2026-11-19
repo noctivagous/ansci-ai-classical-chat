@@ -73,7 +73,17 @@ test("E1: a feeling stated in a turn sunk by an unresolved token registers, and 
   // feeling does — the P-008 shape's reply — instead of the
   // token-exit receipt. The receipt machinery stands for
   // turns that still sink (see the S programme's tests).
-  assert.equal(r.reply, "You were sad. What did you say or do?", "run 2's reply to this turn was the rephrase request");
+  // Re-pinned again 2026-11-19 (IMP-3 of the implementation
+  // programme): the steering tail is stood down. The
+  // feeling is occasioned by a mediated report the same
+  // turn records (the read event, agent the visitor) — the
+  // grief answers a news story, another's episode, and the
+  // steering family's episode questions ("What did you say
+  // or do?") premise the visitor's own episode (causal
+  // analysis C6's sibling group names this specimen). The
+  // registration assertions below are untouched; the reply
+  // is the acknowledgement the stood-down turn earns.
+  assert.equal(r.reply, "Ok. Noted.", "run 2's reply to this turn was the rephrase request");
   const st = s.states.find((x) => x.lemma === "sad");
   assert.equal(st?.holder, "you");
   assert.equal(st?.element, "Metal");
@@ -94,14 +104,43 @@ test("E1: a feeling a merged parse carried past registers from the surface, and 
 test("E1: a verb-carried feeling clause registers, and the steering takes the predicated shape, not the verb's (the P-013 shape)", () => {
   const s = newSession();
   const [r] = run(s, ["I'm so scared of bugs! i found one in my hair yesterday and almost died"]);
-  assert.equal(r.reply, "You were scared. What did you say or do?");
+  // Re-pinned 2026-11-19 (IMP-1 of the implementation
+  // programme): the turn's second sentence — unpunctuated at
+  // its end — is now taken up as its own segment (the old
+  // splitter refused a turn whose tail carried no terminal
+  // mark, and the whole turn merged), and its found event
+  // earns the recognition receipt the same telling earns as
+  // its own turn. The slice's pin stands untouched: the
+  // feeling registers as 'scared' (Water, below) and the
+  // steering takes the predicated shape.
+  // Re-pinned again 2026-11-19 (IMP-3 of the implementation
+  // programme): the steering now stands down over this
+  // feeling in every branch of the family. The telling
+  // itself binds the feeling to its object — "scared of
+  // bugs", the of-phrase standing after the feeling's own
+  // word — so the episode the steering questions premise
+  // is the object's, not an unexpressed episode of the
+  // visitor's (causal analysis C6's sibling group names
+  // the phobia shape beside P-005's news-story grief).
+  // What stands: the registration (scared/Water, below),
+  // the first segment's acknowledgement, and the found
+  // event's own receipt — the segment content the steering
+  // used to precede.
+  assert.equal(r.reply, "Ok. Noted. Ok. You found the one in the hair.");
   assert.equal(s.states.find((x) => x.lemma === "scared")?.element, "Water");
 });
 
 test("E1: an uncategorised feeling registers without an element and is receipted from the record (the P-001 shape)", () => {
   const s = newSession();
   const [, r] = run(s, ["Hello.", "I felt guilty but realized it was his fault."]);
-  assert.equal(r.reply, "Ok. You are guilty.", "run 2's reply to this turn was the bare 'Ok.'");
+  // Re-pinned 2026-11-19 (UP-2 of the discourse/uptake
+  // programme): the uncategorised register is owed the
+  // uptake move, which takes the acknowledgement head over
+  // the receipt (one head per reply) — the registration
+  // assertions below are E1's and stand untouched. Run 2's
+  // reply to this turn was the bare 'Ok.'; the receipt form
+  // this test originally pinned was "Ok. You are guilty.".
+  assert.equal(r.reply, "I am sorry. You are guilty.");
   const st = s.states.find((x) => x.lemma === "guilty");
   assert.equal(st?.element, undefined, "no element — the category is not reliable, and no fitting is improvised");
   assert.equal(st?.origin.kind, "stated");
