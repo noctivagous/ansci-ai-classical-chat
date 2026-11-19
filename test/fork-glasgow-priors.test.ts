@@ -135,7 +135,13 @@ test("concreteness prior: a concrete noun is default-placed; an abstract one is 
     !(ideaFace!.unknownsOpened ?? []).some((u) => u.of === "idea"),
     "no exact-location unknown opens for an unplaced abstract entity",
   );
-  assert.equal(r.reply, "Ok.", "the telling itself is simply acknowledged");
+  // RE-PIN (the recognition programme, R2, 2026-11-19): the
+  // seeded airport session means this telling is not the
+  // conversation's first turn, so its acknowledgement is
+  // now the recognition receipt showing the state it
+  // established. The placement assertions above — the
+  // claim under test — are unchanged.
+  assert.equal(r.reply, "Ok. The idea is sweet.", "the telling is acknowledged, its established state shown");
 });
 
 /* ---------------- 4. imageability: the slot, deliberately unconsumed ---------------- */

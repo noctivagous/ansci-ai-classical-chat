@@ -116,6 +116,7 @@ import { applyQuantityMentions, currentQuantity, latestKindFor } from "./quantif
 import { normaliseKind, pluraliseKind, renderQuantity } from "./quantification-language";
 import { authorReplyObject } from "./reply";
 import { generate } from "./generate";
+import { canonicalEmotion } from "./edu";
 
 export interface TurnTrace {
   turn: number;
@@ -213,6 +214,36 @@ export interface TurnTrace {
     }[];
     recordingSkipped?: string;
   };
+  /**
+   * R1 (the recognition programme, 2026-11-19): a question this
+   * turn answered from the CONVERSATION RECORD — the general
+   * record-first source (GAPS §2's grounding-in-conversation
+   * item, in its record form). The record is consulted before
+   * the graph and before any decline, and the answer is
+   * attributed as from the conversation: an event the person
+   * told, rendered under "You told me"; the conversation's
+   * established topic; or the person's standing feeling state,
+   * predicated by the planner's record graph. The source is
+   * named here in every case — a record answer never presents
+   * as graph knowledge, and carries no pricing.
+   */
+  recordAnswer?: {
+    source: "event" | "topic" | "feeling";
+    ground: string;
+    event?: { verb: string; role: string; filler: string; turn: number };
+    topic?: string;
+    state?: { holder: string; lemma: string; negated?: boolean; turn: number };
+  };
+  /**
+   * R2 (the recognition programme, 2026-11-19): the
+   * recognition receipt, when this turn's acknowledgement
+   * showed what the turn established instead of the bare
+   * "Ok." — the recorded state it predicates, or the
+   * recorded event it renders, with the turn it stands from.
+   * Absent when the bare acknowledgement stood (nothing the
+   * turn established qualified, or the turn was the first).
+   */
+  recognition?: { kind: "state" | "event"; detail: string };
   /**
    * §9.3's audit flag, at the closest honest point this probe
    * offers: the probe computes no numeric arbitration margin, so
@@ -412,6 +443,27 @@ export interface TurnTrace {
    *  exchange, not a substantive saying, so the wrapper does
    *  not record it as the last substantive reply. */
   ritualReply?: boolean;
+  /** Recognition programme R3: this turn's reply is a boundary
+   *  reply — a receipt (thanks) or a closing (farewell): a
+   *  designed move, complete in itself, that neither the
+   *  initiative scan nor a later segment's steering inside a
+   *  composition may ride on. (Declines and corrections carry
+   *  their own trace fields and are boundaries by the same
+   *  rule; a greeting mirror is not — the conversation is
+   *  opening, not bounding.) */
+  boundaryReply?: boolean;
+  /** Recognition programme R3: this turn's reply was composed
+   *  from segment replies (see `segmented`); the composition's
+   *  own record — how many segments stand in the composed
+   *  reply, how many of them were boundary replies (a receipt,
+   *  a decline, a correction, a closing), how many steering
+   *  replies stood down under the composition gate, and how
+   *  many duplicate bare acknowledgements the shaping
+   *  collapsed. The initiative scan reads the boundary count:
+   *  the composed trace is the last segment's, so an earlier
+   *  segment's boundary reply would otherwise be invisible
+   *  to it. */
+  segmentComposition?: { segments: number; boundaryReplies: number; steeringStoodDown: number; acksCollapsed: number };
   /** Conversation-shapes C5: this turn was the visitor's own
    *  clarification request and the reply restated this
    *  recorded saying — the record the restatement read. */
@@ -761,6 +813,96 @@ function acknowledgementFor(turn: number, name?: string): string {
 }
 
 /**
+ * The recognition receipt (R2, the recognition programme,
+ * 2026-11-19; GAPS §2's "recognition in acknowledgements"
+ * item): where a statement turn's reply would be the BARE
+ * acknowledgement ("Ok." — the form for turns after the
+ * first) and the turn itself established something the
+ * registers hold, the receipt SHOWS what was retained — the
+ * acknowledgement, then the record's own rendering of what
+ * now stands. A state is rendered by the planner's record
+ * predication (plan.ts — the construction the R7.5 record
+ * answers use), authored as a reply object through
+ * speakWithObject, following the gap-question site's split
+ * of origins (the acknowledgement is the family's wording;
+ * the predication is the planner's graph). An event is
+ * rendered as a clause from the record's fields, in the
+ * acknowledgement family's own shape (the rendering branch
+ * (f)'s gap questions already ride on), its agent spoken in
+ * the record's grain.
+ *
+ * The discipline, stated once: only what THIS turn
+ * established, and only as the record holds it — a role the
+ * parse dropped does not appear, so the receipt is the
+ * record's honesty about itself; only a PREDICATED state
+ * (a verb-carried state is a doing, and the predication
+ * construction does not predicate doings — the same line
+ * R4 draws for initiative); only an unnegated state (a
+ * negated telling's content is an absence, and absence
+ * receipts are the correction machinery's shape, not the
+ * acknowledgement's); only an event with an agent and a
+ * filled patient or theme (a clause needs both to be
+ * rendered soundly); and only where the bare form would
+ * have spoken — the first turn's "Ok. Noted." is already
+ * the fuller receipt and keeps its form, as does the named
+ * acknowledgement's turn (C6: the name is that turn's
+ * recognition). When nothing qualifies, undefined — the
+ * bare acknowledgement stands.
+ */
+function recognitionReceipt(
+  session: Session,
+  trace: TurnTrace,
+  turn: number,
+  name: string | undefined,
+  established: { state?: StateRecord; subject?: PredicationSubject; event?: EventRecordShape },
+): string | undefined {
+  if (turn === 1 || name) return undefined;
+  // A turn the QuantificationLanguageUnit read keeps the
+  // plain acknowledgement: its retention is the quantity
+  // ledger's to show (in the how-many answers), the recorded
+  // event's object in such a turn is the amount itself —
+  // which the clause rendering would garble ("bought the
+  // 3") — and the apples specimen (owner-approved, the
+  // Normalcy arc) pins the plain form for exactly these
+  // tellings. The receipt does not compete with the ledger.
+  if (trace.quantities?.length) return undefined;
+  const { state, subject, event } = established;
+  if (state && subject && !state.negated) {
+    const outcome = planRecordPredication({ subject, stateLemma: state.lemma });
+    trace.replyGraph = serialiseReplyGraph(outcome.graph);
+    speakWithObject(session, trace, outcome.graph, "recognition receipt");
+    trace.recognition = {
+      kind: "state",
+      detail: `the turn established the state '${state.lemma}' of ${state.holder} (turn ${state.turn}); the receipt predicates it from the record`,
+    };
+    trace.planNote =
+      (trace.planNote ? `${trace.planNote}; ` : "") +
+      "recognition receipt (R2): the turn established a state and the bare acknowledgement would have shown " +
+      "nothing of it — the receipt predicates the recorded state, from the record; the acknowledgement half " +
+      "is the family's wording, the predication is the planner's record graph";
+    return `${acknowledgementFor(turn)} ${outcome.sentence}`;
+  }
+  if (event && event.agent && (event.patient || event.theme)) {
+    const parts = [`${event.agent === "you" ? "You" : `The ${event.agent}`} ${pastOf(event.verb)}`];
+    if (event.theme && event.location) parts.push(`the ${event.theme} in the ${event.location}`);
+    else if (event.patient ?? event.theme) parts.push(`the ${event.patient ?? event.theme}`);
+    if (event.recipient) parts.push(`to ${event.recipient}`);
+    trace.recognition = {
+      kind: "event",
+      detail:
+        `the turn established the event '${event.verb}' (turn ${event.turn}) with its object filled; ` +
+        `the receipt renders the recorded event, from the record's fields`,
+    };
+    trace.planNote =
+      (trace.planNote ? `${trace.planNote}; ` : "") +
+      "recognition receipt (R2): the turn established an event and the bare acknowledgement would have shown " +
+      "nothing of it — the receipt renders the recorded event from the record's own fields";
+    return `${acknowledgementFor(turn)} ${parts.join(" ")}.`;
+  }
+  return undefined;
+}
+
+/**
  * Attempt the generated gap question for a plain-event turn
  * (the asking rule of T-R3: at the plain-event site only, where
  * no cycle steering has claimed the turn, a fillable valency
@@ -945,6 +1087,101 @@ function answerHowMany(session: Session, trace: TurnTrace, text: string): TurnRe
 }
 
 /**
+ * The feeling reader (R1, the recognition programme,
+ * 2026-11-19): "How do I feel?" asks after the person's own
+ * standing feeling — content the conversation record holds as
+ * the speaker's states, which no graph derivation can supply
+ * and which the shape decline below used to refuse while the
+ * state stood in the record. The reader is narrow by
+ * construction: the question's root is 'feel', the agent the
+ * parse drew for it is the speaker themselves ('i' — a
+ * question about another's feeling is not this shape), and
+ * the record holds a standing state of the speaker that the
+ * system itself files as a feeling: its lemma classifies
+ * under the classification table's "emotion" aspect (the
+ * same aspect determination that classified the state — the
+ * R5 machinery), or the EDU names the lemma or its concept
+ * a canonical emotion (edu.ts). A state neither authority
+ * files as a feeling is not read as one here. The latest such
+ * state answers, predicated by the planner's record graph in
+ * the second person, exactly as the R7.5 record answers
+ * predicate a standing state; the trace names the record as
+ * the source and no pricing is fabricated. No standing
+ * feeling → undefined, and the question takes the ordinary
+ * path (its shape decline, unchanged).
+ *
+ * The subject evidence is read from the parse where the
+ * parse keeps it (the agent it drew is 'i') and from the
+ * surface where the parse drops it: a how-question's parse
+ * keeps 'How' as the agent and loses the subject entirely
+ * (the how-many reader above documents the same mangling
+ * and works from the surface for the same reason). The
+ * surface evidence is the first-person frame itself — "I
+ * feel / I feeling" in the person's own words — and it is
+ * accepted only when the parse drew no other subject.
+ */
+function answerFeelingFromRecord(
+  session: Session,
+  trace: TurnTrace,
+  parsed: ParsedSentence,
+  root: MeaningNode,
+  text: string,
+): TurnResult | undefined {
+  if (root.lemma !== "feel") return undefined;
+  const agent = targets(parsed, root.id, "agent")[0];
+  const speakerSubject =
+    agent?.lemma === "i" ||
+    ((agent === undefined || agent.lemma.toLowerCase() === "how") && /\bi (feel|feeling)\b/i.test(text));
+  if (!speakerSubject) return undefined;
+  const feeling = [...session.states]
+    .reverse()
+    .find(
+      (s) =>
+        s.holder === "you" &&
+        s.turn < session.turnCount &&
+        (lookupClassification(s.lemma)?.aspect === "emotion" ||
+          canonicalEmotion(s.lemma) !== undefined ||
+          (s.concept !== undefined && canonicalEmotion(s.concept) !== undefined)),
+    );
+  if (!feeling) return undefined;
+  const outcome = planRecordPredication({
+    subject: { lemma: "you", form: "you", person: "2sg" },
+    stateLemma: feeling.lemma,
+    ...(feeling.negated ? { negated: true } : {}),
+  });
+  trace.recordAnswer = {
+    source: "feeling",
+    ground:
+      `the question asks how the person feels, and the record holds their standing feeling state ` +
+      `'${feeling.lemma}' (recorded at turn ${feeling.turn}) — the record answers, from the person's own established state`,
+    state: { holder: feeling.holder, lemma: feeling.lemma, ...(feeling.negated ? { negated: true } : {}), turn: feeling.turn },
+  };
+  trace.replyGraph = serialiseReplyGraph(outcome.graph);
+  trace.wordingNotDerived = false;
+  speakWithObject(session, trace, outcome.graph, "record answer (feeling)");
+  trace.planNote =
+    "answered from the conversation record (R1): the person's standing feeling state, predicated by the planner's " +
+    "record graph — the record is the answer's source, not the graph, and no pricing is fabricated for it";
+  return { reply: outcome.sentence, trace };
+}
+
+/**
+ * Whether a topic lemma can be NAMED as the conversation's
+ * topic (R1): the topic records are raised for every Earth
+ * node the record block meets, which includes the chunker's
+ * leavings (question words, pronouns, stray function lemmas).
+ * A lemma names a topic only when the lexicon knows it as a
+ * noun or a proper noun, or the classification table knows
+ * the concept — the same two authorities that ground every
+ * other content claim the system makes.
+ */
+function soundTopicLemma(lemma: string): boolean {
+  const entry = EN_LEXICON[lemma];
+  if (entry && entry.kind === "noun") return true;
+  return lookupClassification(lemma) !== undefined;
+}
+
+/**
  * Split a turn's surface into its sentence segments (terminal
  * punctuation retained), with one peel: a leading greeting
  * segment set off by a comma ("Hello, how are you doing?") is
@@ -1009,17 +1246,98 @@ function composeSegmentTurns(session: Session, text: string, ground: string): Tu
     parts.push({ segment, result: processTurnInner(session, segment, { segmented: true }) });
   }
   if (parts.length === 0) return null;
-  let replies = parts.map((p) => p.result.reply);
+  const items = parts.map((p) => ({ segment: p.segment, result: p.result, reply: p.result.reply }));
   const REPHRASE = "Could you put that another way?";
-  if (replies.every((r) => r === REPHRASE)) return null;
-  if (replies.includes(REPHRASE)) replies = replies.filter((r) => r !== REPHRASE);
+  if (items.every((i) => i.reply === REPHRASE)) return null;
+  const kept = items.filter((i) => i.reply !== REPHRASE);
+  /* Reply shaping and the composition gate (recognition
+   * programme R3, 2026-11-19). The per-segment replies are
+   * composed under two disciplines the concatenation did not
+   * observe:
+   *
+   * (1) Steering does not ride on a boundary, and does not
+   * steer from a doing. A segment whose reply steers (its
+   * trace carries a cycle path) stands down to the plain
+   * acknowledgement when an earlier segment of this same
+   * composition closed a boundary — its reply was a receipt,
+   * a decline, a correction or a closing — because a steering
+   * tail on such a reply reads as the conversation reopening
+   * what the boundary settled (the probe run's P-072 and
+   * P-124 shapes). It also stands down, boundary or none,
+   * when the state it would steer from is one this very
+   * segment carried by a verb — recorded at the segment's
+   * turn together with its own event of the same verb — for
+   * the generating follow-up is built for predicated states,
+   * and inside a composition its re-verbalisation of a doing
+   * ("You hope. What's on your mind when it happens?", the
+   * P-079 shape) reads as a tail, not a move. The restrainer
+   * branch is excepted by its marker: its addressed state is
+   * an earlier, settled one, and its reply form is the
+   * designed one. Outside compositions nothing changes — a
+   * standalone turn's steering is untouched.
+   *
+   * (2) Duplicate bare acknowledgements collapse. The plain
+   * forms ("Ok.", "Ok. Noted.") say nothing segment-specific,
+   * so a pile of them ("Ok. Ok. Ok. Ok.", the P-086 shape) is
+   * one acknowledgement, not four: the first stands when it
+   * precedes the composition's first substantive reply, and
+   * every other plain ack is dropped. Named acknowledgements
+   * and recognition receipts are not bare — they carry the
+   * name, or what was retained — and stand wherever they
+   * fall. `trace.segmented` keeps the replies as processed;
+   * the shaping is recorded here and in
+   * `trace.segmentComposition`. */
+  const isBoundary = (t: TurnTrace): boolean => Boolean(t.boundaryReply || t.declineReason || t.correction);
+  let boundarySeen = false;
+  let steeringStoodDown = 0;
+  for (const item of kept) {
+    const t = item.result.trace;
+    if (t.cyclePath) {
+      const verbCarried =
+        !t.addressedState &&
+        session.states.some(
+          (st) =>
+            st.turn === t.turn &&
+            session.events.some((e) => e.turn === st.turn && e.verb === st.lemma && e.agent === st.holder),
+        );
+      if (boundarySeen || verbCarried) {
+        item.reply = acknowledgementFor(t.turn);
+        steeringStoodDown += 1;
+      }
+    }
+    if (isBoundary(t)) boundarySeen = true;
+  }
+  const boundaryReplies = kept.filter((i) => isBoundary(i.result.trace)).length;
+  const isPlainAck = (r: string): boolean => r === "Ok." || r === "Ok. Noted.";
+  let acksCollapsed = 0;
+  let seenSubstantive = false;
+  let keptFirstAck = false;
+  const shaped: string[] = [];
+  for (const item of kept) {
+    if (isPlainAck(item.reply)) {
+      if (!seenSubstantive && !keptFirstAck) {
+        shaped.push(item.reply);
+        keptFirstAck = true;
+      } else {
+        acksCollapsed += 1;
+      }
+    } else {
+      seenSubstantive = true;
+      shaped.push(item.reply);
+    }
+  }
   const trace = parts[parts.length - 1].result.trace;
   trace.segmented = parts.map((p) => ({ segment: p.segment, reply: p.result.reply }));
+  trace.segmentComposition = { segments: kept.length, boundaryReplies, steeringStoodDown, acksCollapsed };
   trace.planNote =
     `${ground}: ${parts.length} of ${segments.length} sentence segments were taken as their own acts and the replies composed` +
     (skipped.length ? `; not taken up (unparseable as single sentences): ${skipped.map((s) => `"${s}"`).join(", ")}` : "") +
+    (steeringStoodDown
+      ? `; steering stood down on ${steeringStoodDown} segment(s) (recognition programme R3: steering does not ride on a receipt, decline, correction or closing, and does not steer from a verb-carried state inside a composition)`
+      : "") +
+    (acksCollapsed ? `; ${acksCollapsed} duplicate bare acknowledgement(s) collapsed by the shaping` : "") +
     (trace.planNote ? `; final segment: ${trace.planNote}` : "");
-  return { reply: replies.join(" "), trace };
+  return { reply: shaped.join(" "), trace };
 }
 
 function processTurnInner(session: Session, text: string, opts?: { clarificationFallback?: boolean; segmented?: boolean }): TurnResult {
@@ -1428,6 +1746,7 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     speakWithObject(session, trace, parsed, "return farewell");
     dischargeDemand(session, "farewell-return");
     trace.ritualReply = true;
+    trace.boundaryReply = true;
     trace.planNote =
       "return farewell (the planner, reading the leave-taking object; the mirror returns the register the person chose; the Social Unit's farewell-return demand is discharged and the conversation is closed)";
     trace.replyGraph = serialiseReplyGraph(parsed);
@@ -1450,6 +1769,7 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     speakWithObject(session, trace, receipt.graph, "thanks receipt");
     dischargeDemand(session, "thanks-receipt");
     trace.ritualReply = true;
+    trace.boundaryReply = true;
     trace.planNote =
       "thanks receipt (the planner, answering the thanks object with the receipt move; ritual — the pending thread is untouched; the Social Unit's thanks-receipt demand is discharged)";
     trace.replyGraph = serialiseReplyGraph(receipt.graph);
@@ -1981,6 +2301,13 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
      * sentence's shape, is what such a question asks after. */
     const howMany = answerHowMany(session, trace, text);
     if (howMany) return howMany;
+    /* The feeling reader (R1, the recognition programme,
+     * 2026-11-19): "How do I feel?" is answered from the
+     * record's standing feeling state of the speaker, before
+     * the shape declines below — the record is the first
+     * source for what the conversation itself established. */
+    const feelingAnswer = answerFeelingFromRecord(session, trace, parsed, root, text);
+    if (feelingAnswer) return feelingAnswer;
     /* R3 (§6): this decline, like every decline, cites its
      * ground. Where the parse carries a query record over a
      * verb, the question asks for the filler of one role of
@@ -1991,17 +2318,93 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
      * net answers questions about what things are like, from
      * derivations — it does not yet answer questions over
      * recorded events. Shapes with no query record decline on
-     * the shape ground likewise. */
+     * the shape ground likewise. (R1, 2026-11-19: the record
+     * answers below now stand between this ground and the
+     * declines — a role the record fills, and the
+     * conversation's topic, are answered from the record
+     * first; the declines stand for what the record does not
+     * hold.) */
     const q = parsed.query;
     const verbEntry = EN_LEXICON[root.lemma] as VerbEntry | undefined;
     if (q && isVerbRoot && verbEntry && verbEntry.kind === "verb") {
       const QUESTION_FILLERS = new Set(["what", "who", "where", "when", "which", "why"]);
-      const filledBefore = session.events.some((e) => {
+      const fillingEvent = [...session.events].reverse().find((e) => {
         if (e.turn >= turn || e.verb !== root.lemma) return false;
         const v = (e as unknown as Record<string, unknown>)[q.relation];
         return typeof v === "string" && !QUESTION_FILLERS.has(v);
       });
+      const filledBefore = fillingEvent !== undefined;
+      /* R1: the event answer. A recorded event of this verb
+       * fills the asked role — the conversation itself
+       * established what the question asks — so the answer
+       * comes FROM THE RECORD, attributed as a telling ("You
+       * told me …"), and the shape decline below never calls
+       * the question unanswerable. The event must carry its
+       * agent: the rendering speaks the record's agent in the
+       * record's grain ('you' for the speaker, 'the X' for a
+       * third party), and an event the record cannot
+       * attribute is not rendered as anyone's doing. The
+       * rendering is the record's fields — verb, patient /
+       * theme, location, recipient — in the acknowledgement
+       * family's own clause shape (branch (f) below). */
+      if (fillingEvent && fillingEvent.agent) {
+        const ev = fillingEvent;
+        const filler = String((ev as unknown as Record<string, unknown>)[q.relation]);
+        const parts: string[] = [];
+        if (ev.theme && ev.location) parts.push(`the ${ev.theme} in the ${ev.location}`);
+        else if (ev.patient) parts.push(`the ${ev.patient}`);
+        else if (ev.theme) parts.push(`the ${ev.theme}`);
+        if (ev.recipient) parts.push(`to ${ev.recipient}`);
+        const clause = `${ev.agent === "you" ? "you" : `the ${ev.agent}`} ${pastOf(ev.verb)}${parts.length ? ` ${parts.join(" ")}` : ""}`;
+        trace.recordAnswer = {
+          source: "event",
+          ground:
+            `the question asks for the ${q.relation} of '${root.lemma}', and the recorded event of turn ${ev.turn} ` +
+            `fills it ('${filler}') — the record answers, as what the person told`,
+          event: { verb: ev.verb, role: q.relation, filler, turn: ev.turn },
+        };
+        trace.handAnswered = {
+          by: "session-and-situation",
+          evidence: `the recorded event '${ev.verb}' of turn ${ev.turn} fills the asked ${q.relation} with '${filler}'`,
+        };
+        trace.planNote =
+          "answered from the conversation record (R1): the recorded event fills the asked role — the reply renders " +
+          "the event under the record attribution ('You told me'); the graph was not consulted and no derivation was run";
+        return { reply: `You told me ${clause}.`, trace };
+      }
       if (!filledBefore) {
+        /* R1: the topic answer. A question after what the
+         * conversation is about — a talk/discuss question
+         * asking its theme — is answered from the Topic
+         * records: the established topic latest touched that
+         * stands from before this turn and whose lemma can be
+         * named (soundTopicLemma). The reply states the
+         * topic as the conversation's own — "We were talking
+         * about …" is the record speaking of itself, and no
+         * graph content is claimed. No nameable topic stands
+         * → the missing-role decline below, unchanged. */
+        if ((root.lemma === "talk" || root.lemma === "discuss") && (q.relation === "theme" || q.relation === "patient")) {
+          const topic = session.topics
+            .filter((t) => t.raisedTurn < turn && soundTopicLemma(t.lemma))
+            .sort((a, b) => b.lastTouchedTurn - a.lastTouchedTurn)[0];
+          if (topic) {
+            trace.recordAnswer = {
+              source: "topic",
+              ground:
+                `the question asks what the conversation is about, and the Topic records hold '${topic.lemma}' ` +
+                `(raised at turn ${topic.raisedTurn}, last touched at turn ${topic.lastTouchedTurn}) — the record answers`,
+              topic: topic.lemma,
+            };
+            trace.handAnswered = {
+              by: "session-and-situation",
+              evidence: `the Topic record '${topic.lemma}' (raised turn ${topic.raisedTurn}) is the conversation's established topic`,
+            };
+            trace.planNote =
+              "answered from the conversation record (R1): the established topic, from the Topic records — " +
+              "the reply names what the conversation has established, and claims nothing from the graph";
+            return { reply: `We were talking about the ${topic.lemma}.`, trace };
+          }
+        }
         // The question's own filled prep roles season the
         // phrase ("what was put in the soup") — the person's
         // own words for the part they did supply.
@@ -2304,6 +2707,14 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       trace.steeringNote =
         "statement acknowledged (the acknowledgement move): the state is reported of " +
         `${thisState.holder}, not of the speaker — a telling, not a feeling to steer from`;
+      // R2: the recognition receipt — a predicated state the
+      // turn established is shown, not merely received. A
+      // verb-carried state is not predicated (its lemma is a
+      // doing), so the receipt stands down for it.
+      if (newStatePredicable) {
+        const receipt = recognitionReceipt(session, trace, turn, ackName, { state: thisState, subject: newStateSubject });
+        if (receipt) return { reply: receipt, trace };
+      }
       return { reply: acknowledgementFor(turn, ackName), trace };
     }
     const generated = GENERATES[thisState.element];
@@ -2389,12 +2800,25 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
         "statement acknowledged (the acknowledgement move): the event stands recorded, no need or gap " +
         "stands open, and no steering relation claims the turn — the steering machinery stands down";
     }
+    // R2: the recognition receipt — an event the turn
+    // established, with its object filled, is shown.
+    const receipt = recognitionReceipt(session, trace, turn, ackName, { event: thisEvent });
+    if (receipt) return { reply: receipt, trace };
     return { reply: acknowledgementFor(turn, ackName), trace };
   }
 
   trace.steeringNote =
     "statement acknowledged (the acknowledgement move): recorded, with nothing in it for the cycles " +
     "to steer by and no need or gap standing open";
+  // R2: the recognition receipt — a state the turn
+  // established that no steering branch claimed (it carries
+  // no element for the cycles to steer by) is still shown
+  // when it is a predicated, unnegated state and no
+  // correction owns the turn.
+  if (newState && newStatePredicable && !trace.correction) {
+    const receipt = recognitionReceipt(session, trace, turn, ackName, { state: newState, subject: newStateSubject });
+    if (receipt) return { reply: receipt, trace };
+  }
   return { reply: acknowledgementFor(turn, ackName), trace };
 }
 
@@ -2464,6 +2888,17 @@ function initiativeCandidates(session: Session, trace: TurnTrace, turn: number):
     // never because a probe once derived one.
     const entry = EN_LEXICON[s.lemma] as VerbEntry | undefined;
     if (entry && entry.kind === "verb") continue;
+    // Recognition programme R4: a state carried by a verb —
+    // recorded at its turn together with its own event of the
+    // same verb, by the same parse — is a doing the parse
+    // mis-derived as a state, and the check above does not
+    // catch it when the lemma's lexicon entry is not the verb
+    // entry (positional adoption leaves it a noun entry:
+    // "I have horses…" filed you/horse beside horse(a=you),
+    // and the move predicated "You are horse."). A steering
+    // predication may only be formed from a state whose
+    // derivation is sound — predicated, not verb-carried.
+    if (session.events.some((e) => e.turn === s.turn && e.verb === s.lemma && e.agent === s.holder)) continue;
     const generated = GENERATES[s.element];
     if (session.states.some((o) => o.turn > s.turn && o.element === generated)) continue;
     const addressed = trace.addressedState;
@@ -2473,6 +2908,15 @@ function initiativeCandidates(session: Session, trace: TurnTrace, turn: number):
   }
   for (const e of session.events) {
     if (e.turn >= turn) continue;
+    // Recognition programme R4: the question the move builds
+    // addresses the visitor — its agent is "you" by
+    // construction (buildInitiativeMove). An event of another
+    // agent, or of none the parse settled, cannot soundly
+    // ground it: "What did you run?" was asked over the
+    // turtle's running, and "What did you bear?" over an
+    // agent-less parse fragment. Such events ground no
+    // candidate.
+    if (e.agent !== "you") continue;
     const entry = EN_LEXICON[e.verb] as VerbEntry | undefined;
     if (!entry || entry.kind !== "verb") continue;
     const required = new Set([
@@ -2493,6 +2937,30 @@ function initiativeCandidates(session: Session, trace: TurnTrace, turn: number):
   const shapeRank = (c: InitiativeCandidate): number => (c.shape === "unexpressed-state" ? 0 : 1);
   candidates.sort((a, b) => a.groundTurn - b.groundTurn || shapeRank(a) - shapeRank(b));
   return candidates;
+}
+
+/** Words that refer without naming a thing: a fill drawn from
+ *  this stock cannot stand as a question's rendered object,
+ *  whatever role it was recorded in. */
+const NON_THING_FILL = new Set([
+  "i", "you", "he", "she", "him", "her", "it", "them", "we", "they", "me", "us",
+  "that", "this", "what", "which", "who",
+]);
+
+/**
+ * Recognition programme R4: is this recorded fill a sound
+ * thing-word for a question to render with a determiner? The
+ * authorities are the lexicon's noun entries, the
+ * classification table, and the session's own entity register
+ * — a name the conversation mentioned stands in the third,
+ * which is the record's own warrant for it.
+ */
+function soundThingFill(session: Session, lemma: string): boolean {
+  if (NON_THING_FILL.has(lemma.toLowerCase())) return false;
+  const entry = EN_LEXICON[lemma];
+  if (entry && entry.kind === "noun") return true;
+  if (lookupClassification(lemma)) return true;
+  return session.entities.some((e) => e.lemma === lemma);
 }
 
 /**
@@ -2535,11 +3003,31 @@ function buildInitiativeMove(
     if (rel === candidate.role || rel === "agent") continue;
     const value = (e as unknown as Record<string, unknown>)[rel];
     if (typeof value !== "string" || !value) continue;
+    /* Recognition programme R4: every fill the question would
+     * render must be sound, or the candidate is dropped whole
+     * — the move is not formed around a garbled fill. A fill
+     * rendered with a determiner (patient, theme, location)
+     * must be a thing-word: a noun in the lexicon, a
+     * classified concept, or a referent the conversation
+     * itself recorded as an entity (a mentioned name stands
+     * there). A pronoun or demonstrative in such a slot names
+     * nothing the question can carry ("the it", "the using"
+     * were rendered from fills of these two kinds). A bare
+     * fill (the recipient's, as in "What did you give him?")
+     * may be a pronoun or a name, but not a verb, adverb or
+     * adjective lemma standing where a referent belongs. */
+    const withDet = rel === "patient" || rel === "theme" || rel === "location";
+    if (withDet) {
+      if (!soundThingFill(session, value)) return undefined;
+    } else {
+      const fillEntry = EN_LEXICON[value];
+      if (fillEntry && fillEntry.kind !== "noun" && fillEntry.kind !== "pronoun") return undefined;
+    }
     filled.push({
       relation: rel,
       lemma: value,
       form: value,
-      ...(rel === "patient" || rel === "theme" || rel === "location" ? { det: "the" } : {}),
+      ...(withDet ? { det: "the" } : {}),
     });
   }
   const outcome = planRoleQuestion({
@@ -2595,6 +3083,18 @@ function applyInitiative(session: Session, result: TurnResult): void {
   // the quotation (and falsify the record the next restatement
   // reads).
   if (trace.restatedReply) return;
+  // Recognition programme R3: a receipt or a closing is a
+  // designed move, complete in itself — no initiative appends
+  // to one. The trace's own boundaryReply covers the
+  // standalone turn (a thanks receipt once drew an appended
+  // predication: "You are welcome. The winter is cold."); a
+  // composed turn's boundary segments stand in its
+  // composition record, the composed trace being the last
+  // segment's and an earlier segment's receipt otherwise
+  // invisible here. (Declines and corrections are gated
+  // above; a standalone closing is gated by the phase.)
+  if (trace.boundaryReply) return;
+  if (trace.segmentComposition && trace.segmentComposition.boundaryReplies > 0) return;
   if (result.reply.trimEnd().endsWith("?")) return;
   const last = session.initiatives[session.initiatives.length - 1];
   if (last && turn - last.turn < 5) return;
@@ -2864,6 +3364,19 @@ function answerPredicateQuestion(
 ): TurnResult {
   const subjectLemma = subjectNodeInParse.lemma;
   const predicateLemma = predicateNodeInParse.lemma;
+  /* R1 (the recognition programme, 2026-11-19): the record's
+   * grain for the speaker is 'you' (session.ts: the speaker is
+   * recorded as 'you', never by name) — a question the person
+   * asks about THEMSELVES arrives with the subject lemma 'i',
+   * and every record lookup below reads through the grain, so
+   * "Am I worried?" finds the standing state the record holds
+   * under 'you'. Before R1 the lookups compared the raw lemma
+   * and a self-question could never be answered from the
+   * record at all — it declined on "nothing on i in my notes"
+   * while the state stood in the record. The graph lookups
+   * further down keep the raw lemma: the graph's grain is its
+   * own. holderOf is the identity for every other subject. */
+  const recordHolder = holderOf(subjectLemma);
   const turnObject = session.objects.find((o) => o.turn === session.turnCount && o.producer === "person");
 
   /* Insistence on a standing stance (Social Unit S5, design
@@ -2984,7 +3497,7 @@ function answerPredicateQuestion(
        * answers a why-question only against its presupposition —
        * is untouched.) */
       const freshIdx = session.states.findIndex(
-        (s) => s.turn === session.turnCount && s.holder === subjectLemma && s.lemma === predicateLemma,
+        (s) => s.turn === session.turnCount && s.holder === recordHolder && s.lemma === predicateLemma,
       );
       if (freshIdx >= 0) session.states.splice(freshIdx, 1);
       trace.saidSo = {
@@ -3034,12 +3547,12 @@ function answerPredicateQuestion(
         : s.lemma === predicateLemma;
     const occupant = [...session.states]
       .reverse()
-      .find((s) => s.holder === subjectLemma && s.turn < session.turnCount && occupiesSlot(s));
+      .find((s) => s.holder === recordHolder && s.turn < session.turnCount && occupiesSlot(s));
     if (occupant) {
       const matchesAsked = occupant.lemma === predicateLemma && !!occupant.negated === !!predicateNodeInParse.states?.negated;
       if (!isWhy || !matchesAsked) {
         const freshIdx = session.states.findIndex(
-          (s) => s.turn === session.turnCount && s.holder === subjectLemma && s.lemma === predicateLemma,
+          (s) => s.turn === session.turnCount && s.holder === recordHolder && s.lemma === predicateLemma,
         );
         let recordingSkipped: string | undefined;
         if (freshIdx >= 0) {
@@ -3049,16 +3562,25 @@ function answerPredicateQuestion(
             `the record answered, and the asked quality is not left standing as a new state beside the state that answered (T-R7.5)`;
         }
         const chain = session.supersessions.filter(
-          (d) => d.holder === subjectLemma && (occupiesSlot(d.replaced) || occupiesSlot(d.replacing)),
+          (d) => d.holder === recordHolder && (occupiesSlot(d.replaced) || occupiesSlot(d.replacing)),
         );
         const cohesion = detectCohesion(session, topicsBefore, subjectLemma, occupant.lemma);
+        /* The subject material, in the record's grain (R1):
+         * when the asked subject is the speaker, the answer
+         * predicates the standing state of YOU — the system's
+         * second person for the person it is talking with —
+         * never of "I", which in the system's mouth would
+         * claim the state for itself. */
         const outcome = planRecordPredication({
-          subject: {
-            lemma: subjectLemma,
-            form: subjectNodeInParse.form,
-            det: subjectNodeInParse.det,
-            person: predicateNodeInParse.states?.subjectPerson,
-          },
+          subject:
+            recordHolder === "you" && subjectLemma !== "you"
+              ? { lemma: "you", form: "you", person: "2sg" }
+              : {
+                  lemma: subjectLemma,
+                  form: subjectNodeInParse.form,
+                  det: subjectNodeInParse.det,
+                  person: predicateNodeInParse.states?.subjectPerson,
+                },
           stateLemma: occupant.lemma,
           ...(occupant.negated ? { negated: true } : {}),
           ...(cohesion ? { cohesionMarker: cohesion.marker } : {}),
@@ -3121,7 +3643,14 @@ function answerPredicateQuestion(
             outcome: "stated",
             ground: `the record holds '${subjectLemma}' as '${establishedPhrase}' from turn ${occupant.turn} — the why-question presupposes '${predicateLemma}'`,
           };
-          return { reply: `${outcome.sentence} Did you mean why ${subjectNodeInParse.det ? `${subjectNodeInParse.det} ` : ""}${subjectLemma} is ${establishedPhrase}?`, trace };
+          const speakerSubject = recordHolder === "you" && subjectLemma !== "you";
+          const askedSubjectPhrase = speakerSubject
+            ? "you"
+            : `${subjectNodeInParse.det ? `${subjectNodeInParse.det} ` : ""}${subjectLemma}`;
+          return {
+            reply: `${outcome.sentence} Did you mean why ${askedSubjectPhrase} ${speakerSubject ? "are" : "is"} ${establishedPhrase}?`,
+            trace,
+          };
         }
         return { reply: outcome.sentence, trace };
       }

@@ -166,7 +166,13 @@ test("S4 token (a): a weakly resolved token is asked about, and the fill's word 
   const [ask, fill] = run(s, ["The wethr is cold.", "Weather."]);
   assert.equal(ask.reply, "Did you mean water, or weather?");
   assert.equal(fill.trace.clarificationFill?.outcome, "filled");
-  assert.equal(fill.reply, "Ok.", "the original sentence, with 'weather' standing in it, is the turn that gets processed");
+  // RE-PIN (the recognition programme, R2, 2026-11-19): the
+  // processed sentence establishes the state weather/cold,
+  // so its acknowledgement is now the recognition receipt
+  // showing that state — the fill mechanics this test pins
+  // (the word processed, the state recorded, the pending
+  // closed) are unchanged.
+  assert.equal(fill.reply, "Ok. The weather is cold.", "the original sentence, with 'weather' standing in it, is the turn that gets processed");
   assert.ok(
     s.states.some((st) => st.holder === "weather"),
     "what was recorded is the weather statement, not the guessed one",
@@ -209,7 +215,12 @@ test("S4 whole utterance (d): an unusable sentence gets a rephrase request that 
   // test is the pending's lifecycle, unchanged.
   const [ask, next] = run(s, ["Blorf wizzle snarp.", "The soup is hot."]);
   assert.equal(ask.reply, "Could you put that another way?");
-  assert.equal(next.reply, "Ok.", "the rephrase is processed as itself; the pending closed on the continuation");
+  // RE-PIN (the recognition programme, R2, 2026-11-19): the
+  // continuation establishes the state soup/hot, so its
+  // acknowledgement is now the recognition receipt showing
+  // that state; the pending's lifecycle — the claim under
+  // test — is unchanged.
+  assert.equal(next.reply, "Ok. The soup is hot.", "the rephrase is processed as itself; the pending closed on the continuation");
   assert.equal(s.conversation.pending, null);
 });
 

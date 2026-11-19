@@ -74,7 +74,12 @@ test("soup scenario: pronoun 'it' resolves to the soup by recency", () => {
   // "You put the salt in the soup. What goes in next?". The
   // event itself stands recorded with its roles filled,
   // which is what the echo used to show.
-  assert.equal(t3.reply, "Ok.");
+  // RE-PIN (the recognition programme, R2, 2026-11-19): the
+  // acknowledgement is now the recognition receipt — it
+  // shows the recorded event, the very thing the old echo
+  // showed, without the steering question. The pronoun
+  // resolution this test pins is unchanged.
+  assert.equal(t3.reply, "Ok. You put the salt in the soup.");
   const put = s.events[s.events.length - 1];
   assert.equal(put.verb, "put");
   assert.equal(put.theme, "salt");

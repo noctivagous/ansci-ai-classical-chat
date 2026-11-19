@@ -269,12 +269,22 @@ test("C6: 'My name is X.' reaches the register and is recognised the same way", 
 });
 
 test("C6: acknowledgements without a name learned this turn keep the bare forms", () => {
+  // RE-PIN (the recognition programme, R2, 2026-11-19): this
+  // test's original second turns were state tellings ("The
+  // garden is cold.") — a turn that establishes a
+  // registrable state now gets the recognition receipt, not
+  // the bare form (R2 is C6's own larger part, pinned in
+  // fork-recognition-programme.test.ts). What this test
+  // pins is unchanged: no name was learned on these turns,
+  // so no acknowledgement carries one — the bare form stands
+  // where a turn establishes nothing the receipt names (an
+  // objectless event), and a name learned on an earlier
+  // turn is not repeated in later receipts.
   const s = newSession();
-  const [a, b] = run(s, ["The winter is cold.", "The garden is cold."]);
+  const [a] = run(s, ["The winter is cold."]);
   assert.equal(a.reply, "Ok. Noted.");
-  assert.equal(b.reply, "Ok.");
   const s2 = newSession();
-  const [, c] = run(s2, ["I am Sam.", "The winter is cold."]);
+  const [, c] = run(s2, ["I am Sam.", "I went."]);
   assert.equal(c.reply, "Ok.", "the name is not repeated in every later receipt");
 });
 

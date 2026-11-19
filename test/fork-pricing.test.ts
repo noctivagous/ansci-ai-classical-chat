@@ -304,11 +304,19 @@ const EXPECTED_REPLIES: Record<string, string[]> = {
     "The soup needs more salt. How does it taste so far?",
     // Normalcy arc: was "You put the salt in the soup. What
     // goes in next?" — a fully specified telling, acknowledged.
-    "Ok.",
+    // Recognition programme R2 (2026-11-19): the plain
+    // acknowledgement is now the recognition receipt — the
+    // telling established a recorded event with its object
+    // filled, so the receipt shows it. Itemised here; no
+    // other entry in the four scenarios changes (their
+    // telling turns are first turns, questions, or steering
+    // replies — none is a bare acknowledgement over
+    // registrable content).
+    "Ok. You put the salt in the soup.",
   ],
 };
 
-test("R0 acceptance: the four scenarios' reply text is identical to before R0, except the itemised R1.5 winter-cold origin changes, R2's itemised summer set change, and the Normalcy arc's itemised acknowledgement changes", () => {
+test("R0 acceptance: the four scenarios' reply text is identical to before R0, except the itemised R1.5 winter-cold origin changes, R2's itemised summer set change, the Normalcy arc's itemised acknowledgement changes, and the recognition programme's itemised receipt change", () => {
   for (const scenario of SCENARIOS) {
     const s = newSession();
     const replies = run(s, scenario.turns).map((r) => r.reply);

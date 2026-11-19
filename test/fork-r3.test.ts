@@ -187,12 +187,29 @@ test("decline, missing role: a question over an event the record does not hold",
   assert.ok(!/outside what I can work through/.test(t2.reply), "the pre-R3 groundless surface is gone");
 });
 
-test("decline, question over a recorded event: the shape ground is named", () => {
+test("question over a recorded event: the record answers it (R1); the shape decline stands where the record cannot attribute", () => {
+  // RE-PIN (the recognition programme, R1, 2026-11-19): this
+  // scenario pinned R3's shape decline ("asks about something
+  // that happened") for a question the conversation record
+  // itself answers — the recorded buy event fills the asked
+  // role, with the speaker as its agent. Record-first
+  // answering (GAPS §2's grounding-in-conversation item)
+  // replaces that decline with the record's answer,
+  // attributed as a telling. The decline-ground discipline
+  // this file pins is untouched where a decline still
+  // occurs: an event the record cannot attribute to a
+  // holder (the passive's agent-less event) is not rendered
+  // as anyone's doing, and the shape decline stands there.
   const s = newSession();
   const [, t2] = run(s, ["I bought the onions.", "What did I buy?"]);
   clean(t2);
-  assert.match(t2.reply, /asks about something that happened/);
-  assert.match(t2.trace.declineReason ?? "", /shape is the decline's ground/);
+  assert.equal(t2.reply, "You told me you bought the onions.");
+  assert.equal(t2.trace.recordAnswer?.source, "event");
+  const s2 = newSession();
+  const [, u2] = run(s2, ["The onions were bought.", "What did you buy?"]);
+  clean(u2);
+  assert.match(u2.reply, /asks about something that happened/);
+  assert.match(u2.trace.declineReason ?? "", /shape is the decline's ground/);
 });
 
 test("decline, yes/no event question: a ground is named, not a bare refusal", () => {

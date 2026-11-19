@@ -419,6 +419,31 @@ synthetic-returner gates.
     of testimony discipline — any reply's use of provided
     knowledge checkable against its source — has not been
     built as such.
+    *Status (2026-11-19, R1 of the recognition programme):*
+    the record form is now built as a general answering
+    source — the conversation record is consulted FIRST in
+    the answering order, before the graph and before any
+    decline. A question over a told event whose asked role a
+    recorded event fills is answered from the record,
+    attributed as a telling ("You told me you put the salt
+    in the soup."); a question after what the conversation
+    is about is answered from the Topic records ("We were
+    talking about the soup."); "How do I feel?" is answered
+    from the speaker's standing feeling state (filed as a
+    feeling by the classification table's emotion aspect or
+    the EDU's canonical names); and the R7.5 record answers
+    now read through the record's grain, so the speaker's
+    own predicate questions ("Am I worried?") reach the
+    standing state the record holds under 'you' — before R1
+    they declined on the raw lemma ("nothing on i in my
+    notes") while the state stood in the record, and left
+    the question's own duplicate recording standing beside
+    it. An event the record cannot attribute to a holder is
+    not rendered as anyone's doing, and a question the
+    record does not answer keeps its decline. What remains
+    open is the item's general form as stated above: a
+    checkability discipline over any reply's use of provided
+    knowledge, beyond these record sources.
   - *Clarification behaviour.* The decline discipline locates a
     gap and stops; nothing in the conversation layer asks the
     interlocutor what was meant instead of guessing or stopping
@@ -520,6 +545,94 @@ synthetic-returner gates.
   moves carrying content the current turn never settled.
   *Closes when:* initiative draws only on the current turn's
   settled candidates, with a pinning test on the probe shapes.
+  *Status (2026-11-19, R3 of the recognition programme, in the
+  worktree, unpushed):* **the append-to-boundaries half is
+  closed.** Run 2 also showed the move appending steering
+  tails to receipts and declines that should close (P-072,
+  P-124, P-079). The initiative scan now never appends to a
+  receipt or a closing: the standalone turn is gated on the
+  reply's boundary mark (set by the thanks receipt and the
+  farewell mirror), and a composed turn is gated on its
+  composition record — the composed trace is the last
+  segment's, so an earlier segment's boundary reply is
+  recorded where the scan can read it. Inside a composition
+  the same discipline binds the segments' own steering: a
+  segment's steering reply stands down to the plain
+  acknowledgement when an earlier segment of the same
+  composition closed a boundary, and when the state it would
+  steer from is one the segment itself carried by a verb (a
+  doing re-verbalised as a feeling — the P-079 shape). A
+  greeting is not a boundary, and standalone turns are
+  untouched. The staleness half — what the candidates
+  themselves are drawn from — is R4's, and the item stands
+  open on it.
+  *Status (2026-11-19, R4 of the recognition programme, in the
+  worktree, unpushed):* **closed.** The closes-when test reads
+  "settled candidates" as candidates standing in the record
+  *and soundly derived* — the specimens' staleness was
+  mis-derivation, not age — and the scan now admits only
+  those. A steering predication is formed only from a state
+  that was predicated, never from one the same parse carried
+  by a verb (recorded together with its own event of the
+  same verb: "I have horses…" filed you/horse beside
+  horse(a=you), and the move predicated "You are horse." —
+  the lexicon-kind check passed it because positional
+  adoption had left the lemma a noun entry). A gap question,
+  which addresses the visitor by construction, is grounded
+  only in the visitor's own events — another agent's, or an
+  agent-less fragment's, ground none ("What did you run?"
+  over the turtle's running; "What did you bear?" over a
+  fragment with no settled agent). And every fill such a
+  question would render must be sound — a thing-word in the
+  determiner slots (a noun in the lexicon, a classified
+  concept, or a referent the conversation recorded as an
+  entity), a referring word in the bare ones — or the
+  candidate is dropped whole, not verbalised around the
+  garble ("the it", "the using"). Sound candidates fire
+  exactly as before, pinned beside the dropped ones. One
+  specimen stands deliberately unchanged: "What did you
+  buy?" (P-075) is grammatical, correctly addressed, and
+  asks after a role the record genuinely lacks — its
+  wrongness is the parse's dropped object, the parser
+  programme's to repair, not the verbalisation's.
+- **The acknowledgement echo assumes the visitor as agent.**
+  (Located by R4 of the recognition programme, 2026-11-19;
+  open.) The statement branches' acknowledgement family
+  renders a recorded event as the visitor's doing, with its
+  fills as they stand — "You ran. What did you run?" over
+  the turtle's running (P-097), "You bought." over Mary's
+  buying, "You cook the it in the using." over a pronoun
+  theme and a verb-form location (P-037) — whatever agent
+  and fills the parse recorded. R4's soundness rules bind
+  the initiative scan; the turn's own echo and gap question,
+  which are the reply programme's designed moves, do not
+  yet observe them. *Closes when:* the echo and the own-turn
+  gap question are formed only over events whose recorded
+  agent is the visitor, with their fills under the same
+  soundness rule, or render the agent they were given.
+- **Composed replies pile up bare acknowledgements.**
+  (Located by probe run 2, 2026-11-18; the run's record
+  above names the shape.) C2's segment composition
+  concatenated the per-segment replies as they came, so a
+  multi-act turn whose acts were mostly tellings answered
+  with a pile — "Ok. Ok. Ok. Ok." (five finals in run 2) —
+  one acknowledgement per act, reading as no acknowledgement
+  of the turn as a whole. *Closes when:* a composition is
+  shaped as one reply — a single leading acknowledgement,
+  the substantive segment replies kept, duplicates
+  collapsed.
+  *Status (2026-11-19, R3 of the recognition programme, in
+  the worktree, unpushed):* **built.** The composition now
+  shapes its replies: the plain acknowledgement forms ("Ok.",
+  "Ok. Noted.") collapse — the first stands when it precedes
+  the composition's first substantive reply, every other is
+  dropped — while named acknowledgements and recognition
+  receipts, which carry the name or what was retained, stand
+  wherever they fall. `trace.segmented` keeps the segment
+  replies as processed; the shaping and the stand-downs are
+  counted in the trace's composition record. Whether the
+  shaped replies meet the bars' standard is the probe's to
+  judge (run 3).
 - **Recognition in acknowledgements covers the name only.**
   (Located 2026-11-18; open.) Slice C6 made an acknowledgement
   address the visitor by name when the name was learned that
@@ -530,6 +643,29 @@ synthetic-returner gates.
   *Closes when:* acknowledgements can name an established
   topic or a registered feeling from the record, in the reply
   programme's own forms.
+  *Status (2026-11-19, R2 of the recognition programme, in the
+  worktree, unpushed):* **the receipt form is built.** Where a
+  statement turn's reply would be the bare "Ok." and the turn
+  established something the registers hold, the acknowledgement
+  now shows it, rendered from the record's own fields by the
+  existing constructions: a predicated state through the
+  Planner's predication construction ("Ok. The garden is
+  cold."; "Ok. You are happy."), a recorded event with its
+  object filled as a clause in the statement branches' own
+  family shape ("Ok. You put the salt in the soup."). The
+  discipline is narrow by construction — only this turn's
+  established content, only as the record holds it: the first
+  turn keeps its fuller form (already the receipt's base), the
+  naming turn keeps C6's (the name is that turn's
+  recognition), negated tellings and verb-carried states are
+  not predicated, objectless events render no clause, and a
+  quantity-bearing telling keeps the plain form (its retention
+  is the ledger's to show; the owner-approved apples specimen
+  pins it). Topics are named through the state or event that
+  established them; a bare entity mention with neither remains
+  a bare acknowledgement — that residue, and whether the
+  receipts meet the bars' full standard, are the probe's to
+  judge (run 3).
 - **The situated self is mostly unbuilt.** On the system map:
   Awareness 35% (self 15%, identity and capabilities 0%),
   Session & Situation's open-unknowns 50%, Coherence as a whole 0%

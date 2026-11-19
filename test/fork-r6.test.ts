@@ -38,11 +38,22 @@ test("R6-1: the unexpressed state is taken up at the first statement reply, pric
   // the venting question besides), the price is still the
   // origin's, and turn 5 — furious already taken up, and
   // inside the bound besides — carries no second move.
+  // RE-PIN (the recognition programme, R2, 2026-11-19):
+  // turn 3's own reply is now the recognition receipt —
+  // "The soup is sweet." establishes a registrable state, so
+  // the bare "Ok." shows it ("Ok. The soup is sweet.")
+  // before the initiative move appends, exactly as this
+  // test's discipline describes (the move, its timing, its
+  // price and its ground are unchanged). The trace's
+  // replyGraph is therefore the receipt's graph — the
+  // turn's own reply built one, and the initiative's graph
+  // stands in its reply object in the stream, asserted
+  // below.
   const s = newSession();
   const results = run(s, R6_1);
   for (const r of results.slice(0, 2)) assert.equal(r.trace.initiative, undefined, `no initiative at turn ${r.trace.turn}`);
   const t3 = results[2];
-  assert.equal(t3.reply, "Ok. You are furious.");
+  assert.equal(t3.reply, "Ok. The soup is sweet. You are furious.");
   const init = t3.trace.initiative;
   assert.ok(init, "the initiative record stands in the trace");
   assert.equal(init!.shape, "unexpressed-state");
@@ -55,9 +66,15 @@ test("R6-1: the unexpressed state is taken up at the first statement reply, pric
   assert.equal(init!.pricing?.weakestTier, "attested");
   assert.equal(init!.pricing?.support, 0.9);
   assert.equal(init!.pricing?.level, "plain");
-  // The move's graph is the predication's, in the trace.
+  // The trace's reply graph is the receipt's (it predicates
+  // sweet, the state turn 3 established); the move's graph
+  // is the predication's, in its reply object in the stream.
   const graph = JSON.parse(t3.trace.replyGraph ?? "{}");
-  assert.ok(graph.nodes.some((n: { lemma: string }) => n.lemma === "furious"), "the reply graph predicates the standing state");
+  assert.ok(graph.nodes.some((n: { lemma: string }) => n.lemma === "sweet"), "the reply graph predicates the state the receipt recognised");
+  const initiativeObject = s.objects.find(
+    (o) => o.producer === "system" && o.turn === 3 && o.content.meaning.nodes.some((n) => n.lemma === "furious"),
+  );
+  assert.ok(initiativeObject, "the initiative move's reply object predicates the standing state (furious)");
   // Turn 5: the restrainer reply stands on its own — furious
   // was already taken up (and 5 − 3 < 5 bars a second move in
   // any case). The addressed state (sweet) is not the ground
@@ -145,12 +162,18 @@ test("R6-3: one move in any five turns — fires at 3 and 9, bound-blocked at 5 
   assert.equal(results[1].trace.initiative, undefined);
   // Turn 3: the oldest candidate (cold, turn 1), appended to
   // the acknowledgement.
+  // RE-PIN (the recognition programme, R2, 2026-11-19): the
+  // acknowledgement it appends to is now the recognition
+  // receipt — turn 3's own telling ("The tea is hot.")
+  // establishes a registrable state, so the receipt shows
+  // it first. The move, its candidate, its price and the
+  // cadence this test pins are unchanged.
   const t3 = results[2];
   assert.equal(t3.trace.initiative?.state?.lemma, "cold");
   assert.equal(t3.trace.initiative?.pricing?.weakestTier, "attested");
   assert.equal(t3.trace.initiative?.pricing?.support, 0.95);
   assert.equal(t3.trace.initiative?.pricing?.level, "plain");
-  assert.equal(t3.reply, "Ok. The soup is cold.");
+  assert.equal(t3.reply, "Ok. The tea is hot. The soup is cold.");
   // Turns 5 and 7: candidates stand, replies are plain
   // statements — the bound alone bars them (5 − 3 = 2, 7 − 3 = 4).
   assert.equal(results[4].trace.initiative, undefined);
