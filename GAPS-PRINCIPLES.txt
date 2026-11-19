@@ -1,0 +1,7 @@
+We always want to find the cause of the problems 
+not just fix them at locations where problems occur
+and it would mostly be system design, implementation, and knowledge/resources.
+
+  system design - implies new modules sometimes
+  implementation - something smaller than system design, inside the system needs to be moved or made
+  knowledge - the system needs information or resources
