@@ -28,7 +28,7 @@
  * grammar, mirroring detectWikidataQuestion's standing.
  */
 import type { Session } from "./session";
-import { PLACE } from "./place";
+import { configuredSeat, statedPlaceFromConversation } from "./geography-awareness";
 import { placeKeyOf, type WeatherReading } from "./weather-bank";
 
 export type WeatherShape = "weather" | "temperature" | "raining" | "snowing";
@@ -69,39 +69,23 @@ export interface ResolvedWeatherPlace {
 /**
  * Resolve the place a weather question is about, in the
  * stated order. Pure read over the session record and the
- * Place table; nothing is written.
+ * configured seat; nothing is written.
+ *
+ * Geography G1 (2026-11-20): the chain's steps are the
+ * pair's protocol (§5) read through GeographyAwareness —
+ * the configured seat is its seat, and the conversation
+ * step is its situated reading (geography-awareness.ts's
+ * statedPlaceFromConversation: the residence event, else
+ * the record's location graph — the reading this function
+ * grew privately in Slice 6, generalised and moved there).
+ * The order and the outcomes are unchanged.
  */
 export function resolveWeatherPlace(session: Session, question: WeatherQuestion): ResolvedWeatherPlace | undefined {
   if (question.placeInQuestion) return { place: question.placeInQuestion, source: "question" };
-  if (PLACE.place) return { place: PLACE.place, source: "configured" };
-  // The residence/presence events: the latest the visitor
-  // figures in with a location (the 'live' precedent at
-  // turn.ts's visitor-location read, generalised to any
-  // located event of the visitor's).
-  for (let i = session.events.length - 1; i >= 0; i--) {
-    const e = session.events[i];
-    if (e.agent === "you" && e.location) {
-      return { place: e.location, source: "conversation", via: e.verb };
-    }
-  }
-  // The record's location graphs: "I am in Oklahoma" writes
-  // no event, but its turn object carries the speaker's
-  // location edge (subject 'i', relation 'location'). The
-  // latest such object is the conversation's standing word
-  // on where the visitor is.
-  for (let i = session.objects.length - 1; i >= 0; i--) {
-    const o = session.objects[i];
-    if (o.producer !== "person") continue;
-    const meaning = (o.content as { meaning?: { nodes: { id: string; lemma: string; form: string }[]; edges: { from: string; to: string; relation: string }[] } }).meaning;
-    if (!meaning) continue;
-    const locationEdge = meaning.edges.find((e) => e.relation === "location");
-    if (!locationEdge) continue;
-    const speaker = meaning.nodes.find((n) => n.id === locationEdge.from);
-    const target = meaning.nodes.find((n) => n.id === locationEdge.to);
-    if (speaker && (speaker.lemma === "i" || speaker.lemma === "you") && target) {
-      return { place: target.form, source: "conversation", via: "record" };
-    }
-  }
+  const seat = configuredSeat();
+  if (seat.place) return { place: seat.place, source: "configured" };
+  const stated = statedPlaceFromConversation(session);
+  if (stated) return { place: stated.place, source: "conversation", via: stated.via };
   return undefined;
 }
 

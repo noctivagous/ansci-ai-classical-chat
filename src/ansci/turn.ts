@@ -586,10 +586,48 @@ export interface TurnTrace {
       | "looked-up-and-banked"
       | "lookup-unavailable"
       | "coordinates-missing"
-      | "source-coverage";
+      | "source-coverage"
+      // Geography G1: the geography pair's declines — the
+      // place's namesakes unseparated by the ranker, and the
+      // stale-only holding whose re-consultation failed.
+      | "place-ambiguous"
+      | "stale-only";
     shape: "weather" | "temperature" | "raining" | "snowing";
     place?: string;
     placeSource?: "question" | "configured" | "conversation";
+    fetchedAt?: string;
+    expiresAt?: string;
+    detail: string;
+    priorDecline?: string;
+  };
+  /**
+   * The geography record (Geography G2/G3,
+   * geography-turn.ts): the wrapper's what's-there and
+   * how-far work, in the wikidata record's manner — the
+   * shape detected, the resolution the place went through,
+   * and for a computed answer (how-far) its derivation: the
+   * resolved points, the source and the fetch time, carried
+   * in the detail and the route fields, because a computed
+   * answer's warrant is its working (§4.3).
+   */
+  geography?: {
+    action:
+      | "answered-from-bank"
+      | "looked-up-and-banked"
+      // Geography G3: a how-far answer computed from the two
+      // resolved points alone, because the routing source
+      // was unavailable — the road figure's absence is named
+      // in the reply, and the derivation is in the detail.
+      | "computed-straight-line"
+      | "no-place"
+      | "place-unresolved"
+      | "place-ambiguous"
+      | "source-unavailable"
+      | "stale-only"
+      | "outside-coverage";
+    shape: "whats-near" | "whats-in" | "is-there" | "how-far";
+    place?: string;
+    categories?: string[];
     fetchedAt?: string;
     expiresAt?: string;
     detail: string;

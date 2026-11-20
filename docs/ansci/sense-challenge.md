@@ -1,6 +1,6 @@
 # Sense challenge — depth programme stage 4 (Part C.2)
 
-Set A (development): `scripts/sense-challenge-a.tsv` (sha256 f508fc8125e719f9). Set B (sealed holdout): `scripts/sense-challenge-b.tsv` (sha256 5bf10f3a377515b3).
+Set A (development): `scripts/sense-challenge-a.tsv` (sha256 ae704e2a70fbf5bc). Set B (sealed holdout): `scripts/sense-challenge-b.tsv` (sha256 7a38111fa956b684).
 Authorship caveat (standing): both sets builder-authored against the sentences' evident readings, sealed by hash; not independently authored C.5 sets. Scores are internal evidence (C.5 demotions).
 
 ## The census ceiling
@@ -41,7 +41,7 @@ Set B (sealed, single run): coherence **6/6** vs baseline **3/6** — the gain s
 
 ## Non-regression
 
-Frozen holdout: parse rate **80/80** (stage-3 close: 80/80); pooled feature preservation **98.6%** (stage-3 close: 98.2%). The sense pass runs inside parse(), so these numbers are with the mechanism live. Instrument note: the preservation figure is warm-state dependent at the ±0.5pt level — derived entries register into the shared lexicon as sentences are parsed, so the atom population shifts slightly with what a runner has parsed before the corpus (measured directly: 97.7% cold vs 98.5% warmed, over ~1,080 atoms). The 0.5pt gap to the stage-3 figure is that instrument effect, not a located regression; parse rate, the hard floor, is unchanged.
+Frozen holdout: parse rate **80/80** (stage-3 close: 80/80); pooled feature preservation **98.5%** (stage-3 close: 98.2%). The sense pass runs inside parse(), so these numbers are with the mechanism live. Instrument note: the preservation figure is warm-state dependent at the ±0.5pt level — derived entries register into the shared lexicon as sentences are parsed, so the atom population shifts slightly with what a runner has parsed before the corpus (measured directly: 97.7% cold vs 98.5% warmed, over ~1,080 atoms). The 0.5pt gap to the stage-3 figure is that instrument effect, not a located regression; parse rate, the hard floor, is unchanged.
 
 ## What this stage does and does not settle
 

@@ -37,6 +37,15 @@
  * candidates' incoming order (search order is the last resort,
  * never the first). The ranker asserts nothing: resolution and
  * joining remain the intake's decision, taken on this evidence.
+ *
+ * Geography G1 (2026-11-20) adds a FOURTH signal, proximity,
+ * under the geography design note's §6: when the context
+ * carries the conversation's situated place and a candidate
+ * carries coordinates, distance from the situated place scores
+ * (an auditable breakdown line, like the other three). It is
+ * inert for every pre-geography caller — no situated place in
+ * context, or no coordinates on the candidate, and the ranking
+ * is the three-signal ranking unchanged.
  */
 import { wordOverlap } from "./lesk";
 
@@ -51,6 +60,14 @@ export interface EntityCandidate {
   sitelinks: number;
   /** Instance-of (P31) value labels, e.g. ["city", "county seat"]. */
   instanceOf: string[];
+  /** The candidate's point, when its source attests one
+   *  (Geography G1: Nominatim candidates carry theirs, mapped
+   *  at the client — geography-client.ts). Absent, the
+   *  proximity signal (§6 of the geography design note) does
+   *  not apply to this candidate. Wikidata candidates carry
+   *  none here — their coordinates live in the bank, not in
+   *  the search shape — so the intake's ranking is unchanged. */
+  coordinates?: { lat: number; lon: number };
 }
 
 /** The coarse kinds type agreement reasons over. "thing" is the
@@ -73,6 +90,12 @@ export interface RankContext {
    *  shape or the grounding synset's type). Absent = no type
    *  signal; ranking falls to prominence + overlap. */
   expectedKind?: EntityKind;
+  /** The conversation's situated place, when one stands
+   *  (GeographyAwareness's centre, Geography G1; design note
+   *  §6): proximity to it is a scored signal for candidates
+   *  that carry coordinates. Absent = no proximity signal;
+   *  every pre-geography ranking is unchanged. */
+  situatedPlace?: { name: string; lat: number; lon: number };
 }
 
 export interface CandidateBreakdown {
@@ -89,11 +112,39 @@ export interface CandidateBreakdown {
   };
   prominence: { score: number; sitelinks: number };
   overlap: { score: number; words: string[] };
+  /** Proximity to the context's situated place (Geography
+   *  G1): present only when the context carried a situated
+   *  place AND this candidate carried coordinates. One more
+   *  auditable line, like every other signal — the distance
+   *  is shown, not hidden in the sort. */
+  proximity?: { score: number; distanceKm: number };
 }
 
 export const TYPE_WEIGHT = 3;
 export const PROMINENCE_WEIGHT = 2;
 export const OVERLAP_WEIGHT = 1;
+/** The proximity signal's ceiling (Geography G1): a candidate
+ *  AT the situated place earns the full weight, decaying
+ *  linearly to zero at PROXIMITY_RANGE_KM — a continental
+ *  scale, stated so it can be argued with. */
+export const PROXIMITY_WEIGHT = 2;
+export const PROXIMITY_RANGE_KM = 2000;
+
+/** Great-circle distance in kilometres between two points —
+ *  the one distance arithmetic the proximity signal and the
+ *  geography computations share. */
+export function haversineKm(
+  a: { lat: number; lon: number },
+  b: { lat: number; lon: number },
+): number {
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLon = rad(b.lon - a.lon);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
 
 /* ------------------------------------------------------------------ */
 /* Kind classification: a small rule table over instance-of labels     */
@@ -224,8 +275,20 @@ export function rankEntities(
     // 3. Context overlap between the description and the context.
     const o = wordOverlap(candidate.description ?? "", context.contextText);
     const overlap = { score: o.count * OVERLAP_WEIGHT, words: o.words };
-    const total = type.score + prominence.score + overlap.score;
-    return { breakdown: { candidate, total, type, prominence, overlap }, index };
+    // 4. Proximity to the situated place (Geography G1, design
+    // note §6): only when the context carries a situated place
+    // and the candidate carries coordinates — otherwise the
+    // signal does not exist for this candidate and the total
+    // is the three-signal sum it always was.
+    let proximity: CandidateBreakdown["proximity"];
+    let proximityScore = 0;
+    if (context.situatedPlace && candidate.coordinates) {
+      const distanceKm = haversineKm(context.situatedPlace, candidate.coordinates);
+      proximityScore = PROXIMITY_WEIGHT * Math.max(0, 1 - distanceKm / PROXIMITY_RANGE_KM);
+      proximity = { score: proximityScore, distanceKm };
+    }
+    const total = type.score + prominence.score + overlap.score + proximityScore;
+    return { breakdown: { candidate, total, type, prominence, overlap, ...(proximity ? { proximity } : {}) }, index };
   });
   scored.sort((a, b) => b.breakdown.total - a.breakdown.total || a.index - b.index);
   return scored.map((s) => s.breakdown);

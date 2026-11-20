@@ -29,6 +29,15 @@
  * for the banked point: station KPWA, 21°C, "Mostly Clear
  * and Windy", the point resolving to El Reno, OK.
  *
+ * SUPERSESSION (Geography G1, 2026-11-20): the wrapper's
+ * coordinate path now runs the geography pair's protocol
+ * (register → Wikidata bank imported on read → Nominatim
+ * consultation). The wrapper tests below inject a fresh
+ * place register and a no-hit geography source, so the
+ * bank-import pins run exactly as before and the Atlantis
+ * pin stands on a consultation that resolves nothing.
+ * Geography G1's own test file pins the new paths.
+ *
  * Tests never touch the network.
  */
 import { test } from "node:test";
@@ -43,6 +52,16 @@ import { defaultWeatherBank, placeKeyOf, type WeatherReading } from "../src/ansc
 import { detectWeatherQuestion } from "../src/ansci/weather";
 import { WikidataBank } from "../src/ansci/wikidata-bank";
 import { parseWikidataEntities, translateWikidataItems } from "../src/ansci/wikidata";
+import { PlaceRegister } from "../src/ansci/geography";
+import type { NominatimSource } from "../src/ansci/geography-client";
+
+/** Geography G1: a Nominatim consultation that resolves
+ *  nothing, for any name — injected so the wrapper tests
+ *  run the geography protocol offline. */
+const noHitGeography: NominatimSource = {
+  search: async () => ({ status: "ok", data: [] }),
+  reverse: async () => ({ status: "ok", data: null }),
+};
 
 function fixturesDir(): string {
   let dir = __dirname;
@@ -195,6 +214,8 @@ test("wrapper: W6 fetches through the fixture source, banks the reading, and ans
   const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
     source: fixtureSource(),
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography,
     retrievedFrom: "fixture",
   });
   assert.equal(reply, BANKED_REPLY);
@@ -259,6 +280,8 @@ test("shelf life: a stale reading is never spoken as current — the turn needs 
   const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
     source: counting,
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography,
     retrievedFrom: "fixture",
   });
   assert.equal(calls, 1);
@@ -283,6 +306,8 @@ test("wrapper: an unavailable source gives the located lookup-unavailable declin
   const { reply, trace } = await processTurnWithWeather(newSession(), "what is the weather in texas?", {
     source: down,
     wikidataBank: texasBank,
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography,
   });
   assert.match(reply, /couldn't look the weather up/);
   assert.equal(trace.weather?.action, "lookup-unavailable");
@@ -292,6 +317,8 @@ test("wrapper: a place with no held coordinates declines at the missing coordina
   const { reply, trace } = await processTurnWithWeather(newSession(), "what is the weather in atlantis?", {
     source: fixtureSource(),
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography,
   });
   assert.match(reply, /no coordinates for Atlantis/);
   assert.equal(trace.weather?.action, "coordinates-missing");

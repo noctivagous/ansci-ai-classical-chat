@@ -158,11 +158,42 @@ export function parsePoints(
  *  station's identifier, or undefined when the list is
  *  empty or malformed. */
 export function parseStations(data: unknown): string | undefined {
-  const features = (data as { features?: unknown[] })?.features;
-  if (!Array.isArray(features) || features.length === 0) return undefined;
-  const id = (features[0] as { properties?: Record<string, unknown> })?.properties?.stationIdentifier;
-  return typeof id === "string" && id ? id : undefined;
+  return parseStationIds(data)[0];
 }
+
+/** Parse a stations response body: every station identifier,
+ *  nearest first. The list is a ranked set of witnesses, not
+ *  a single answer — a station can stand in the list while
+ *  serving no usable latest observation (its observation
+ *  endpoint 404s, or its latest report carries no
+ *  temperature, or — the service's own inconsistency, found
+ *  live by Geography G1, 2026-11-20 — an empty
+ *  textDescription for a report it elsewhere serves with
+ *  its condition words). The lookup walks the list; see
+ *  MAX_STATION_ATTEMPTS. */
+export function parseStationIds(data: unknown): string[] {
+  const features = (data as { features?: unknown[] })?.features;
+  if (!Array.isArray(features)) return [];
+  const ids: string[] = [];
+  for (const f of features) {
+    const id = (f as { properties?: Record<string, unknown> })?.properties?.stationIdentifier;
+    if (typeof id === "string" && id) ids.push(id);
+  }
+  return ids;
+}
+
+/** How many of the nearest stations one lookup will try
+ *  before it calls the observation step unavailable —
+ *  bounded, so a bad grid point cannot fan out. Eight
+ *  covers the failure cluster found live by Geography G1
+ *  (2026-11-20, the Oklahoma state point: the nearest
+ *  station 404s its latest observation, and the next two
+ *  served the same report with an empty textDescription —
+ *  a field the service itself serves inconsistently across
+ *  requests for one report, verified in both of its
+ *  representations — while the fourth station served a
+ *  complete reading). */
+export const MAX_STATION_ATTEMPTS = 8;
 
 /** Parse a latest-observation response body, or
  *  undefined when it carries no usable temperature (a
@@ -253,26 +284,48 @@ async function fetchCurrentConditions(
   }
   const stationsRes = await call(points.observationStationsUrl);
   if (!stationsRes.ok) return failure(stationsRes, "the stations lookup");
-  const stationId = parseStations(stationsRes.data);
-  if (!stationId) {
+  const stationIds = parseStationIds(stationsRes.data);
+  if (!stationIds.length) {
     return { status: "unavailable", reason: "the stations response carried no station" };
   }
-  const obsRes = await call(stationObservationUrl(baseUrl, stationId));
-  if (!obsRes.ok) return failure(obsRes, "the observation lookup");
-  const observation = parseLatestObservation(obsRes.data);
-  if (!observation) {
-    return { status: "unavailable", reason: "the station's latest observation carried no temperature" };
-  }
+  // The nearest stations, in order, until one serves a
+  // usable latest observation (see parseStationIds: a
+  // listed station with no servable observation is a normal
+  // condition, not the lookup's failure). Bounded by
+  // MAX_STATION_ATTEMPTS; the failure, when every attempt
+  // fails, names how many stations were tried.
   const resolvedName = [points.city, points.state].filter(Boolean).join(", ");
+  let lastFailure: WeatherLookupResult<WeatherObservation> | undefined;
+  for (const stationId of stationIds.slice(0, MAX_STATION_ATTEMPTS)) {
+    const obsRes = await call(stationObservationUrl(baseUrl, stationId));
+    if (!obsRes.ok) {
+      lastFailure = failure(obsRes, `the observation lookup for station ${stationId}`);
+      continue;
+    }
+    const observation = parseLatestObservation(obsRes.data);
+    if (!observation) {
+      lastFailure = {
+        status: "unavailable",
+        reason: `station ${stationId}'s latest observation carried no usable reading (its temperature or its condition words missing)`,
+      };
+      continue;
+    }
+    return {
+      status: "ok",
+      data: {
+        ...observation,
+        stationId,
+        resolvedName: resolvedName || stationId,
+        latitude,
+        longitude,
+      },
+    };
+  }
   return {
-    status: "ok",
-    data: {
-      ...observation,
-      stationId,
-      resolvedName: resolvedName || stationId,
-      latitude,
-      longitude,
-    },
+    status: "unavailable",
+    reason:
+      `no usable latest observation from the ${Math.min(stationIds.length, MAX_STATION_ATTEMPTS)} nearest ` +
+      `station(s): ${lastFailure?.status === "unavailable" ? lastFailure.reason : "none served a reading"}`,
   };
 }
 

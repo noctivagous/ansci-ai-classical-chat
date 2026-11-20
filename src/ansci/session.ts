@@ -52,6 +52,7 @@ import {
   type ConversationRegister,
   type InterlocutorRegister,
 } from "./social";
+import { initialGeographyAwareness } from "./geography-awareness";
 
 export interface EntityRecord {
   lemma: string;
@@ -497,6 +498,15 @@ export interface Session {
   /** The Social Unit's Conversation register (social.ts, S1):
    *  the conversation's phase and what is pending. */
   conversation: ConversationRegister;
+  /** GeographyAwareness's register (geography-awareness.ts,
+   *  Geography G1): where THIS conversation is situated — the
+   *  configured seat taken up at opening, the interlocutor's
+   *  stated place as a pointer to the record, and the shift
+   *  log. Session-held, unit-owned, like the Social Unit's
+   *  registers; the Awareness frame above stays a time record
+   *  (no place field is added to it — geography-design-note
+   *  §8). */
+  geography: import("./geography-awareness").GeographyAwarenessRegister;
   /** The conversation's scene graphs (senses-scening.ts), in
    *  order. v1 tracks one running scene — the last — and
    *  fragments are placed into it; scene switching is not yet
@@ -626,6 +636,7 @@ export function newSession(
     objects: [],
     interlocutor: initialInterlocutor(),
     conversation: initialConversation(),
+    geography: initialGeographyAwareness(),
     scenes: [],
     quantities: [],
     quantityFlags: [],

@@ -41,7 +41,7 @@ import { lookupClassification } from "./classify";
 import { interlocutorKey } from "./interlocutor-store";
 import { CAPABILITIES, LIMITS } from "./capabilities";
 import { IDENTITY } from "./identity";
-import { PLACE } from "./place";
+import { configuredSeat } from "./geography-awareness";
 import type { SemanticObject } from "./semantic-object";
 import type { Session } from "./session";
 
@@ -313,7 +313,7 @@ export function requestCapabilities(): { capabilities: string[]; limits: string[
 }
 
 /**
- * The Place table's fact, through the same one address
+ * The configured place's fact, through the same one address
  * (Transcript Slice 4, 2026-11-19): the place this
  * deployment is configured as being in, or null — no place
  * configured, the table's honest standing (place.ts's
@@ -321,9 +321,15 @@ export function requestCapabilities(): { capabilities: string[]; limits: string[
  * from exactly what this returns: the place, spoken, when
  * one is configured; the located decline naming
  * self-location as the gap when none is.
+ *
+ * Geography G1 (2026-11-20): the fact is requested from
+ * GeographyAwareness, whose configured seat the Place table
+ * now is (geography-design-note §8 — the table's custody
+ * moved; its data is read through the unit, never copied,
+ * so the answer is the table's standing exactly as before).
  */
 export function requestPlace(): { place: string | null } {
-  return { place: PLACE.place };
+  return configuredSeat();
 }
 
 /**

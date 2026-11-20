@@ -26,6 +26,23 @@
  * Tests never touch the network: the fixture source and
  * the counting fetch both serve the responses recorded
  * live from this VM on 2026-11-20.
+ *
+ * SUPERSESSION (Geography G1, 2026-11-20): the wrapper's
+ * coordinate path now runs the geography pair's protocol —
+ * the place register, the Wikidata bank imported on read,
+ * and a Nominatim consultation on a miss (geography.ts).
+ * The wrapper tests below inject a fresh register and a
+ * no-hit geography source wherever the old held-coordinates
+ * path stood alone, so the pins keep their substance: the
+ * "coordinates from the bank" pin's trace now names the
+ * import-on-read; the incomplete Oklahoma City pin stands
+ * because the injected consultation resolves nothing (the
+ * detail names the §3.6 incomplete case, as before); the
+ * "no geocoding anywhere" pin is superseded in name — a
+ * consultation now runs and resolves nothing, and the
+ * weather source is still never consulted without a point.
+ * Geography G1's own test file pins the consultation's
+ * successes.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -47,6 +64,22 @@ import { defaultWeatherBank, placeKeyOf, weatherFlagsForNwsText, type WeatherRea
 import { PLACE } from "../src/ansci/place";
 import { WikidataBank } from "../src/ansci/wikidata-bank";
 import { parseWikidataEntities, translateWikidataItems } from "../src/ansci/wikidata";
+import { PlaceRegister } from "../src/ansci/geography";
+import type { NominatimSource } from "../src/ansci/geography-client";
+
+/** Geography G1: a Nominatim consultation that resolves
+ *  nothing (the recorded no-hit shape), for any name — the
+ *  wrapper tests below run the geography protocol with it
+ *  so no gated test touches the network. Counts calls. */
+function noHitGeography(counter?: { calls: number }): NominatimSource {
+  return {
+    search: async () => {
+      if (counter) counter.calls++;
+      return { status: "ok", data: [] };
+    },
+    reverse: async () => ({ status: "ok", data: null }),
+  };
+}
 
 function fixturesDir(): string {
   let dir = __dirname;
@@ -164,6 +197,8 @@ test("coordinates from the bank: the wrapper's trace names the banked P625 recor
   const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
     source: fixtureSource(),
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography(),
     retrievedFrom: "fixture",
   });
   assert.equal(reply, BANKED_REPLY);
@@ -182,6 +217,8 @@ test("coordinates from the Place table: a configured place with configured coord
     const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
       source: fixtureSource(),
       wikidataBank: new WikidataBank(),
+      placeRegister: new PlaceRegister(),
+      geographySource: noHitGeography(),
       retrievedFrom: "fixture",
     });
     assert.equal(trace.weather?.placeSource, "configured");
@@ -204,23 +241,29 @@ test("a banked record without coordinates is the incomplete case: 'oklahoma city
   const { reply, trace } = await processTurnWithWeather(newSession(), "what is the weather in oklahoma city?", {
     source: fixtureSource(),
     wikidataBank: bank,
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography(),
   });
   assert.equal(trace.weather?.action, "coordinates-missing");
   assert.match(reply, /no coordinates for Oklahoma city/);
   assert.match(trace.weather?.detail ?? "", /incomplete/);
 });
 
-test("no geocoding anywhere: a place nobody holds coordinates for declines before the source is consulted", async () => {
+test("a place nobody holds coordinates for declines before the weather source is consulted (G1: the geocoding consultation runs and resolves nothing)", async () => {
   let calls = 0;
   const counting = {
     currentConditions: async (a: number, b: number) => { calls++; return fixtureSource().currentConditions(a, b); },
   };
+  const geoCounter = { calls: 0 };
   const { trace } = await processTurnWithWeather(newSession(), "what is the weather in texas?", {
     source: counting,
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography(geoCounter),
   });
   assert.equal(trace.weather?.action, "coordinates-missing");
-  assert.equal(calls, 0, "the source was never consulted — there was no point to give it");
+  assert.equal(geoCounter.calls, 1, "the geography consultation ran — and resolved no such place");
+  assert.equal(calls, 0, "the weather source was never consulted — there was no point to give it");
 });
 
 /* ---- coverage ---- */
@@ -231,6 +274,8 @@ test("coverage: Sydney's banked point is outside the source's coverage — the d
   const { reply, trace } = await processTurnWithWeather(newSession(), "what is the weather in sydney?", {
     source: fixtureSource(),
     wikidataBank: bank,
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography(),
   });
   assert.equal(trace.weather?.action, "source-coverage");
   assert.equal(
@@ -259,6 +304,8 @@ test("one lookup is three HTTP requests; a repeat inside the shelf life is none"
   const first = await processTurnWithWeather(s, "what is the weather?", {
     source,
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography(),
     retrievedFrom: "fixture",
   });
   assert.equal(first.reply, BANKED_REPLY);
@@ -276,6 +323,8 @@ test("one lookup is three HTTP requests; a repeat inside the shelf life is none"
   const second = await processTurnWithWeather(s2, "what is the weather?", {
     source,
     wikidataBank: oklahomaWikidataBank(),
+    placeRegister: new PlaceRegister(),
+    geographySource: noHitGeography(),
     retrievedFrom: "fixture",
   });
   assert.equal(second.reply, BANKED_REPLY);

@@ -32,6 +32,16 @@
  * claim about the system is the owner's, and this table is
  * where a configured place's text would live when he
  * settles it — configuration data, not code.
+ *
+ * CUSTODY (Geography G1, 2026-11-20; design note §8): this
+ * table is now GeographyAwareness's CONFIGURED SEAT. The
+ * data and its honesty are unchanged — the seat is read
+ * through geography-awareness.ts's configuredSeat(), and
+ * the Social Unit's self-location route requests the fact
+ * there (social.ts's requestPlace). Nothing else about the
+ * table moved: a deployment still sets its place here, as
+ * data, and the optional coordinates below are the seat's
+ * own attested point for that place.
  */
 export interface PlaceTable {
   /** The place this deployment is configured as being in,
