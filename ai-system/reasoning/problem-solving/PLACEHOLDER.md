@@ -23,3 +23,33 @@ The unit's **first build slice** (design §6; phase 1 design ruled 2026-11-18, b
 Working code today: `src/fork/problem-solving.ts` (the approach registry and the router), `src/fork/problem-records.ts` (the first build slice: records, register, movement, decline registration), `src/fork/turn.ts` (the router's two call sites and the map path)
 
 This is a placeholder: the seat, the router and the approach graphs are wired; no approach engine runs yet. What the router records today is the recognition — the needs on the object, the route on the trace — while the solving itself remains wherever it already lives (the quantity ledger, for the wired signal). Building the engines that walk an approach graph against a routed problem is this unit's future work, in gated slices of its own.
+
+## The solving engine — design additions (owner's discussion, 2026-11-20)
+
+Settled in discussion with the owner, recorded here ahead of any
+build:
+
+- **The walk.** The unit walks a chosen strategy's graph (the acronym
+  cycles registered as data — OODA, PDCA, the rest as registered).
+  Each cycle re-issues the information ball with new needs; modules
+  discharge them as they do today. The unit speaks only in needs on
+  the ball — it never reaches into a module directly.
+- **The per-step gate.** Each step declares what it requires, in the
+  capability registry's terms. The requirement is checked per step:
+  the registry of built operations, then the distributed holdings
+  (the OKU's mathematics / quantification / geometry, the nets, the
+  session record, consultation), and — where the step needs a generic
+  operation — the Functions Unit: *"Do I need anything from the
+  Functions Unit?"* is the gate's generic branch.
+- **Capability needs.** A step's unmet requirement is a **capability**
+  need — a kind in the need registry distinct from lack-of-information
+  and how-to-proceed. A capability named but unbuilt (a placeholder
+  seat) is a located lack at that seat, and names the next build by
+  demand.
+- **Loop budget.** The walk runs under a budget carried on the problem
+  record: cycles attempted plus a cost ceiling the Planner prices.
+  Reaching the budget is a located outcome, not a machinery failure.
+- **Failure filing.** A problem that exhausts its strategies or its
+  budget passes through the unit's **ReasoningErrorFailure** subunit,
+  which assembles the attempt record and files it to the top-level
+  **ErrorFailure Unit**, which authors the account of why.
