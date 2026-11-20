@@ -286,17 +286,35 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "ontology-core/normalcy-unit": {
       "order": 4
     },
-    "unplaced": {
+    "capabilities": {
       "order": 13
     },
-    "person": {
+    "capabilities/ordering-and-sorting": {
+      "order": 1
+    },
+    "capabilities/search": {
+      "order": 2
+    },
+    "capabilities/editing": {
+      "order": 3
+    },
+    "capabilities/external-query": {
+      "order": 4
+    },
+    "capabilities/file-system": {
+      "order": 5
+    },
+    "unplaced": {
       "order": 14
     },
-    "clock": {
+    "person": {
       "order": 15
     },
-    "weather": {
+    "clock": {
       "order": 16
+    },
+    "weather": {
+      "order": 17
     }
   }
 };
