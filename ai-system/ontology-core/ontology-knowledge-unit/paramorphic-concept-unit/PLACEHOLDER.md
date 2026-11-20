@@ -23,6 +23,6 @@ The unit holds the generic concepts, their parameters and their shared operation
 
 Carried over from paramorphic theory's one earlier entry into this system (`docs/design-conversation-engine.md` § Morphs: an invariant core never morphs): **moving a concept along a parameter may generate a derived candidate; it may never rewrite a filed row in the classification table or the correspondence graph, and never upgrade a provenance tier.** Attestation does not morph. Registered per concept in the registry, alongside the concept-specific brakes (the Tree entry carries the X1 brake: no unpriced automatic inheritance).
 
-Working code today: `src/fork/paramorphic-concepts.ts` (the six-concept registry as data: substrate, parameters, shared operations as a named vocabulary, instances with their addresses, invariants)
+Working code today: `src/ansci/paramorphic-concepts.ts` (the six-concept registry as data: substrate, parameters, shared operations as a named vocabulary, instances with their addresses, invariants)
 
 This is a placeholder: the seat, the placeholder and the registry are what this slice wires. No engine runs any named operation, no walk is walked by this unit, and no consumer is rewired — engines are later slices of their own, on the owner's commission.

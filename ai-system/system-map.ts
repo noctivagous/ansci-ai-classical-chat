@@ -72,7 +72,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "configuration",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/disposition.ts (session setup)",
+      "currentCode": "src/ansci/disposition.ts (session setup)",
       "summary": "Which configuration the system runs — chat first. Held as a register on the System frame."
     },
     {
@@ -85,7 +85,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "awareness",
       "file": null,
       "external": false,
-      "currentCode": "fragments in src/fork/session.ts",
+      "currentCode": "fragments in src/ansci/session.ts",
       "summary": "Knows where it is, who it is, what is around it, and what is currently happening."
     },
     {
@@ -111,7 +111,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": null,
       "external": false,
-      "currentCode": "src/fork/identity.ts",
+      "currentCode": "src/ansci/identity.ts",
       "summary": "Who the system is, as data: the name (AnSci) and the kind line, in visitor language. Built 2026-11-18 (Social Unit S3): the Social Unit requests these facts for a self-query and holds no copy. The text is configuration — its final wording is the owner's."
     },
     {
@@ -124,7 +124,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": null,
       "external": false,
-      "currentCode": "src/fork/capabilities.ts",
+      "currentCode": "src/ansci/capabilities.ts",
       "summary": "What the system can and cannot do, in its own terms: two lists of plain first-person sentences, the limits as candid as the capabilities. Built 2026-11-18 (Social Unit S3): the Social Unit requests these facts for a capability self-query and holds no copy. The text is configuration — its final wording is the owner's."
     },
     {
@@ -137,7 +137,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "disposition.ts",
       "external": false,
-      "currentCode": "src/fork/disposition.ts, src/fork/composition.ts",
+      "currentCode": "src/ansci/disposition.ts, src/ansci/composition.ts",
       "summary": "The live composition for this session, copied from its table at open."
     },
     {
@@ -163,7 +163,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "awareness/place-and-time",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/session.ts (awareness frame)",
+      "currentCode": "src/ansci/session.ts (awareness frame)",
       "summary": "Where and when the system is operating."
     },
     {
@@ -176,7 +176,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "season-daypart.ts",
       "external": false,
-      "currentCode": "src/fork/session.ts",
+      "currentCode": "src/ansci/session.ts",
       "summary": "Season and daypart, classified from the shell's clock against a table."
     },
     {
@@ -215,7 +215,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "standing-topics.ts",
       "external": false,
-      "currentCode": "src/fork/session.ts (topics)",
+      "currentCode": "src/ansci/session.ts (topics)",
       "summary": "The topics currently standing in the interaction."
     },
     {
@@ -280,7 +280,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "last-act.ts",
       "external": false,
-      "currentCode": "src/fork/turn.ts (turn record)",
+      "currentCode": "src/ansci/turn.ts (turn record)",
       "summary": "The last thing the system did."
     },
     {
@@ -293,7 +293,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "open-gaps.ts",
       "external": false,
-      "currentCode": "src/fork/plan.ts (gap questions)",
+      "currentCode": "src/ansci/plan.ts (gap questions)",
       "summary": "What is currently missing that the other party could supply."
     },
     {
@@ -306,7 +306,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "awareness/social-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/social.ts (S1) + assess.ts (social kinds)",
+      "currentCode": "src/ansci/social.ts (S1) + assess.ts (social kinds)",
       "summary": "Awareness of the interlocutor as a social presence, not only as a source of statements. Holds the Interlocutor and Conversation. Designed 2026-11-18 (ansci-social-unit-design.md; placement inside Awareness confirmed, rulings 1a-5a). S1 built: the social reading annotates assessed objects and the two registers live in the Session. S2 built: the Planner discharges the greeting-return, farewell-return and thanks-receipt demands as authored moves, obligations are tracked, and the phase is consulted before initiative. S3 built: self-facts live in Awareness Self's Identity and Capabilities tables and self-queries — identity and capability — are answered from that record through the unit. Remaining: clarification (S4), the premise stance (S5); cross-conversation persistence (S6) is deferred by ruling 5a. S4 built: the clarification move end to end — all four trigger classes wired (token, sense, referent, whole utterance), the pending register live with the fill reading, attempt counting and the best-reading fallback, and clarified senses remembered for the conversation. S5 built: the premise stance — Coherence supplies a contradiction degree (record or graph), the unit owns the three-beat response and the insistence handling (supposition framing, disagreements recorded, the premise never adopted). S6 remains deferred under ruling 5a (no identified returners exist). S6 built (owner's commission, ahead of ruling 5a's deployment precondition, on synthetic-returner gates): identity-keyed persistence across conversations — the durable core only, consulted only on a stated identity, recognition never performed before it. All six slices are now built; what remains is the sealed probe acceptance run, the holder's to commission."
     },
     {
@@ -319,7 +319,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "interlocutor-standing.ts",
       "external": false,
-      "currentCode": "src/fork/social.ts (register) + src/fork/session.ts (held)",
+      "currentCode": "src/ansci/social.ts (register) + src/ansci/session.ts (held)",
       "summary": "The system's standing picture of the person it is talking with: identity known or unknown, first contact or returning, and the picture the conversation itself accumulates. S1 (2026-11-18): contact, a stated-name identity, pointers to the content established with them, and the social state (greeted / thanked / leave taken), updated only from speaker-attributed content. Returning-contact persistence is slice S6, deferred. This is the register formerly at awareness/surroundings/interlocutor-standing, moved into the Social Unit by the owner's direction (2026-11-18). S6 (2026-11-18): the register persists across conversations through the identity-keyed store — prior conversations and their established topics load at the moment the identity is stated, and the durable core is rewritten at each turn's end."
     },
     {
@@ -332,7 +332,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "awareness/social-unit/conversation",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/social.ts (phase & pending register)",
+      "currentCode": "src/ansci/social.ts (phase & pending register)",
       "summary": "Conversation lives inside the Social Unit: greeting and leave-taking, identity and capabilities as socially presented, thanks, acknowledgement, turn-taking. S1 (2026-11-18): the phase machine and pending register live in the Session and the reading tracks them. S2 (2026-11-18): the moves are authored through the Planner — greeting and farewell mirrors, the thanks receipt — obligations are tracked in the register and discharged by the unit, and the phase is consulted before initiative. The design adds two moves to this container: clarification and the premise stance (slices S4, S5). S4 (2026-11-18): the pending register is live — clarifications open it, the next turn is read against it first, attempts are counted, and clarified sense readings are held for the conversation. S5 (2026-11-18): the stance-repair pending is live, and the register holds the conversation's premise disagreements in plain renderings."
     },
     {
@@ -345,7 +345,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/ (the sentence layer)",
+      "currentCode": "src/ansci/ (the sentence layer)",
       "summary": "Language in, language out: the Parser and the Generator, and aspect units to come."
     },
     {
@@ -358,7 +358,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/parser",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/parse.ts, sentence.ts, join.ts, check.ts",
+      "currentCode": "src/ansci/parse.ts, sentence.ts, join.ts, check.ts",
       "summary": "Sentence in, meaning graph out. IN and OUT ports."
     },
     {
@@ -371,7 +371,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/parser/token",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/sentence.ts, src/fork/symspell.ts, src/fork/token-resolve.ts",
+      "currentCode": "src/ansci/sentence.ts, src/ansci/symspell.ts, src/ansci/token-resolve.ts",
       "summary": "Breaks the sentence into addressed tokens, and resolves the words it does not recognise — Variant Graph first, then the ported SymSpell matcher and its segmentation — every resolution recorded with its confidence in the trace, and an unresolved word locating the gap at itself."
     },
     {
@@ -384,7 +384,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/parser/sense",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/sense.ts, wordnet-lex.ts",
+      "currentCode": "src/ansci/sense.ts, wordnet-lex.ts",
       "summary": "Chooses each word's sense by coherence over the meaning graph."
     },
     {
@@ -397,7 +397,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/parser/valency",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/framenet-lex.ts, src/fork/verbnet-lex.ts, features.ts",
+      "currentCode": "src/ansci/framenet-lex.ts, src/ansci/verbnet-lex.ts, features.ts",
       "summary": "What arguments each verb takes, and in which roles. Two evidence providers: FrameNet frame signatures (framenet-lex.ts) for derived verbs with a FrameNet LU, and — since 2026-11-17 — VerbNet 3.3 frame shapes (verbnet-lex.ts over data/verbnet/) checking the permissive frames of the derived verbs FrameNet does not reach: a realised argument structure no VerbNet frame allows is a located valency failure (valency-verbnet-disallowed), where the checker was previously blind."
     },
     {
@@ -410,7 +410,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/parser/aspect-and-forms",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/aspect.ts",
+      "currentCode": "src/ansci/aspect.ts",
       "summary": "Aspect as feature bundles; irregular forms selected, both languages."
     },
     {
@@ -423,7 +423,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/semantic-assessment",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/semantic-object.ts, src/fork/assess.ts, src/fork/info-object.ts",
+      "currentCode": "src/ansci/semantic-object.ts, src/ansci/assess.ts, src/ansci/info-object.ts",
       "summary": "Answers 'What is this?' — what the text is saying. Takes the Parser's structure and renders the assessment of the utterance as a whole: its kind (a greeting, a question, a feeling-statement), what it asserts or asks, what it leaves unexpressed, its register and mood — packaged as a semantic object that then travels the system: Coherence judges its fit, the Planner chooses the move that answers its kind, Session records it as the turn's event. Placed 2026-11-16 at the owner's direction. Slice 1 built (shadow objects): assess.ts creates an object for every parsed utterance — kind, holes, grounding, stream role — stored on the session and named in the trace; nothing reads the objects yet. Every object now also carries its senses face (via the Senses-Scening Unit, 2026-11-17) and, where the utterance carries quantity content, the QuantificationLanguageUnit's quantity mentions, which the turn loop applies to the Session's quantity ledger. Since the envelope build (2026-11-17, info-object.ts) the object travels as an INFORMATION object: this unit wraps the core in an envelope at creation — act, provenance, confidence, the route of units that handled it, and its needs (answer / placement / reconciliation / the phatic turn's three situate needs), seeded from existing signals and discharged by the units that meet them; the core inside is unchanged (the wall), Coherence prices the needs that survive, and a phatic turn is answered only through the Planner authoring a reply object from the assessed situation — no greeting shortcut exists."
     },
     {
@@ -436,7 +436,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/language-emotion-desire-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/ledu.ts",
+      "currentCode": "src/ansci/ledu.ts",
       "summary": "The LEDU: the LPU's bridge to the EmotionDesireUnit, maintained inside the LPU. Maps emotion and desire as expressed in language — 'furious', 'longing to see her' — into the EDU's 七情六欲 framework on the way in, and an object's emotion or desire aspect back into language on the way out. Uses the EDU; the mapping is language's, the framework is the EDU's. Placed 2026-11-16 at the owner's direction; nothing built."
     },
     {
@@ -449,7 +449,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/senses-scening-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/senses-scening.ts, src/fork/qualreas.ts",
+      "currentCode": "src/ansci/senses-scening.ts, src/ansci/qualreas.ts",
       "summary": "The Senses-Scening Unit: the LPU's unit that produces the senses/scene part of a semantic object, maintained inside the LPU. It maps sensory content as expressed in language — 'salty', 'green', 'loudly', 'fragrant', 'cold', 'overripe' — through the SenseUnit's framework (channel, discrimination, the OKU's filed phase where one exists), and binds the entries across ALL channels into one described scene: the entities, their sensory qualities, and the spatial arrangement where the sentence gives one (the banana sat on the table). A scene is recorded whenever any channel has an entry; a turn with no sensory content records every channel none and no scene. Only what the sentence says enters the face — implied channels are Coherence's derived-tier annotations, never entries. SemanticAssessment consults it at creation for person and reply objects alike. Uses the SenseUnit; the mapping is language's, the framework is the SenseUnit's. Placed 2026-11-17 at the owner's direction; inbound built the same day, the outbound mapping back into wording still to build. Since 2026-11-17 the scene's standing placements also form a qualitative constraint network (qualreas.ts: RCC-8 algebra data from qualreas, MIT, and our path-consistency engine): derived relations are computed over the placements at every scene update, and an inconsistent placement set is flagged on the scene with a spatial-consistency unknown opened."
     },
     {
@@ -462,7 +462,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/quantification-language-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/quantification-language.ts",
+      "currentCode": "src/ansci/quantification-language.ts",
       "summary": "The QuantificationLanguageUnit: the LPU's bridge to the QuantificationUnit, maintained inside the LPU (the EDU/LEDU pattern). Inbound: quantity as expressed in language — numerals and number words (one..twenty, hundred, thousand; digits), quantifier words (all/some/none/each/every) as bounded quantity kinds, construction-implied counts, unit words via the UnitsMeasurement Unit — read from the parse as quantity mentions, with the OKU Numbers slice's filed reading attached where one exists; SemanticAssessment attaches the mentions to the object at creation and the turn loop applies them to the Session's ledger. Outbound: a tracked quantity rendered back into language ('two apples') — the how-many reader speaks through it. Uses the QuantificationUnit at its home inside the OKU; the mapping is language's, the framework is the QuantificationUnit's. Placed and built 2026-11-17 at the owner's direction."
     },
     {
@@ -475,7 +475,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/normalcy-assessment",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/normalcy-assessment.ts",
+      "currentCode": "src/ansci/normalcy-assessment.ts",
       "summary": "NormalcyAssessment: the LPU's bridge to the NormalcyUnit, maintained inside the LPU (the Senses-Scening shape). It reads a freshly assessed information object — its parse, its surface, the Session as it stood before the turn — and files NORMALCY FLAGS on the object's envelope: obviousness (the question asks what the Classification already settles), self-redundancy (the Session record already settles the question), gibberish (no content arrived — graded, and only on token-resolution failure). The flags describe the communication, never the content, so they ride the envelope side of the wall. The bridge runs after Session & Situation and before CoherenceAnalysis, which prices the flags by kind; a flag is an internal thought only — no reply ever speaks one. Uses the NormalcyUnit; the mapping from text is language's, the standards and the filed word knowledge are the authority's. Placed and built 2026-11-17 at the owner's direction."
     },
     {
@@ -488,7 +488,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "lpu/generator",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/generate.ts",
+      "currentCode": "src/ansci/generate.ts",
       "summary": "Meaning graph in, sentence out — the Parser run in reverse."
     },
     {
@@ -514,7 +514,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "session-and-situation",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/session.ts, turn.ts",
+      "currentCode": "src/ansci/session.ts, turn.ts",
       "summary": "The record of an ongoing interaction — general machinery; chat is its first use."
     },
     {
@@ -527,7 +527,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "states-and-origins.ts",
       "external": false,
-      "currentCode": "src/fork/session.ts",
+      "currentCode": "src/ansci/session.ts",
       "summary": "Established states, each carrying the leg it came from, its support and tier."
     },
     {
@@ -540,7 +540,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "events.ts",
       "external": false,
-      "currentCode": "src/fork/session.ts, turn.ts",
+      "currentCode": "src/ansci/session.ts, turn.ts",
       "summary": "The events the interaction has established."
     },
     {
@@ -553,7 +553,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "topics.ts",
       "external": false,
-      "currentCode": "src/fork/session.ts",
+      "currentCode": "src/ansci/session.ts",
       "summary": "First-class topics: the turns they were raised and last touched."
     },
     {
@@ -566,7 +566,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "session-and-situation/open-unknowns",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/session.ts (listOpenUnknowns — a derived view over session.scenes)",
+      "currentCode": "src/ansci/session.ts (listOpenUnknowns — a derived view over session.scenes)",
       "summary": "The register of currently-open unknowns across the conversation's scenes: facts about established scene entities that no turn has supplied yet (the airport's city), held as explicit typed slots ON the scene graphs themselves (owner's ruling, 2026-11-17). This register is a derived view over the scenes — one source of truth, no second store. Awareness's Open gaps reads from it; it does not own the slots. Built 2026-11-17: the view and the mint/fill wiring (the Senses-Scening Unit places fragments into the running scene); one slot-kind rule filed so far (airport → city)."
     },
     {
@@ -579,7 +579,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": null,
       "file": "corrections.ts",
       "external": false,
-      "currentCode": "src/fork/session.ts",
+      "currentCode": "src/ansci/session.ts",
       "summary": "Corrections recorded as supersession deltas, never edits in place."
     },
     {
@@ -592,7 +592,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "knowledge",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/classify.ts and the foundation graph",
+      "currentCode": "src/ansci/classify.ts and the foundation graph",
       "summary": "What the system holds as stores: the lexicon, the variant graph, and the banked stores. The correspondence graph and the classification table moved to the Ontology Knowledge Unit in the OntologyCore (owner's direction, 2026-11-16)."
     },
     {
@@ -605,7 +605,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/ontology-knowledge-unit/correspondence-graph",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/classify.ts; foundation src/graph.ts, src/seed.ts",
+      "currentCode": "src/ansci/classify.ts; foundation src/graph.ts, src/seed.ts",
       "summary": "The meaning graph: correspondences, with the generating and controlling cycles as its relations."
     },
     {
@@ -618,7 +618,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/ontology-knowledge-unit/classification",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/classify.ts",
+      "currentCode": "src/ansci/classify.ts",
       "summary": "The classification table: (concept, aspect) assertions with provenance and confidence. 164 entries; coverage is the constraint."
     },
     {
@@ -644,7 +644,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/quantification.ts",
+      "currentCode": "src/ansci/quantification.ts",
       "summary": "The QuantificationUnit: the system's authority on quantity, living inside Mathematics in the Ontology Knowledge Unit over its Numbers slice (owner's placement, 2026-11-17 — moved into the OKU, superseding an earlier System-level seat; moved one level down under Mathematics 2026-11-19, per the owner's 2026-11-18 ruling). It is the specialist reader of the OKU Numbers slice — Suwen ch. 4's number row (eight/Wood, seven/Fire, five/Earth, nine/Metal, six/Water), banked in the ingested store — and keeps no private number lore. Its three jobs: READ quantities stated and implied (between implies two); TRACK them in a ledger held on the Session (stated amounts, event deltas as transfers/gains, each a new record, the latest standing as current); COMPUTE from the tracked state (how-many answers, and inconsistency flags — a delta larger than the tracked amount is flagged, never silently applied). The Luoshu is built in as its working apparatus (the nine palaces, the 15 invariant, the flight path) — machinery in the unit, distinct from the OKU's filed numbers; the tension stands labelled (ch. 4 files Wood/east as 8; the Luoshu places 3 in the east palace, 8 in the north-east). Language reaches it through the LPU's QuantificationLanguageUnit. Placed and built 2026-11-17 at the owner's direction."
     },
     {
@@ -657,7 +657,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit/units-measurement-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/units-measurement.ts",
+      "currentCode": "src/ansci/units-measurement.ts",
       "summary": "The UnitsMeasurement Unit: the QuantificationUnit's sub-unit for units of measurement (owner, 2026-11-17 — nested inside the QuantificationUnit). A quantity is a number OF something: this unit names the somethings — each unit's dimension (weight, length, volume, count, temperature) and its factor to the dimension's base unit, across three systems in one table: traditional Chinese （銖/兩/斤， 寸/尺/丈/里， 合/升/斗， and the counting measure words 個/隻/條/本/張/頭 — the units the banked classical quantities, bencao dosages above all, are stated in), Imperial (ounce/pound/stone, inch/foot/yard/mile, imperial pint/gallon), and SI (gram/kilogram, metre, litre). Conversion runs only within a dimension; across dimensions it refuses, typed. Temperature is a scale, not a factor: Fahrenheit/Celsius convert by offset and ratio, separately. Traditional factors are the MODERN STANDARDISED values （斤 = 500 g, 兩 = 50 g, 里 = 500 m, 尺 = 1/3 m, 升 = 1 L), labelled as such — historical values varied by dynasty and no dynasty table is banked. Placed and built 2026-11-17. Extended the same day with the QUDT port: every SI/Imperial factor cross-checked against the QUDT units vocabulary (CC BY 4.0; all shared units agreed), and QUDT-supplied coverage added under source 'qudt' — the US liquid variants distinguished from their Imperial namesakes (us-pint/us-gallon/us-quart/us-fluid-ounce, imperial quart and fluid ounce), plus two new dimensions: area (acre) and pressure (pascal, psi). The hand table remains the authority; traditional rows untouched."
     },
     {
@@ -683,7 +683,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/ontology-knowledge-unit/paramorphic-concept-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/paramorphic-concepts.ts",
+      "currentCode": "src/ansci/paramorphic-concepts.ts",
       "summary": "The ParamorphicConcept Unit: the OKU's unit holding the paramorphic concepts — the generic abstract structures of the paramorphic-components framework, each a family generated by a declared parameter set (owner's ruling, 2026-11-19: all paramorphic concepts are in a ParamorphicConcept Unit in the OKU). Contents closed at the six of the components record: Grid, Graph, Tree, Path, Protocol, Logic. The unit holds the generic concepts, their parameters and their shared operations as a registry of data; the system's existing structures (the correspondence graph, the meaning graph, the WordNet climb, the Luoshu) are instances of these concepts and stay where they live — nothing is moved and nothing is re-expressed. First slice is placeholder grade (the ProblemSolving placeholder shape): the seat, the placeholder and the registry; no engine runs any named operation and no consumer is rewired. Protocol stands with no AnSci specimen — a located gap, recorded in the registry rather than filled."
     },
     {
@@ -696,7 +696,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "knowledge/lexicon",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/wordnet-lex.ts, framenet-lex.ts, verbnet-lex.ts",
+      "currentCode": "src/ansci/wordnet-lex.ts, framenet-lex.ts, verbnet-lex.ts",
       "summary": "Word senses and verb frames the parser consults: the WordNet extract (wordnet-lex.ts), FrameNet frame signatures (framenet-lex.ts) and, since 2026-11-17, VerbNet 3.3 frame shapes (verbnet-lex.ts over data/verbnet/) for the derived verbs FrameNet does not reach."
     },
     {
@@ -709,7 +709,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "knowledge/variant-graph",
       "file": null,
       "external": false,
-      "currentCode": "ai-system/knowledge/variant-graph/variants.json, consulted by src/fork/token-resolve.ts",
+      "currentCode": "ai-system/knowledge/variant-graph/variants.json, consulted by src/ansci/token-resolve.ts",
       "summary": "AnSci's own graph of surface forms: variant nodes linked to the canonical forms they resolve to — shortforms, common misspellings, apostrophe-less contractions — each edge carrying register, provenance and confidence. Populated from published lists on the web, imported as sourced data, never hand-written into code. Consulted by Token during resolution; what is merely close is computed by the matcher, never stored; confirmed resolutions can be banked here."
     },
     {
@@ -722,7 +722,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "knowledge/banked",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/flavor-bridge.ts, ingested.ts",
+      "currentCode": "src/ansci/flavor-bridge.ts, ingested.ts",
       "summary": "What the Retrieval Harborer has admitted: derived flavours, ingested assertions — derived layer only, each reversible."
     },
     {
@@ -735,7 +735,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/plan.ts, pricing.ts",
+      "currentCode": "src/ansci/plan.ts, pricing.ts",
       "summary": "Derivation over the graph, and the planning of a reply."
     },
     {
@@ -748,7 +748,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/derivation",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/turn.ts (deriveSentence), check.ts",
+      "currentCode": "src/ansci/turn.ts (deriveSentence), check.ts",
       "summary": "The cycle walks: what follows from what was said, by correspondence."
     },
     {
@@ -761,7 +761,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/planner",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/plan.ts, src/fork/reply.ts (reply objects)",
+      "currentCode": "src/ansci/plan.ts, src/ansci/reply.ts (reply objects)",
       "summary": "Builds the reply's meaning graph from derivations and the session record; chooses the move."
     },
     {
@@ -774,7 +774,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/pricing",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/pricing.ts",
+      "currentCode": "src/ansci/pricing.ts",
       "summary": "Strength pricing: weakest-tier ceiling times support; the level-to-surface ladder."
     },
     {
@@ -787,7 +787,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/decline-floor",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/pricing.ts, plan.ts",
+      "currentCode": "src/ansci/pricing.ts, plan.ts",
       "summary": "Stands in the reply path: below the floor, the turn declines with its ground recorded."
     },
     {
@@ -800,7 +800,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/compositions",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/composition.ts",
+      "currentCode": "src/ansci/composition.ts",
       "summary": "The frozen composition definitions; the live copy is held in Awareness."
     },
     {
@@ -813,7 +813,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "reasoning/problem-solving",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/problem-solving.ts",
+      "currentCode": "src/ansci/problem-solving.ts",
       "summary": "A general-purpose problem-solving unit inside Reasoning (owner's commission, 2026-11-18) — not limited to mathematics. A router in the turn asks 'does this need problem-solving?': on the person's instruction (a how-many question is its first wired case), or assessed by the AI from the object itself (quantity content is its first wired signal) — and attaches the needs to the object, routed here. The unit's repertoire is the standard acronym cycles people use (OODA — Observe, Orient, Decide, Act; PDCA — Plan, Do, Check, Act; the rest as registered), each held as a small graph of steps with the cycle edge that closes it. Placeholder: the seat, the router and the approach graphs are wired; no approach engine runs yet. For issues of how to proceed in a general situation, its evaluation mechanism will be based on the 64 hexagrams, making use of OntologyCore — the hexagrams read where they stand in the ontology the Ontology Knowledge Unit holds, not copied here (owner's addition, 2026-11-18); that mechanism is likewise designed, not built. Its six divisions — external, abstract, internal, internal-system, external-system, and the user's problems — are seats a problem moves between rather than bins, the bearer recorded per problem (owner's divisions, settled 2026-11-18; placeholder subunits). The solving engine, as designed with the owner (2026-11-20): the unit walks a chosen strategy's graph; each step declares what it requires, and the requirement is checked per step — first against the capability registry of built operations and the system's distributed holdings (the OKU's mathematics / quantification / geometry, the nets, the session record, consultation), and where the step needs a generic operation, against the Functions Unit ('do I need anything from the Functions Unit?' is the gate's generic branch); a step's unmet requirement is a CAPABILITY need, a kind distinct from lack-of-information in the need registry. The walk runs under a LOOP BUDGET carried on the problem record (cycles attempted plus a cost ceiling the Planner prices); reaching the budget is a located outcome, not a failure of the machinery, and the problem then passes through the unit's ReasoningErrorFailure subunit, which assembles the attempt record and files it to the ErrorFailure Unit, which authors the account of why from the record. Designed, not built: no engine walks an approach graph yet."
     },
     {
@@ -917,7 +917,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "intake",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/cskg-feed.ts (interface only)",
+      "currentCode": "src/ansci/cskg-feed.ts (interface only)",
       "summary": "The doorway for outside knowledge: routed, ordered, provenance-labelled."
     },
     {
@@ -930,7 +930,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "intake/router",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/cskg-feed.ts",
+      "currentCode": "src/ansci/cskg-feed.ts",
       "summary": "Walks the fixed order — local graph, CSKG, Wikidata, web, model — and stops at the first tier that answers."
     },
     {
@@ -943,7 +943,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "intake/cskg",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/cskg-feed.ts, cskg-ingest.ts",
+      "currentCode": "src/ansci/cskg-feed.ts, cskg-ingest.ts",
       "summary": "Relational commonsense tier. The feeder's map is widened to 21 relations: twelve concept relations whose endpoints must classify, plus the nine-relation ATOMIC at:* family anchored by an event rule (head verb + head word) rather than the concept table. Its data is a local artifact, never shipped."
     },
     {
@@ -956,7 +956,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "intake/wikidata",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/wikidata.ts, wikidata-client.ts, wikidata-mapping.ts, wikidata-bank.ts, wikidata-turn.ts, src/situation.ts (shared §8.10 primitives)",
+      "currentCode": "src/ansci/wikidata.ts, wikidata-client.ts, wikidata-mapping.ts, wikidata-bank.ts, wikidata-turn.ts, src/situation.ts (shared §8.10 primitives)",
       "summary": "Facts tier. Slice W1 (adapter core) built: Action API client (WIKIDATA_BASE_URL, fetch injected), wbgetentities parser, mapping table v1 as a data module (P36 CAPITAL_OF inverted, P17/P131 LOCATED_IN, P361 PART_OF, P625 as lat/lon node properties, P31/P279 IS_A), skip-log for unmapped properties, retrieved-kind SourceRecord provenance at 0.9, never-anchor KB nodes, and conflict-flagging join proposals. Slice W2 (lookup + banking + answering) built: translations bank idempotently into a dedicated retrieved-facts store (wikidata-bank.ts), mirrored into the session graph's base partition (CAPITAL_OF/LOCATED_IN now in graph.ts's EdgeType union, SOURCED_FROM source nodes, never-anchor preserved); the async wrapper processTurnWithWikidata (wikidata-turn.ts) answers the where/capital/country shapes from the bank with no fetch, and on a located knowledge decline resolves, fetches (mapped references only, ≤50-id chunks), banks and re-answers in the same turn, with retrieved provenance in the trace and lookup-unavailable / ambiguous declines kept distinct. Slice W3 (place associations) built: at bank time a coordinated node banks hemisphere + latitude band computed by the shared §8.10 primitives in src/situation.ts (one implementation, two callers — the live Situation and the bank), as derived-kind associations consuming the retrieved P625 step (§3.5 rule 2, steps marked); coordinateless banked places are flagged incomplete and situation questions over them decline located on the missing coordinates; situationForPlace feeds banked coordinates into computeSituation itself (source 'kb'), and nightForPlace gives SA-TONIGHT in computed form (§8.10b night proportion, source 'computed'). Climate remains unmapped-and-skip-logged in v1 (no mapping row; see the W3 report). Remaining: the Slice 0 re-base and W2's live acceptance items, both blocked/carried as recorded in the W2/W3 reports (the live items under the wikidata.org 429 hard stop)."
     },
     {
@@ -995,7 +995,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "retrieval-harborer",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/ingest.ts",
+      "currentCode": "src/ansci/ingest.ts",
       "summary": "Keeps what was retrieved: distilled into the graph with its papers, behind its gate."
     },
     {
@@ -1008,7 +1008,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "retrieval-harborer/pipeline",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/ingest.ts, cskg-ingest.ts",
+      "currentCode": "src/ansci/ingest.ts, cskg-ingest.ts",
       "summary": "Distils retrievals and texts into candidate assertions for the gate."
     },
     {
@@ -1021,7 +1021,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "retrieval-harborer/gate",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/ingest.ts (review and apply)",
+      "currentCode": "src/ansci/ingest.ts (review and apply)",
       "summary": "No citation, no insertion. Derived layer only; every admission reversible."
     },
     {
@@ -1047,7 +1047,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/ontology-knowledge-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/classify.ts; foundation src/graph.ts, src/seed.ts",
+      "currentCode": "src/ansci/classify.ts; foundation src/graph.ts, src/seed.ts",
       "summary": "The OKU: the OntologyCore's knowledge unit. It contains the correspondence graph and the classification table — the system's ontology as held, consultable knowledge. Placed 2026-11-16 at the owner's direction; the graph and the table moved here from Knowledge, which keeps the lexicon, the variant graph and the banked stores."
     },
     {
@@ -1060,7 +1060,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/emotion-desire-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/edu.ts, src/fork/edu-reach.ts",
+      "currentCode": "src/ansci/edu.ts, src/ansci/edu-reach.ts",
       "summary": "The EDU: the system's medium-neutral authority on emotion and desire, sitting inside the OntologyCore. Holds the 七情六欲 framework — the seven emotions and six desires, their phase and organ correspondences — and answers any medium's bridge unit: what emotion or desire is this, what does it correspond to. Language reaches it through the LPU's LEDU today; in the future an IDU will contact it for the Image Processing Unit, the same way. Placed 2026-11-16 at the owner's direction; nothing built."
     },
     {
@@ -1073,7 +1073,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/sense-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/sense-unit.ts",
+      "currentCode": "src/ansci/sense-unit.ts",
       "summary": "The SenseUnit: the system's medium-neutral authority on the human senses, sitting inside the OntologyCore beside the EDU. Its contents are the join of three provenance-labelled lists, never silently harmonised: the channels from 六根/六塵 (eye→form, ear→sound, nose→smell, tongue→taste, body→touch, mind→mental objects), the per-channel discriminations from Xunzi (Tianlun's five 天官, Rongru's assignments), and the phase correspondences from the OKU's Suwen rows (orifices, colour/sound/flavour quality rows, the ch. 4 odour row, skin as tissue). Its data lives in the OKU, as the EDU's does; it is the specialist authority over that slice, not a private store. Recorded tensions stand labelled: taste double-filed (tongue/Fire, mouth/Earth), touch with no channel phase (its values carry phases), mind's phase unsettled. Boundary with the EDU: this unit owns the channels; the EDU owns the cravings OF the channels. Language reaches it through the LPU's Senses-Scening Unit. Placed 2026-11-17 at the owner's direction; the naming authority built the same day (channel/discrimination lookups, the overripe cross-channel implication filed as derived-tier knowledge); no larger-graph reach yet."
     },
     {
@@ -1086,7 +1086,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "ontology-core/normalcy-unit",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/normalcy-unit.ts, src/fork/wordfreq.ts, src/fork/glasgow.ts",
+      "currentCode": "src/ansci/normalcy-unit.ts, src/ansci/wordfreq.ts, src/ansci/glasgow.ts",
       "summary": "The NormalcyUnit: the system's medium-neutral authority on the normal shape of a communication, sitting inside the OntologyCore beside the SenseUnit. It files the norm dimensions — obviousness (a predication is obvious iff the OKU Classification settles it without testimony: the asked quality is the kind's classifying quality on its filed degree profile), self-redundancy (the Session record already settles the question), gibberish (no content arrived; the flag requires token-resolution failure, frequency/familiarity evidence grades strength only) — and serves the labelled word knowledge the bridges read: wordfreq frequency (CC BY-SA 4.0) and the Glasgow Norms' nine dimensions (Scott et al. 2019, CC BY 4.0), whole table banked. The governing principle is the owner's (2026-11-17): the tables supply KNOWLEDGE about what is happening in the communication, never the system's values — no table number sets a price, fires a flag by itself, or decides a reply; CoherenceAnalysis prices the flags by kind. Gender association is guarded knowledge: the labelled access path exists, and in v1 its values change no price, flag, referent or pronoun decision, or reply. Language reaches it through the LPU's NormalcyAssessment. Placed and built 2026-11-17 at the owner's direction."
     },
     {
@@ -1190,7 +1190,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "verbalizer",
       "file": null,
       "external": false,
-      "currentCode": "speaking sites in src/fork/plan.ts + generate.ts, not yet separated",
+      "currentCode": "speaking sites in src/ansci/plan.ts + generate.ts, not yet separated",
       "summary": "Decides that something is said and shapes the act of saying it. Uses the LPU; is not in it."
     },
     {
@@ -1229,7 +1229,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "coherence/coherence-analysis",
       "file": null,
       "external": false,
-      "currentCode": "src/fork/coherence.ts",
+      "currentCode": "src/ansci/coherence.ts",
       "summary": "Works in both directions, at several levels. Inbound: how what comes in makes sense — the words and the sentence, the situation, the stream of what has been said; what doesn't fit, and what information is missing (e.g. an unknown person's 'I was furious' → 'Furious about what?'). Outbound: used by the Verbalizer — what goes out is checked as it is verbalized, so that what is said makes sense too. Since 2026-11-17 it also prices NormalcyAssessment's flags — by KIND, at standings filed in its own words (an obviousness or self-redundancy flag: answered from the classification or the record, the oddity registered and nowhere spoken; a gibberish flag: the priced move is the repair question). The pricing never reads the flags' table evidence: kinds price, numbers don't. Standing raised 55 → 60 for the new pricing duty, which is built and specimen-pinned."
     },
     {
@@ -1281,7 +1281,7 @@ export const SYSTEM_MAP: SystemMap = {
       "path": "surfaces/chat",
       "file": null,
       "external": false,
-      "currentCode": "scripts/fork-chat.mjs",
+      "currentCode": "scripts/ansci-chat.mjs",
       "summary": "The parser demonstrator in a terminal. A demonstrator, not a chat."
     },
     {

@@ -1,7 +1,7 @@
 # Sense challenge set B (sealed holdout) — depth programme stage 4.
 # Authored BEFORE any evaluation of these items; run ONCE, after set A froze the mechanism.
 # Columns (tab-separated): target <TAB> sentence <TAB> expected element <TAB> required context element (or "none") <TAB> note
-# Frozen once written — sha256 in docs/fork/sense-challenge.md. Builder-authored; NOT a C.5 set.
+# Frozen once written — sha256 in docs/ansci/sense-challenge.md. Builder-authored; NOT a C.5 set.
 vexation	His vexation became anger.	Wood	Wood	anger reading over the worry baseline
 gloominess	The gloominess became fear.	Water	Water	dread reading over the sadness baseline
 acerbity	The acerbity of the lemon startled her.	Wood	Wood	sour reading; tied confidences, lemon context decides

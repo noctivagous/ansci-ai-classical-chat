@@ -1,4 +1,4 @@
-import type { ParsedSentence, Element } from "../../../src/fork/sentence";
+import type { ParsedSentence, Element } from "../../../src/ansci/sentence";
 
 export const ELEMENT_COLORS: Record<Element, string> = {
   Wood: "#6aa84f",

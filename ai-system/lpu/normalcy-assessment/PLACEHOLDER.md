@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/normalcy-assessment` — inside the LPU, beside the Senses-Scening Unit (owner's placement, 2026-11-17)
 - **Type:** Unit
-- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). The v1 bridge built 2026-11-17: `src/fork/normalcy-assessment.ts` runs the three v1 determinations on every assessed person object and files the flags on its envelope. What is not built: the answered-earlier variant of self-redundancy is detected and priced but drives no reply move in v1; obviousness determinations for kinds without a degree profile; any reading of constructions (the bridge reads predications and tokens).
+- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). The v1 bridge built 2026-11-17: `src/ansci/normalcy-assessment.ts` runs the three v1 determinations on every assessed person object and files the flags on its envelope. What is not built: the answered-earlier variant of self-redundancy is detected and priced but drives no reply move in v1; obviousness determinations for kinds without a degree profile; any reading of constructions (the bridge reads predications and tokens).
 
 ## What this unit is
 
@@ -24,12 +24,12 @@ The interdependence is asymmetric: Normalcy supplies the flags
 Coherence prices; Coherence supplies the content-incoherence
 evidence behind the joint gibberish reading. CoherenceAnalysis
 prices each flag **by kind**, in its own standings
-(`src/fork/coherence.ts`), and the priced flags are recorded as an
+(`src/ansci/coherence.ts`), and the priced flags are recorded as an
 internal Awareness-side note on the turn trace.
 
 **The hard rule:** a flag is an internal thought only. No reply text
 ever contains the flag vocabulary or any verdict about oddity —
-pinned by the specimen tests (`test/fork-normalcy.test.ts`), which
+pinned by the specimen tests (`test/ansci-normalcy.test.ts`), which
 scan every specimen reply for the verdict words.
 
 ## The three determinations (v1)
@@ -53,12 +53,12 @@ scan every specimen reply for the verdict words.
 
 ## Who uses it
 
-- The **turn loop** (`src/fork/turn.ts`) runs it per assessed
+- The **turn loop** (`src/ansci/turn.ts`) runs it per assessed
   object and reads its flags at the reply sites: the record
   answer, the definitional answer, and the gibberish repair.
 - **CoherenceAnalysis** prices its flags.
 
 ## Where the working code lives today
 
-`src/fork/normalcy-assessment.ts` (built 2026-11-17). The authority
-it uses is `src/fork/normalcy-unit.ts`.
+`src/ansci/normalcy-assessment.ts` (built 2026-11-17). The authority
+it uses is `src/ansci/normalcy-unit.ts`.

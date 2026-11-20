@@ -1,5 +1,5 @@
 {
-  "note": "Baseline for test/fork-info-object.test.ts (the wall): person semantic objects produced by the pre-envelope pipeline (main at d41e3de2, before src/fork/info-object.ts existed), captured by running processTurn over each sequence and JSON round-tripping the stored person objects. The envelope build must reproduce these cores exactly once the envelope is stripped.",
+  "note": "Baseline for test/ansci-info-object.test.ts (the wall): person semantic objects produced by the pre-envelope pipeline (main at d41e3de2, before src/ansci/info-object.ts existed), captured by running processTurn over each sequence and JSON round-tripping the stored person objects. The envelope build must reproduce these cores exactly once the envelope is stripped.",
   "apples": [
     {
       "id": "obj-1-1",

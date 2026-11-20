@@ -70,12 +70,12 @@ CC BY 4.0. AnSci treats it as CC BY-SA 4.0. The component sources keep
 their own terms (see the CSKG documentation); the loader preserves each
 edge's source dataset so provenance survives into the chat's answers.
 
-CSKG fork feeder bundle (data/cskg/, src/fork/cskg-ingest.ts)
+CSKG fork feeder bundle (data/cskg/, src/ansci/cskg-ingest.ts)
 --------------------------------------------------------------
 The bundle in data/cskg/ IS shipped in this repository: a trimmed
 subset of the CSKG graph described in the section above, produced
 2026-11-17 by running the fork feeder's own mapping rules
-(src/fork/cskg-feed.ts — 21 relations: twelve concept relations
+(src/ansci/cskg-feed.ts — 21 relations: twelve concept relations
 under the both-ends-classified rule, nine ATOMIC relations under
 event-rule anchoring) over the locally installed full extract and
 keeping what the feeder keeps: 80,466 edges of the extract's
@@ -96,7 +96,7 @@ sources keep their own terms (see the CSKG documentation). The full
 extract remains a local install (scripts/install.mjs downloads it
 from Zenodo) and is the source a future re-trim would run against.
 
-VerbNet valency layer (data/verbnet/, src/verbnet.ts, src/fork/verbnet-lex.ts)
+VerbNet valency layer (data/verbnet/, src/verbnet.ts, src/ansci/verbnet-lex.ts)
 ------------------------------------------------------------------------------
 The VerbNet table in this repository is derived from
 
@@ -132,7 +132,7 @@ The name of University of Colorado or CU may not be used in
 advertising or publicity pertaining to distribution of the software
 and/or database.
 
-qualreas relation algebras (data/qualreas/, src/fork/qualreas.ts)
+qualreas relation algebras (data/qualreas/, src/ansci/qualreas.ts)
 -----------------------------------------------------------------
 The relation-algebra data in this repository (RCC-8, Allen's
 interval algebra, the point algebra: relation inventories,
@@ -158,10 +158,10 @@ JSON files. qualreas is distributed under the MIT License:
   of the Software."
 
 Only the algebra DATA is taken; the path-consistency engine in
-src/fork/qualreas.ts is AnSci's own TypeScript, written from the
+src/ansci/qualreas.ts is AnSci's own TypeScript, written from the
 classical algorithm and crediting qualreas for data and design.
 
-QUDT units vocabulary (data/qudt/, src/fork/units-measurement.ts)
+QUDT units vocabulary (data/qudt/, src/ansci/units-measurement.ts)
 -----------------------------------------------------------------
 Part of the UnitsMeasurement table is derived from
 
@@ -174,7 +174,7 @@ License (CC BY 4.0): https://creativecommons.org/licenses/by/4.0/
 The conversion (scripts/import-qudt.py) cross-checked the table's
 hand-authored SI and Imperial factors against QUDT's conversion
 multipliers — every shared unit agreed — and supplied the entries
-marked source "qudt" in src/fork/units-measurement.ts (the US liquid
+marked source "qudt" in src/ansci/units-measurement.ts (the US liquid
 variants, the imperial quart and fluid ounce, the acre, pascal and
 psi). The shipped artefact of the conversion is data/qudt/; the
 cross-check record stands in data/qudt/manifest.json.
@@ -202,7 +202,7 @@ applies to the table data: redistributions of the table, modified
 or not, carry CC BY-SA 4.0.
 
 The table is descriptive knowledge about words' currency, read by
-the NormalcyUnit (src/fork/normalcy-unit.ts) as labelled facts;
+the NormalcyUnit (src/ansci/normalcy-unit.ts) as labelled facts;
 no value in it sets a price, a threshold, or a reply anywhere in
 the system.
 
@@ -228,7 +228,7 @@ gender association), each dimension a mean with its standard
 deviation and rater count.
 
 The norms are descriptive knowledge about words, read by the
-NormalcyUnit (src/fork/normalcy-unit.ts) as labelled facts with
+NormalcyUnit (src/ansci/normalcy-unit.ts) as labelled facts with
 their provenance. Familiarity serves NormalcyAssessment in this
 arc; the other dimensions are prepared as labelled access for
 their consumer units under the same rule — no value in the table

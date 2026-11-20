@@ -4,6 +4,6 @@ Schematic address: `retrieval-harborer/pipeline` · Type: Unit · State: partial
 
 Distils retrievals and texts into candidate assertions for the gate.
 
-Working code today: src/fork/ingest.ts, cskg-ingest.ts
+Working code today: src/ansci/ingest.ts, cskg-ingest.ts
 
 This is a placeholder: the unit's home in ai-system/ exists so the tree and the map agree. Its implementation migrates or is built here in a gated slice; until then the working code stays where PLACEHOLDER.md says it is.

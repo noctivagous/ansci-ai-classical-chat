@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/ontology-knowledge-unit/mathematics/quantification-unit` — inside Mathematics in the Ontology Knowledge Unit, over its Numbers slice (owner's placement, 2026-11-17; moved one level down under Mathematics 2026-11-19, per the owner's 2026-11-18 ruling)
 - **Type:** Unit
-- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/fork/quantification.ts` reads the OKU Numbers slice, runs the Session-held quantity ledger (stated records, transfer/gain deltas, inconsistency flags), files the construction-implied counts, and holds the Luoshu as built-in machinery. Its one conversation reader is live: the how-many reader in the turn loop answers from the ledger. No larger-graph reach is built (it does not yet walk the OKU's graph from a number's phase, as the EDU walks from an emotion's), and the ledger's verbs are the ones the EN lexicon carries (have/buy/give — see the limits below).
+- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/ansci/quantification.ts` reads the OKU Numbers slice, runs the Session-held quantity ledger (stated records, transfer/gain deltas, inconsistency flags), files the construction-implied counts, and holds the Luoshu as built-in machinery. Its one conversation reader is live: the how-many reader in the turn loop answers from the ledger. No larger-graph reach is built (it does not yet walk the OKU's graph from a number's phase, as the EDU walks from an emotion's), and the ledger's verbs are the ones the EN lexicon carries (have/buy/give — see the limits below).
 
 ## What this unit is
 
@@ -20,7 +20,7 @@ the tradition files about numbers lives in the OKU — today, Suwen
 ch. 4's number row, banked through the ingestion pipeline in the
 senses arc's data pass （其數八/七/五/九/六 for Wood/Fire/Earth/
 Metal/Water; `INGESTED_ASSERTIONS_CH4_NUMBERS` in
-`src/fork/ingested.ts`). Numbers the slice does not file (1, 2, 3,
+`src/ansci/ingested.ts`). Numbers the slice does not file (1, 2, 3,
 4, 10, …) have **no reading** — the absence is the record, and no
 phase is invented for them.
 
@@ -65,7 +65,7 @@ phase is invented for them.
 
 All three sentences survive the sentence layer as said, so the
 specimen stands here as the design's worked case, pinned verbatim
-in `test/fork-quantification.test.ts` — not as a parse gap. (The
+in `test/ansci-quantification.test.ts` — not as a parse gap. (The
 sentence layer's own event record misreads turn 2's agent in its
 reply wording — "You bought the 3" — a standing quirk of the
 probe's steering, outside this unit; the ledger reads the parse's
@@ -124,7 +124,7 @@ other's terms.
 
 ## Where the working code lives today
 
-`src/fork/quantification.ts` (built 2026-11-17), over the ledger
-state in `src/fork/session.ts` and the Numbers slice in
-`src/fork/ingested.ts`. Before that, quantities existed only as
+`src/ansci/quantification.ts` (built 2026-11-17), over the ledger
+state in `src/ansci/session.ts` and the Numbers slice in
+`src/ansci/ingested.ts`. Before that, quantities existed only as
 numeral nodes in parses — counted by nobody, tracked nowhere.

@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/emotion-desire-unit` — inside the OntologyCore (owner's placement, 2026-11-16)
 - **Type:** Unit
-- **State:** partial — **50% completed to goal** (set by us, assessed by the project, not measured or computed). The naming authority built 2026-11-17: `src/fork/edu.ts` holds the 七情六欲 framework as OKU-resident data and names the canonical emotions/desires (fright and the mind's desire recorded unsettled). The larger-graph reach is built too: `src/fork/edu-reach.ts` walks the OKU's graph from an emotion's phase — cycle positions, cross-domain correspondences, and the emotion counteractions as tiered derived relations. No turn behaviour reads the reach yet; its readers arrive with their own slices.
+- **State:** partial — **50% completed to goal** (set by us, assessed by the project, not measured or computed). The naming authority built 2026-11-17: `src/ansci/edu.ts` holds the 七情六欲 framework as OKU-resident data and names the canonical emotions/desires (fright and the mind's desire recorded unsettled). The larger-graph reach is built too: `src/ansci/edu-reach.ts` walks the OKU's graph from an emotion's phase — cycle positions, cross-domain correspondences, and the emotion counteractions as tiered derived relations. No turn behaviour reads the reach yet; its readers arrive with their own slices.
 
 ## What this unit is
 
@@ -53,6 +53,6 @@ is not duplicated or re-filed here.
 ## Where the working code lives today
 
 Nowhere as a unit. Emotion classification exists as entries in the
-classification table (`src/fork/classify.ts`) and emotion statements are
-handled inside the turn loop (`src/fork/turn.ts`); the framework as a
+classification table (`src/ansci/classify.ts`) and emotion statements are
+handled inside the turn loop (`src/ansci/turn.ts`); the framework as a
 framework — one authority every medium consults — is this unit, unbuilt.

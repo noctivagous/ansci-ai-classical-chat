@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/language-emotion-desire-unit`
 - **Type:** Unit
-- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Inbound bridge built 2026-11-17: `src/fork/ledu.ts` reads a word's emotion aspect for semantic objects (canonical face via the EDU, filed phase from the OKU table), and carries the EDU's larger-graph reach to language (`emotionReachForWord`). The outbound direction (an object's emotion aspect back into wording) is still to build.
+- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Inbound bridge built 2026-11-17: `src/ansci/ledu.ts` reads a word's emotion aspect for semantic objects (canonical face via the EDU, filed phase from the OKU table), and carries the EDU's larger-graph reach to language (`emotionReachForWord`). The outbound direction (an object's emotion aspect back into wording) is still to build.
 
 ## What this unit is
 

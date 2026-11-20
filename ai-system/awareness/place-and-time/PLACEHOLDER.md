@@ -4,7 +4,7 @@ Schematic address: `awareness/place-and-time` · Type: Container · State: parti
 
 Where and when the system is operating.
 
-Working code today: src/fork/session.ts (awareness frame)
+Working code today: src/ansci/session.ts (awareness frame)
 
 Holds:
 - `awareness/place-and-time/season-daypart` — Season & daypart (module file: `season-daypart.ts`)

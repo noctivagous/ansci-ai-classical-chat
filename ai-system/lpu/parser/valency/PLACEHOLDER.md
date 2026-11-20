@@ -4,7 +4,7 @@ Schematic address: `lpu/parser/valency` · Type: Unit · State: partial · 90% c
 
 What arguments each verb takes, and in which roles.
 
-Working code today: src/fork/framenet-lex.ts, src/fork/verbnet-lex.ts, features.ts
+Working code today: src/ansci/framenet-lex.ts, src/ansci/verbnet-lex.ts, features.ts
 
 This is a placeholder: the unit's home in ai-system/ exists so the tree and the map agree. Its implementation migrates or is built here in a gated slice; until then the working code stays where PLACEHOLDER.md says it is.
 
@@ -30,7 +30,7 @@ arguments evidence-free / unusual-but-licensed.
   and in data/verbnet/manifest.json.
 - **Conversion:** scripts/import-verbnet.py (build-time) →
   data/verbnet/manifest.json + part-001.json (337 KB), loaded by
-  src/verbnet.ts, consulted by src/fork/verbnet-lex.ts. Per verb
+  src/verbnet.ts, consulted by src/ansci/verbnet-lex.ts. Per verb
   lemma: its class membership(s); per class (601, subclasses
   included): the thematic-role inventory and each frame reduced
   to an argument shape — post-verbal bare-NP roles in order,
@@ -45,7 +45,7 @@ arguments evidence-free / unusual-but-licensed.
   lexicon ∪ the WordNet extract's verb lemmas: 11,604 lemmas),
   4,135 lemmas are VerbNet-covered with a checkable frame
   (verbnetCoverageReport() in verbnet-lex.ts; pinned in
-  test/fork-verbnet.test.ts).
+  test/ansci-verbnet.test.ts).
 - **What the check does (v1):** for a derived verb with no
   FrameNet signature, wordnet-lex.ts attaches the VerbNet shapes
   (VerbEntry.verbnetSignature). check.ts then judges the realised

@@ -32,7 +32,7 @@ English "best" list): floor 3.5 → 15,089 words / 252,087 bytes;
 3.0 → 29,151 / 492,884; 2.5 → 53,354 / 909,197; 2.0 → 95,641 /
 1,633,769. The 2.0 floor is the one filed: it keeps genuinely
 rare REAL words attested (e.g. "abattoir", Zipf 2.5) — the
-table's consumer (the NormalcyUnit, src/fork/normalcy-unit.ts)
+table's consumer (the NormalcyUnit, src/ansci/normalcy-unit.ts)
 reads attestation as knowledge about a word, and a floor that
 dropped real rare words would misfile them as unattested.
 

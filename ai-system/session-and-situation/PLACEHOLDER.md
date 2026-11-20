@@ -4,7 +4,7 @@ Schematic address: `session-and-situation` · Type: Register · State: partial �
 
 The record of an ongoing interaction — general machinery; chat is its first use.
 
-Working code today: src/fork/session.ts, turn.ts
+Working code today: src/ansci/session.ts, turn.ts
 
 Holds:
 - `session-and-situation/states-and-origins` — States & origins (module file: `states-and-origins.ts`)

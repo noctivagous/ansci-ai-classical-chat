@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/normalcy-unit` — inside the OntologyCore, beside the SenseUnit (owner's placement, 2026-11-17)
 - **Type:** Unit
-- **State:** partial — **35% completed to goal** (set by us, assessed by the project, not measured or computed). The v1 authority built 2026-11-17: `src/fork/normalcy-unit.ts` files the three v1 dimensions with their standards, operationalises the obviousness standard over the OKU Classification's degree profiles, and serves the labelled table access (wordfreq frequency, the Glasgow Norms' nine dimensions) the bridges read. What is not built: any dimension beyond the three; any medium's bridge but text's; a norm for whole constructions (the dimensions read predications and tokens, not syntax).
+- **State:** partial — **35% completed to goal** (set by us, assessed by the project, not measured or computed). The v1 authority built 2026-11-17: `src/ansci/normalcy-unit.ts` files the three v1 dimensions with their standards, operationalises the obviousness standard over the OKU Classification's degree profiles, and serves the labelled table access (wordfreq frequency, the Glasgow Norms' nine dimensions) the bridges read. What is not built: any dimension beyond the three; any medium's bridge but text's; a norm for whole constructions (the dimensions read predications and tokens, not syntax).
 
 ## What this unit is
 
@@ -83,7 +83,7 @@ an oddity of the communication. No flag rides on it.
 
 ## Where the working code lives today
 
-`src/fork/normalcy-unit.ts` (built 2026-11-17), with the table
+`src/ansci/normalcy-unit.ts` (built 2026-11-17), with the table
 loaders `src/wordfreq.ts` and `src/glasgow.ts`. Before this arc,
 nothing in the system could say what was ordinary about an
 utterance; oddity existed only as scattered steering behaviour.

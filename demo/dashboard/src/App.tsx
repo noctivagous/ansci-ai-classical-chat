@@ -3,8 +3,8 @@ import { CAPABILITIES, EVIDENCE_AS_OF, SENSE_ROWS } from "./evidence";
 import Lab from "./Lab";
 import Ask from "./Ask";
 import Roadmap from "./Roadmap";
-import { parse } from "../../../src/fork/parse";
-import { generate } from "../../../src/fork/generate";
+import { parse } from "../../../src/ansci/parse";
+import { generate } from "../../../src/ansci/generate";
 
 function Bars({ bars }: { bars: { label: string; value: number; max: number }[] }) {
   return (
@@ -116,12 +116,12 @@ const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   {
     title: "Sense selection can be talked out of the right answer (X1)",
     body: "In the sealed sense set, “The stock simmered in the pot” was overturned from broth (Water, correct) to bloodline (Fire): the pot's own Earth classification supported the wrong sense through a generating relation. The cycles amplify whatever classifications they touch — including wrong ones. The anchor-quality repair (2026-11-15) removed the rival itself — stock's Fire candidate arrived through blood's lineage synset, a spelling-match artifact — and the sealed set now reads 6/6. The scorer flaw the failure exposed (generation support runs in both directions) is NOT fixed; it has lost the wayward candidate it acted on. Direction-sensitive support remains the recorded v2 direction.",
-    status: "rival removed by the anchor repair · scorer v2 not yet built · recorded in docs/fork/sense-challenge.md",
+    status: "rival removed by the anchor repair · scorer v2 not yet built · recorded in docs/ansci/sense-challenge.md",
   },
   {
     title: "The elemental valency prior was tested — and failed",
     body: "The programme's sharpest open question — does a verb's element predict its argument shape better than FrameNet alone? — has been run, and at the strength claimed the answer is no. Verbs were classified (574 of 3,071, by a stated gloss rule), the trial ran on held-out verbs, and on the predeclared headline (exact shape match) the prior tied the FrameNet-only baseline 0/4; under the rule set down when the test was designed, a tie fails it. Partial-credit measures favoured the prior throughout — within each element the shapes spread too widely for a single best guess to carry the signal. The prior remains adopted nowhere; the verb classifications are banked as labelled derivations.",
-    status: "trial run 2026-11-15 · verdict in docs/fork/verb-classification-trial.md · prior adopted nowhere",
+    status: "trial run 2026-11-15 · verdict in docs/ansci/verb-classification-trial.md · prior adopted nowhere",
   },
   {
     title: "H3a vs H3b — the sense rivalry — is unsettled",
@@ -131,7 +131,7 @@ const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   {
     title: "Anchor coverage is the binding constraint",
     body: "Of 8,094 polysemous words, only 19 have anchored senses in more than one element. The wayward paths are repaired — anchors now fire only on the dictionary senses carrying their classification, so rock no longer arrives at Earth via “sweet” — but the repair cost coverage: words with any anchored candidate fell from 646 to 416, and the lost candidates have not been judged one by one. Better disambiguation cannot fix thin anchors; classification coverage is the long pole.",
-    status: "repair measured in docs/fork/anchor-audit.md · coverage still the constraint",
+    status: "repair measured in docs/ansci/anchor-audit.md · coverage still the constraint",
   },
   {
     title: "Review does not scale yet",
@@ -172,7 +172,7 @@ export default function App() {
           itself to try, the measured capabilities with their caveats attached, the traces behind its
           answers, and a wall of named failures.
         </p>
-        <p className="asof">Evidence as of {EVIDENCE_AS_OF}. The reports in docs/fork/ are the record; this page is a view of them.</p>
+        <p className="asof">Evidence as of {EVIDENCE_AS_OF}. The reports in docs/ansci/ are the record; this page is a view of them.</p>
       </header>
 
       <Ask />
@@ -281,7 +281,7 @@ export default function App() {
             </tbody>
           </table>
           <p className="caveat">
-            Transcribed from docs/fork/sense-challenge.md. Support = same element 1.0, generating
+            Transcribed from docs/ansci/sense-challenge.md. Support = same element 1.0, generating
             0.8, controlling 0.4 — corroboration only; restraint never subtracts.
           </p>
         </details>
@@ -311,7 +311,7 @@ export default function App() {
               failures in the stage report rather than quietly engineered around.
             </p>
             <LiveF1 />
-            <p className="source">docs/fork/stage-5-report.md · the pinning test was flipped deliberately, as the baseline prescribed</p>
+            <p className="source">docs/ansci/stage-5-report.md · the pinning test was flipped deliberately, as the baseline prescribed</p>
           </article>
           <article className="card failure">
             <p className="card-area">Surface limits</p>
@@ -331,7 +331,7 @@ export default function App() {
               still very far from a usable chat; what exists is a working reply mechanism over a
               small graph, and this page presents it as exactly that.
             </p>
-            <p className="source">reply-planning programme, 2026-11-16 · docs/fork/transcripts/T-R1–T-R7.5 · src/fork/plan.ts</p>
+            <p className="source">reply-planning programme, 2026-11-16 · docs/ansci/transcripts/T-R1–T-R7.5 · src/ansci/plan.ts</p>
           </article>
           <article className="card failure">
             <p className="card-area">Coverage gap · lexicon — closed</p>
@@ -344,7 +344,7 @@ export default function App() {
               eaten…”) is untouched, as the live check's sibling cases in the test suite show.
             </p>
             <LiveHasCold />
-            <p className="source">recorded in docs/fork/construction-challenge.md · fixed 2026-11-15</p>
+            <p className="source">recorded in docs/ansci/construction-challenge.md · fixed 2026-11-15</p>
           </article>
           {RECORDED_FAILURES.map((f) => (
             <article key={f.title} className="card failure">
@@ -365,12 +365,12 @@ export default function App() {
         </p>
         <pre>{`npm install
 npm test                 # the suite (542 tests)
-npm run fork:demo        # the 29-sentence exhibit
-npm run fork:valency     # stage 1 report
-npm run fork:aspect      # stage 2 report
-npm run fork:construction  # stage 3 report
-npm run fork:sense       # stage 4 report
-npm run fork:chat        # the parser demonstrator
+npm run ansci:demo        # the 29-sentence exhibit
+npm run ansci:valency     # stage 1 report
+npm run ansci:aspect      # stage 2 report
+npm run ansci:construction  # stage 3 report
+npm run ansci:sense       # stage 4 report
+npm run ansci:chat        # the parser demonstrator
 
 cd demo/dashboard && npm install && npm run dev   # this page`}</pre>
         <p className="caveat">

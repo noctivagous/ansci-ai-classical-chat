@@ -15,7 +15,7 @@
  * nightProportionFor / computedLightAspect) — so there is ONE
  * implementation with two callers (§8.10's rule): computeSituation
  * below (the live Situation) and the Wikidata bank's place
- * associations (src/fork/wikidata-bank.ts), which compute a banked
+ * associations (src/ansci/wikidata-bank.ts), which compute a banked
  * place's hemisphere, latitude band, season and night proportion
  * from its banked coordinates through these same functions. The
  * live Situation's light aspect stays on the canonical profile in
@@ -99,7 +99,7 @@ const OPPOSITE_SEASON: Record<string, string> = {
 
 /* ---------- §8.10 / §8.11 shared primitives (one implementation,
  * two callers: the live Situation below, and the Wikidata bank's
- * place associations in src/fork/wikidata-bank.ts) ---------- */
+ * place associations in src/ansci/wikidata-bank.ts) ---------- */
 
 /** §8.11 hemisphere: the sign of latitude; equatorial within ±10°. */
 export function hemisphereForLatitude(lat: number): "north" | "south" | "equatorial" {

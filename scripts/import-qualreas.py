@@ -17,7 +17,7 @@ License: MIT — Copyright (c) 2019 Alfred J. Reich; the full text is
 reproduced in the repo NOTICE file and in the manifest this script
 writes. Only the algebra DATA (relation inventories, converses and
 composition tables) is taken; the path-consistency engine in
-src/fork/qualreas.ts is our own TypeScript written from the
+src/ansci/qualreas.ts is our own TypeScript written from the
 classical algorithm, crediting qualreas for data and design.
 
 Conversion: qualreas encodes a composition result as a "|"-joined

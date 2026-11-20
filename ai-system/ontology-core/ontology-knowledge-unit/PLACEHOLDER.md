@@ -28,7 +28,7 @@ the variant graph and the banked stores.
 The OKU also holds the **Numbers slice** — the classical number
 correspondences, whose first deposit is Suwen ch. 4's number row
 （其數八/七/五/九/六 for Wood/Fire/Earth/Metal/Water), banked in the
-ingested store (`src/fork/ingested.ts`,
+ingested store (`src/ansci/ingested.ts`,
 `INGESTED_ASSERTIONS_CH4_NUMBERS`) — and, since 2026-11-17, an active
 unit of its own living over that slice: the **QuantificationUnit**
 (45%), the slice's specialist reader, with the **UnitsMeasurement Unit**
@@ -54,12 +54,12 @@ concepts are in a ParamorphicConcept Unit in the OKU. It holds the six
 concepts of the paramorphic-components record — Grid, Graph, Tree,
 Path, Protocol, Logic — as a registry of data (substrate, parameters,
 shared operations, the system's instances, invariants) in
-`src/fork/paramorphic-concepts.ts`. The instances (this unit's own
+`src/ansci/paramorphic-concepts.ts`. The instances (this unit's own
 correspondence graph and classification table among them) stay where
 they live; nothing is moved, and no engine runs yet.
 
 ## Where the working code lives today
 
-`src/fork/classify.ts` (the table and its consumers) and the foundation
+`src/ansci/classify.ts` (the table and its consumers) and the foundation
 graph (`src/graph.ts`, `src/seed.ts`). The turn loop's trace path names the
 correspondence graph at this address.

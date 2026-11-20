@@ -39,7 +39,7 @@ registry the code is organised by:
 - **The map is functional.** The "A Person Says" box on the root page is a real chat
   input: a sentence runs through the actual turn loop, and the walk drawn on the map
   is the walk the code took — every turn trace carries it (`trace.mapPath`, in the
-  registry's own node ids, gated by `test/fork-mappath.test.ts`). Where a turn stops,
+  registry's own node ids, gated by `test/ansci-mappath.test.ts`). Where a turn stops,
   the map stops, and the stop's own words appear at the node where it stopped.
 - **Work proceeds unit by unit against the map** — building what is placeholder,
   migrating what exists in the reference implementations, one gated slice at a time.
@@ -60,7 +60,7 @@ no longer the line of development:
    supporting knowledge feeder.
 2. **The fork** — the ancient Chinese knowledge graph and its sentence layer:
    the classification table, the depth programme, and the reply-planning programme.
-   Its code (`src/fork/`) is the reference implementation the map-based path
+   Its code (`src/ansci/`) is the reference implementation the map-based path
    migrates from — and, until each unit's migration lands, the engine the live
    root page actually runs.
 
@@ -75,7 +75,7 @@ usable as one system; the archive's README is the guide to what each holds.
   `demo/dashboard/root/`, revised in its Muse artifact and synced here) and the
   capability & evaluation dashboard at `/dashboard/`, which runs the same engine
   in the browser and keeps the measured record, caveats included.
-- `src/`, `src/fork/` — the two reference implementations (see above).
+- `src/`, `src/ansci/` — the two reference implementations (see above).
 - `archive-reference/` — the two paths' written record: designs, evaluations,
   challenge sets, acceptance transcripts.
 - `docs/` — the paths' original documents (copies of record are in
@@ -88,7 +88,7 @@ usable as one system; the archive's README is the guide to what each holds.
 npm install
 npm test                 # the suite (550 tests) — build + node --test
 npm run ai:check         # the map ↔ code correspondence gate
-npm run fork:chat        # the fork's surface: a parser demonstrator, not a finished chat
+npm run ansci:chat        # the fork's surface: a parser demonstrator, not a finished chat
 npm run chat:cskg        # the archived CSKG track, under its own name
 ```
 

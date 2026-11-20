@@ -19,7 +19,7 @@
  *
  * The layer is optional in the framenet.ts pattern: when
  * data/verbnet/ is absent, getDefaultVerbNetTable() returns
- * undefined and the provider built on it (src/fork/verbnet-lex.ts)
+ * undefined and the provider built on it (src/ansci/verbnet-lex.ts)
  * is silent.
  */
 import * as fs from "fs";

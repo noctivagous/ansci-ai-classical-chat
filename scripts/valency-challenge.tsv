@@ -3,7 +3,7 @@
 # Columns (tab-separated): verb <TAB> class <TAB> sentence <TAB> expected roles (role:lemma;... for pos items) <TAB> note
 # Classes: pos = legitimate argument pattern; neg = an argument the frame does not license (excess object);
 #          unusual = alternation / coercion / boundary case, reported descriptively.
-# This file is frozen once written: its sha256 is the manifest hash recorded in docs/fork/valency-challenge.md.
+# This file is frozen once written: its sha256 is the manifest hash recorded in docs/ansci/valency-challenge.md.
 # Any change is a new version of the set and must be reported as such.
 bake	pos	She baked a cake.	agent:she;theme:cake	 canonical transitive
 bake	pos	She baked the bread in the oven.	agent:she;theme:bread;location:oven	 prep location from Apply_heat Container

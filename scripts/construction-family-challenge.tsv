@@ -10,7 +10,7 @@
 # Classes: core = scored (built to the branch signatures in parse.ts, vocabulary attested in the
 # lexicons); probe = adjacent territory the branch prose suggests but the coded signature may not
 # cover — reported descriptively, never in the family score.
-# Authored by Kavi, 2026-11-18; frozen once written — sha256 recorded in docs/fork/construction-family-challenge.md.
+# Authored by Kavi, 2026-11-18; frozen once written — sha256 recorded in docs/ansci/construction-family-challenge.md.
 en	core	Tell me about winter.	imperative	stage-3 crashfix sentence; signature met (tell is noun-classified but verb-resolvable, pronoun follows)
 en	core	Show me the garden.	imperative	
 en	core	Bring me the book.	imperative	generation drops the patient ("Bring me.") — roles family, noted not scored here

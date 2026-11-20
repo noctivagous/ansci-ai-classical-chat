@@ -4,7 +4,7 @@ Schematic address: `awareness` · Type: Unit · State: partial · 35% completed 
 
 Knows where it is, who it is, what is around it, and what is currently happening.
 
-Working code today: fragments in src/fork/session.ts
+Working code today: fragments in src/ansci/session.ts
 
 Holds:
 - `awareness/self` — Self

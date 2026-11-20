@@ -4,7 +4,7 @@ Schematic address: `knowledge` · Type: Container · State: partial · 70% compl
 
 What the system holds as stores: the lexicon, the variant graph, and the banked stores. The correspondence graph and the classification table moved to the Ontology Knowledge Unit in the OntologyCore (owner's direction, 2026-11-16).
 
-Working code today: src/fork/classify.ts and the foundation graph
+Working code today: src/ansci/classify.ts and the foundation graph
 
 Holds:
 - `knowledge/lexicon` — Lexicon

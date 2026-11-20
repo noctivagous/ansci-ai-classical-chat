@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { newSession, type FrameInput, type Session } from "../../../../src/fork/session";
-import { processTurn, type TurnResult } from "../../../../src/fork/turn";
-import { NEUTRAL_COMPOSITION } from "../../../../src/fork/composition";
-import type { PricingRecord } from "../../../../src/fork/pricing";
+import { newSession, type FrameInput, type Session } from "../../../../src/ansci/session";
+import { processTurn, type TurnResult } from "../../../../src/ansci/turn";
+import { NEUTRAL_COMPOSITION } from "../../../../src/ansci/composition";
+import type { PricingRecord } from "../../../../src/ansci/pricing";
 
 /**
  * AnSci — Full Chat (/chat/).
  *
  * An IRC / chat-room style surface over the real fork turn loop
- * (src/fork/turn.ts processTurn), running entirely in the browser
+ * (src/ansci/turn.ts processTurn), running entirely in the browser
  * on the same static build as the schematic map page (/) and the
  * dashboard (/dashboard/). Nothing here is canned: every reply is
  * processTurn's own, against the active tab's own Session.

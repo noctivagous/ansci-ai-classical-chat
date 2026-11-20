@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/senses-scening-unit`
 - **Type:** Unit
-- **State:** partial — **55% completed to goal** (set by us, assessed by the project, not measured or computed). Inbound built 2026-11-17: `src/fork/senses-scening.ts` reads a parsed sentence's sensory content through the SenseUnit (`src/fork/sense-unit.ts`) and builds the semantic object's `senses` face — per-channel entries plus the multi-sensory scene — at assessment, and populates reply objects' senses faces from the reply graph by the same wiring. The outbound direction (a reply object's sensory content mapped back into wording choices for the Generator) is still to build, as with the LEDU. The qualitative constraint network over scene placements (the qualreas port) was added 2026-11-17 — see the section at the end of this file.
+- **State:** partial — **55% completed to goal** (set by us, assessed by the project, not measured or computed). Inbound built 2026-11-17: `src/ansci/senses-scening.ts` reads a parsed sentence's sensory content through the SenseUnit (`src/ansci/sense-unit.ts`) and builds the semantic object's `senses` face — per-channel entries plus the multi-sensory scene — at assessment, and populates reply objects' senses faces from the reply graph by the same wiring. The outbound direction (a reply object's sensory content mapped back into wording choices for the Generator) is still to build, as with the LEDU. The qualitative constraint network over scene placements (the qualreas port) was added 2026-11-17 — see the section at the end of this file.
 
 ## What this unit is
 
@@ -140,9 +140,9 @@ and built later the same day (the quantification arc): the
 QuantificationUnit and its UnitsMeasurement Unit are registry
 nodes inside the OKU, the QuantificationLanguageUnit is a
 registry node in the LPU with its "uses" cord drawn, and the
-working code lives in `src/fork/quantification.ts`,
-`src/fork/units-measurement.ts` and
-`src/fork/quantification-language.ts`. Their own PLACEHOLDERs
+working code lives in `src/ansci/quantification.ts`,
+`src/ansci/units-measurement.ts` and
+`src/ansci/quantification-language.ts`. Their own PLACEHOLDERs
 carry the build record; the settled design, as recorded when
 they were only named, stands below.
 
@@ -233,8 +233,8 @@ wording and nothing medium-specific.
 
 ## Where the working code lives today
 
-`src/fork/senses-scening.ts` (built 2026-11-17), over the authority
-in `src/fork/sense-unit.ts`. Before that, no unit produced a senses part:
+`src/ansci/senses-scening.ts` (built 2026-11-17), over the authority
+in `src/ansci/sense-unit.ts`. Before that, no unit produced a senses part:
 sensory words were classified as ordinary aspects (colour, taste,
 temperature) with no channel named and no scene bound.
 
@@ -254,7 +254,7 @@ at every scene update:
   data/qualreas/manifest.json + part-001.json (6 KB): the three
   algebras' relation inventories, converses and composition
   tables. Only the algebra DATA is taken.
-- **Engine:** `src/fork/qualreas.ts` — our own TypeScript
+- **Engine:** `src/ansci/qualreas.ts` — our own TypeScript
   path-consistency engine written from the classical algorithm
   (composition-consistency over a constraint network, Allen 1983
   lineage), crediting qualreas for data and design. Constraints
@@ -273,7 +273,7 @@ at every scene update:
   directly gain a derived record on the scene graph
   (`scene.derivedRelations`, tier **placed-by-scene** — a
   derivation is never a said fact), recomputed wholesale at each
-  update. Pinned end-to-end in test/fork-qualreas.test.ts: the
+  update. Pinned end-to-end in test/ansci-qualreas.test.ts: the
   airport scene, once "The airport is in Chicago" stands, derives
   fountain–Chicago = {NTPP, TPP} (containment through the chain)
   and the bathrooms' looser {EC, NTPP, PO, TPP}.
@@ -303,13 +303,13 @@ imaging-scening unit exists in the registry** — imaging is not a
 node, and none was invented for this preparation. What exists,
 prepared for a future imaging consumer, is the LABELLED ACCESS
 PATH to the Glasgow Norms' imageability dimension:
-`imageabilityOf(word)` in `src/fork/normalcy-unit.ts` returns a
+`imageabilityOf(word)` in `src/ansci/normalcy-unit.ts` returns a
 word's imageability fact (published mean on its 7-point scale,
 with provenance) — which words are imageable, as knowledge. The
 slot where a future imaging feed would attach is HERE, at the
 unit that owns the scene's sensory content: were an imaging
 reading ever built, it would consult that access path the way
 the placement machinery consults the concreteness prior
-(`placementPriorsFor` in `src/fork/senses-scening.ts`). In v1
+(`placementPriorsFor` in `src/ansci/senses-scening.ts`). In v1
 the path is deliberately UNCONSUMED: nothing reads imageability
 in any production path, and no behaviour depends on it.

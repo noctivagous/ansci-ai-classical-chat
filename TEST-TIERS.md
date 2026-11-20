@@ -36,16 +36,16 @@ A full run of this tree did not finish within 120 s in the check on 2026-11-19.
    failure and bad for gate cost: one behaviour change can break the same
    sentence in a dozen files, and the reader has to work out which layer
    actually regressed.
-3. **Coverage is concentrated in the turn loop.** `src/fork/session` is imported
-   by 33 test files and `src/fork/turn` by 32; `src/fork/parse` by 23;
-   `src/fork/wordnet-lex` by 14. Most of the suite is end-to-end turn tests,
+3. **Coverage is concentrated in the turn loop.** `src/ansci/session` is imported
+   by 33 test files and `src/ansci/turn` by 32; `src/ansci/parse` by 23;
+   `src/ansci/wordnet-lex` by 14. Most of the suite is end-to-end turn tests,
    not unit tests — which is why the full gate is slow.
 4. **Two generations are tested in parallel.** The original engine
    (`src/engine, propagate, reason, render, router, thought, situation, wordnet, framenet`)
-   and the fork (`src/fork/*`) each have a full suite. Both engines are still
+   and the fork (`src/ansci/*`) each have a full suite. Both engines are still
    live — the fork's join tests reuse `src/engine`/`src/propagate` read-only —
    so neither suite is dead, but they should not carry equal gate weight.
-5. **The sealed probes are not in this count.** `fork-sealed.test.ts` (7 tests)
+5. **The sealed probes are not in this count.** `ansci-sealed.test.ts` (7 tests)
    tests the sealing *machinery* on a fixture. The sealed conversation probes
    themselves live outside `test/` and remain a separate, on-purpose run (T5).
 6. **Programme files are the growth.** Files named for a programme or slice
@@ -65,15 +65,15 @@ AnSci any more, whatever else passes.
 
 | File | Tests | Pins |
 |---|---:|---|
-| fork-negation.test.ts | 7 | Negation as a Water state, both languages; the F1 defect family |
-| fork-coherence.test.ts | 7 | Coherence reads objects against the prior stream; planner decision points |
-| fork-triage.test.ts | 6 | Review queue: no admission without review path, confidence caps |
-| fork-sealed.test.ts | 7 | Sealing machinery: tamper detection, blind view, hash |
-| fork-tokenresolve.test.ts | 14 | SymSpell/token gate between a bad token and a parse-failure decline |
-| fork-ingest.test.ts | 10 | NO CITATION, NO INSERTION — refused twice, even behind a forged pass |
-| fork-lexicon-state.test.ts | 7 | Lexicon-state family; derived entries must not poison later probes |
-| fork-join.test.ts | 7 | Classification join at working strength; X1 table-ownership brake |
-| fork-sense.test.ts | 5 | Sense selection: coherence may overturn only inside the confidence band |
+| ansci-negation.test.ts | 7 | Negation as a Water state, both languages; the F1 defect family |
+| ansci-coherence.test.ts | 7 | Coherence reads objects against the prior stream; planner decision points |
+| ansci-triage.test.ts | 6 | Review queue: no admission without review path, confidence caps |
+| ansci-sealed.test.ts | 7 | Sealing machinery: tamper detection, blind view, hash |
+| ansci-tokenresolve.test.ts | 14 | SymSpell/token gate between a bad token and a parse-failure decline |
+| ansci-ingest.test.ts | 10 | NO CITATION, NO INSERTION — refused twice, even behind a forged pass |
+| ansci-lexicon-state.test.ts | 7 | Lexicon-state family; derived entries must not poison later probes |
+| ansci-join.test.ts | 7 | Classification join at working strength; X1 table-ownership brake |
+| ansci-sense.test.ts | 5 | Sense selection: coherence may overturn only inside the confidence band |
 
 ### T1 — Core pipeline · every commit · 18 files, 187 call sites
 
@@ -82,17 +82,17 @@ fork still reuses.
 
 | File | Tests | Pins |
 |---|---:|---|
-| fork.test.ts | 15 | Fork sentence layer; desk evaluations, cycle probes, prediction run |
-| fork-grammar.test.ts | 20 | Grammar completion: expletives, clausal modifiers, conditionals |
-| fork-repair.test.ts | 9 | Repair tranche: nominal predication, agentless passives |
-| fork-constructions.test.ts | 8 | Copular questions, fragments, imperatives, F3 crash pair |
-| fork-semantic-object.test.ts | 7 | SemanticAssessment shadow objects (§7 expected-graph layer) |
-| fork-plan.test.ts | 8 | Planner transform R1 |
-| fork-realise.test.ts | 8 | Realisation gaps R1.5, connective layer |
-| fork-compose.test.ts | 15 | Composition of conclusions R2, both orderings |
-| fork-reply-object.test.ts | 5 | Replies authored as semantic objects |
-| fork-turn.test.ts | 11 | Turn loop and session disciplines (§5.1) |
-| fork-features.test.ts | 8 | Depth/expected-graph metric: dropped feature = loss, changed = contradiction |
+| ansci.test.ts | 15 | Fork sentence layer; desk evaluations, cycle probes, prediction run |
+| ansci-grammar.test.ts | 20 | Grammar completion: expletives, clausal modifiers, conditionals |
+| ansci-repair.test.ts | 9 | Repair tranche: nominal predication, agentless passives |
+| ansci-constructions.test.ts | 8 | Copular questions, fragments, imperatives, F3 crash pair |
+| ansci-semantic-object.test.ts | 7 | SemanticAssessment shadow objects (§7 expected-graph layer) |
+| ansci-plan.test.ts | 8 | Planner transform R1 |
+| ansci-realise.test.ts | 8 | Realisation gaps R1.5, connective layer |
+| ansci-compose.test.ts | 15 | Composition of conclusions R2, both orderings |
+| ansci-reply-object.test.ts | 5 | Replies authored as semantic objects |
+| ansci-turn.test.ts | 11 | Turn loop and session disciplines (§5.1) |
+| ansci-features.test.ts | 8 | Depth/expected-graph metric: dropped feature = loss, changed = contradiction |
 | engine.test.ts | 10 | Original engine: cycle operators, graded polarity, balance |
 | reason.test.ts | 13 | Reasoning over the seed graph |
 | propagate.test.ts | 12 | Propagation, per-relation decay, non-propagation list |
@@ -112,22 +112,22 @@ banked — the verification record for LLM-proposed, test-verified mappings.
 |---|---:|---|
 | cskg.test.ts | 92 | CSKG fixture graph: normalisation, support counting, longest match, grounding — *mixed tier, see note* |
 | wordnet.test.ts | 14 | WordNet base layer, cold disambiguation |
-| fork-wordnet.test.ts | 13 | WordNet lexicon provider, climb, confidence gate, X1 brake |
+| ansci-wordnet.test.ts | 13 | WordNet lexicon provider, climb, confidence gate, X1 brake |
 | framenet.test.ts | 10 | FrameNet acceptance, fixture bundle tier |
-| fork-framenet.test.ts | 5 | FrameNet valency provider, three-state assessment |
-| fork-verbnet.test.ts | 6 | VerbNet valency provider |
-| fork-verb-domain.test.ts | 5 | VERB_DOMAIN_V1 classification and domain prior |
-| fork-anchor.test.ts | 12 | Anchor quality: sense-pinned anchors only |
-| fork-class-climb.test.ts | 12 | Creature-class climb (Slice A) |
-| fork-stuff-climb.test.ts | 10 | Stuff-class climb (Slice B) |
-| fork-recognition.test.ts | 9 | Recognised-but-unclassified climb outcome (Slice C) |
-| fork-overlay.test.ts | 7 | Per-word overlay partition, fill-only law (Slice D) |
-| fork-h7.test.ts | 8 | H7 flavor bridge banking pass |
-| fork-glasgow-priors.test.ts | 10 | Glasgow dimensions as provenance-carrying priors |
-| fork-cskg-feed.test.ts | 12 | CSKG feeder mapping (fixture tests) |
-| fork-cskg-ingest.test.ts | 8 | Live CSKG ingestion, resolution order |
-| fork-cskg-bundle.test.ts | 2 | CSKG bundle regeneration script |
-| fork-senses.test.ts | 12 | SenseUnit + Senses-Scening over all human senses |
+| ansci-framenet.test.ts | 5 | FrameNet valency provider, three-state assessment |
+| ansci-verbnet.test.ts | 6 | VerbNet valency provider |
+| ansci-verb-domain.test.ts | 5 | VERB_DOMAIN_V1 classification and domain prior |
+| ansci-anchor.test.ts | 12 | Anchor quality: sense-pinned anchors only |
+| ansci-class-climb.test.ts | 12 | Creature-class climb (Slice A) |
+| ansci-stuff-climb.test.ts | 10 | Stuff-class climb (Slice B) |
+| ansci-recognition.test.ts | 9 | Recognised-but-unclassified climb outcome (Slice C) |
+| ansci-overlay.test.ts | 7 | Per-word overlay partition, fill-only law (Slice D) |
+| ansci-h7.test.ts | 8 | H7 flavor bridge banking pass |
+| ansci-glasgow-priors.test.ts | 10 | Glasgow dimensions as provenance-carrying priors |
+| ansci-cskg-feed.test.ts | 12 | CSKG feeder mapping (fixture tests) |
+| ansci-cskg-ingest.test.ts | 8 | Live CSKG ingestion, resolution order |
+| ansci-cskg-bundle.test.ts | 2 | CSKG bundle regeneration script |
+| ansci-senses.test.ts | 12 | SenseUnit + Senses-Scening over all human senses |
 
 Note on `cskg.test.ts`: at 92 tests / 1,477 lines it is the single largest file
 and it straddles T1–T4 (fixture graph, statement grounding, tool questions,
@@ -139,25 +139,25 @@ before any deletion pass.
 
 | File | Tests | Pins |
 |---|---:|---|
-| fork-pricing.test.ts | 18 | Pricing foundations R0: ceilings, support bands, decline floor |
-| fork-mechanisms.test.ts | 18 | Eight adjudicated parser mechanisms (GAPS §5) |
-| fork-normalcy.test.ts | 25 | Normalcy arc: move chosen, evidence source, flag raised |
-| fork-social.test.ts | 30 | Social Unit S1–S2: recognition kinds, interlocutor store |
-| fork-emotional-uptake.test.ts | 17 | E programme: feelings-first registration |
-| fork-uptake.test.ts | 20 | Uptake move family UP-1/UP-2 |
-| fork-discourse-record.test.ts | 9 | Discourse Record reader (pure derivation) |
-| fork-discourse-wiring.test.ts | 6 | Discourse Record consultees wired (DR-2) |
-| fork-quantification.test.ts | 16 | QuantificationUnit ledger, UnitsMeasurement wiring |
-| fork-units-qudt.test.ts | 7 | QUDT port into UnitsMeasurement |
-| fork-qualreas.test.ts | 6 | qualreas relation algebra (RCC-8, Allen) port |
-| fork-edu-reach.test.ts | 6 | EDU larger-graph reach |
-| fork-aspects.test.ts | 6 | Aspect wiring; emotion via LEDU→EDU bridge |
-| fork-aspect.test.ts | 6 | Aspect feature bundle: EN families, ZH particles, Vendler |
-| fork-adverbs.test.ts | 5 | Adverb restoration (GAPS §6) |
-| fork-classifier.test.ts | 4 | Classifier agreement (stage 5, F.3) |
-| fork-info-object.test.ts | 13 | Information-object envelope + core |
-| fork-mappath.test.ts | 10 | Schematic correspondence gate: trace.mapPath |
-| fork-problem-solving.test.ts | 4 | ProblemSolving Unit placeholder: seat, approach graphs, router |
+| ansci-pricing.test.ts | 18 | Pricing foundations R0: ceilings, support bands, decline floor |
+| ansci-mechanisms.test.ts | 18 | Eight adjudicated parser mechanisms (GAPS §5) |
+| ansci-normalcy.test.ts | 25 | Normalcy arc: move chosen, evidence source, flag raised |
+| ansci-social.test.ts | 30 | Social Unit S1–S2: recognition kinds, interlocutor store |
+| ansci-emotional-uptake.test.ts | 17 | E programme: feelings-first registration |
+| ansci-uptake.test.ts | 20 | Uptake move family UP-1/UP-2 |
+| ansci-discourse-record.test.ts | 9 | Discourse Record reader (pure derivation) |
+| ansci-discourse-wiring.test.ts | 6 | Discourse Record consultees wired (DR-2) |
+| ansci-quantification.test.ts | 16 | QuantificationUnit ledger, UnitsMeasurement wiring |
+| ansci-units-qudt.test.ts | 7 | QUDT port into UnitsMeasurement |
+| ansci-qualreas.test.ts | 6 | qualreas relation algebra (RCC-8, Allen) port |
+| ansci-edu-reach.test.ts | 6 | EDU larger-graph reach |
+| ansci-aspects.test.ts | 6 | Aspect wiring; emotion via LEDU→EDU bridge |
+| ansci-aspect.test.ts | 6 | Aspect feature bundle: EN families, ZH particles, Vendler |
+| ansci-adverbs.test.ts | 5 | Adverb restoration (GAPS §6) |
+| ansci-classifier.test.ts | 4 | Classifier agreement (stage 5, F.3) |
+| ansci-info-object.test.ts | 13 | Information-object envelope + core |
+| ansci-mappath.test.ts | 10 | Schematic correspondence gate: trace.mapPath |
+| ansci-problem-solving.test.ts | 4 | ProblemSolving Unit placeholder: seat, approach graphs, router |
 
 ### T4 — Programme gates · before merge to main / weekly · 16 files, 376 call sites
 
@@ -168,16 +168,16 @@ by the higher tiers first.
 
 | File | Tests | Programme |
 |---|---:|---|
-| fork-imp-programme.test.ts | 57 | Implementation programme (2026-11-19) |
-| fork-s-programme.test.ts | 56 | S programme: edges R and E left named |
-| fork-x-programme.test.ts | 28 | X programme: cross-turn recognition |
-| fork-recognition-programme.test.ts | 32* | Recognition programme |
-| fork-conversation-shapes.test.ts | 34 | Conversation-shapes: fixes from sealed probe run |
-| fork-r3.test.ts | 21 | R3: gap questions, grounded declines |
-| fork-r4.test.ts | 15 | R4: disposition live |
-| fork-r5.test.ts | 18 | R5: cohesion, echo, correction as supersession |
-| fork-r6.test.ts | 15 | R6: bounded initiative, awareness frame |
-| fork-r7.5.test.ts | 12 | R7.5: predication question site reads standing state |
+| ansci-imp-programme.test.ts | 57 | Implementation programme (2026-11-19) |
+| ansci-s-programme.test.ts | 56 | S programme: edges R and E left named |
+| ansci-x-programme.test.ts | 28 | X programme: cross-turn recognition |
+| ansci-recognition-programme.test.ts | 32* | Recognition programme |
+| ansci-conversation-shapes.test.ts | 34 | Conversation-shapes: fixes from sealed probe run |
+| ansci-r3.test.ts | 21 | R3: gap questions, grounded declines |
+| ansci-r4.test.ts | 15 | R4: disposition live |
+| ansci-r5.test.ts | 18 | R5: cohesion, echo, correction as supersession |
+| ansci-r6.test.ts | 15 | R6: bounded initiative, awareness frame |
+| ansci-r7.5.test.ts | 12 | R7.5: predication question site reads standing state |
 | cskg-e4.test.ts | 37* | E4: conversation frame, roles, person file |
 | cskg-e5.test.ts | 17 | E5: situation model, relation families |
 | cskg-setup.test.ts | 8 | TUI/setup decisions, loader cache state |
@@ -193,7 +193,7 @@ generated from data tables.
 
 No files in `test/`. The sealed conversation probe set and the diagnostic
 probe runs live outside the suite, are scored when deliberately opened, and
-a result there is a research finding, not a build break. `fork-sealed.test.ts`
+a result there is a research finding, not a build break. `ansci-sealed.test.ts`
 (T0) covers only the sealing machinery.
 
 ## Duplicate / subsumption review

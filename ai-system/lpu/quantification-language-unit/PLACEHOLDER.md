@@ -2,7 +2,7 @@
 
 - **Schematic address:** `lpu/quantification-language-unit`
 - **Type:** Unit
-- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/fork/quantification-language.ts` reads a parsed sentence's quantity content as mentions (numerals, quantifiers, implied counts, unit words) for the wired verbs (have/buy/give), and renders tracked quantities back into language (`renderQuantity`) — the turn loop's how-many reader speaks through it. The outbound direction beyond that reader (a reply object's quantity content mapped into wording choices for the Generator) is still to build, as with the LEDU and the Senses-Scening Unit.
+- **State:** partial — **45% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/ansci/quantification-language.ts` reads a parsed sentence's quantity content as mentions (numerals, quantifiers, implied counts, unit words) for the wired verbs (have/buy/give), and renders tracked quantities back into language (`renderQuantity`) — the turn loop's how-many reader speaks through it. The outbound direction beyond that reader (a reply object's quantity content mapped into wording choices for the Generator) is still to build, as with the LEDU and the Senses-Scening Unit.
 
 ## What this unit is
 
@@ -73,7 +73,7 @@ verb). Limits, recorded not hidden:
 
 ## Where the working code lives today
 
-`src/fork/quantification-language.ts` (built 2026-11-17), over
-the authority in `src/fork/quantification.ts`. Before that,
+`src/ansci/quantification-language.ts` (built 2026-11-17), over
+the authority in `src/ansci/quantification.ts`. Before that,
 numerals in a sentence were nodes in a parse and nothing more
 — counted by nobody, answered from nowhere.

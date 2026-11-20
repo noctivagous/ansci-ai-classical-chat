@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/ontology-knowledge-unit/mathematics/quantification-unit/units-measurement-unit` — inside the QuantificationUnit (owner's ruling, 2026-11-17)
 - **Type:** Unit
-- **State:** partial — **60% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/fork/units-measurement.ts` holds the three-system unit table (dimension + factor per unit) and the conversion machinery — within-dimension conversion, typed cross-dimension refusal, temperature as a separate scale conversion. Extended 2026-11-17 by the QUDT port (cross-check + added coverage, two new dimensions — see the section at the end of this file). What is not built: the parser does not yet route unit words in sentences through here (the sentence layer has no unit-word grain — a numeral's unit in "5 pounds of apples" is not a node the bridge can read), so the table is consulted by the bridge's vocabulary and by direct callers, not yet by ordinary turns.
+- **State:** partial — **60% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: `src/ansci/units-measurement.ts` holds the three-system unit table (dimension + factor per unit) and the conversion machinery — within-dimension conversion, typed cross-dimension refusal, temperature as a separate scale conversion. Extended 2026-11-17 by the QUDT port (cross-check + added coverage, two new dimensions — see the section at the end of this file). What is not built: the parser does not yet route unit words in sentences through here (the sentence layer has no unit-word grain — a numeral's unit in "5 pounds of apples" is not a node the bridge can read), so the table is consulted by the bridge's vocabulary and by direct callers, not yet by ordinary turns.
 
 ## What this unit is
 
@@ -72,7 +72,7 @@ with a typed `temperature-scale` refusal pointing at
 
 ## Where the working code lives today
 
-`src/fork/units-measurement.ts` (built 2026-11-17). Before that,
+`src/ansci/units-measurement.ts` (built 2026-11-17). Before that,
 unit words in the banked material sat in the record as words
 attached to numbers — comparable by nobody.
 
@@ -116,7 +116,7 @@ attached to numbers — comparable by nobody.
   it, it did not overwrite it. Traditional Chinese rows are
   untouched: QUDT carries no traditional Chinese units, and
   none were invented to fill the gap.
-- **Drift pin:** test/fork-units-qudt.test.ts asserts the
+- **Drift pin:** test/ansci-units-qudt.test.ts asserts the
   table's factors agree with the shipped data/qudt artefact,
   so the code table and the converted artefact cannot drift
   apart unnoticed.

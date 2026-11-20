@@ -4,7 +4,7 @@ Schematic address: `lpu` · Type: Container · State: partial · 80% completed t
 
 Language in, language out: the Parser and the Generator, and aspect units to come.
 
-Working code today: src/fork/ (the sentence layer)
+Working code today: src/ansci/ (the sentence layer)
 
 Holds:
 - `lpu/parser` — Parser Unit

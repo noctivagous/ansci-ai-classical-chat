@@ -7,7 +7,7 @@
     "units": 28
   },
   "crossCheck": {
-    "against": "the hand table in src/fork/units-measurement.ts",
+    "against": "the hand table in src/ansci/units-measurement.ts",
     "disagreements": [],
     "missingFromQUDT": []
   },

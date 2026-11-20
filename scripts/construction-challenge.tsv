@@ -5,7 +5,7 @@
 #   gen=<exact generation>; genok (generation must not throw); rt (reparse the generation and re-check all probes).
 # Classes: census = the 12 holdout failures; adversarial = v9 §7 pairs (both members listed);
 #   control = existing behaviour that must hold; crashfix = the 2 generation crashes (engineering ledger).
-# Authored by Kavi from the v9 design BEFORE the stage-3 build; frozen once written — sha256 in docs/fork/construction-challenge.md.
+# Authored by Kavi from the v9 design BEFORE the stage-3 build; frozen once written — sha256 in docs/ansci/construction-challenge.md.
 en	census	Who is Sarah?	root=who; edge=predicated-as; query=predicated-as:person; rt	copular question, identity
 en	census	When is it?	root=when; edge=time; query=time:time; rt	copular question, temporal (expletive it)
 en	census	What's in it?	root=what; edge=contains; noedge=predicated-as; query=contains:entity; rt	containment, NOT predication (D4)

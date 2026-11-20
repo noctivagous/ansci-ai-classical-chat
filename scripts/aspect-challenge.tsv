@@ -1,7 +1,7 @@
 # Aspect challenge set — depth programme stage 2 (Part C.2, WP4 spec).
 # Columns (tab-separated): lang <TAB> class <TAB> sentence <TAB> expected root bundle features (comma list, or "unmarked"; checker items: "violation:aspect-compatibility" / "no-violation") <TAB> note
 # Classes: core = scored; checker = checker expectations, scored; probe = abstention territory, reported descriptively.
-# Authored by Kavi, 2026-11-15; frozen once written — sha256 recorded in docs/fork/aspect-challenge.md.
+# Authored by Kavi, 2026-11-15; frozen once written — sha256 recorded in docs/ansci/aspect-challenge.md.
 en	core	Winter is coming.	ongoing	 progressive, present
 en	core	She is baking a cake.	ongoing	 progressive with object
 en	core	He was carrying the box.	ongoing	 progressive, past

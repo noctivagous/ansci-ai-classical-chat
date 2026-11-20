@@ -2,7 +2,7 @@
   "manifest_id": "wp2-holdout80-g0-v2-2026-11-19",
   "manifest_hash": "ee9f0ca785e81ba38cad121d80adbb911be109f7df7a0851e6af07033578977c",
   "build_id": "05ef5627b83c80db32ff26b01caa2d8c8fa35bb9",
-  "command": "node scripts/fork-sealed.mjs run scripts/sealed-holdout80-v2.json scripts/sealed-holdout80-v2-run.json",
+  "command": "node scripts/ansci-sealed.mjs run scripts/sealed-holdout80-v2.json scripts/sealed-holdout80-v2-run.json",
   "items": [
     {
       "item_id": "H-001",

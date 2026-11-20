@@ -5,14 +5,14 @@
  * the root page (dist/index.html). The page probes for this script:
  * when it loads, window.AnSciLive exists and every sentence typed
  * into the "A Person Says" box runs through the real turn loop
- * (src/fork/turn.ts processTurn) against a session held here;
+ * (src/ansci/turn.ts processTurn) against a session held here;
  * when it does not load (the artifact preview), the page falls
  * back to its recorded turns. Nothing here is canned: say() is
  * processTurn, and the walk the page draws is the trace's own
  * mapPath — the schematic addresses the turn actually took.
  */
-import { newSession, type Session } from "../../../src/fork/session";
-import { processTurn } from "../../../src/fork/turn";
+import { newSession, type Session } from "../../../src/ansci/session";
+import { processTurn } from "../../../src/ansci/turn";
 
 export interface LiveTurn {
   reply: string;

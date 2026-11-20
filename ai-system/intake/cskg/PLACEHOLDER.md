@@ -6,7 +6,7 @@ Relational commonsense tier. Since 2026-11-17 a trimmed subset of
 its data ships in the repo (the bundle below); the full extract
 remains a local install artifact, never shipped.
 
-Working code today: src/fork/cskg-feed.ts, cskg-ingest.ts
+Working code today: src/ansci/cskg-feed.ts, cskg-ingest.ts
 
 ## The shipped bundle (2026-11-17)
 
@@ -20,12 +20,12 @@ CN 5,451 / CN|WN 311 / WN 21). The generation record stands in
 the bundle data (see NOTICE). Re-trimming runs against the locally
 installed full extract (data/raw/cskg/, via scripts/install.mjs)
 with the committed script `scripts/build-cskg-bundle.mjs`
-(`npm run fork:build-cskg-bundle`) — the measurement's staged
+(`npm run ansci:build-cskg-bundle`) — the measurement's staged
 procedure, calling the feeder's own `mapTriple`; it regenerates
 the bundle and its manifest, and its first run (2026-11-18)
 reproduced the shipped trim byte-identically.
 
-Loader order (src/fork/cskg-ingest.ts): the shipped bundle first;
+Loader order (src/ansci/cskg-ingest.ts): the shipped bundle first;
 the full extract when the bundle is absent; an explicit extract
 choice (the path option or ANSCI_CSKG_TSV) forces the extract;
 neither present is the reported "absent" state. The bundle is

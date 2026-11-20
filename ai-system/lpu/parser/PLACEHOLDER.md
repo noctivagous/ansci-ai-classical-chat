@@ -4,7 +4,7 @@ Schematic address: `lpu/parser` · Type: Unit · State: partial · 85% completed
 
 Sentence in, meaning graph out. IN and OUT ports.
 
-Working code today: src/fork/parse.ts, sentence.ts, join.ts, check.ts
+Working code today: src/ansci/parse.ts, sentence.ts, join.ts, check.ts
 
 Holds:
 - `lpu/parser/token` — Token

@@ -1,7 +1,7 @@
 # Irregular-form selection list — depth programme stage 2 (WP4 spec §4).
 # Columns (tab-separated): lemma <TAB> expected past <TAB> expected participle
 # Standard English strong/irregular verbs, all WordNet-derived (none in the hand lexicon).
-# Frozen once written — sha256 recorded in docs/fork/aspect-challenge.md.
+# Frozen once written — sha256 recorded in docs/ansci/aspect-challenge.md.
 send	sent	sent
 teach	taught	taught
 write	wrote	written

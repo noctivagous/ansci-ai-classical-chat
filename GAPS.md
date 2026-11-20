@@ -627,7 +627,7 @@ synthetic-returner gates.
   `510f82b` (the Discourse Record reader and the uptake
   move family) — were merged on `integrate/imp-discourse`
   (merge commit `d032908`) in a separate worktree. One
-  textual conflict, in `src/fork/turn.ts`: the trace's
+  textual conflict, in `src/ansci/turn.ts`: the trace's
   recognition-link record and `earlierLink` — resolved by
   keeping both programmes' fields (IMP-3's link sentence,
   DR-2's history spine) and both legs (DR-2's history leg
@@ -2099,7 +2099,7 @@ synthetic-returner gates.
   *Status (2026-11-19, DR-1 of the discourse/uptake
   programme, branch `build/discourse-uptake`, unpushed):*
   **the reader core is built** —
-  `src/fork/discourse-record.ts` (unit
+  `src/ansci/discourse-record.ts` (unit
   awareness/discourse-record): topic histories (a topic →
   its events, standing states, and superseded states
   recovered from the supersession deltas, sequenced by
@@ -2176,7 +2176,7 @@ synthetic-returner gates.
   OK.
   *Status (2026-11-19, UP-1 + UP-2, same branch,
   unpushed):* **the uptake move family is built** —
-  `src/fork/uptake.ts`, a Planner move family whose ground
+  `src/ansci/uptake.ts`, a Planner move family whose ground
   is the register authorities' filings as evidence with
   provenance, read by the same walk in the same order as
   E1's filing (the classification table's emotion aspect,
@@ -2276,7 +2276,7 @@ synthetic-returner gates.
   `d71009c`, unpushed):* **the narrative ground is built**
   — UP-1's scope line above ("event-carried registers are
   not claimed in v1") is superseded by an authority, as
-  the line itself foresaw. UN-1: `src/fork/event-register.ts`,
+  the line itself foresaw. UN-1: `src/ansci/event-register.ts`,
   a banked event-register table sibling to the
   classification table, filing event-kinds under the
   registers (death / loss / harm of a bound person →
@@ -2690,7 +2690,7 @@ synthetic-returner gates.
   named in the 七情 recognition space and seated by the 五志
   correspondence.
   **MIX-1 · The filing form.** The entries live in a table
-  of their own, `src/fork/emotion-mix.ts`, beside the
+  of their own, `src/ansci/emotion-mix.ts`, beside the
   classification table: an entry names its word(s), its
   components as (register, element) pairs, and its
   provenance, in the vocabulary pass's manner. A mix word
@@ -2982,7 +2982,7 @@ visible in the record.
   case.
 - **Construction family — measured (2026-11-18).** A dedicated
   set (scripts/construction-family-challenge.tsv; report:
-  docs/fork/construction-family-challenge.md) ran 41 core
+  docs/ansci/construction-family-challenge.md) ran 41 core
   items, built to the eight branches that set
   `states.construction` (en imperative / existential /
   weather; zh ba / bei / correlative / a-not-a / serial),
@@ -3034,10 +3034,10 @@ visible in the record.
   layer — initiative now stands down on stance turns, whose
   replies are complete designed moves (the stance already
   restates the ground the candidate would volunteer).
-  Evidence: `test/fork-lexicon-state.test.ts` (6 tests,
+  Evidence: `test/ansci-lexicon-state.test.ts` (6 tests,
   including parse-twice stability), the construction-family
   re-run above, and the full gates in
-  `docs/fork/lexicon-state-report.md`. Nobody outside this
+  `docs/ansci/lexicon-state-report.md`. Nobody outside this
   loop has checked the fix.
 - ~~**Imperative construction state is single-use per
   process.** 0/5 on the new set: every imperative records
@@ -3076,7 +3076,7 @@ visible in the record.
   bundles, irregular forms selected, both languages) and the
   aspect family scored 100% on the stage-5 holdout; the
   recorded residue is in the aspect challenge set
-  (docs/fork/aspect-challenge.md) rather than closed outright.
+  (docs/ansci/aspect-challenge.md) rather than closed outright.
 - **Sense selection.** The coherence-based sense unit stands at
   70%: within a sentence it arbitrates, but the preregistered
   H3a/H3b sense experiment remains gated on its materials and
@@ -3408,7 +3408,7 @@ visible in the record.
   fixture), declared in the manifest and excluded.
   *Determinations written and entered (2026-11-18):* the
   seven determinations are now settled design in the record —
-  `docs/fork/repair-programme.md` Part G (G.1–G.7), each ruled
+  `docs/ansci/repair-programme.md` Part G (G.1–G.7), each ruled
   2026-11-18 as recommended under the owner's standing
   instruction, written from the record's stated principles
   without reference to parser output (G.7, the lone-object
@@ -3523,7 +3523,7 @@ visible in the record.
   (2026-11-19, the owner's "1a" commission; determinations
   entered as Part J of the repair programme; builds verified
   against the items' own sentences in
-  test/fork-vocab-pass.test.ts — the items carry no expected
+  test/ansci-vocab-pass.test.ts — the items carry no expected
   graphs, so verification is the determined atom's presence
   on the item's text with its negative controls, not a
   score).* **Unblocked (7):** H-014 — the `contains` edge
@@ -3657,7 +3657,7 @@ visible in the record.
   this build, settles them.
   *Status (2026-11-18, later):* built, gated, and pushed in
   the five-batch merge (`e6f14ab`); the full record is
-  `docs/fork/slice-a-report.md`.
+  `docs/ansci/slice-a-report.md`.
 - Slices B, C, D: accepted in shape and order (2026-11-18), each
   awaiting its own commission.
   *Status (2026-11-18, later):* commissioned as a sequence

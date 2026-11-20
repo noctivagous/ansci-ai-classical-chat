@@ -90,7 +90,7 @@ export type EdgeType =
   // slice 2c, ahead of the data they will run over)
   | "HAS_PROPERTY" // bearer -> property concept
   | "CAPABLE_OF" // bearer -> capability concept
-  // Wikidata KB tier (slice W2 — see src/fork/wikidata-bank.ts:
+  // Wikidata KB tier (slice W2 — see src/ansci/wikidata-bank.ts:
   // retrieved associations banked into the base partition)
   | "CAPITAL_OF" // capital -> territory (Wikidata P36, inverted at import)
   | "LOCATED_IN" // thing -> containing place/country (Wikidata P17/P131)
@@ -272,7 +272,7 @@ export class Graph {
   nodeByName(name: string): GraphNode | undefined {
     const want = name.toLowerCase();
     const matches = this.allNodes().filter((nd) => nd.name.toLowerCase() === want);
-    // Named-entity grounding nodes (src/fork/entities.ts, Slice 0)
+    // Named-entity grounding nodes (src/ansci/entities.ts, Slice 0)
     // are never name referents: an entity or its class may share
     // a name with an ordinary concept ("table" the furniture
     // class stands above some entity's class; "turkey" names

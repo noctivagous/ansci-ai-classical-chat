@@ -4,7 +4,7 @@ Schematic address: `intake` · Type: Container · State: partial · 25% complete
 
 The doorway for outside knowledge: routed, ordered, provenance-labelled.
 
-Working code today: src/fork/cskg-feed.ts (interface only)
+Working code today: src/ansci/cskg-feed.ts (interface only)
 
 Holds:
 - `intake/router` — Intake Router

@@ -6,7 +6,7 @@
  * meet — the project's own rules, not aspirations. Statuses are
  * per part and deliberately never averaged into a single number:
  * this page's standing rule is that a gain in one ledger is not a
- * gain in another. Sources: docs/fork/repair-programme.md, the
+ * gain in another. Sources: docs/ansci/repair-programme.md, the
  * fork design records, and the capability ledger on this page.
  */
 
@@ -30,7 +30,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     title: "The conversation engine",
     status: "session core built — record, planner inputs, gap questions, bounded initiative · intent arc, person model, wider situation and durable memory still open",
     stands:
-      "The steering probe has grown into a session record the planner reads: entities, events and states (each state carrying its origin — the classification leg it came from, its support, its tier), first-class topics with the turns they were raised and last touched, corrections recorded as supersession deltas, a disposition and a role composition, and an awareness frame — the session's season and daypart, classified from the shell's clock. Follow-up questions arise from genuine gaps (an unfilled required role, a classification split between rival derivations), and bounded initiative takes up a standing thread whose generating direction has gone unexpressed. The dashboard chat above runs all of it. What does not exist is unchanged in kind: no intent arc, no person model, no situation wider than the frame. Evidence: docs/fork/transcripts/T-R3.md, T-R5.md, T-R6.md and their results files; the §11 exercise in T-R7-dashboard-check.md.",
+      "The steering probe has grown into a session record the planner reads: entities, events and states (each state carrying its origin — the classification leg it came from, its support, its tier), first-class topics with the turns they were raised and last touched, corrections recorded as supersession deltas, a disposition and a role composition, and an awareness frame — the session's season and daypart, classified from the shell's clock. Follow-up questions arise from genuine gaps (an unfilled required role, a classification split between rival derivations), and bounded initiative takes up a standing thread whose generating direction has gone unexpressed. The dashboard chat above runs all of it. What does not exist is unchanged in kind: no intent arc, no person model, no situation wider than the frame. Evidence: docs/ansci/transcripts/T-R3.md, T-R5.md, T-R6.md and their results files; the §11 exercise in T-R7-dashboard-check.md.",
     roadmap: [
       { done: true, text: "A session that carries derived conclusions from turn to turn within a run — the steering probe did this much, and the record has since grown the fields the planner reads (origins, topics, deltas)." },
       { done: true, text: "Session state that persists across turns: later statements relate to earlier ones — states carry their origins and tiers, topics their raised and last-touched turns, corrections their recorded deltas (design note §9.4; slices R0 and R5)." },
@@ -45,7 +45,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
       "Address the person inside a sentence, in the second person, their content taken up — never by name as a vocative.",
       "A direct graph query pasted out as a reply is an architecture violation, however accurate the fact.",
     ],
-    source: "src/fork/turn.ts · session.ts · plan.ts · docs/fork/reply-planning-design.md §§8–11 · transcripts T-R3/T-R5/T-R6/T-R7",
+    source: "src/ansci/turn.ts · session.ts · plan.ts · docs/ansci/reply-planning-design.md §§8–11 · transcripts T-R3/T-R5/T-R6/T-R7",
   },
   {
     id: "generation",
@@ -53,10 +53,10 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     title: "Making the generator the reply surface",
     status: "the generator is the reply surface · planner built and live in the dashboard chat",
     stands:
-      "Built (reply-planning programme, slices R1–R7). The planner (src/fork/plan.ts) builds a meaning graph for the reply from the turn's derivations and the session record, prices it — a reply's ceiling is set by the weakest classification on its derivation's path, and its support sets the strength at or below that ceiling — and the generator speaks from that graph: predications, compositions of several conclusions in both declared orderings, gap questions, corrections, initiative. The probe's hand wording remains only where no derivation backs a turn, and the trace flags those turns as wording-not-derived rather than letting them pass as generated. The session's disposition composition varies selection and qualification without varying what is concluded (slice R4). Evidence: docs/fork/transcripts/T-R1.md, T-R2.md, T-R4.md and their results files; the dashboard exercise in T-R7-dashboard-check.md. English-first, as decided; the graphs are language-neutral and the turn loop's Chinese side is separate work.",
+      "Built (reply-planning programme, slices R1–R7). The planner (src/ansci/plan.ts) builds a meaning graph for the reply from the turn's derivations and the session record, prices it — a reply's ceiling is set by the weakest classification on its derivation's path, and its support sets the strength at or below that ceiling — and the generator speaks from that graph: predications, compositions of several conclusions in both declared orderings, gap questions, corrections, initiative. The probe's hand wording remains only where no derivation backs a turn, and the trace flags those turns as wording-not-derived rather than letting them pass as generated. The session's disposition composition varies selection and qualification without varying what is concluded (slice R4). Evidence: docs/ansci/transcripts/T-R1.md, T-R2.md, T-R4.md and their results files; the dashboard exercise in T-R7-dashboard-check.md. English-first, as decided; the graphs are language-neutral and the turn loop's Chinese side is separate work.",
     roadmap: [
       { done: true, text: "The machinery exists: the generator already turns meaning graphs back into English and Chinese sentences (97.7–98.2% feature preservation on round trips)." },
-      { done: true, text: "Reply planning: from the turn's derived conclusions and its situation record, a meaning graph is built for the reply — the same record type the parser produces, so replies and inputs share one representation (src/fork/plan.ts, slice R1). (Intent is not yet an input — part 1's open item.)" },
+      { done: true, text: "Reply planning: from the turn's derived conclusions and its situation record, a meaning graph is built for the reply — the same record type the parser produces, so replies and inputs share one representation (src/ansci/plan.ts, slice R1). (Intent is not yet an input — part 1's open item.)" },
       { done: true, text: "Generate the reply sentence from that graph (English first; Chinese as its coverage allows), including its questions, negations and qualifications as graph structure, not as phrasing choices (slices R1, R3, R5). Evidence: T-R1, T-R3, T-R5." },
       { done: true, text: "Wording variety from structure: different derivations produce different replies because their graphs differ — not because a template bank is sampled. Compositions of several conclusions are spoken in a declared order, with the alternate ordering visible in the trace (slice R2). Evidence: T-R2." },
       { done: true, text: "Confidence carried through: a reply asserts at the strength its derivation carries — priced by tier ceiling and support (§9.2) — and weak derivations surface as hedged replies or grounded declines, by construction (slices R1, R3, R4). Evidence: T-R1, T-R4, T-R7." },
@@ -66,7 +66,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
       "Every claim in a reply is inspectable in the trace, back to the derivation that produced it.",
       "Abstention is a legitimate reply: when the derivation is empty, the honest output is not knowing — produced by the mechanism, not by a deflection template.",
     ],
-    source: "src/fork/generate.ts · plan.ts · pricing.ts · docs/fork/reply-planning-design.md §§9–11 · transcripts T-R1/T-R2/T-R4/T-R7",
+    source: "src/ansci/generate.ts · plan.ts · pricing.ts · docs/ansci/reply-planning-design.md §§9–11 · transcripts T-R1/T-R2/T-R4/T-R7",
   },
   {
     id: "coverage",
@@ -90,7 +90,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
       "Attested tradition, creative application and analysis stay in distinct labelled layers at every tier of the ladder.",
       "The brakes are constitutive: confidence band, confidence gate, per-relation decay and restraint arbitration ship with any growth, not after it.",
     ],
-    source: "docs/fork/repair-programme.md Parts E–F · wp1-pilot-results.md · wp1-scaleup-sample.md",
+    source: "docs/ansci/repair-programme.md Parts E–F · wp1-pilot-results.md · wp1-scaleup-sample.md",
   },
   {
     id: "feeders",
@@ -113,7 +113,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
       "Routing order is fixed: local graph → Wikidata → web → model. A later tier is reached only when the earlier ones genuinely come back empty.",
       "Banking never outruns the brakes: a banked edge enters at derived confidence, under the same gates as any heuristic output.",
     ],
-    source: "src/fork/cskg-feed.ts (interface) · fork design records (routing and banking)",
+    source: "src/ansci/cskg-feed.ts (interface) · fork design records (routing and banking)",
   },
   {
     id: "evaluation",
@@ -135,7 +135,7 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
       "Judges are never the builder, and a claim graduates only when an independently authored set reproduces it.",
       "Failures found by evaluation stay in the record — the failure wall below is the model: named, evidenced, and closed only by a mechanism, not by editing the set.",
     ],
-    source: "docs/fork/repair-programme.md Parts C.5–C.6 · the preregistered H3 design",
+    source: "docs/ansci/repair-programme.md Parts C.5–C.6 · the preregistered H3 design",
   },
   {
     id: "gardener",
@@ -164,9 +164,9 @@ export const ROADMAP_PARTS: RoadmapPart[] = [
     title: "Where the chatbot actually runs",
     status: "demonstrator runs locally · no served chat yet",
     stands:
-      "The fork was shaped to be lightweight and run anywhere: the core loop is local, the web tier is optional, and the demonstrator already runs as a line-at-a-time terminal program (npm run fork:chat) on a developer's machine. What does not exist is a served, persistent chatbot a person could simply talk to — sessions end with the process, and the large lexical assets (the ~20MB WordNet extract, the FrameNet bundle) are optional layers that a deployment has to carry deliberately, as this page's own web build shows by running without them.",
+      "The fork was shaped to be lightweight and run anywhere: the core loop is local, the web tier is optional, and the demonstrator already runs as a line-at-a-time terminal program (npm run ansci:chat) on a developer's machine. What does not exist is a served, persistent chatbot a person could simply talk to — sessions end with the process, and the large lexical assets (the ~20MB WordNet extract, the FrameNet bundle) are optional layers that a deployment has to carry deliberately, as this page's own web build shows by running without them.",
     roadmap: [
-      { done: true, text: "The demonstrator runs locally as a line-at-a-time terminal program (npm run fork:chat), its core loop fully offline." },
+      { done: true, text: "The demonstrator runs locally as a line-at-a-time terminal program (npm run ansci:chat), its core loop fully offline." },
       { done: true, text: "Honest degraded configurations have a working precedent: this page's own web build runs without the WordNet and FrameNet providers and labels them off in the interface." },
       { done: false, text: "Session persistence: a conversation survives restarts, and its memory boundary (part 1) is enforced by storage, not by convention." },
       { done: false, text: "An asset strategy: which providers ship in the box (WordNet, FrameNet), which load on demand, and what the system honestly cannot do in each configuration — labelled, as this page labels its own build." },

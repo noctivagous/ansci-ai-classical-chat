@@ -9,7 +9,7 @@
  * measurement recorded:
  *
  *   stage 1  relation filter — only relations the feeder maps
- *            (isCskgRelationMapped, src/fork/cskg-feed.ts);
+ *            (isCskgRelationMapped, src/ansci/cskg-feed.ts);
  *   stage 2  English/source rules — concept-relation rows keep
  *            only when both node ids live under /c/en/ (ATOMIC
  *            rows pass on their relation: ATOMIC is English-only
@@ -41,7 +41,7 @@
  * hard-coded; `firstGenerated` is carried over from the previous
  * manifest, `generated` is the date of this run.
  *
- * Run via: npm run fork:build-cskg-bundle
+ * Run via: npm run ansci:build-cskg-bundle
  */
 import { createRequire } from "node:module";
 import * as fs from "node:fs";
@@ -73,11 +73,11 @@ if (!fs.existsSync(extractPath)) {
 
 let feeder;
 try {
-  feeder = require("../dist/src/fork/cskg-feed.js");
+  feeder = require("../dist/src/ansci/cskg-feed.js");
 } catch {
   fail(
-    `compiled feeder not found at dist/src/fork/cskg-feed.js.\n` +
-      `Run npm run build first — or run this script via: npm run fork:build-cskg-bundle`,
+    `compiled feeder not found at dist/src/ansci/cskg-feed.js.\n` +
+      `Run npm run build first — or run this script via: npm run ansci:build-cskg-bundle`,
   );
 }
 const { mapTriple, normaliseRelation, isCskgRelationMapped } = feeder;
@@ -99,7 +99,7 @@ for (const relation of DECLARED_SET) {
   if (!isCskgRelationMapped(relation)) {
     fail(
       `the script's declared map lists '${relation}', but the compiled feeder does not map it.\n` +
-        `The feeder (src/fork/cskg-feed.ts) is the source of truth — update this script's declared lists to match it.`,
+        `The feeder (src/ansci/cskg-feed.ts) is the source of truth — update this script's declared lists to match it.`,
     );
   }
 }
@@ -236,7 +236,7 @@ const manifest = sortDeep({
   generated: today,
   firstGenerated,
   generator:
-    "Trim of the locally installed full extract (data/raw/cskg/cskg.tsv.gz) by the fork feeder's own rules (src/fork/cskg-feed.ts, mapTriple), produced by scripts/build-cskg-bundle.mjs (npm run fork:build-cskg-bundle). The bundle was first generated as Run 2 of the CSKG trim measurement (2026-11-17); this script is that staged procedure — relation filter, English/source rules, mapTriple as the endpoint stage — committed.",
+    "Trim of the locally installed full extract (data/raw/cskg/cskg.tsv.gz) by the fork feeder's own rules (src/ansci/cskg-feed.ts, mapTriple), produced by scripts/build-cskg-bundle.mjs (npm run ansci:build-cskg-bundle). The bundle was first generated as Run 2 of the CSKG trim measurement (2026-11-17); this script is that staged procedure — relation filter, English/source rules, mapTriple as the endpoint stage — committed.",
   feederMap: {
     conceptRelations: CONCEPT_RELATIONS,
     atomicRelations: ATOMIC_RELATIONS,

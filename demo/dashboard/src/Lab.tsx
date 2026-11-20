@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { parse } from "../../../src/fork/parse";
-import { generate } from "../../../src/fork/generate";
-import { checkSentence } from "../../../src/fork/check";
-import { buildForkGraph, deriveSentence, type Derivation } from "../../../src/fork/join";
-import { applySenseSelection, type SenseDecision } from "../../../src/fork/sense";
-import { enableWordnetLexicon, wordnetAvailable } from "../../../src/fork/wordnet-lex";
-import type { ParsedSentence } from "../../../src/fork/sentence";
+import { parse } from "../../../src/ansci/parse";
+import { generate } from "../../../src/ansci/generate";
+import { checkSentence } from "../../../src/ansci/check";
+import { buildForkGraph, deriveSentence, type Derivation } from "../../../src/ansci/join";
+import { applySenseSelection, type SenseDecision } from "../../../src/ansci/sense";
+import { enableWordnetLexicon, wordnetAvailable } from "../../../src/ansci/wordnet-lex";
+import type { ParsedSentence } from "../../../src/ansci/sentence";
 import GraphView, { ELEMENT_COLORS } from "./GraphView";
 
 enableWordnetLexicon(true);

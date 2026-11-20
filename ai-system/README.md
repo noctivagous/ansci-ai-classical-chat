@@ -3,7 +3,7 @@
 This directory is organised as the schematic map is drawn: every box
 on the map is a node here, every node is a place in this tree, and a
 trace through the map is a walk over these directories. It replaces
-`src/fork/` as the project's working directory; `src/fork/` stays as
+`src/ansci/` as the project's working directory; `src/ansci/` stays as
 the reference implementation until each unit's replacement lands.
 
 Three files keep the map and the code the same thing:

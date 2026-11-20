@@ -4,7 +4,7 @@ Schematic address: `reasoning` · Type: Container · State: partial · 80% compl
 
 Derivation over the graph, and the planning of a reply.
 
-Working code today: src/fork/plan.ts, pricing.ts
+Working code today: src/ansci/plan.ts, pricing.ts
 
 Holds:
 - `reasoning/derivation` — Derivation

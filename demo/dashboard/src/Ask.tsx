@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
-import { newSession, type FrameInput, type Session } from "../../../src/fork/session";
-import { processTurn, type TurnResult } from "../../../src/fork/turn";
-import { SCENARIOS } from "../../../src/fork/scenarios";
-import { NEUTRAL_COMPOSITION, type Composition } from "../../../src/fork/composition";
-import { WATER_DISPOSITION, WOOD_DISPOSITION } from "../../../src/fork/disposition";
-import type { PricingRecord } from "../../../src/fork/pricing";
+import { newSession, type FrameInput, type Session } from "../../../src/ansci/session";
+import { processTurn, type TurnResult } from "../../../src/ansci/turn";
+import { SCENARIOS } from "../../../src/ansci/scenarios";
+import { NEUTRAL_COMPOSITION, type Composition } from "../../../src/ansci/composition";
+import { WATER_DISPOSITION, WOOD_DISPOSITION } from "../../../src/ansci/disposition";
+import type { PricingRecord } from "../../../src/ansci/pricing";
 import { ELEMENT_COLORS } from "./GraphView";
 
 interface Exchange {

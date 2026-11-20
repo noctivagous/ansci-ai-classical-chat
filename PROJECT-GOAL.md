@@ -31,7 +31,7 @@ Also watched for, under the project's emergence stance: behaviour the transcript
 
 Milestone 1's CSKG chat was built, and that track is now archived in place —
 files, tests and data untouched. The project's centre has moved to the fork:
-building out the Wuxing ontology as AnSci's own knowledge system (docs/fork/).
+building out the Wuxing ontology as AnSci's own knowledge system (docs/ansci/).
 CSKG's role is supporting — a feeder, a benchmark, and a conventional-knowledge
 baseline to develop and evaluate against — not the primary knowledge system,
 and not slated for wholesale replacement: individual dependencies are retired

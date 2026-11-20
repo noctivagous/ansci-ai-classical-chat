@@ -2,7 +2,7 @@
 
 - **Schematic address:** `session-and-situation/open-unknowns`
 - **Type:** Register
-- **State:** partial — **50% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: the Session lists its currently-open unknowns across scenes (`listOpenUnknowns` in `src/fork/session.ts`), and the scene wiring mints and fills slots. The register of slot *kinds* is one filed rule so far (airport → city, the owner's specimen), plus the spatial faculty's `exact-location` slots, minted for every default-placed scene entity (its coarse placement is a region; the exact position stays unknown); the mechanism is general, the rule table is meant to grow by filing, not by guessing.
+- **State:** partial — **50% completed to goal** (set by us, assessed by the project, not measured or computed). Built 2026-11-17: the Session lists its currently-open unknowns across scenes (`listOpenUnknowns` in `src/ansci/session.ts`), and the scene wiring mints and fills slots. The register of slot *kinds* is one filed rule so far (airport → city, the owner's specimen), plus the spatial faculty's `exact-location` slots, minted for every default-placed scene entity (its coarse placement is a region; the exact position stays unknown); the mechanism is general, the rule table is meant to grow by filing, not by guessing.
 
 ## What this register is
 
@@ -37,7 +37,7 @@ register can never disagree with the scenes it reports.
 
 ## Where the working code lives today
 
-`src/fork/session.ts` (the scene storage and `listOpenUnknowns`);
+`src/ansci/session.ts` (the scene storage and `listOpenUnknowns`);
 slots are minted and filled by the Senses-Scening wiring
-(`src/fork/senses-scening.ts`) as fragments are placed into the
+(`src/ansci/senses-scening.ts`) as fragments are placed into the
 running scene.

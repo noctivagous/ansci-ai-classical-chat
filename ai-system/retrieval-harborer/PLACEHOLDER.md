@@ -4,7 +4,7 @@ Schematic address: `retrieval-harborer` · Type: Unit · State: partial · 45% c
 
 Keeps what was retrieved: distilled into the graph with its papers, behind its gate.
 
-Working code today: src/fork/ingest.ts
+Working code today: src/ansci/ingest.ts
 
 Holds:
 - `retrieval-harborer/pipeline` — Harboring pipeline

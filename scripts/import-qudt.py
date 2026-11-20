@@ -83,7 +83,7 @@ CURATED = {
     "fahrenheit": ("DEG_F", "temperature", 1.0),
 }
 
-# The hand table's filed factors (src/fork/units-measurement.ts) for
+# The hand table's filed factors (src/ansci/units-measurement.ts) for
 # the units it already files — the cross-check's other side. If the
 # hand table changes, change this too; the script's job is to print
 # disagreements, and a stale copy here would print false ones.
@@ -152,7 +152,7 @@ def main():
         "license": LICENSE,
         "counts": {"units": len(records)},
         "crossCheck": {
-            "against": "the hand table in src/fork/units-measurement.ts",
+            "against": "the hand table in src/ansci/units-measurement.ts",
             "disagreements": disagreements,
             "missingFromQUDT": missing,
         },

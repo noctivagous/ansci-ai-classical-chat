@@ -4,18 +4,18 @@ Schematic address: `intake/wikidata` · Type: Source · State: partial · 85% co
 
 Facts tier. Slices W1 (adapter core), W2 (lookup + banking +
 answering) and W3 (place associations) built 2026-11-19
-(plan: `docs/fork/wikidata-adapter-plan.md`; reports:
-`docs/fork/wikidata-w1-report.md`,
-`docs/fork/wikidata-w2-report.md`,
-`docs/fork/wikidata-w3-report.md`).
+(plan: `docs/ansci/wikidata-adapter-plan.md`; reports:
+`docs/ansci/wikidata-w1-report.md`,
+`docs/ansci/wikidata-w2-report.md`,
+`docs/ansci/wikidata-w3-report.md`).
 
-Working code today: src/fork/wikidata.ts (parser, translator,
-join proposals), src/fork/wikidata-client.ts (Action API endpoint
-client, fetch injected; fixture source), src/fork/wikidata-mapping.ts
+Working code today: src/ansci/wikidata.ts (parser, translator,
+join proposals), src/ansci/wikidata-client.ts (Action API endpoint
+client, fetch injected; fixture source), src/ansci/wikidata-mapping.ts
 (the property→association mapping table, v1, as a data module),
-src/fork/wikidata-bank.ts (the banked retrieved-facts store, its
+src/ansci/wikidata-bank.ts (the banked retrieved-facts store, its
 graph mirror, and the W3 banked situation associations),
-src/fork/wikidata-turn.ts (the async turn wrapper: bank-first
+src/ansci/wikidata-turn.ts (the async turn wrapper: bank-first
 answering, the lookup trigger, the lookup-unavailable and
 ambiguous declines), src/situation.ts (the shared §8.10
 computation both the live Situation and the bank call)

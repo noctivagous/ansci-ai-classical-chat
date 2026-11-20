@@ -19,7 +19,7 @@ joins it there.
 - **QuantificationUnit** (`mathematics/quantification-unit`, 45%) —
   moved here 2026-11-19, with the UnitsMeasurement Unit nested
   inside it as before. Nothing about the unit itself changed: same
-  code (`src/fork/quantification.ts`), same Numbers slice, same
+  code (`src/ansci/quantification.ts`), same Numbers slice, same
   ledger. Only its address moved.
 - **Geometry Unit** (`mathematics/geometry-unit`, placeholder) —
   a seat only. Its contents have never been stated; nothing is

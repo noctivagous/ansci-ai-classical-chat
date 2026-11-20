@@ -2,7 +2,7 @@
 
 - **Schematic address:** `ontology-core/sense-unit` — inside the OntologyCore, beside the EmotionDesireUnit (owner's placement, 2026-11-17)
 - **Type:** Unit
-- **State:** partial — **40% completed to goal** (set by us, assessed by the project, not measured or computed). The naming authority built 2026-11-17: `src/fork/sense-unit.ts` holds the channel framework as OKU-resident data (the three-list join below) and answers channel/discrimination lookups for the bridges; the one cross-channel implication the design names (overripe) is filed there as derived-tier knowledge. No larger-graph reach is built — unlike the EDU, this unit does not yet walk the OKU's graph from a channel's phase; its readers arrive with their own slices.
+- **State:** partial — **40% completed to goal** (set by us, assessed by the project, not measured or computed). The naming authority built 2026-11-17: `src/ansci/sense-unit.ts` holds the channel framework as OKU-resident data (the three-list join below) and answers channel/discrimination lookups for the bridges; the one cross-channel implication the design names (overripe) is filed there as derived-tier knowledge. No larger-graph reach is built — unlike the EDU, this unit does not yet walk the OKU's graph from a channel's phase; its readers arrive with their own slices.
 
 ## What this unit is
 
@@ -23,7 +23,7 @@ the OKU** — the classification table and the correspondence graph hold
 the phase rows, and the ch. 4 odour row is banked in the ingested store;
 this unit is the specialist authority interpreting the sense slice, not
 a private store. In code, the framework tables are held beside the
-classification table (`src/fork/sense-unit.ts`, as `edu.ts` holds 七情六欲),
+classification table (`src/ansci/sense-unit.ts`, as `edu.ts` holds 七情六欲),
 and per-word phases are read FROM the OKU's tables by the bridges.
 
 ## Contents — the three-list join (owner's ruling, 2026-11-17: "1a, 2a")
@@ -81,6 +81,6 @@ share the roots; each speaks for its own slice.
 
 ## Where the working code lives today
 
-`src/fork/sense-unit.ts` (built 2026-11-17). Before that, sense knowledge
+`src/ansci/sense-unit.ts` (built 2026-11-17). Before that, sense knowledge
 existed only as scattered rows of the classification table (colour,
 taste, temperature, body) with no authority naming the channels.
