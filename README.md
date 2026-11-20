@@ -18,7 +18,7 @@ concepts onto those same priors, with confidence scores.
 **The graph is the model. An LLM, when one is used at all, is only ever the trainer or
 the translator — never the reasoner.**
 
-## Where the project stands — 2026-11-16
+## Where the project stands — 2026-11-20
 
 AnSci is still AnSci, and the goal is still a chat. What has changed is the
 **development approach**: the project is now developed **map-first**.
@@ -43,26 +43,41 @@ registry the code is organised by:
   the map stops, and the stop's own words appear at the node where it stopped.
 - **Work proceeds unit by unit against the map** — building what is placeholder,
   migrating what exists in the reference implementations, one gated slice at a time.
+- **The map itself is organised as the Luoshu.** Since 2026-11-20 the root page's
+  frames sit in a drawn 3×3 nine-palace scaffold: the knowledge core
+  (OntologyCore + Knowledge) at the centre (5), the other top-level units in the
+  eight palaces by function, sized by maximum correspondence and anchored toward
+  the centre, and tinted by each palace's phase in the five colours. The
+  correspondence and the layout rules are recorded in
+  [`ai-system/SCHEMATICS-LUOSHU.md`](ai-system/SCHEMATICS-LUOSHU.md).
+- **Recent landings.** The map gained a top-level Functions Unit (generic
+  operations other units call) and an ErrorFailure Unit (which composes the
+  account of a failure), with a ReasoningErrorFailure subunit inside
+  ProblemSolving on the bridge pattern. The first lack machinery is in code: a
+  capability registry as data, `capability` as a need kind with an audit, and
+  decline registration wired into the turn — every priced decline now files a
+  problem record.
 
 Chat is the first configuration of a general-purpose system; the map and the
 `ai-system/` tree are drawn configuration-neutral, with the configuration named on
 the System frame.
 
-## The two reference paths
+## The two earlier paths
 
-Two earlier paths built most of what the map now organises. Both are kept as
-**reference** in [`archive-reference/`](archive-reference/) — consulted and drawn on,
-no longer the line of development:
+Two earlier paths built most of what the map now organises:
 
 1. **The classical CSKG track** — a chat on the unified commonsense graph (CSKG),
-   with the project's conversation machinery on top. Its code (`src/`, `src/cskg/`)
+   with the project's conversation machinery on top. Its written record is kept
+   as **reference** in [`archive-reference/`](archive-reference/) — consulted and
+   drawn on, no longer the line of development. Its code (`src/`, `src/cskg/`)
    stays in place and runnable as the conventional-knowledge baseline and a
    supporting knowledge feeder.
-2. **The fork** — the ancient Chinese knowledge graph and its sentence layer:
-   the classification table, the depth programme, and the reply-planning programme.
-   Its code (`src/ansci/`) is the reference implementation the map-based path
-   migrates from — and, until each unit's migration lands, the engine the live
-   root page actually runs.
+2. **The ancient-Chinese knowledge-graph path** (begun as "the fork") — the
+   knowledge graph and its sentence layer: the classification table, the depth
+   programme, and the reply-planning programme. This path became the live line:
+   its code (`src/ansci/`) is the engine the root page runs, and new map-driven
+   work is written there directly. Its earlier written record is in
+   `archive-reference/` alongside the CSKG track's.
 
 Neither path is discarded. The map-based approach exists to make their work
 usable as one system; the archive's README is the guide to what each holds.
@@ -75,20 +90,23 @@ usable as one system; the archive's README is the guide to what each holds.
   `demo/dashboard/root/`, revised in its Muse artifact and synced here) and the
   capability & evaluation dashboard at `/dashboard/`, which runs the same engine
   in the browser and keeps the measured record, caveats included.
-- `src/`, `src/ansci/` — the two reference implementations (see above).
+- `src/` — the classical core and the CSKG track (see above). `src/ansci/` —
+  the live system code: the knowledge-graph engine and everything the
+  map-driven line has built since.
 - `archive-reference/` — the two paths' written record: designs, evaluations,
   challenge sets, acceptance transcripts.
-- `docs/` — the paths' original documents (copies of record are in
-  `archive-reference/`), plus the user's own reference writings in `docs/user-ref/`.
+- `docs/` — `docs/ansci/` holds the current line's design documents and build
+  reports; the paths' original documents (copies of record are in
+  `archive-reference/`); plus the user's own reference writings in `docs/user-ref/`.
 - `test/` — the suite; transcripts and gates are the acceptance discipline.
 
 ## Run it
 
 ```sh
 npm install
-npm test                 # the suite (550 tests) — build + node --test
+npm test                 # the suite (1258 tests) — build + node --test
 npm run ai:check         # the map ↔ code correspondence gate
-npm run ansci:chat        # the fork's surface: a parser demonstrator, not a finished chat
+npm run ansci:chat        # the AnSci surface: a parser demonstrator, not a finished chat
 npm run chat:cskg        # the archived CSKG track, under its own name
 ```
 
