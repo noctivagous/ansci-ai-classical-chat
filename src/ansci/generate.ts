@@ -662,6 +662,56 @@ function zhGenerate(p: ParsedSentence): string {
   return out + questionTail + attitudeTail + (root.states?.mood === "interrogative" ? "？" : "。");
 }
 
+/**
+ * The answer-soundness inspection (Probe-2 Slice 2, 2026-11-20;
+ * diagnostic SD3). A DECLARATIVE reply graph whose value slot
+ * still holds an unresolved question word — the wh-word of the
+ * question itself, carried into the answer's predicate /
+ * location / time / containment target, or standing as the
+ * graph's root value — is not an answer: rendered, it speaks
+ * the question word as if it were the fact asked for ("The
+ * weather is what."). No such validation existed anywhere
+ * between planner and generator; the vacuous completion was
+ * unreachable in the probed families only because earlier
+ * interceptions happened to fire first. This inspection is
+ * the missing check, stated once: it exempts interrogative
+ * graphs outright (a question legitimately holds its question
+ * word — the gap questions the Planner composes are built
+ * from them), and it judges a node a question word by the
+ * parse's own mark (questionWord) or by lemma, since a
+ * composed answer graph builds its value node from a lemma
+ * and may not carry the mark. The Planner's checked
+ * generation (plan.ts) refuses such a graph; the turn layer
+ * converts the refusal into a decline located at the
+ * unfilled value.
+ */
+export interface UnsoundAnswerValue {
+  /** The unresolved question word standing in the value slot. */
+  lemma: string;
+  /** The relation through which it stands as the value, or
+   *  "root" when the value is the graph's root itself. */
+  relation: string;
+}
+
+const QUESTION_WORD_LEMMAS = new Set(["what", "who", "whom", "whose", "where", "when", "why", "how", "which"]);
+const ANSWER_VALUE_RELATIONS = new Set(["predicate", "predicated-as", "location", "time", "contains"]);
+
+function isQuestionWordNode(n: MeaningNode): boolean {
+  return Boolean(n.questionWord) || QUESTION_WORD_LEMMAS.has(n.lemma.toLowerCase());
+}
+
+export function unsoundAnswerValue(p: ParsedSentence): UnsoundAnswerValue | undefined {
+  const root = p.meaning.nodes.find((n) => n.id === p.meaning.rootId);
+  if (root?.states?.mood === "interrogative") return undefined;
+  if (root && isQuestionWordNode(root)) return { lemma: root.lemma, relation: "root" };
+  for (const e of p.meaning.edges) {
+    if (!ANSWER_VALUE_RELATIONS.has(e.relation)) continue;
+    const to = p.meaning.nodes.find((n) => n.id === e.to);
+    if (to && isQuestionWordNode(to)) return { lemma: to.lemma, relation: e.relation };
+  }
+  return undefined;
+}
+
 export function generate(p: ParsedSentence): string {
   return p.connective.language === "en" ? enGenerate(p) : zhGenerate(p);
 }

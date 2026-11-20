@@ -23,6 +23,16 @@
  *                     best candidate clears the runner-up by the
  *                     declared margin (smaller distance, or at equal
  *                     distance at least twice the corpus count).
+ *                     When the margin fails — frequency cannot
+ *                     separate the same-distance candidates —
+ *                     STRUCTURAL evidence may still break the tie
+ *                     (Probe-2 Slice 3, 2026-11-20; diagnostic IM2):
+ *                     the slot the token stands in (a sentence-
+ *                     initial position before an inverted
+ *                     auxiliary admits question words, not
+ *                     numerals) and the typo's own onset letter.
+ *                     If the structure also ties, the token is
+ *                     NOT guessed: it falls to step 5 as today.
  *   5. unresolved   — the token stands as-is and the record carries
  *                     the best candidates found and a low confidence:
  *                     the gap is located at this token, not hidden.
@@ -206,6 +216,91 @@ function splitCanonical(form: string): string[] {
 const topCandidates = (suggestions: Suggestion[]) =>
   suggestions.slice(0, 3).map((s) => ({ term: s.term, distance: s.distance, count: s.count }));
 
+/**
+ * The structural tie-break (Probe-2 Slice 3; diagnostic IM2).
+ * The matcher's margin rule refuses a correction when several
+ * candidates stand at the same distance and none clears twice
+ * the runner-up's count — "hwo" stands one delete from who,
+ * how AND two, at counts no one of which dominates. The
+ * refusal is right that FREQUENCY cannot separate them; but
+ * the turn holds more evidence than frequency, and the
+ * diagnosis was that it went unused. Two structural signals,
+ * each only ever NARROWING a pool of same-distance candidates:
+ *
+ *   1. The slot. A token standing sentence-initially before
+ *      an inverted auxiliary or copula ("___ are you?") can
+ *      only be read by the surviving parse as a question
+ *      word — the numeral "two" has no reading there. The
+ *      pool for this signal is drawn from ALL the matcher's
+ *      candidates, not only the recogniser-usable ones: the
+ *      recogniser consults the hand lexicon and the WordNet
+ *      noun/adjective/adverb paths, and the wh-adverbs
+ *      (how, what, where, when, which) stand in NONE of
+ *      them — dedicated parse branches own those words, so
+ *      the usable filter is blind to exactly the class this
+ *      slot admits. For this closed class the slot itself
+ *      is the admissibility evidence: a question-word
+ *      candidate at the minimal distance is admitted by it,
+ *      and every non-question-word leaves the pool.
+ *   2. The onset. A typo overwhelmingly preserves its first
+ *      letter; "hwo" was written starting with h, which
+ *      separates "how" from "who" when the slot left both.
+ *
+ * The slot pool, when it is non-empty, decides alone: a
+ * unique survivor is the resolution, and a tie inside the
+ * admitted class is a genuine tie — no falling through to a
+ * weaker reading. When the slot does not speak (the token
+ * is not in it, or no question word is among the
+ * candidates), the general pool is the usable candidates,
+ * narrowed by the onset signal only. If the evidence still
+ * ties, the function returns undefined — the token declines
+ * unresolved, as it did before this slice. Pure and
+ * word-blind: the classes are closed-class data, the
+ * candidates are the matcher's own.
+ */
+const TIE_BREAK_QUESTION_WORDS = new Set(["who", "whom", "whose", "what", "where", "when", "why", "which", "how"]);
+const TIE_BREAK_INVERSION_NEXT = new Set([
+  "am", "is", "are", "was", "were", "do", "does", "did", "have", "has", "had",
+  "can", "could", "will", "would", "shall", "should", "may", "might", "must",
+]);
+
+function onsetNarrow(tokenLower: string, pool: Suggestion[]): Suggestion[] {
+  const onset = tokenLower.charAt(0);
+  if (!onset) return pool;
+  const sameOnset = pool.filter((c) => c.term.charAt(0) === onset);
+  return sameOnset.length > 0 && sameOnset.length < pool.length ? sameOnset : pool;
+}
+
+export function structuralTieBreak(
+  tokenLower: string,
+  usable: Suggestion[],
+  all: Suggestion[],
+  context: { atSentenceStart: boolean; nextLower?: string },
+): Suggestion | undefined {
+  // The token itself is never a correction: a correctly
+  // spelled word the recogniser cannot see (the wh-adverbs
+  // are the standing case) stands on its own at step 5, and
+  // "correcting" it to itself would erode the sentence's
+  // later guesses for nothing.
+  if (context.atSentenceStart && context.nextLower && TIE_BREAK_INVERSION_NEXT.has(context.nextLower) && all.length > 0) {
+    const minDistance = Math.min(...all.map((c) => c.distance));
+    const slotPool = all.filter(
+      (c) => c.distance === minDistance && c.term !== tokenLower && TIE_BREAK_QUESTION_WORDS.has(c.term),
+    );
+    if (slotPool.length > 0) {
+      const pool = onsetNarrow(tokenLower, slotPool);
+      return pool.length === 1 ? pool[0] : undefined;
+    }
+  }
+  if (usable.length < 2) return undefined;
+  const minDistance = Math.min(...usable.map((c) => c.distance));
+  const pool = onsetNarrow(
+    tokenLower,
+    usable.filter((c) => c.distance === minDistance && c.term !== tokenLower),
+  );
+  return pool.length === 1 ? pool[0] : undefined;
+}
+
 /** The parser's classification of a token, for the resolver's use:
  *  "function" (closed-class word), "known" (lexicon entry or a
  *  WordNet-derivable noun/adjective), or undefined (needs help). */
@@ -227,7 +322,8 @@ export function resolveTokenList(
   let guessesApplied = 0;
   const erode = (base: number) => base * Math.pow(0.8, guessesApplied);
 
-  for (const token of tokens) {
+  for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex++) {
+    const token = tokens[tokenIndex];
     const lower = token.toLowerCase();
     const cls = token === "," ? "function" : recognize(lower);
     if (cls === "function") {
@@ -344,6 +440,39 @@ export function resolveTokenList(
           candidates: topCandidates(usable),
           ...(aoaPriorFor(best.term) ? { aoaPrior: aoaPriorFor(best.term) } : {}),
         });
+        continue;
+      }
+    }
+
+    // The margin failed, or no usable candidate stood at all:
+    // frequency cannot separate the candidates. Structural
+    // evidence may (the slot the token stands in, the typo's
+    // onset letter — structuralTieBreak above). A structural
+    // pick scores 0.70, the segmentation step's declared
+    // value: stronger than a frequency guess among ties,
+    // weaker than a clear margin, and eroded like every
+    // guess. The record's candidates are the full matcher
+    // list: a slot pick may land outside the usable list,
+    // and the record must show the pool it was picked from.
+    const pick = structuralTieBreak(lower, usable, all, {
+      atSentenceStart: tokenIndex === 0,
+      nextLower: tokens[tokenIndex + 1]?.toLowerCase(),
+    });
+    if (pick) {
+      const confidence = erode(0.7);
+      if (confidence >= 0.5) {
+        out.push(pick.term);
+        resolutions.push({
+          surface: token,
+          tokenIndex: atIndex,
+          outcome: "corrected",
+          replacement: [pick.term],
+          confidence: Math.round(confidence * 100) / 100,
+          rule: "matcher:symspell+structural-tiebreak",
+          candidates: topCandidates(all),
+          ...(aoaPriorFor(pick.term) ? { aoaPrior: aoaPriorFor(pick.term) } : {}),
+        });
+        guessesApplied++;
         continue;
       }
     }

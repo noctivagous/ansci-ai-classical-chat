@@ -39,6 +39,16 @@ export interface PlaceTable {
    *  null when no place is configured — the standing
    *  configuration, for the reason the header records. */
   place: string | null;
+  /** The configured place's coordinates, when a deployment
+   *  configures them alongside its place (Probe-2 Slice 8):
+   *  the weather source reads weather for a POINT, and
+   *  these are the point the configured place names, held
+   *  here as configuration — a deployment that knows where
+   *  it runs can say so in numbers as well as in a name.
+   *  Unset as the place itself is unset: no coordinates
+   *  are configured, and none are invented. */
+  latitude?: number;
+  longitude?: number;
 }
 
 export const PLACE: PlaceTable = {

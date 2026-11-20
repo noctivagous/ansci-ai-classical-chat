@@ -161,6 +161,55 @@ export function ingForm(lemma: string): string {
   return lemma + "ing";
 }
 
+/**
+ * Structural question onset (Probe-2 Slice 1, 2026-11-20;
+ * diagnostic SD1; owner ruling: questions without "?" should
+ * be detected). Interrogative mood was a per-branch accident:
+ * the tokeniser computed one punctuation flag — a terminal
+ * "?" — and each parse branch then re-decided the clause's
+ * mood, the wh-copular / wh-verbal / why branches hard-coding
+ * interrogative and every other branch inheriting the flag.
+ * So a wh-question survived losing its "?" and a how-, do- or
+ * yes/no question did not: "how are you" without the mark was
+ * assessed as a statement and acknowledged ("Ok. Noted."),
+ * its content banked as an assertion. The layer decision now
+ * lives here, taken from the sentence's FORM over the resolved
+ * token stream: a question-word onset (wh-fronting), or a
+ * sentence-initial auxiliary / copula / modal — subject–aux
+ * inversion, the form an English yes/no or do-support
+ * question takes. The punctuation flag remains one signal,
+ * OR-ed with this one at the single call site in parseEn;
+ * neither signal alone owns the mood any longer. A statement
+ * opens with its subject, not with an auxiliary or a question
+ * word, so ordinary statements — with a terminal period or
+ * without one — are untouched by the structural signal.
+ */
+const EN_QUESTION_ONSET = new Set([...EN_WH, "how", "why", "whose", "whom"]);
+const EN_INVERSION_ONSET = new Set([
+  ...Object.keys(EN_BE),
+  ...EN_AUX,
+  ...EN_MODAL,
+  "will",
+  "shall",
+  "may",
+  "might",
+  "must",
+]);
+/** Discourse openers that scaffold a clause without being its
+ *  onset (the same standing the sentence-initial conjunction
+ *  already has at the tag-question strip): skipped when the
+ *  onset is read. */
+const EN_ONSET_SCAFFOLD = new Set([",", "and", "but", "so", "well"]);
+
+export function structuralQuestionOnset(tokens: string[]): boolean {
+  for (const t of tokens) {
+    const lower = t.toLowerCase();
+    if (EN_ONSET_SCAFFOLD.has(lower)) continue;
+    return EN_QUESTION_ONSET.has(lower) || EN_INVERSION_ONSET.has(lower);
+  }
+  return false;
+}
+
 function enTokenize(text: string): { tokens: string[]; interrogative: boolean } {
   const interrogative = /\?\s*$/.test(text);
   // The glued-comma transcription (IMP-1, the implementation
@@ -177,7 +226,29 @@ function enTokenize(text: string): { tokens: string[]; interrogative: boolean } 
   const cleaned = text.trim().replace(/[.?!]\s*$/, "").replace(/_comma_/gi, " , ").replace(/,/g, " , ");
   const raw = cleaned.split(/\s+/).filter(Boolean);
   const tokens: string[] = [];
-  for (const t of raw) {
+  for (const rawToken of raw) {
+    // Surface symbols at a token's edges (Probe-2 Slice 3,
+    // 2026-11-20; diagnostic IM1): the strip above and the
+    // glued split below know only the sentence marks [.?!]
+    // and the comma, so any other symbol a surface carries —
+    // a stray ">" (the second transcript's typo: "who are
+    // you>?"), brackets, quotes, a price's "$", a trailing
+    // "%" — rode INTO the token as content: "you>" was not
+    // the word "you" to any layer, and only the spelling
+    // matcher's luck (a distance-1 correction) saved the
+    // turns that survived. Such symbols are the surface's,
+    // not the word's — the same standing the sentence marks
+    // already have — so a run of them at either edge of a
+    // token is removed here, before every other rule reads
+    // the token; a token made only of them is dropped. The
+    // set is explicit and closed: sentence marks, the comma,
+    // the apostrophe and the hyphen are NOT in it (they are
+    // grammatical or word-internal, and the rules below own
+    // them), and nothing inside a token is touched.
+    const t = rawToken
+      .replace(/^[><\/\\|@#$%^&*_~`"“”()\[\]{}:;…•·«»—–]+/, "")
+      .replace(/[><\/\\|@#$%^&*_~`"“”()\[\]{}:;…•·«»—–]+$/, "");
+    if (!t) continue;
     if (/^can't$/i.test(t)) {
       tokens.push("can", "n't"); // can + n't contracts by apostrophe only
     } else if (/^won't$/i.test(t)) {
@@ -1105,6 +1176,14 @@ function parseEn(text: string): ParsedSentence {
     return undefined;
   };
   const resolved = resolveTokenList(tokens, recognize);
+  /* The mood decision (Probe-2 Slice 1): the punctuation flag
+   * and the structural onset are OR-ed HERE, at the one call
+   * site every branch below inherits — a question whose form
+   * is interrogative is parsed as a question with or without
+   * its "?". The tag-question strip keeps the punctuation
+   * flag alone: a tag is defined by its mark, and its stripped
+   * reading is attempted as the statement it is. */
+  const formInterrogative = interrogative || structuralQuestionOnset(resolved.tokens);
   /* The tag question (IMP-2, the implementation programme,
    * 2026-11-19): a statement carrying a confirmation tag —
    * "It must be a very stressful job, right?", "You are
@@ -1194,7 +1273,7 @@ function parseEn(text: string): ParsedSentence {
       // The stripped reading failed: the original stands.
     }
   }
-  return attempt(resolved.tokens, interrogative);
+  return attempt(resolved.tokens, formInterrogative);
 }
 
 function parseEnBody(text: string, tokens: string[], interrogative: boolean): ParsedSentence {

@@ -91,11 +91,12 @@ import { classificationsOf, lookupClassification, type ClassificationEntry } fro
 import { climbClassification, climbRecognitions, wordnetAdjective, wordnetNoun } from "./wordnet-lex";
 import { derive, type Derivation, type DerivedConclusion } from "./join";
 import { lookupEntity } from "./entities";
+import { chooseDictionarySense, ordinaryNounSenses } from "./dictionary";
 import { classifiedOrigin, holderOf, recordEntity, resolvePronoun, supersedeRecord, supersedeState, type FrameRecord, type Session, type StateRecord, type SupersessionRecord, type TopicRecord } from "./session";
 import { renderComposition } from "./composition";
 import { priceDerivation, tierOfProvenance, weakestTier, type PricingRecord, type Tier } from "./pricing";
 import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
-import { COHESION_MARKERS, ROLE_QUESTION_WORD, historySource, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, planSelfIdentity, planThanksReceipt, planWellbeingAnswer, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
+import { COHESION_MARKERS, ROLE_QUESTION_WORD, UnsoundAnswerError, historySource, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, planSelfIdentity, planThanksReceipt, planWellbeingAnswer, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rankedTopics, salienceOf, stateMovements, type LedgerPointer } from "./discourse-record";
 import {
   assessNarrativeGround,
@@ -133,6 +134,8 @@ import { generate } from "./generate";
 import { canonicalEmotion, type EmotionKind } from "./edu";
 import { canonicalNameFor, uncategorisedEmotionWord } from "./ledu";
 import { mixFor, type EmotionMixEntry } from "./emotion-mix";
+import { composeWeatherReply, detectWeatherQuestion, displayPlace, resolveWeatherPlace, statedWeather, type WeatherQuestion } from "./weather";
+import { defaultWeatherBank, placeKeyOf } from "./weather-bank";
 
 export interface TurnTrace {
   turn: number;
@@ -437,6 +440,32 @@ export interface TurnTrace {
    *  (Transcript Slice 4): the gloss is the location-bearing
    *  fact held for it, and the ground says so. */
   entityAnswer?: { subject: string; name: string; synsetId: string; classes: string[]; ground: string };
+  /** The dictionary answer (Probe-2 Slice 7, amended the
+   *  same day): the question asked what a COMMON noun is,
+   *  and the dictionary (dictionary.ts — the WordNet
+   *  extract's ordinary synsets, retrieved provenance)
+   *  answered from the ordinary senses alone: the only
+   *  sense, or a later sense Lesk promoted on conversation
+   *  evidence, spoken as a single gloss (`via` "first-sense"
+   *  / "lesk"; `synsetId`, `sense` and `gloss` cite that
+   *  sense) — or, several senses standing with no winner,
+   *  the LISTING of them all (`via` "listing"; `senses`
+   *  carries every listed sense in order, and the head
+   *  fields cite the first). The distinction is recorded
+   *  because later diagnosis reads it: a listing is the
+   *  evidence declining to discriminate, not a choice.
+   *  Cited here as the entity answer cites its synset —
+   *  in the trace, not spoken. */
+  dictionaryAnswer?: {
+    subject: string;
+    synsetId: string;
+    sense: number;
+    ordinarySenses: number;
+    gloss: string;
+    via: "first-sense" | "lesk" | "listing";
+    senses?: { synsetId: string; sense: number; gloss: string }[];
+    ground: string;
+  };
   /** The about-topic (Transcript Slice 6): this turn's clause
    *  carried an about-phrase, and the parse filed its topic
    *  under the 'about' relation (sentence.ts) — the topic as
@@ -462,6 +491,33 @@ export interface TurnTrace {
    *  graph nor the Session record, asked after instead of
    *  answered past. */
   unanchoredDefinite?: { lemma: string; ground: string };
+  /** The unanchored-definite branch's stand-down (Probe-2
+   *  Slice 4; diagnostic SD2): the definite subject LOOKED
+   *  unanchored, but a downstream shape can claim the
+   *  question — the phrase is anchored by its own of-phrase
+   *  ("the capital of Oklahoma"), or its lemma names a time,
+   *  which the situation frame anchors (or fails to, which
+   *  is the frame's located decline to give, not this
+   *  branch's). The branch stood down and the question
+   *  proceeded; the ground says which claim spared it. */
+  unanchoredStandDown?: { lemma: string; ground: string };
+  /** The answer-soundness guard's refusal (Probe-2 Slice 2;
+   *  diagnostic SD3): a plan composed a declarative answer
+   *  whose value is an unresolved question word, the checked
+   *  generation at the planner→generator seam refused it, and
+   *  the turn declined — located at the unfilled value —
+   *  instead of speaking the question word as the fact asked
+   *  for. The lemma and the relation it stood in are the
+   *  location; the ground says why the refusal fired. */
+  answerGuard?: { lemma: string; relation: string; ground: string };
+  /** The time/date shape's record (Probe-2 Slice 5): a
+   *  "what is the time?" / "what is the date?" question was
+   *  claimed by the frame shape — answered from the
+   *  situation frame's supplied readings, or declined with
+   *  the missing clock/calendar reading as the located gap.
+   *  `supplied` is the frame's own record, present when a
+   *  frame stands in the session. */
+  timeAnswer?: { asked: "time" | "date"; ground: string; supplied?: { month?: number; day?: number; hour: number } };
   /** The gibberish repair (Part 3e): the turn arrived with no
    *  resolvable content (the joint Normalcy+Coherence flag),
    *  and the reply is the repair question. */
@@ -499,6 +555,43 @@ export interface TurnTrace {
     qid?: string;
     dataset?: "wikidata";
     fetched: boolean;
+    detail: string;
+    priorDecline?: string;
+  };
+  /**
+   * The weather shape's record (Probe-2 Slice 6), the
+   * Wikidata record's sibling: the action taken (answered
+   * from the conversation's own stated weather; answered
+   * from the bank with no fetch; the place gap named; a
+   * reading needed — the wrapper's trigger; looked up,
+   * banked and answered; lookup unavailable; the place's
+   * coordinates missing from everything the system holds
+   * — Slice 8, replacing Slice 6's place-unresolved, which
+   * died with the geocoding step; the point outside the
+   * source's coverage — Slice 8), the shape asked, and the
+   * place in force with its resolution source. For any
+   * reply resting on a banked reading, `fetchedAt` and
+   * `expiresAt` show the reading's fetch time and shelf
+   * life — weather expires, and the trace is where its
+   * currency is judged. `priorDecline` keeps the located
+   * decline the turn first ended in, for audit, when the
+   * wrapper replaced its reply.
+   */
+  weather?: {
+    action:
+      | "answered-from-record"
+      | "answered-from-bank"
+      | "place-gap"
+      | "lookup-needed"
+      | "looked-up-and-banked"
+      | "lookup-unavailable"
+      | "coordinates-missing"
+      | "source-coverage";
+    shape: "weather" | "temperature" | "raining" | "snowing";
+    place?: string;
+    placeSource?: "question" | "configured" | "conversation";
+    fetchedAt?: string;
+    expiresAt?: string;
     detail: string;
     priorDecline?: string;
   };
@@ -3910,7 +4003,61 @@ function composeSegmentTurns(session: Session, text: string, ground: string): Tu
   return { reply: shaped.join(" "), trace };
 }
 
-function processTurnInner(session: Session, text: string, opts?: { clarificationFallback?: boolean; segmented?: boolean }): TurnResult {
+/**
+ * The one wrapper every inner turn passes (Probe-2 Slice 2):
+ * the answer-soundness guard's conversion. A plan anywhere in
+ * the body may refuse its own answer graph at the
+ * planner→generator seam (plan.ts's checked generation throws
+ * UnsoundAnswerError); the refusal is caught HERE, at the
+ * single point all inner turns — whole, segmented, and the
+ * clarification-fallback re-entry — return through, and
+ * converted into a decline located at the unfilled value.
+ * The body's trace is recovered through the holder the body
+ * fills at its creation, so the decline carries the turn's
+ * own evidence (its parse, its walk so far) rather than a
+ * fabricated frame. Any other error propagates untouched.
+ */
+function processTurnInner(
+  session: Session,
+  text: string,
+  opts?: { clarificationFallback?: boolean; segmented?: boolean },
+): TurnResult {
+  const holder: { trace?: TurnTrace } = {};
+  try {
+    return processTurnInnerBody(session, text, opts, holder);
+  } catch (err) {
+    if (err instanceof UnsoundAnswerError && holder.trace) {
+      const trace = holder.trace;
+      const { lemma, relation } = err.value;
+      trace.answerGuard = {
+        lemma,
+        relation,
+        ground:
+          `the planner composed a declarative answer whose value is the unresolved question word ` +
+          `'${lemma}' (standing as ${relation === "root" ? "the reply graph's root" : `the '${relation}' target`}); ` +
+          `the checked generation at the planner→generator seam refused it (Probe-2 Slice 2)`,
+      };
+      trace.declineReason =
+        `the question asks for a value, and the only value the composed answer held was the question ` +
+        `word '${lemma}' itself — the asked-for value stands unfilled, and a declarative answer holding ` +
+        `a question word as its value may not be spoken; the decline is located at that value (§6)`;
+      trace.planNote =
+        "answer-soundness guard (Probe-2 Slice 2): the vacuous completion is refused mechanically — " +
+        "the turn declines at the unfilled value instead of rendering the question word as the fact asked for";
+      // The wording is MINIMAL / DRAFT — the owner's to settle,
+      // as all hand-composed decline text is.
+      return { reply: "I can't answer that from what I know: the value that question asks for is not something I have.", trace };
+    }
+    throw err;
+  }
+}
+
+function processTurnInnerBody(
+  session: Session,
+  text: string,
+  opts?: { clarificationFallback?: boolean; segmented?: boolean },
+  traceHolder?: { trace?: TurnTrace },
+): TurnResult {
   /* Segmentation by default (S5, the S programme, 2026-11-19;
    * generalising conversation-shapes C1/C2): a turn carrying
    * several sentence segments is taken as what it is — a
@@ -4008,6 +4155,10 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     // replaces it; the planner clears this where it speaks.
     wordingNotDerived: true,
   };
+  // The soundness wrapper's recovery (Probe-2 Slice 2): the
+  // trace is the body's own from here on; the holder lets the
+  // wrapper convert a guard refusal into this turn's decline.
+  if (traceHolder) traceHolder.trace = trace;
   /* R5 (§8.7 S3): the topic records as they stood BEFORE this
    * turn's own recording touches them. Cohesion's return check
    * reads the snapshot: the turn itself reactivates the topic
@@ -5440,9 +5591,25 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
   // own question — initiative never fires on it, whatever the
   // answer's shape.
   if (root.states?.mood === "interrogative") trace.personPresented = "question";
+  if (root.states?.mood === "interrogative") {
+    // The weather shape (Probe-2 Slice 6): claimed here,
+    // before the predication routes — the unanchored-
+    // definite branch inside them stood down for time words
+    // in Slice 4, but 'weather' is this shape's to claim,
+    // and its place resolution must run before any route
+    // that would ask after a referent or decline on 'how'.
+    const weatherQuestion = detectWeatherQuestion(text);
+    if (weatherQuestion) return answerWeatherQuestion(session, trace, weatherQuestion);
+  }
   if (root.states?.mood === "interrogative" && predEdge) {
     const subject = nodeById(parsed, predEdge.from);
-    return answerPredicateQuestion(session, trace, subject, root, root.states?.questionKind === "why", topicsBefore);
+    // The time/date shape (Probe-2 Slice 5): a what-question
+    // over a time or date noun is claimed by the frame shape
+    // before the predication routes — the frame holds the
+    // reading, or its absence is the located gap.
+    const timeDateAsk = timeDateAskOf(parsed);
+    if (timeDateAsk) return answerTimeDateQuestion(session, trace, timeDateAsk);
+    return answerPredicateQuestion(session, trace, subject, root, root.states?.questionKind === "why", topicsBefore, parsed);
   }
   if (root.states?.mood === "interrogative") {
     /* The how-many reader (2026-11-17): a "How many …?"
@@ -7252,6 +7419,9 @@ function computeMapPath(trace: TurnTrace): string[] {
   // The entity answer (Slice 0) is read off the correspondence
   // graph the grounding was ingested into.
   if (trace.entityAnswer) path.push("reasoning/derivation", "ontology-core/ontology-knowledge-unit/correspondence-graph");
+  // The dictionary answer (Probe-2 Slice 7) is read off the
+  // same notes: the extract the grounding was ingested from.
+  if (trace.dictionaryAnswer) path.push("reasoning/derivation", "ontology-core/ontology-knowledge-unit/correspondence-graph");
   const correctionOnly = Boolean(trace.correction && trace.replyGraph && !trace.derivationPath);
   const planned = Boolean(trace.replyGraph || trace.gapQuestion || trace.clarification);
   const derived = Boolean(trace.derivationPath || trace.cyclePath);
@@ -7404,6 +7574,292 @@ const SEASON_PROFILE_SET: { aspect: "temperature" | "light"; yin: string; yang: 
 ];
 
 /**
+ * The time words (Probe-2 Slice 4; diagnostic IM3): lemmas
+ * that name a time rather than a thing. As a question's
+ * definite subject they are never an unanchored referent —
+ * "now" in "What is the weather now?" is the moment the
+ * question is asked at, handed to subject selection by the
+ * parse, and "the time" / "the date" ask after the situation
+ * frame's readings. The unanchored-definite branch stands
+ * down for every lemma here; the frame's shapes (Slice 5)
+ * and the knowledge routes own these questions.
+ */
+const UNANCHORED_TIME_SUBJECTS = new Set([
+  "now", "today", "tonight", "tomorrow", "yesterday",
+  "time", "date", "day", "morning", "afternoon", "evening", "noon", "midnight",
+]);
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/**
+ * The time/date ask (Probe-2 Slice 5, 2026-11-20; diagnostic
+ * SD4, first half): does this predication question ask for
+ * the clock or the calendar? The shape is read off the
+ * parse: the predicate is the question word and a time or
+ * date noun stands among the question's nodes ("what is the
+ * time [now]?", "what is the date?", "what is the day?").
+ * A time/date noun carrying its own of-phrase ("the time of
+ * the meeting") is not this shape — that question's answer
+ * is not the frame's reading, and the ordinary routes keep
+ * it. Recorded limit: "what time is it?" loses its noun in
+ * the parse (the wh-determiner construction files no time
+ * node), so this shape cannot see it; it keeps its previous
+ * route.
+ */
+function timeDateAskOf(parsed: ParsedSentence): "time" | "date" | undefined {
+  const root = parsed.meaning.nodes.find((n) => n.id === parsed.meaning.rootId);
+  if (!root || root.lemma !== "what") return undefined;
+  const byLemma = (lemma: string) => parsed.meaning.nodes.find((n) => n.lemma === lemma);
+  const hasOfPhrase = (node: MeaningNode) =>
+    parsed.meaning.edges.some(
+      (e) => e.from === node.id && e.relation === "modifier" && nodeById(parsed, e.to).prep === "of",
+    );
+  const time = byLemma("time");
+  if (time && !hasOfPhrase(time)) return "time";
+  const date = byLemma("date") ?? byLemma("day");
+  if (date && !hasOfPhrase(date)) return "date";
+  return undefined;
+}
+
+/**
+ * Answer a time/date question FROM THE FRAME (Probe-2
+ * Slice 5; diagnostic SD4, first half). The Situation frame
+ * (§8.1) already holds the readings — supplied month/day/
+ * hour, season, daypart — and until this slice no reply
+ * site read them, so the questions died at branches built
+ * for other problems. The shape reads exactly what the
+ * frame holds and no more: the time answer names the hour
+ * ("about", because the frame holds no minutes); the date
+ * answer names month and day (the frame holds no year).
+ * Where the reading does not stand — no frame was supplied
+ * at the session's opening, or a frame without a calendar
+ * — the turn declines LOCATED at the missing reading,
+ * naming it as the gap, rather than inventing one: the
+ * situated-honesty convention every other frame absence
+ * follows. The reply wordings are hand-composed and
+ * MINIMAL / DRAFT — the owner's to settle.
+ */
+function answerTimeDateQuestion(session: Session, trace: TurnTrace, asked: "time" | "date"): TurnResult {
+  const frame = session.frame;
+  if (!frame) {
+    trace.timeAnswer = {
+      asked,
+      ground:
+        "no frame stands in this session: the shell supplied no clock reading when the session opened, " +
+        "so the situation holds no time to read (Probe-2 Slice 5)",
+    };
+    trace.declineReason =
+      `the question asks for the ${asked}, and no clock reading stands in this conversation — the situation ` +
+      `frame was not supplied with one when the session opened, so there is no ${asked} in the record to ` +
+      `answer from; the gap is located at the missing clock reading (§6)`;
+    trace.planNote =
+      "time/date shape (Probe-2 Slice 5): the frame holds no clock reading — the turn declines located at " +
+      "the missing reading rather than inventing one";
+    return {
+      reply: `I can't answer that from what I know: this conversation has no clock reading — I wasn't given the ${asked} when we started.`,
+      trace,
+    };
+  }
+  const { month, day, hour } = frame.supplied;
+  if (asked === "time") {
+    const h12 = ((hour + 11) % 12) + 1;
+    const ampm = hour < 12 ? "AM" : "PM";
+    trace.timeAnswer = {
+      asked,
+      supplied: frame.supplied,
+      ground:
+        `the situation frame (§8.1) supplied hour ${hour} at the session's opening; its daypart under the ` +
+        `frame's convention is '${frame.daypart.name}' — the answer states the hour the frame holds`,
+    };
+    trace.planNote =
+      "answered from the situation frame (Probe-2 Slice 5): the time is the frame's supplied hour, " +
+      "stated as 'about' because the frame holds no minutes";
+    trace.wordingNotDerived = true;
+    return { reply: `It is about ${h12} ${ampm}.`, trace };
+  }
+  if (month === undefined || day === undefined) {
+    trace.timeAnswer = {
+      asked,
+      supplied: frame.supplied,
+      ground:
+        "the frame supplied an hour but no month or day (directly or via an ISO date), so no calendar " +
+        "reading stands in the situation (Probe-2 Slice 5)",
+    };
+    trace.declineReason =
+      "the question asks for the date, and the situation frame for this conversation holds an hour but no " +
+      "calendar day — no month or day was supplied when the session opened; the gap is located at the " +
+      "missing calendar reading (§6)";
+    trace.planNote =
+      "time/date shape (Probe-2 Slice 5): the frame holds no calendar reading — the turn declines located " +
+      "at the missing reading rather than inventing one";
+    return {
+      reply:
+        "I can't answer that from what I know: this conversation's frame holds an hour but no calendar day — " +
+        "no month or day was supplied when we started.",
+      trace,
+    };
+  }
+  trace.timeAnswer = {
+    asked,
+    supplied: frame.supplied,
+    ground:
+      `the situation frame (§8.1) supplied month ${month}, day ${day} at the session's opening` +
+      `${frame.season ? `; its season under the frame's convention is '${frame.season.name}'` : ""} — ` +
+      `the answer states the calendar the frame holds (the frame holds no year)`,
+  };
+  trace.planNote =
+    "answered from the situation frame (Probe-2 Slice 5): the date is the frame's supplied month and day";
+  trace.wordingNotDerived = true;
+  return { reply: `The date is ${MONTH_NAMES[month - 1]} ${day}.`, trace };
+}
+
+/**
+ * Answer a weather question (Probe-2 Slice 6, 2026-11-20;
+ * diagnostic SD4, second half + K1), on the Wikidata
+ * pattern: place first, bank before fetch, every gap
+ * located. This synchronous shape does everything that
+ * needs no network:
+ *
+ *   1. THE RECORD. Weather the conversation itself stated
+ *      ("the weather is cold") answers a weather/temperature
+ *      ask from the record — the visitor's own statement is
+ *      never contradicted by the source's silence (S2).
+ *   2. PLACE. resolveWeatherPlace (weather.ts): the
+ *      question's own place, the configured place, the
+ *      conversation-stated place. None standing → the reply
+ *      names the place gap (the owner's chain: no place, no
+ *      weather, said so).
+ *   3. THE BANK. A banked reading inside its shelf life
+ *      answers, with its fetch time in the trace.
+ *   4. THE GAP. A place stands but no fresh reading does →
+ *      a decline located at the missing reading, which is
+ *      the weather wrapper's fetch trigger (weather-turn.ts)
+ *      exactly as the knowledge decline is the Wikidata
+ *      wrapper's. Past the shelf life is the same gap: a
+ *      stale reading is noted in the trace and never spoken
+ *      as current.
+ *
+ * The reply wordings are hand-composed and MINIMAL / DRAFT
+ * — the owner's to settle.
+ */
+function answerWeatherQuestion(session: Session, trace: TurnTrace, question: WeatherQuestion): TurnResult {
+  // 1. The record.
+  if (question.shape === "weather" || question.shape === "temperature") {
+    const stated = statedWeather(session, session.turnCount);
+    if (stated) {
+      trace.weather = {
+        action: "answered-from-record",
+        shape: question.shape,
+        detail:
+          `the conversation itself states the weather: holder 'weather', lemma '${stated.lemma}'` +
+          `${stated.negated ? " (negated)" : ""}, stated at turn ${stated.turn} — the record answers, ` +
+          `as it does for every stated predication (Probe-2 Slice 6)`,
+      };
+      trace.planNote =
+        "answered from the record (Probe-2 Slice 6): the weather the visitor stated is the weather " +
+        "the question asks after; no place or source is needed to repeat what the conversation holds";
+      trace.wordingNotDerived = true;
+      return {
+        reply: stated.negated
+          ? `You said the weather is not ${stated.lemma}.`
+          : `You said the weather is ${stated.lemma}.`,
+        trace,
+      };
+    }
+  }
+
+  // 2. Place.
+  const resolved = resolveWeatherPlace(session, question);
+  if (!resolved) {
+    const ask =
+      question.shape === "temperature"
+        ? "what the temperature is"
+        : question.shape === "raining"
+          ? "whether it is raining"
+          : question.shape === "snowing"
+            ? "whether it is snowing"
+            : "what the weather is like";
+    trace.weather = {
+      action: "place-gap",
+      shape: question.shape,
+      detail:
+        "no place stands for the question: the question names none, the Place table is unconfigured, " +
+        "and the conversation has stated none — weather is somewhere's, and there is no somewhere to " +
+        "read it for (Probe-2 Slice 6)",
+    };
+    trace.declineReason =
+      `the question asks ${ask}, and weather belongs to a place: no place stands for it — the question ` +
+      `names none, no place is configured, and the conversation has stated none; the gap is located at ` +
+      `the missing place (§6)`;
+    trace.planNote =
+      "weather shape (Probe-2 Slice 6): the place resolution found no place — the turn names the place " +
+      "gap rather than guessing a place or a weather";
+    return { reply: `I don't know where you are, so I can't say ${ask} there.`, trace };
+  }
+  const place = displayPlace(resolved.place);
+  const placeGround =
+    resolved.source === "question"
+      ? "named in the question itself"
+      : resolved.source === "configured"
+        ? "the configured place (the Place table)"
+        : `stated in the conversation (${resolved.via === "record" ? "the record's location graph for the visitor" : `the visitor's '${resolved.via}' event`})`;
+
+  // 3. The bank.
+  const nowISO = new Date().toISOString();
+  const fresh = defaultWeatherBank.fresh(placeKeyOf(resolved.place), nowISO);
+  if (fresh) {
+    trace.weather = {
+      action: "answered-from-bank",
+      shape: question.shape,
+      place,
+      placeSource: resolved.source,
+      fetchedAt: fresh.fetchedAt,
+      expiresAt: fresh.expiresAt,
+      detail:
+        `the bank holds a reading for ${place} (${placeGround}), fetched ${fresh.fetchedAt}, inside ` +
+        `its shelf life (expires ${fresh.expiresAt}): ${fresh.resolvedName}, ${fresh.temperatureC}°C, ` +
+        `${fresh.condition} — answered from the bank with no fetch (Probe-2 Slice 6)`,
+    };
+    trace.planNote =
+      "answered from the weather bank (Probe-2 Slice 6): the reading stands inside its shelf life; " +
+      "its fetch time is in the trace's weather record";
+    trace.wordingNotDerived = true;
+    return { reply: composeWeatherReply(fresh, question.shape), trace };
+  }
+
+  // 4. The gap the wrapper acts on.
+  const stale = defaultWeatherBank.peek(placeKeyOf(resolved.place));
+  trace.weather = {
+    action: "lookup-needed",
+    shape: question.shape,
+    place,
+    placeSource: resolved.source,
+    ...(stale ? { fetchedAt: stale.fetchedAt, expiresAt: stale.expiresAt } : {}),
+    detail:
+      `a place stands for the question — ${place} (${placeGround}) — but ` +
+      (stale
+        ? `the banked reading for it was fetched ${stale.fetchedAt} and its shelf life ended ${stale.expiresAt}: ` +
+          `stale weather is not spoken as current, so a fresh reading is needed`
+        : `no reading for it stands banked`) +
+      `; this synchronous turn cannot fetch one — the decline is the weather wrapper's trigger (Probe-2 Slice 6)`,
+  };
+  trace.declineReason =
+    `the question asks for the weather in ${place}, and a place stands for it (${placeGround}), but no ` +
+    `current reading for it stands in what I hold — readings come from the weather source, and this turn ` +
+    `fetches none; the gap is located at the missing reading (§6)`;
+  trace.planNote =
+    "weather shape (Probe-2 Slice 6): place resolved, no fresh banked reading — the turn declines " +
+    "located at the missing reading, the wrapper's fetch trigger";
+  return {
+    reply: `I have no weather reading for ${place} — readings come from the weather source, and none stands banked for it.`,
+    trace,
+  };
+}
+
+/**
  * "Why is winter cold?" / "Is summer hot?" — answered from the
  * record first when a standing state occupies the asked
  * quality's slot (R7.5, §11.4), else from the shared-
@@ -7421,6 +7877,7 @@ function answerPredicateQuestion(
   predicateNodeInParse: MeaningNode,
   isWhy: boolean,
   topicsBefore: TopicRecord[],
+  parsed: ParsedSentence,
 ): TurnResult {
   const subjectLemma = subjectNodeInParse.lemma;
   const predicateLemma = predicateNodeInParse.lemma;
@@ -7582,9 +8039,50 @@ function answerPredicateQuestion(
    * instead of declining past it; the question's own answer
    * need stays open — the turn asks back. NOT a Normalcy
    * dimension: this is a comprehension gap, and no flag rides
-   * on it. */
+   * on it.
+   *
+   * Scope correction (Probe-2 Slice 4, 2026-11-20; diagnostic
+   * SD2): the branch as built fired on EVERY definite subject
+   * meeting the tests above, including questions a downstream
+   * shape exists to claim — so "What is the capital of
+   * Oklahoma?" was asked after its referent ("What capital?")
+   * before the capital knowledge could be reached, and the
+   * branch's tests cannot see the difference. Two claims
+   * stand the branch down, each read off the question itself:
+   * (a) the phrase is anchored by its own of-phrase — "the
+   * capital of Oklahoma" presupposes no scene referent; its
+   * referent is relational, fixed by the of-object, and the
+   * grounded-entity routes below are its home; (b) the lemma
+   * names a TIME — now, time, date and their kin (IM3: subject
+   * selection hands this function 'now' for "What is the
+   * weather now?", and the branch then asked after a moment
+   * as if it were a thing). A time word is anchored by the
+   * situation frame or by nothing; the frame's own shapes
+   * (Slice 5) and declines own those questions, not this
+   * branch. What remains in scope is the branch's legitimate
+   * case: a bare definite subject with no referent, no
+   * classification, no anchor and no claiming shape. */
+  const subjectAnchoredByOfPhrase = parsed.meaning.edges.some(
+    (e) =>
+      e.from === subjectNodeInParse.id &&
+      e.relation === "modifier" &&
+      nodeById(parsed, e.to).prep === "of",
+  );
+  const subjectIsTimeWord = UNANCHORED_TIME_SUBJECTS.has(subjectLemma);
+  if (subjectNodeInParse.det === "the" && (subjectAnchoredByOfPhrase || subjectIsTimeWord)) {
+    trace.unanchoredStandDown = {
+      lemma: subjectLemma,
+      ground: subjectAnchoredByOfPhrase
+        ? `the definite subject '${subjectLemma}' is anchored by its of-phrase — its referent is relational, ` +
+          `fixed by the of-object, and the grounded-entity routes below claim the question (Probe-2 Slice 4)`
+        : `the definite subject '${subjectLemma}' names a time — times are anchored by the situation frame, ` +
+          `not by mention in the conversation, so the frame's shapes and declines own the question (Probe-2 Slice 4)`,
+    };
+  }
   if (
     !isWhy &&
+    !subjectAnchoredByOfPhrase &&
+    !subjectIsTimeWord &&
     subjectNodeInParse.det === "the" &&
     turnObject &&
     turnObject.content.grounding?.find((g) => g.nodeId === subjectNodeInParse.id)?.status === "new" &&
@@ -7943,8 +8441,214 @@ function answerPredicateQuestion(
    * shape (the Classification's routes own it), and an
    * ungrounded name falls through to the missing decline
    * below, unchanged: grounding is by attested instance
-   * synset, never by the question's capitalisation. */
-  if (predicateLemma === "what" && !isWhy && !lookupClassification(subjectLemma)) {
+   * synset, never by the question's capitalisation.
+   * (Probe-2 Slice 7: the dictionary shape now stands
+   * inside this block ahead of the lookup — a common noun
+   * with ordinary senses, asked lowercase, is answered from
+   * the dictionary and this shape stands down for it;
+   * capitalisation routes between records already held
+   * there, and still grounds nothing.) */
+  /* Scope (Probe-2 Slice 4): this shape answers what a named
+   * entity IS — a bare subject. An of-phrase-anchored subject
+   * ("the capital of Oklahoma") asks for a relational value,
+   * not for what the head noun is, and predicating the head's
+   * gloss would answer a question nobody asked (the gloss
+   * the extract holds for "capital" is Marx's book). The
+   * shape stands down on the same ground as the unanchored
+   * branch above; the missing decline below then locates the
+   * gap at the knowledge, where the consultation wrappers
+   * can act on it. */
+  /* The dictionary determination, carried out of the block
+   * for the decline below (Slice 7 amendment, owner ruling
+   * (2)): set inside the block when the question was
+   * determined to be a definition answer — ordinary senses
+   * exist and the asking is not name-shaped — whether or
+   * not the dictionary then answered (a wired consultation
+   * can stand the answer down). A definition-determined
+   * subject's decline is worded from the dictionary, never
+   * by quoting an instance synset's gloss: the instance
+   * has nothing to do with a definition answer. */
+  let dictionaryDetermination: { ordinarySenses: number } | undefined;
+  if (predicateLemma === "what" && !isWhy && !subjectAnchoredByOfPhrase && !lookupClassification(subjectLemma)) {
+    /* The dictionary answer (Probe-2 Slice 7, 2026-11-20;
+     * owner ruling "1a" on the diagnostic's K2; amended
+     * the same day by the owner's two rulings on the
+     * slice's report): the question asks what a COMMON
+     * noun is, and the dictionary answers from the noun's
+     * ordinary senses alone — the only sense's gloss, a
+     * later sense's gloss where Lesk promoted it on
+     * conversation evidence, or, several senses standing
+     * with no winner, the listing of them all
+     * (dictionary.ts states the discipline). An instance
+     * synset is never a candidate here: a definition
+     * answer has nothing to do with the instance that
+     * shares the lemma. Until this slice the entity shape
+     * below was the only gloss route, so a common noun
+     * whose lemma an instance synset happens to share was
+     * answered with the instance's gloss: "what is a
+     * capital?" gave Marx's *Capital*, the extract's
+     * instance of *book* under that lemma, while the
+     * word's ordinary senses stood unread in the same
+     * extract.
+     *
+     * The entity shape STANDS DOWN for such a question,
+     * on the turn's own evidence that the subject is not
+     * being asked about as a name. Name-shaped means:
+     * (a) the lemma carries NO ordinary senses at all —
+     * its noun synsets are all instances, or regular
+     * synsets that file a name (a genus "Paris", the
+     * legendary "Atlantis": dictionary.ts's casing test),
+     * so the word has no common-noun life to define (the
+     * common case: "oklahoma"); or (b) the asker capitalised the
+     * subject phrase as it stands in the question — in
+     * this shape the subject never opens the sentence, so
+     * a capital on it is the asker's own name-mark, the
+     * form the parse preserves (a sentence-initial
+     * capital would attest nothing; this is not one).
+     * The phrase is the head and its qualifiers: for
+     * "Das Kapital" the parse keeps the asker's capital
+     * on the qualifier 'Das' while the head's form
+     * follows its lemma, and the mark is the phrase's,
+     * wherever in it the capital stands.
+     * Grounding itself is untouched: capitalisation still
+     * manufactures no entity (entities.ts's honest edge);
+     * it only routes between two records the system
+     * already holds. A lowercase common noun with regular
+     * senses is dictionary-shaped, and the entity record
+     * under its lemma — Marx's book for "capital", the
+     * republic for "turkey" — is not what the question
+     * asks. The book stays reachable the way a name is
+     * reached: asked about under its capitalised form.
+     * (The parse hands this shape the subject lemma
+     * 'capital' for "das kapital" too — the multiword
+     * lemma is not a parse unit, and no "das kapital"
+     * lemma is constructed here — so the LOWERCASE
+     * multiword asking is indistinguishable from a
+     * lowercase qualified common noun and takes the
+     * dictionary path; the limit is recorded in the
+     * slice report.)
+     *
+     * Placement: here, inside the entity shape's own
+     * conditions — the same unclassified, bare,
+     * non-of-phrase subject — so every route that owns a
+     * classified subject (the definitional answer above,
+     * the derivation below) is untouched, and the
+     * of-phrase stand-down (Slice 4) still routes "the
+     * capital of Oklahoma" past both gloss shapes to the
+     * knowledge decline. Under a wired Wikidata
+     * consultation for this subject the dictionary stands
+     * down with the entity stand-in (see wikidataConsulted)
+     * — the wrapper's trigger owns the question. */
+    const ordinarySenses = ordinaryNounSenses(subjectLemma);
+    const formCapitalised = (form: string): boolean => form !== form.toLowerCase();
+    const subjectPhraseCapitalised =
+      formCapitalised(subjectNodeInParse.form) ||
+      parsed.meaning.edges.some(
+        (e) =>
+          e.relation === "qualifies" &&
+          e.to === subjectNodeInParse.id &&
+          formCapitalised(nodeById(parsed, e.from).form),
+      );
+    const nameShaped = ordinarySenses.length === 0 || subjectPhraseCapitalised;
+    if (ordinarySenses.length > 0 && !nameShaped) {
+      // The determination is made here, and its governing
+      // evidence is the QUESTION's surface (owner's
+      // refinement, Slice 7 amendment): the subject phrase
+      // capitalised in the question is name-shaped, the
+      // subject phrase lowercase is a definition asking —
+      // wherever ordinary senses exist for the surface to
+      // govern between. dictionary.ts's casing test is a
+      // different instrument: it bounds WHICH synsets are
+      // ordinary senses (it keeps a name the dictionary
+      // files as a word — the genus "Paris" — out of the
+      // sense set), and it never routes a turn by itself:
+      // a capitalised asking with lowercase-carrying
+      // senses goes to the entity record ("Capital"), and
+      // a lowercase asking with no lowercase-carrying
+      // synset has no definition to draw (the dictionary
+      // holds no common noun under that spelling) and
+      // keeps the entity route or the decline ("paris",
+      // "atlantis"). The determination stands even when
+      // the wired consultation next door stands the
+      // answer itself down.
+      dictionaryDetermination = { ordinarySenses: ordinarySenses.length };
+    }
+    if (ordinarySenses.length > 0 && !nameShaped && !wikidataConsulted(session, subjectLemma, "country")) {
+      // Lesk's context, in the record's grain: the prior
+      // turns' lemmas (the person's own objects) and this
+      // question's other words.
+      const contextLemmas: string[] = [];
+      for (const o of session.objects) {
+        if (o.producer !== "person" || o.turn >= session.turnCount) continue;
+        for (const n of o.content.meaning.nodes) contextLemmas.push(n.lemma);
+      }
+      for (const n of parsed.meaning.nodes) {
+        if (n.id !== subjectNodeInParse.id) contextLemmas.push(n.lemma);
+      }
+      const choice = chooseDictionarySense(subjectLemma, contextLemmas, contextLemmas);
+      if (choice) {
+        const listing = choice.via === "listing";
+        trace.dictionaryAnswer = {
+          subject: subjectLemma,
+          synsetId: choice.chosen.synsetId,
+          sense: choice.chosen.sense,
+          ordinarySenses: choice.senses.length,
+          gloss: choice.chosen.gloss,
+          via: choice.via,
+          ...(listing
+            ? { senses: choice.senses.map((s) => ({ synsetId: s.synsetId, sense: s.sense, gloss: s.gloss })) }
+            : {}),
+          ground:
+            `the subject '${subjectLemma}' is a common noun with ${choice.senses.length} ordinary ` +
+            `noun senses in the extract, and the question is not name-shaped (the ` +
+            `subject phrase stands lowercase in it) — the dictionary answers: ${choice.ground}` +
+            (listing
+              ? `; the ${choice.senses.length} ordinary senses are listed in the reply, each cited ` +
+                `here by synset — retrieved from the bundled WordNet extract with provenance ` +
+                `wordnet-retrieved (Probe-2 Slice 7, as amended)`
+              : `; gloss "${choice.chosen.gloss}" — retrieved from the bundled WordNet extract with ` +
+                `provenance wordnet-retrieved (Probe-2 Slice 7)`),
+        };
+        trace.handAnswered = { by: "ontology-core/ontology-knowledge-unit/correspondence-graph", evidence: trace.dictionaryAnswer.ground };
+        trace.planNote = listing
+          ? "answered from the dictionary (Probe-2 Slice 7, as amended): the question asks what the " +
+            "common noun is, and the noun carries several ordinary senses with no conversation " +
+            "evidence discriminating among them — the reply lists them all rather than answering " +
+            "with the first; the entity record under the same lemma is a different question's " +
+            "answer and stood down, unmentioned"
+          : "answered from the dictionary (Probe-2 Slice 7): the question asks what the common noun " +
+            "is, and the chosen sense's gloss — the dictionary's only ordinary sense, or the sense " +
+            "Lesk promoted on conversation evidence — is the answer; the entity record under the same " +
+            "lemma is a different question's answer and stood down";
+        trace.steeringNote = listing
+          ? "answered from the dictionary (wordnet-retrieved) — all the noun's ordinary senses, " +
+            "listed in the dictionary's own order and cited by synset in the trace; no sense was " +
+            "chosen, no classification is claimed for the noun, and the entity grounding was not " +
+            "consulted for a question that does not ask after a name"
+          : "answered from the dictionary (wordnet-retrieved) — an ordinary synset's gloss, cited by " +
+            "synset in the trace; no classification is claimed for the noun, and the entity grounding " +
+            "was not consulted for a question that does not ask after a name";
+        if (listing) {
+          // DRAFT wording — the owner's to settle (Slice 7
+          // amendment): the word as asked, sentence-
+          // capitalised, its sense count, then the glosses
+          // in the dictionary's enumeration order, numbered
+          // in the order spoken. A gloss may itself contain
+          // a semicolon (the extract's own punctuation);
+          // the numbering carries the list's structure.
+          const items = choice.senses.map((s, i) => `(${i + 1}) ${s.gloss}`).join("; ");
+          return {
+            reply: `${cap(subjectNodeInParse.form)} has ${choice.senses.length} senses in my dictionary: ${items}.`,
+            trace,
+          };
+        }
+        // DRAFT wording — the owner's to settle: the reply
+        // form mirrors the entity answer's (the word as
+        // asked, sentence-capitalised, predicated with the
+        // gloss).
+        return { reply: `${cap(subjectNodeInParse.form)} is ${choice.chosen.gloss}.`, trace };
+      }
+    }
     const entity = lookupEntity(subjectLemma);
     // Union composition: under a wired Wikidata consultation
     // for the country shape on this subject, the entity
@@ -7990,9 +8694,21 @@ function answerPredicateQuestion(
      * one's; the gap stays located here.) */
     const entity = lookupEntity(subjectLemma);
     missing.push(
-      entity && !lookupClassification(subjectLemma)
-        ? `I have ${subjectLemma} in my notes as ${entity.gloss}, but nothing that connects it to '${predicateLemma}'`
-        : `I have nothing on ${subjectLemma} in my notes`,
+      /* Slice 7 amendment (owner ruling (2)): a subject
+       * the block above determined to be a DEFINITION
+       * answer is declined in the dictionary's terms, not
+       * by quoting the instance synset's gloss — this site
+       * is reachable for such a subject when a wired
+       * consultation stood both gloss shapes down, and the
+       * decline that stands (the wrapper's ambiguous /
+       * no-resolution outcomes keep it) must not surface
+       * an instance the question has nothing to do with. */
+      dictionaryDetermination
+        ? `I have ${subjectLemma} in my dictionary with ${dictionaryDetermination.ordinarySenses} ` +
+          `ordinary senses, but nothing that connects it to '${predicateLemma}'`
+        : entity && !lookupClassification(subjectLemma)
+          ? `I have ${subjectLemma} in my notes as ${entity.gloss}, but nothing that connects it to '${predicateLemma}'`
+          : `I have nothing on ${subjectLemma} in my notes`,
     );
   }
   if (!qualityNode) missing.push(`I have no way to connect anything to '${predicateLemma}'`);

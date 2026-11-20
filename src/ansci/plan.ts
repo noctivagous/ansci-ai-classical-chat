@@ -58,7 +58,7 @@
  * in the turn loop's decline shape.
  */
 import { cycleOf, CONTROLS, GENERATES, EN_LEXICON, type Element, type MeaningEdge, type MeaningNode, type ParsedSentence, type VerbEntry } from "./sentence";
-import { generate } from "./generate";
+import { generate, unsoundAnswerValue, type UnsoundAnswerValue } from "./generate";
 import { SUPPORT_FLOOR, type PricingRecord, type StrengthLevel, type Tier } from "./pricing";
 import { SUPPORT_CONTROLLING, SUPPORT_GENERATING, SUPPORT_SAME } from "./sense";
 import { applyLength, arbitrateOrder, priceWithBoundary, type BiasRecord } from "./disposition";
@@ -252,6 +252,44 @@ export type PlanOutcome =
     };
 
 /**
+ * The answer-soundness guard's refusal (Probe-2 Slice 2;
+ * diagnostic SD3): thrown by generateAnswer when the reply
+ * graph a plan composed would render an unresolved question
+ * word as the answer's value. The turn layer catches it at
+ * its one wrapper and converts the turn into a decline
+ * located at the unfilled value — the vacuous completion
+ * ("The weather is what.") is refused at the seam every
+ * planner answer passes, not chased site by site.
+ */
+export class UnsoundAnswerError extends Error {
+  readonly value: UnsoundAnswerValue;
+  constructor(value: UnsoundAnswerValue) {
+    super(
+      `unsound answer: the reply graph's value is the unresolved question word '${value.lemma}' ` +
+        `(standing as ${value.relation === "root" ? "the graph's root" : `the '${value.relation}' target`})`,
+    );
+    this.name = "UnsoundAnswerError";
+    this.value = value;
+  }
+}
+
+/**
+ * Checked generation for ANSWER graphs: every answer-producing
+ * plan function below generates through here, so the
+ * soundness inspection (generate.ts's unsoundAnswerValue)
+ * stands at the planner→generator seam for all of them at
+ * once. The question-producing plans (planRoleQuestion,
+ * planClarification) keep plain generate: their graphs are
+ * interrogative, hold their question word legitimately, and
+ * the inspection exempts them by construction.
+ */
+function generateAnswer(graph: ParsedSentence): string {
+  const unsound = unsoundAnswerValue(graph);
+  if (unsound) throw new UnsoundAnswerError(unsound);
+  return generate(graph);
+}
+
+/**
  * Plan one conclusion predication: subject + derived quality,
  * priced by §9.2. Pure: builds and generates the reply graph
  * without touching any session.
@@ -383,7 +421,7 @@ export function planPredication(input: PlanPredicationInput): PlanOutcome {
     realizes: {},
     scopeAttachments: [],
   };
-  return { ...base, kind: "graph", sentence: generate(graph), graph, level: pricing.level };
+  return { ...base, kind: "graph", sentence: generateAnswer(graph), graph, level: pricing.level };
 }
 
 /* ------------------------------------------------------------------ */
@@ -767,7 +805,7 @@ export function planComposition(input: {
   };
   return {
     kind: "graph",
-    sentence: generate(graph),
+    sentence: generateAnswer(graph),
     graph,
     activeOrder,
     supportOrder,
@@ -859,7 +897,7 @@ export function planCorrection(input: PlanCorrectionInput): { sentence: string; 
       realizes: {},
       scopeAttachments: [],
     };
-    return { sentence: generate(graph), graph };
+    return { sentence: generateAnswer(graph), graph };
   }
   const strikeNode = predication("reply-predicate", strike.lemma, strike.negated);
   const mainNode = predication("reply-predicate-2", main.lemma, main.negated);
@@ -873,7 +911,7 @@ export function planCorrection(input: PlanCorrectionInput): { sentence: string; 
     realizes: {},
     scopeAttachments: [],
   };
-  return { sentence: generate(graph), graph };
+  return { sentence: generateAnswer(graph), graph };
 }
 
 /* ------------------------------------------------------------------ */
@@ -956,7 +994,7 @@ export function planRecordPredication(input: PlanRecordPredicationInput): { sent
     realizes: {},
     scopeAttachments: [],
   };
-  return { sentence: generate(graph), graph };
+  return { sentence: generateAnswer(graph), graph };
 }
 
 /**
@@ -1006,7 +1044,7 @@ export function planStancePredication(input: {
     realizes: {},
     scopeAttachments: [],
   };
-  return { sentence: generate(graph), graph };
+  return { sentence: generateAnswer(graph), graph };
 }
 
 /**
@@ -1084,7 +1122,7 @@ export function planThanksReceipt(): { sentence: string; graph: ParsedSentence }
     realizes: {},
     scopeAttachments: [],
   };
-  return { sentence: generate(graph), graph };
+  return { sentence: generateAnswer(graph), graph };
 }
 
 /**
@@ -1124,7 +1162,7 @@ export function planSelfIdentity(name: string): { sentence: string; graph: Parse
     realizes: {},
     scopeAttachments: [],
   };
-  return { sentence: generate(graph), graph };
+  return { sentence: generateAnswer(graph), graph };
 }
 
 /**
@@ -1166,7 +1204,7 @@ export function planWellbeingAnswer(): { sentence: string; graph: ParsedSentence
     realizes: {},
     scopeAttachments: [],
   };
-  return { sentence: generate(graph), graph };
+  return { sentence: generateAnswer(graph), graph };
 }
 
 /* ------------------------------------------------------------------ */
