@@ -15,6 +15,9 @@
   :root, :root[data-theme="dark"]{
     --bg:#0c0e10; --panel:#121518; --panel2:#171b1f; --ink:#e8e6df; --muted:#9aa0a3; --line:#e8e6df;
     --line-soft:#343a3f; --grid:rgba(232,230,223,.055);
+    /* the five phase colours (SCHEMATICS-LUOSHU.md, Tint): Earth ochre, Fire red,
+       Water deep blue, Wood blue-green, Metal pale silver — palace tints only. */
+    --c-earth:#c9a227; --c-fire:#cd4a33; --c-water:#3769a3; --c-wood:#3ba273; --c-metal:#c9ced4;
     --accent:#ff6b35; --accent-ink:#fff; --teal:#3bc9db; --amber:#ffa94d; --green:#51cf66; --red:#ff8787; --blue:#74c0fc; --metal:#adb5bd;
     --wire:#3bc9db;
     /* live trace colours — the single place they are named:
@@ -27,6 +30,7 @@
   :root[data-theme="light"]{
     --bg:#e9e7e0; --panel:#f4f2ec; --panel2:#fffefa; --ink:#1a1c1e; --muted:#5c6066; --line:#1a1c1e;
     --line-soft:#b9b6ab; --grid:rgba(26,28,30,.07);
+    --c-earth:#a67c12; --c-fire:#bc4028; --c-water:#2f5f92; --c-wood:#1e7d54; --c-metal:#7e858c;
     --accent:#d9480f; --accent-ink:#fff; --teal:#0b7285; --amber:#e67700; --green:#2b8a3e; --red:#c92a2a; --blue:#1971c2; --metal:#868e96;
     --wire:#0b7285;
     --trace:#0b7285; --trace-stop:#c92a2a;
@@ -438,9 +442,21 @@
   .world svg.wires circle.cdot.uses{stroke:var(--ink)}
   /* Luoshu scaffold — the drawn 3x3 palace grid (ai-system/SCHEMATICS-LUOSHU.md):
      ground, not content; the square's edge is ruled stronger than the inner lines. */
-  .world svg.wires path.scaffold{stroke:var(--line-soft);stroke-width:1.5;opacity:.85}
-  .world svg.wires path.scaffold.edge{stroke:var(--line);stroke-width:2.2;opacity:.9}
-  .luonum{position:absolute;z-index:1;pointer-events:none;font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--muted);opacity:.55}
+  .world svg.wires path.scaffold{stroke:var(--line);stroke-width:2.2;opacity:.55}
+  .world svg.wires path.scaffold.edge{stroke:var(--line);stroke-width:2.6;opacity:1}
+  .luonum{position:absolute;z-index:1;pointer-events:none;font-family:"IBM Plex Mono",monospace;font-size:21px;font-weight:600;letter-spacing:.08em;color:var(--muted);opacity:.9}
+  /* Palace tints — each top-level frame carries its palace's phase colour as a
+     low wash: a ::before film over the frame's own ground, so the margins,
+     gaps and title area carry the colour while inner boxes keep their own
+     grounds (and state rulings, trace glows and shadows are untouched).
+     Externals, Configuration and Unplaced sit outside the square: no tint. */
+  .box[data-id="ontology-core"],.box[data-id="knowledge"],.box[data-id="awareness"],.box[data-id="functions"],.box[data-id="error-failure"]{--tint:var(--c-earth)}
+  .box[data-id="verbalizer"],.box[data-id="surfaces"]{--tint:var(--c-fire)}
+  .box[data-id="session"]{--tint:var(--c-water)}
+  .box[data-id="lpu"],.box[data-id="intake"]{--tint:var(--c-wood)}
+  .box[data-id="coherence"],.box[data-id="reasoning"]{--tint:var(--c-metal)}
+  .box[data-id="ontology-core"]::before,.box[data-id="knowledge"]::before,.box[data-id="awareness"]::before,.box[data-id="functions"]::before,.box[data-id="error-failure"]::before,.box[data-id="verbalizer"]::before,.box[data-id="surfaces"]::before,.box[data-id="session"]::before,.box[data-id="lpu"]::before,.box[data-id="intake"]::before,.box[data-id="coherence"]::before,.box[data-id="reasoning"]::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:color-mix(in srgb,var(--tint) 10%,transparent)}
+  .luonum.t-earth{color:var(--c-earth)} .luonum.t-fire{color:var(--c-fire)} .luonum.t-water{color:var(--c-water)} .luonum.t-wood{color:var(--c-wood)} .luonum.t-metal{color:var(--c-metal)}
   .world svg.wires path.tracepath{stroke-width:5}
   .cordlabel{position:absolute;font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cord);background:var(--panel);padding:2px 6px;z-index:7}
   .cordlabel.uses{color:var(--ink);border:1.5px solid var(--ink);border-radius:3px;background:var(--panel2)}
@@ -578,16 +594,16 @@
           <circle class="cdot uses" data-endpoints="normalcy-unit" cx="1541" cy="2039" r="4"/>
         </svg>
 
-        <!-- Luoshu palace numbers — small and quiet, in each cell's outer corner (the ground, not a badge) -->
-        <span class="luonum" style="left:236px;top:180px">4</span>
-        <span class="luonum" style="left:1502px;top:180px">9</span>
-        <span class="luonum" style="left:3904px;top:180px">2</span>
-        <span class="luonum" style="left:236px;top:1129px">3</span>
-        <span class="luonum" style="left:1497px;top:1124px">5</span>
-        <span class="luonum" style="left:3904px;top:1129px">7</span>
-        <span class="luonum" style="left:236px;top:2656px">8</span>
-        <span class="luonum" style="left:1502px;top:2656px">1</span>
-        <span class="luonum" style="left:3904px;top:2656px">6</span>
+        <!-- Luoshu palace numbers — in each cell's outer corner, tinted with their palace's phase colour (the ground, not a badge) -->
+        <span class="luonum t-wood" style="left:236px;top:180px">4</span>
+        <span class="luonum t-fire" style="left:1502px;top:180px">9</span>
+        <span class="luonum t-earth" style="left:3904px;top:180px">2</span>
+        <span class="luonum t-wood" style="left:236px;top:1129px">3</span>
+        <span class="luonum t-earth" style="left:1497px;top:1124px">5</span>
+        <span class="luonum t-metal" style="left:3904px;top:1129px">7</span>
+        <span class="luonum t-earth" style="left:236px;top:2656px">8</span>
+        <span class="luonum t-water" style="left:1502px;top:2656px">1</span>
+        <span class="luonum t-metal" style="left:3904px;top:2656px">6</span>
 
         <!-- speaker (outside system) -->
         <div class="ext" style="left:8px;top:1474px;width:172px">

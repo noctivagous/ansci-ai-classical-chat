@@ -146,3 +146,27 @@ size (3380→4220, 1942→2930); the fit fallback rect and all RECTS /
 NODE_POS entries moved with their frames. The scaffold lines are
 paths in the wires layer, so the runtime's vertex shifting stretches
 them in step with the frames they bound.
+
+## Tint (2026-11-20)
+
+Each palace's top-level frames carry a subtle wash of their phase's
+colour — the traditional five colours — and each palace number takes
+the same colour at full strength. Cells sharing a phase share a hue
+family: three palaces read ochre, two green, two silver, one red,
+one blue.
+
+| Palace | Phase | Colour | Frames tinted |
+|---|---|---|---|
+| 5 — Centre | Earth | yellow / ochre | `ontology-core`, `knowledge` |
+| 9 — South | Fire | red | `verbalizer`, `surfaces` |
+| 1 — North | Water | deep blue | `session-and-situation` |
+| 3 — East | Wood | 青 green (blue-green) | `lpu` |
+| 4 — Southeast | Wood | green | `intake` (the combined Intake & Harboring frame) |
+| 7 — West | Metal | pale silver / white | `coherence` |
+| 6 — Northwest | Metal (Qian) | pale silver / white | `reasoning` |
+| 2 — Southwest | Earth (Kun) | yellow / ochre | `awareness` |
+| 8 — Northeast | Earth (Gen) | yellow / ochre | `functions`, `error-failure` |
+
+Externals (`person`, `clock`, `weather`), `configuration` and
+`unplaced` carry no tint — they sit outside the square and belong to
+no palace.
