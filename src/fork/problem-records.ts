@@ -23,20 +23,27 @@
  *    and records; it cannot be evaluated yet, so a problem
  *    filed under it closes for the turn as a located decline
  *    until the abstract division's hexagram instrument is
- *    built).
+ *    built) — and, by the lack-machinery slice (2026-11-20),
+ *    `capability`: a step's requirement of an operation,
+ *    named by its capability-registry id and audited against
+ *    the registry in capability-registry.ts.
  *  - The decline-registration function (design §4): a pure
  *    function from a decline record to a ProblemRecord at
  *    the decline's location, plus the session helper that
  *    files it into the register.
  *
  * What this module does NOT do, by the design's seam:
- * no approach walking, no hexagram evaluation, no wiring —
- * nothing here is called from the turn loop, and this effort
- * edits neither turn.ts nor the steering or answering paths.
- * The turn-side hook that feeds real decline records to the
- * register is the wiring slice, separately commissioned.
- * The unit never speaks (ruling 1a): its outputs are the
- * typed records below; the Planner authors every reply.
+ * no approach walking, no hexagram evaluation. The unit
+ * never speaks (ruling 1a): its outputs are the typed
+ * records below; the Planner authors every reply.
+ *
+ * Wiring (lack-machinery slice, 2026-11-20): the turn-side
+ * hook the first slice deferred is now commissioned and
+ * built — processTurn in turn.ts files every declined
+ * turn's record through registerDecline below, at the
+ * single point after the turn's outcome is decided. That
+ * call site is the register's only turn-side feeder; the
+ * steering and answering paths remain untouched by it.
  */
 
 import type { Session } from "./session";
@@ -55,11 +62,14 @@ export type ProblemSeat =
  *  of its seat. */
 export type ProblemBearer = "system" | "user" | "third-party" | "the-matter-itself";
 
-/** The need registry (design §3, ruling 6a). This is the
- *  register's vocabulary; the router's wired vocabulary in
- *  problem-solving.ts (`ProblemNeed`) names the one kind
- *  wired today and is not widened by this module. */
-export type ProblemNeedKind = "quantification" | "lack-of-information" | "how-to-proceed";
+/** The need registry (design §3, ruling 6a; the capability
+ *  kind added by the lack-machinery slice, 2026-11-20, per
+ *  the engine design additions in the unit's PLACEHOLDER).
+ *  This is the register's vocabulary; the router's wired
+ *  vocabulary in problem-solving.ts (`ProblemNeed`) names
+ *  the one kind wired today and is not widened by this
+ *  module. */
+export type ProblemNeedKind = "quantification" | "lack-of-information" | "how-to-proceed" | "capability";
 
 export interface NeedKindEntry {
   id: ProblemNeedKind;
@@ -86,6 +96,11 @@ export const NEED_KINDS: NeedKindEntry[] = [
     gloss: "The question is how to proceed in a general situation. Routes and records; the abstract division's hexagram evaluation is its instrument and is not built, so a problem under this kind closes for its turn as a located decline (ruling 6a).",
     standing: "registered",
   },
+  {
+    id: "capability",
+    gloss: "A step requires an operation — the record names which, by its capability-registry id (the record's `capability` field). The requirement is audited against the capability registry (capability-registry.ts): held, and the step proceeds where the holder lives; seat-exists-unbuilt, and the lack stands located at that seat; no-seat, and the lack is unlocated — a new-seat question, not a silent failure. Distinct from lack-of-information: the lack here is a means, not a fact.",
+    standing: "registered",
+  },
 ];
 
 export function needKind(id: string): NeedKindEntry | undefined {
@@ -108,6 +123,11 @@ export interface ProblemRecord {
   /** What the problem is about, as the record holds it. */
   subject: string;
   need: ProblemNeedKind;
+  /** For a `capability` need: the required operation, named
+   *  by its capability-registry id (or the requirement name
+   *  an audit found unbuilt / seatless). Absent for the
+   *  other kinds. */
+  capability?: string;
   ground: ProblemGround;
   openedTurn: number;
   status: ProblemStatus;
@@ -139,6 +159,9 @@ export interface OpenProblemInput {
   bearer: ProblemBearer;
   subject: string;
   need: ProblemNeedKind;
+  /** For a `capability` need: the required operation's
+   *  registry id / requirement name. */
+  capability?: string;
   ground: Exclude<ProblemGround, "decline-registered">;
   turn: number;
   /** Why the problem opens at this seat — the first entry
@@ -162,6 +185,7 @@ export function openProblem(session: Session, input: OpenProblemInput): ProblemR
     bearer: input.bearer,
     subject: input.subject,
     need: input.need,
+    ...(input.capability ? { capability: input.capability } : {}),
     ground: input.ground,
     openedTurn: input.turn,
     status: input.need === "how-to-proceed" ? "declined-priced" : "open",
@@ -279,9 +303,11 @@ export function problemRecordFromDecline(
 
 /** File a decline into the session's register — the
  *  session-side companion of the pure function above.
- *  This is the register the wiring slice will feed from
- *  the turn loop when it is commissioned; in this slice
- *  nothing calls it from the turn. */
+ *  Since the lack-machinery slice (2026-11-20) this is
+ *  fed from the turn: processTurn (turn.ts) calls it once
+ *  per declined turn, after the turn's outcome is decided,
+ *  with the trace's declineReason as the ground and the
+ *  turn's map path as the location. */
 export function registerDecline(session: Session, decline: DeclineRecordLike, turn: number): ProblemRecord {
   const record = problemRecordFromDecline(decline, { id: nextProblemId(session), turn });
   session.problems.push(record);

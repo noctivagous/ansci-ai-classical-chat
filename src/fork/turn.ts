@@ -122,6 +122,7 @@ import {
 import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, isCorrespondenceTerm, premiseDegree, premiseSupport, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
 import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, recordLastReply, requestCapabilities, requestIdentity, requestPlace } from "./social";
 import { routeProblemSolving } from "./problem-solving";
+import { registerDecline } from "./problem-records";
 import { assessNormalcy, normalcyFlagOf, FUNCTION_WORDS } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
 import { applySceneUpdate } from "./senses-scening";
@@ -7356,6 +7357,33 @@ export function processTurn(session: Session, text: string): TurnResult {
     }
   }
   result.trace.mapPath = computeMapPath(result.trace);
+  /* The decline register, wired (lack-machinery slice,
+   * 2026-11-20; design §4, rulings 2a + 6a): a turn that
+   * ended in a decline files its problem record here — the
+   * single point every turn passes through after its
+   * outcome is decided. The turn's own decline signal is
+   * the trace's declineReason (the same signal the
+   * initiative gate above reads); the record's ground is
+   * that reason verbatim, and its location is the turn's
+   * map path — the route the information ball took, ending
+   * where it stopped. Filed under lack-of-information
+   * (ruling 6a): no decline the turn produces mechanically
+   * names a missing operation rather than missing
+   * knowledge in its data, so the capability kind is not
+   * filed from here — it is filed by a step's audit when
+   * the walk exists. Purely additive: the reply, the
+   * pricing and every behaviour above are untouched; the
+   * register only keeps what the turn already decided. */
+  if (result.trace.declineReason) {
+    registerDecline(
+      session,
+      {
+        ground: result.trace.declineReason,
+        derivationPath: (result.trace.mapPath ?? []).join(" → "),
+      },
+      session.turnCount,
+    );
+  }
   return result;
 }
 

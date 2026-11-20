@@ -30,14 +30,18 @@ import {
   registerDecline,
 } from "../src/fork/problem-records";
 
-test("the need registry: three kinds — quantification wired, the two ruling-6a kinds registered", () => {
+test("the need registry: four kinds — quantification wired, the two ruling-6a kinds and capability registered", () => {
+  // The capability kind joined the registry with the
+  // lack-machinery slice (2026-11-20); this contents pin is
+  // updated for that commissioned extension.
   assert.deepEqual(
     NEED_KINDS.map((n) => n.id),
-    ["quantification", "lack-of-information", "how-to-proceed"],
+    ["quantification", "lack-of-information", "how-to-proceed", "capability"],
   );
   assert.equal(needKind("quantification")?.standing, "wired");
   assert.equal(needKind("lack-of-information")?.standing, "registered");
   assert.equal(needKind("how-to-proceed")?.standing, "registered");
+  assert.equal(needKind("capability")?.standing, "registered");
   assert.equal(needKind("hexagram-evaluation"), undefined);
 });
 
