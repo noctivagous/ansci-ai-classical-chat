@@ -1,7 +1,27 @@
-We always want to find the cause of the problems 
+1. We always want to find the cause of the problems 
 not just fix them at locations where problems occur
 and it would mostly be system design, implementation, and knowledge/resources.
 
   system design - implies new modules sometimes
-  implementation - something smaller than system design, inside the system needs to be moved or made
-  knowledge - the system needs information or resources
+  implementation - something smaller than system design, inside the system needs to be moved, fixed or made
+      - implementation of system design: how modules interact or should be improved.
+  knowledge - the system needs information or resources, like graphs or a database.
+      - implementation of knowledge systems: how we retrieve knowledge, how
+       our ontology is effectively pervading the system.
+  
+2. We want to find projects like SymSpell for any module or unit so that we
+ are not writing projects from scratch that already exist in final form.  Many
+ researchers have worked on many issues this project touches.  We should
+ look for places where existing research and finished projects, whether for
+ mathematics or AI discussions in general, have applicability to our project in
+ such a way that they don't influence our design unless we opt to include it.
+ 
+3.  Long-term objective:  ancient Chinese ontology pervades the system.
+  examples: 
+     - weights utilize Wuxing and trigrams/hexagrams
+     - associations provided by having the ancient Chinese ontology are
+     made use of.
+     - efficiency is achieved by positioning the ontological units as
+     basis for actions, thinking, reasoning, and problem-solving of the system.  
+     Numbers are included in the the ancient Chinese ontology.
+     
