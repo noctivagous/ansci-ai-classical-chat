@@ -1,13 +1,13 @@
 # FileSystem
 
-- **Schematic address:** `capabilities/file-system` — inside the Capabilities Unit
+- **Schematic address:** `functions/file-system` — inside the Functions Unit
 - **Type:** Unit
 - **State:** placeholder — **0% completed to goal** (set by us, assessed by the project, not measured or computed). Placeholder seat placed 2026-11-19. Nothing is built.
 
 ## What stands here
 
 The owner's direction (2026-11-19): a **FileSystem** unit inside the
-Capabilities Unit.
+Functions Unit.
 
 The generic notion: a file system is **a tree of named places holding
 content** — directories that hold files and further directories,

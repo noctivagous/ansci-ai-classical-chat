@@ -196,6 +196,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "reasoning/problem-solving/user-problems": {
       "order": 6
     },
+    "reasoning/problem-solving/reasoning-error-failure": {
+      "order": 7
+    },
     "coherence": {
       "order": 7
     },
@@ -286,35 +289,38 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "ontology-core/normalcy-unit": {
       "order": 4
     },
-    "capabilities": {
+    "functions": {
       "order": 13
     },
-    "capabilities/ordering-and-sorting": {
+    "functions/ordering-and-sorting": {
       "order": 1
     },
-    "capabilities/search": {
+    "functions/search": {
       "order": 2
     },
-    "capabilities/editing": {
+    "functions/editing": {
       "order": 3
     },
-    "capabilities/external-query": {
+    "functions/external-query": {
       "order": 4
     },
-    "capabilities/file-system": {
+    "functions/file-system": {
       "order": 5
     },
-    "unplaced": {
+    "error-failure": {
       "order": 14
     },
-    "person": {
+    "unplaced": {
       "order": 15
     },
-    "clock": {
+    "person": {
       "order": 16
     },
-    "weather": {
+    "clock": {
       "order": 17
+    },
+    "weather": {
+      "order": 18
     }
   }
 };

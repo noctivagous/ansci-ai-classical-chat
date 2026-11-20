@@ -1,13 +1,13 @@
 # ExternalQuery
 
-- **Schematic address:** `capabilities/external-query` — inside the Capabilities Unit
+- **Schematic address:** `functions/external-query` — inside the Functions Unit
 - **Type:** Unit
 - **State:** placeholder — **0% completed to goal** (set by us, assessed by the project, not measured or computed). Placeholder seat placed 2026-11-19. Nothing is built.
 
 ## What stands here
 
 The owner's direction (2026-11-19): an **ExternalQuery** unit inside
-the Capabilities Unit, providing **resources for querying anything on
+the Functions Unit, providing **resources for querying anything on
 the web**.
 
 The generic notion: the machinery of putting a question to something

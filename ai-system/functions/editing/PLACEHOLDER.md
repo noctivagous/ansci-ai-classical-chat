@@ -1,13 +1,13 @@
 # Editing
 
-- **Schematic address:** `capabilities/editing` — inside the Capabilities Unit
+- **Schematic address:** `functions/editing` — inside the Functions Unit
 - **Type:** Unit
 - **State:** placeholder — **0% completed to goal** (set by us, assessed by the project, not measured or computed). Placeholder seat placed 2026-11-19. Nothing is built.
 
 ## What stands here
 
 The owner's direction (2026-11-19): an **Editing** unit inside the
-Capabilities Unit, holding the generic notion that goes along with
+Functions Unit, holding the generic notion that goes along with
 editing anything — with **ranges, trim, roll edit, etc.** — alike for
 strings, media data, and any other range-bearing material.
 

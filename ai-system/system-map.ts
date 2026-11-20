@@ -814,7 +814,7 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": "src/fork/problem-solving.ts",
-      "summary": "A general-purpose problem-solving unit inside Reasoning (owner's commission, 2026-11-18) — not limited to mathematics. A router in the turn asks 'does this need problem-solving?': on the person's instruction (a how-many question is its first wired case), or assessed by the AI from the object itself (quantity content is its first wired signal) — and attaches the needs to the object, routed here. The unit's repertoire is the standard acronym cycles people use (OODA — Observe, Orient, Decide, Act; PDCA — Plan, Do, Check, Act; the rest as registered), each held as a small graph of steps with the cycle edge that closes it. Placeholder: the seat, the router and the approach graphs are wired; no approach engine runs yet. For issues of how to proceed in a general situation, its evaluation mechanism will be based on the 64 hexagrams, making use of OntologyCore — the hexagrams read where they stand in the ontology the Ontology Knowledge Unit holds, not copied here (owner's addition, 2026-11-18); that mechanism is likewise designed, not built. Its six divisions — external, abstract, internal, internal-system, external-system, and the user's problems — are seats a problem moves between rather than bins, the bearer recorded per problem (owner's divisions, settled 2026-11-18; placeholder subunits)."
+      "summary": "A general-purpose problem-solving unit inside Reasoning (owner's commission, 2026-11-18) — not limited to mathematics. A router in the turn asks 'does this need problem-solving?': on the person's instruction (a how-many question is its first wired case), or assessed by the AI from the object itself (quantity content is its first wired signal) — and attaches the needs to the object, routed here. The unit's repertoire is the standard acronym cycles people use (OODA — Observe, Orient, Decide, Act; PDCA — Plan, Do, Check, Act; the rest as registered), each held as a small graph of steps with the cycle edge that closes it. Placeholder: the seat, the router and the approach graphs are wired; no approach engine runs yet. For issues of how to proceed in a general situation, its evaluation mechanism will be based on the 64 hexagrams, making use of OntologyCore — the hexagrams read where they stand in the ontology the Ontology Knowledge Unit holds, not copied here (owner's addition, 2026-11-18); that mechanism is likewise designed, not built. Its six divisions — external, abstract, internal, internal-system, external-system, and the user's problems — are seats a problem moves between rather than bins, the bearer recorded per problem (owner's divisions, settled 2026-11-18; placeholder subunits). The solving engine, as designed with the owner (2026-11-20): the unit walks a chosen strategy's graph; each step declares what it requires, and the requirement is checked per step — first against the capability registry of built operations and the system's distributed holdings (the OKU's mathematics / quantification / geometry, the nets, the session record, consultation), and where the step needs a generic operation, against the Functions Unit ('do I need anything from the Functions Unit?' is the gate's generic branch); a step's unmet requirement is a CAPABILITY need, a kind distinct from lack-of-information in the need registry. The walk runs under a LOOP BUDGET carried on the problem record (cycles attempted plus a cost ceiling the Planner prices); reaching the budget is a located outcome, not a failure of the machinery, and the problem then passes through the unit's ReasoningErrorFailure subunit, which assembles the attempt record and files it to the ErrorFailure Unit, which authors the account of why from the record. Designed, not built: no engine walks an approach graph yet."
     },
     {
       "id": "reasoning/problem-solving/external",
@@ -893,6 +893,19 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": "none",
       "summary": "Problems the user brings or has — the intake seat. Its standing route feeds them back to Internal problems, where the solving is taken up; the bearer may be the user, a third party, or the matter itself. A division (seat) of the ProblemSolving Unit; placeholder."
+    },
+    {
+      "id": "reasoning/problem-solving/reasoning-error-failure",
+      "title": "ReasoningErrorFailure Unit",
+      "type": "Unit",
+      "parent": "reasoning/problem-solving",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "reasoning/problem-solving/reasoning-error-failure",
+      "file": null,
+      "external": false,
+      "currentCode": null,
+      "summary": "The ReasoningErrorFailure Unit: the ProblemSolving Unit's own error-and-failure subunit (owner's direction, 2026-11-20), following the system's bridge pattern — as SemanticAssessment in the LPU uses the SemanticAssessmentUnit in the OntologyCore, this subunit does the failure work inside Reasoning and files to the top-level ErrorFailure Unit, which holds the authority: the authored account and the accumulated failure knowledge. When a strategy walk exhausts its approaches or reaches its loop budget, or a step's requirement survives the capability audit unmet, this subunit assembles the attempt record — the problem and its seat history, the strategies tried, the loops spent, the stopping step, the lack (capability or information) and the holdings that were checked — marks the problem's record with the failure, and files the record to the ErrorFailure Unit. It is not one of the six divisions: problems do not sit in it, they pass through it on their way to being accounted for. It never speaks; the account it files is a typed record, and the Planner authors any reply that carries it. Placeholder seat only: no filing machinery is built, nothing is built."
     },
     {
       "id": "intake",
@@ -1077,82 +1090,95 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "The NormalcyUnit: the system's medium-neutral authority on the normal shape of a communication, sitting inside the OntologyCore beside the SenseUnit. It files the norm dimensions — obviousness (a predication is obvious iff the OKU Classification settles it without testimony: the asked quality is the kind's classifying quality on its filed degree profile), self-redundancy (the Session record already settles the question), gibberish (no content arrived; the flag requires token-resolution failure, frequency/familiarity evidence grades strength only) — and serves the labelled word knowledge the bridges read: wordfreq frequency (CC BY-SA 4.0) and the Glasgow Norms' nine dimensions (Scott et al. 2019, CC BY 4.0), whole table banked. The governing principle is the owner's (2026-11-17): the tables supply KNOWLEDGE about what is happening in the communication, never the system's values — no table number sets a price, fires a flag by itself, or decides a reply; CoherenceAnalysis prices the flags by kind. Gender association is guarded knowledge: the labelled access path exists, and in v1 its values change no price, flag, referent or pronoun decision, or reply. Language reaches it through the LPU's NormalcyAssessment. Placed and built 2026-11-17 at the owner's direction."
     },
     {
-      "id": "capabilities",
-      "title": "Capabilities Unit",
+      "id": "functions",
+      "title": "Functions Unit",
       "type": "Unit",
       "parent": "system",
       "state": "placeholder",
       "percent": 0,
-      "path": "capabilities",
+      "path": "functions",
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "The Capabilities Unit: a top-level unit of generic resource units, placed underneath the OntologyCore at the owner's direction (2026-11-19). It holds the system's general-purpose machinery that other units draw on — Ordering And Sorting, Search, Editing, ExternalQuery, and FileSystem — each defined over abstract material (elements and an ordering, a space and a criterion, ranges over anything range-bearing, a query over anything on the web, a tree of named places holding content), never over a particular kind of data. The unit owns no data of its own and knows nothing of what the material it operates on means; callers supply the material and the terms, the capabilities supply the operations. Placeholder seats only: nothing is designed beyond this statement and nothing is built."
+      "summary": "The Functions Unit: a top-level unit holding families of generic functions, placed underneath the OntologyCore (owner's direction, 2026-11-19, as the Capabilities Unit; renamed 2026-11-20 when the owner separated two jobs the word capability was doing). This unit is the LIBRARY OF OPERATIONS: Ordering And Sorting, Search, Editing, ExternalQuery, and FileSystem — callable functions over abstract material (elements and an ordering, a space and a criterion, ranges over anything range-bearing, a query over anything on the web, a tree of named places holding content), never over a particular kind of data, called mid-step inside larger processes such as a problem-solving walk; it owns no data and knows nothing of what the material means. The other job — the INVENTORY of what the system can actually do (its built-ins: mathematics, quantification, geometry, the nets' knowledge, the session record, consultation) — is answered by a capability registry held as data, in which every built operation registers itself (name, what it takes, what it returns); a placeholder seat is explicitly NOT a holding. When a problem-solving step declares a requirement, the registry and the distributed holdings are what it is checked against, and a lack is declared only on that audit. Placeholder seats only: no function is built, the registry is designed, not built, and no caller is wired."
     },
     {
-      "id": "capabilities/ordering-and-sorting",
+      "id": "functions/ordering-and-sorting",
       "title": "Ordering And Sorting",
       "type": "Unit",
-      "parent": "capabilities",
+      "parent": "functions",
       "state": "placeholder",
       "percent": 0,
-      "path": "capabilities/ordering-and-sorting",
+      "path": "functions/ordering-and-sorting",
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "Ordering And Sorting: the Capabilities Unit's home for the algorithms that sort and order data of different types, held generically. The operations are defined over elements plus an ordering — a comparator, a key, a ranking, a partial order — and the unit knows nothing of what the elements are: the same machinery orders words, records, candidates, quantities or priced claims, with the caller supplying the elements and the terms of the ordering (stability, ties, ascending or descending, total or partial). Not data-specific: no sort here knows what it is sorting. Placeholder seat only (owner's direction, 2026-11-19): no algorithm is banked, no caller is wired, nothing is built."
+      "summary": "Ordering And Sorting: the Functions Unit's home for the algorithms that sort and order data of different types, held generically. The operations are defined over elements plus an ordering — a comparator, a key, a ranking, a partial order — and the unit knows nothing of what the elements are: the same machinery orders words, records, candidates, quantities or priced claims, with the caller supplying the elements and the terms of the ordering (stability, ties, ascending or descending, total or partial). Not data-specific: no sort here knows what it is sorting. Placeholder seat only (owner's direction, 2026-11-19): no algorithm is banked, no caller is wired, nothing is built."
     },
     {
-      "id": "capabilities/search",
+      "id": "functions/search",
       "title": "Search",
       "type": "Unit",
-      "parent": "capabilities",
+      "parent": "functions",
       "state": "placeholder",
       "percent": 0,
-      "path": "capabilities/search",
+      "path": "functions/search",
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "Search: the Capabilities Unit's generic search resource. The operations are defined over a space plus a criterion — find by key or by predicate, match a pattern, traverse a structure, return the best or nearest candidate under a supplied measure — and the unit knows nothing of what the space holds: the same machinery searches a sequence, a table, a graph or a store, with the caller supplying the space, the criterion and what counts as found. Not data-specific: no search here knows what it is searching. Placeholder seat only (owner's direction, 2026-11-19): no algorithm is banked, no caller is wired, nothing is built."
+      "summary": "Search: the Functions Unit's generic search resource. The operations are defined over a space plus a criterion — find by key or by predicate, match a pattern, traverse a structure, return the best or nearest candidate under a supplied measure — and the unit knows nothing of what the space holds: the same machinery searches a sequence, a table, a graph or a store, with the caller supplying the space, the criterion and what counts as found. Not data-specific: no search here knows what it is searching. Placeholder seat only (owner's direction, 2026-11-19): no algorithm is banked, no caller is wired, nothing is built."
     },
     {
-      "id": "capabilities/editing",
+      "id": "functions/editing",
       "title": "Editing",
       "type": "Unit",
-      "parent": "capabilities",
+      "parent": "functions",
       "state": "placeholder",
       "percent": 0,
-      "path": "capabilities/editing",
+      "path": "functions/editing",
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "Editing: the Capabilities Unit's generic editing resource — the notions that go with editing anything that bears ranges, held once, generically. The operations are defined over ranges of an abstract range-bearing material: select a range, insert, delete and replace within it, trim a range's head or tail, split and join at a point, move or copy a range, and the roll edit — move a boundary shared by two adjacent ranges so one grows and the other shrinks by the same amount, the whole preserved. A string, a media timeline and a token sequence are instances of the material, not cases in the code: the unit holds no string-specific and no media-specific editing, and knows nothing of what the ranges are ranges of. Not data-specific. Placeholder seat only (owner's direction, 2026-11-19): no operation is implemented, no caller is wired, nothing is built."
+      "summary": "Editing: the Functions Unit's generic editing resource — the notions that go with editing anything that bears ranges, held once, generically. The operations are defined over ranges of an abstract range-bearing material: select a range, insert, delete and replace within it, trim a range's head or tail, split and join at a point, move or copy a range, and the roll edit — move a boundary shared by two adjacent ranges so one grows and the other shrinks by the same amount, the whole preserved. A string, a media timeline and a token sequence are instances of the material, not cases in the code: the unit holds no string-specific and no media-specific editing, and knows nothing of what the ranges are ranges of. Not data-specific. Placeholder seat only (owner's direction, 2026-11-19): no operation is implemented, no caller is wired, nothing is built."
     },
     {
-      "id": "capabilities/external-query",
+      "id": "functions/external-query",
       "title": "ExternalQuery",
       "type": "Unit",
-      "parent": "capabilities",
+      "parent": "functions",
       "state": "placeholder",
       "percent": 0,
-      "path": "capabilities/external-query",
+      "path": "functions/external-query",
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "ExternalQuery: the Capabilities Unit's generic resource for querying anything on the web. The machinery is held once, in common form: state a query — what is asked, in what terms, against what kind of source, and what shape of answer is wanted — dispatch it, and receive what comes back in a declared common shape, with its source named. The unit knows nothing of what is being queried or what the answer means: a reference work, a catalogue, a live service and a public page are all just sources a query can be put to, and no query here is written for one of them. Not data-specific. It supplies the querying machinery only: what may enter the system as knowledge, and under what standing, remains Intake's and the gate's to decide — a result returned is not testimony admitted. The one working instance-in-effect today is the Wikidata adapter's fetch half — resolving an entity to its item and fetching it — which is this unit's machinery in source-specific form; the adapter stays where it lives, at intake/wikidata, unmoved and unclaimed (owner's ruling, 2026-11-19), and when this unit gets its design slice that fetch layer is the first thing re-expressed in the generic form. Placeholder seat only (owner's direction, 2026-11-19): no query machinery is built, no source is wired, no caller is wired, nothing is built."
+      "summary": "ExternalQuery: the Functions Unit's function family for querying anything on the web. The machinery is held once, in common form: state a query — what is asked, in what terms, against what kind of source, and what shape of answer is wanted — dispatch it, and receive what comes back in a declared common shape, with its source named. The unit knows nothing of what is being queried or what the answer means: a reference work, a catalogue, a live service and a public page are all just sources a query can be put to, and no query here is written for one of them. Not data-specific. It supplies the querying machinery only: what may enter the system as knowledge, and under what standing, remains Intake's and the gate's to decide — a result returned is not testimony admitted. The one working instance-in-effect today is the Wikidata adapter's fetch half — resolving an entity to its item and fetching it — which is this unit's machinery in source-specific form; the adapter stays where it lives, at intake/wikidata, unmoved and unclaimed (owner's ruling, 2026-11-19), and when this unit gets its design slice that fetch layer is the first thing re-expressed in the generic form. Placeholder seat only (owner's direction, 2026-11-19): no query machinery is built, no source is wired, no caller is wired, nothing is built."
     },
     {
-      "id": "capabilities/file-system",
+      "id": "functions/file-system",
       "title": "FileSystem",
       "type": "Unit",
-      "parent": "capabilities",
+      "parent": "functions",
       "state": "placeholder",
       "percent": 0,
-      "path": "capabilities/file-system",
+      "path": "functions/file-system",
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "FileSystem: the Capabilities Unit's generic resource for working with a file system — a tree of named places (directories) holding content (files), addressed by paths. The operations are the generic ones that go with such a tree, held once: name and resolve a path, list what a place holds, read and write content at a place, create and remove places and content, move and copy between places, and ask what stands at a path (whether it is there, what kind of thing it is, how large, when it changed). The unit knows nothing of what any file contains or means: a document, a data bundle and a program are all just content at a place, and what content may be read, written or trusted belongs to the units that own it. Not data-specific. Placeholder seat only (owner's direction, 2026-11-19): no operation is implemented over the system's existing file access, no caller is wired, nothing is built."
+      "summary": "FileSystem: the Functions Unit's function family for working with a file system — a tree of named places (directories) holding content (files), addressed by paths. The operations are the generic ones that go with such a tree, held once: name and resolve a path, list what a place holds, read and write content at a place, create and remove places and content, move and copy between places, and ask what stands at a path (whether it is there, what kind of thing it is, how large, when it changed). The unit knows nothing of what any file contains or means: a document, a data bundle and a program are all just content at a place, and what content may be read, written or trusted belongs to the units that own it. Not data-specific. Placeholder seat only (owner's direction, 2026-11-19): no operation is implemented over the system's existing file access, no caller is wired, nothing is built."
+    },
+    {
+      "id": "error-failure",
+      "title": "ErrorFailure Unit",
+      "type": "Unit",
+      "parent": "system",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "error-failure",
+      "file": null,
+      "external": false,
+      "currentCode": null,
+      "summary": "The ErrorFailure Unit: a top-level unit (owner's direction, 2026-11-20) that authors the account of why something could not be done. When a problem-solving walk exhausts its strategies or reaches its loop budget, or a route ends with a need undischarged, the record of the attempt comes here — the problem, the strategies tried, the loops spent, the step where it stopped, the capability or information lacked, and which holdings were checked before the lack was declared — and this unit composes the explanation from that record: it assembles, it does not invent. Its working counterpart inside Reasoning is the ProblemSolving Unit's ReasoningErrorFailure subunit, which assembles attempt records and files them here, following the system's bridge pattern. Like the ProblemSolving Unit it never speaks: its accounts are typed records, and the Planner authors any reply that carries one. Its accounts also accumulate as the system's failure knowledge — the same lack recurring is a located work item (a capability to build, knowledge to bank, a strategy to repair), not a repeated surprise. Placeholder seat only (owner's direction, 2026-11-20): no account machinery is built, no producer is wired, nothing is built."
     },
     {
       "id": "verbalizer",

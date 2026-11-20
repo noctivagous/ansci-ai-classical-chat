@@ -1,13 +1,13 @@
 # Search
 
-- **Schematic address:** `capabilities/search` — inside the Capabilities Unit
+- **Schematic address:** `functions/search` — inside the Functions Unit
 - **Type:** Unit
 - **State:** placeholder — **0% completed to goal** (set by us, assessed by the project, not measured or computed). Placeholder seat placed 2026-11-19. Nothing is built.
 
 ## What stands here
 
 The owner's direction (2026-11-19): a generic **Search** unit inside
-the Capabilities Unit.
+the Functions Unit.
 
 The generic notion: the operations are defined over **a space plus a
 criterion** — find by key or by predicate, match a pattern, traverse a
