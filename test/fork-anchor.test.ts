@@ -83,7 +83,28 @@ test("every classification anchor is either pinned or named unpinned — the un-
   assert.ok(report.length >= 160);
   for (const p of report) {
     if (p.mode === "unpinned") assert.equal(p.pinned.length, 0, `${p.concept}: unpinned with pins`);
-    else if (p.mode !== "climb-anchor") assert.ok(p.pinned.length >= 1, `${p.concept}: mode ${p.mode} but no pins`);
+    else if (p.mode !== "climb-anchor" && p.pinned.length === 0) {
+      // The collided state (named 2026-11-19, the vocabulary
+      // pass): a cue anchor whose every selected synset was
+      // pinned first by a named rival — 'anxious', whose one
+      // adjective synset in the extract ({anxious, nervous,
+      // queasy, uneasy, unquiet}) is nervous's pin, and
+      // 'apprehension', whose fear synset is dread's. The
+      // anchor is not unpinned (its synsets scored; it does
+      // not keep the string match) and not pinned (the pins
+      // are the rivals'). It is admitted only when the
+      // shortfall is FULLY explained by the collisions the
+      // report names — the residue stays a list, now with
+      // this third shape on it.
+      const selected = p.synsets.filter((s) => s.score >= 1).map((s) => s.id);
+      assert.ok(selected.length >= 1, `${p.concept}: mode ${p.mode} but no pins and no cue selection to explain it`);
+      for (const id of selected) {
+        assert.ok(
+          p.collisions.some((c) => c.startsWith(id)),
+          `${p.concept}: selected synset ${id} neither pinned nor named in collisions`,
+        );
+      }
+    }
   }
 });
 

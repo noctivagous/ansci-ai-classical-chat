@@ -72,8 +72,13 @@ test("(c) A2: the ordinary lookup never returns a B-derived record; the derived 
   // slice added the 11 survey-attested livestock/grain entries; 173
   // since E1 (2026-11-19) filed the nine everyday emotion words —
   // angry, happy, glad, excited, sad, gloomy, lonely, afraid,
-  // scared — under their canonical categories.)
-  assert.equal(CLASSIFICATIONS.length, 173);
+  // scared — under their canonical categories; 190 since V1 of the
+  // vocabulary pass (2026-11-19) filed the sweep's seventeen —
+  // disappointed, disappointment, upset, devastated, proud, annoyed,
+  // anxious, apprehension, apprehensive, ashamed, embarrassed,
+  // terrified, joyful, hopeful, optimistic, jealous, content — each
+  // by an established route, its evidence in its note.)
+  assert.equal(CLASSIFICATIONS.length, 190);
   for (const r of DERIVED_CORRESPONDENCES) {
     for (const entry of classificationsOf(r.subject.slug)) {
       assert.notEqual(entry.aspect, "recorded-flavor", `${r.id}: no derived record may sit in CLASSIFICATIONS`);

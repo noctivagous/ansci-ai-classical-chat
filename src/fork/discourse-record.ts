@@ -139,7 +139,7 @@ export interface TopicHistory {
 
 /** The lemmas an event mentions, in role order. */
 function eventLemmas(e: EventRecord): (string | undefined)[] {
-  return [e.verb, e.agent, e.patient, e.theme, e.location, e.recipient];
+  return [e.verb, e.agent, e.patient, e.theme, e.location, e.recipient, e.about];
 }
 
 /**

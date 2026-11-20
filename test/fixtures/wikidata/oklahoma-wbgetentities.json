@@ -1,0 +1,445 @@
+{
+ "entities": {
+  "Q1649": {
+   "type": "item",
+   "id": "Q1649",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "Oklahoma"
+    }
+   },
+   "claims": {
+    "P36": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P36",
+       "hash": "e647ce1550271e79f3e689b68054e8a977e3c410",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 34863,
+         "id": "Q34863"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "q1649$C6F16286-F392-4C07-93E8-0797270DBF0D",
+      "rank": "normal"
+     }
+    ],
+    "P17": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P17",
+       "hash": "be4c6eafa2984964f04be85667263f5642ba1a72",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 30,
+         "id": "Q30"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "q1649$2F60F359-0C04-4704-8911-3D69692FCAA8",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "2192d43558e336532fdb0814c3e02b8e9d2a17a1",
+        "snaks": {
+         "P5573": [
+          {
+           "snaktype": "value",
+           "property": "P5573",
+           "hash": "aa146a52a760339ba1069869c15bd280e1104796",
+           "datavalue": {
+            "value": "2880",
+            "type": "string"
+           },
+           "datatype": "external-id"
+          }
+         ],
+         "P248": [
+          {
+           "snaktype": "value",
+           "property": "P248",
+           "hash": "c619cc6e0e5fe3733a8c4a47939343e5970e0e9d",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 265049,
+             "id": "Q265049"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ],
+         "P813": [
+          {
+           "snaktype": "value",
+           "property": "P813",
+           "hash": "0c8bd92e73708301fbdef488186bd3197b7c3d1c",
+           "datavalue": {
+            "value": {
+             "time": "+2018-08-06T00:00:00Z",
+             "timezone": 0,
+             "before": 0,
+             "after": 0,
+             "precision": 11,
+             "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+            },
+            "type": "time"
+           },
+           "datatype": "time"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P5573",
+         "P248",
+         "P813"
+        ]
+       }
+      ]
+     }
+    ],
+    "P131": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P131",
+       "hash": "747e26ecc669b145ce67d7a7368283164499cf8b",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 30,
+         "id": "Q30"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "q1649$7055EDC6-6375-45B8-A8A3-01E4179BE897",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "d5847b9b6032aa8b13dae3c2dfd9ed5d114d21b3",
+        "snaks": {
+         "P143": [
+          {
+           "snaktype": "value",
+           "property": "P143",
+           "hash": "5a343e7e758a4282a01316d3e959b6e653b767fc",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 11920,
+             "id": "Q11920"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P143"
+        ]
+       }
+      ]
+     }
+    ],
+    "P361": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P361",
+       "hash": "405e3b6d298fbc677b01b2e1c5aee6673b98f558",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 578170,
+         "id": "Q578170"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "Q1649$BC781AED-2ED3-4290-A5D9-9375442E2803",
+      "rank": "normal"
+     }
+    ],
+    "P625": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P625",
+       "hash": "f7aa29606ab33930a57af2caa0c070d4f04637a8",
+       "datavalue": {
+        "value": {
+         "latitude": 35.5,
+         "longitude": -98,
+         "altitude": null,
+         "precision": 0.1,
+         "globe": "http://www.wikidata.org/entity/Q2"
+        },
+        "type": "globecoordinate"
+       },
+       "datatype": "globe-coordinate"
+      },
+      "type": "statement",
+      "id": "q1649$BCE4D832-5C47-49E3-9C11-E4ED3E0C95EE",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "fa278ebfc458360e5aed63d5058cca83c46134f1",
+        "snaks": {
+         "P143": [
+          {
+           "snaktype": "value",
+           "property": "P143",
+           "hash": "e4f6d9441d0600513c4533c672b5ab472dc73694",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 328,
+             "id": "Q328"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P143"
+        ]
+       }
+      ]
+     }
+    ],
+    "P31": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P31",
+       "hash": "09e673adf0ae862df8d4e06c649d61af5efc2cfb",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 35657,
+         "id": "Q35657"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "Q1649$B8CD0272-E0AE-4818-B8B5-D3FD4AA78EC4",
+      "rank": "normal"
+     }
+    ],
+    "P1082": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P1082",
+       "hash": "970ffe81c301e7b5f4e3cf547aada2bb63121783",
+       "datavalue": {
+        "value": {
+         "amount": "+3940521",
+         "unit": "1"
+        },
+        "type": "quantity"
+       },
+       "datatype": "quantity"
+      },
+      "type": "statement",
+      "qualifiers": {
+       "P459": [
+        {
+         "snaktype": "value",
+         "property": "P459",
+         "hash": "f34609d440cf44ebaa8a3e704c9369413240618c",
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 39825,
+           "id": "Q39825"
+          },
+          "type": "wikibase-entityid"
+         },
+         "datatype": "wikibase-item"
+        }
+       ],
+       "P585": [
+        {
+         "snaktype": "value",
+         "property": "P585",
+         "hash": "e16a70d7ddc24e478ac586b6e46aefd40ffffb0a",
+         "datavalue": {
+          "value": {
+           "time": "+2018-04-00T00:00:00Z",
+           "timezone": 0,
+           "before": 0,
+           "after": 0,
+           "precision": 10,
+           "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+          },
+          "type": "time"
+         },
+         "datatype": "time"
+        }
+       ]
+      },
+      "qualifiers-order": [
+       "P459",
+       "P585"
+      ],
+      "id": "Q1649$deb4d899-4f3d-f623-3c54-257fffe65b20",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "89e0b2758a0bee4d06bb2d7718aa1c1c326a1620",
+        "snaks": {
+         "P1065": [
+          {
+           "snaktype": "value",
+           "property": "P1065",
+           "hash": "2c29856001b08abf97706b8e5f69b5b61a0f60b1",
+           "datavalue": {
+            "value": "https://web.archive.org/web/20111028064539/http://2010.census.gov/2010census/data/apportionment-pop-text.php",
+            "type": "string"
+           },
+           "datatype": "url"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P1065"
+        ]
+       }
+      ]
+     }
+    ],
+    "P571": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P571",
+       "hash": "0fca49199a945ed10c5dec17221fecfb2bbdfc7e",
+       "datavalue": {
+        "value": {
+         "time": "+1907-11-16T00:00:00Z",
+         "timezone": 0,
+         "before": 0,
+         "after": 0,
+         "precision": 11,
+         "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+        },
+        "type": "time"
+       },
+       "datatype": "time"
+      },
+      "type": "statement",
+      "id": "Q1649$6dbd8f7f-4966-51ed-79b7-3c6e9da245d4",
+      "rank": "normal"
+     }
+    ],
+    "P37": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P37",
+       "hash": "093b8012fa96e9703fff323bc434ba09aba60dce",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 1860,
+         "id": "Q1860"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "q1649$991BDDE4-9A73-482C-810F-91E695B3981C",
+      "rank": "normal"
+     }
+    ]
+   },
+   "sitelinks": {
+    "enwiki": {
+     "site": "enwiki",
+     "title": "Oklahoma",
+     "badges": []
+    }
+   }
+  },
+  "Q34863": {
+   "type": "item",
+   "id": "Q34863",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "Oklahoma City"
+    }
+   },
+   "claims": {}
+  },
+  "Q30": {
+   "type": "item",
+   "id": "Q30",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "United States"
+    }
+   },
+   "claims": {}
+  },
+  "Q35657": {
+   "type": "item",
+   "id": "Q35657",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "U.S. state"
+    }
+   },
+   "claims": {}
+  },
+  "Q578170": {
+   "type": "item",
+   "id": "Q578170",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "contiguous United States"
+    }
+   },
+   "claims": {}
+  },
+  "Q1860": {
+   "type": "item",
+   "id": "Q1860",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "English"
+    }
+   },
+   "claims": {}
+  }
+ }
+}

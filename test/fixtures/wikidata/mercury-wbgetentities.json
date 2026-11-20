@@ -1,0 +1,183 @@
+{
+ "entities": {
+  "Q308": {
+   "type": "item",
+   "id": "Q308",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "Mercury"
+    }
+   },
+   "claims": {
+    "P361": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P361",
+       "hash": "f9c654bd548c482d9ca5f80d957fdd04cfced068",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 7879772,
+         "id": "Q7879772"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "qualifiers": {
+       "P1545": [
+        {
+         "snaktype": "value",
+         "property": "P1545",
+         "hash": "2a1ced1dca90648ea7e306acbadd74fc81a10722",
+         "datavalue": {
+          "value": "1",
+          "type": "string"
+         },
+         "datatype": "string"
+        }
+       ]
+      },
+      "qualifiers-order": [
+       "P1545"
+      ],
+      "id": "Q308$2b7fe443-4276-e297-f052-1551bf1a4e6c",
+      "rank": "normal"
+     }
+    ],
+    "P31": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P31",
+       "hash": "4b334dbaf87893e121cc1803de6de9e0a085aa05",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 3504248,
+         "id": "Q3504248"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "Q308$91ec2235-44f8-8745-c729-dbcd108c8dec",
+      "rank": "normal"
+     },
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P31",
+       "hash": "2c6deeb7a9405458f4231a3cb593e59e41fc0509",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 3901935,
+         "id": "Q3901935"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "qualifiers": {
+       "P156": [
+        {
+         "snaktype": "value",
+         "property": "P156",
+         "hash": "b10fa41ae6afd7d83d665d0785f004795b5ce228",
+         "datavalue": {
+          "value": {
+           "entity-type": "item",
+           "numeric-id": 313,
+           "id": "Q313"
+          },
+          "type": "wikibase-entityid"
+         },
+         "datatype": "wikibase-item"
+        }
+       ]
+      },
+      "qualifiers-order": [
+       "P156"
+      ],
+      "id": "Q308$15768F06-8AD1-4DAD-B201-6B018F6A8DFE",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "fa278ebfc458360e5aed63d5058cca83c46134f1",
+        "snaks": {
+         "P143": [
+          {
+           "snaktype": "value",
+           "property": "P143",
+           "hash": "e4f6d9441d0600513c4533c672b5ab472dc73694",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 328,
+             "id": "Q328"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P143"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "sitelinks": {
+    "enwiki": {
+     "site": "enwiki",
+     "title": "Mercury (planet)",
+     "badges": [
+      "Q17437796"
+     ]
+    }
+   }
+  },
+  "Q7879772": {
+   "type": "item",
+   "id": "Q7879772",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "inner Solar System"
+    }
+   },
+   "claims": {}
+  },
+  "Q3504248": {
+   "type": "item",
+   "id": "Q3504248",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "inner planet of the Solar System"
+    }
+   },
+   "claims": {}
+  },
+  "Q3901935": {
+   "type": "item",
+   "id": "Q3901935",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "inferior planet"
+    }
+   },
+   "claims": {}
+  }
+ }
+}

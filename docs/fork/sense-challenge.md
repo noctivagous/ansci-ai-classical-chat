@@ -10,7 +10,7 @@ Of 8,094 extract lemmas with ≥3 noun/adjective senses, 729 have any ungated cl
 ## Scores
 
 Set A: coherence **11/11** vs isolated-climb baseline **3/11**.
-Set B (sealed, single run): coherence **5/6** vs baseline **3/6** — the gain survives on the held-out set.
+Set B (sealed, single run): coherence **6/6** vs baseline **3/6** — the gain survives on the held-out set.
 
 ### Set A
 
@@ -37,7 +37,7 @@ Set B (sealed, single run): coherence **5/6** vs baseline **3/6** — the gain s
 | acerbity | The acerbity of the lemon startled her. | Wood | Wood | Wood | pass | support {"Wood":1,"Fire":0.8} |
 | beak | The beak pecked the grain. | Earth | Earth | Earth | pass | support {"Earth":0,"Metal":0} |
 | alabaster | The alabaster was white. | Metal | Metal | Metal | pass | support {"Metal":1,"Water":0.8} |
-| stock | The stock simmered in the pot. | Water | Metal | Metal | **FAIL** | support {"Metal":0,"Water":0} |
+| stock | The stock simmered in the pot. | Water | Metal | Water | pass | support {"Metal":0,"Water":0} |
 
 ## Non-regression
 

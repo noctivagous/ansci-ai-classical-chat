@@ -149,6 +149,33 @@ export type Relation =
   | "result"     // resultative complement: the clause's outcome content (R6)
   | "degree"     // degree complement: how far the verb's quality runs (R6, ZH 得)
   | "condition"  // clause -> clause condition relation (Metal logical)
+  /* Transcript Slice 1 additions: */
+  | "complement" // verb -> clause: an embedded clause (wh- or that-)
+  // standing as the verb's complement ("I know who you are",
+  // "I know that you are here"). The edge runs from the matrix
+  // verb (Wood) to the embedded clause's root, exactly as
+  // "condition" runs from a main verb to its condition clause
+  // and "modifier" from an Earth head to its relative clause.
+  // It is a clause relation, NOT a cycle edge: its cycle field
+  // computes from the endpoint elements as any other edge's
+  // does, and no reasoning path may treat it as a valency arc —
+  // check.ts counts it separately, as the frame's clausal
+  // filler, never as an Earth argument.
+  /* Transcript Slice 6 additions: */
+  | "about"      // verb -> Earth: the about-phrase's topic — what the
+  // verb's content ranges over ("what do you know ABOUT DOGS?",
+  // "you know about dogs"). The edge runs from the verb (Wood)
+  // to the topic node (Earth), which carries prep "about" for
+  // regeneration, exactly as a location node carries its
+  // preposition. It is NOT a valency arc: the topic is neither
+  // the verb's theme (what is known is a different question
+  // from what the knowing is about) nor a location, and
+  // check.ts's ARG_RELATIONS deliberately excludes it, as it
+  // excludes "complement". Before this relation the phrase had
+  // no representation at all in a wh-question (the diagnostic's
+  // IM3): 'about' classifies as an adverb in the item stream,
+  // the wh-branch's PP loop stopped at it, and the topic the
+  // visitor named never entered the graph.
   /* Repair tranche additions: */
   | "predicated-as" // nominal predication: an Earth topic predicated as an
   // Earth nominal （今天星期一， "Today is Monday"). A DECLARED architectural
@@ -279,6 +306,18 @@ export interface VerbEntry {
   required: string[];
   /** Slot filled by a prepositional phrase, and the prepositions that fill it. */
   prepSlot?: { slot: string; preps: string[]; required?: boolean };
+  /** Clausal-complement frame (Transcript Slice 1): this verb may
+   *  take a whole clause — an embedded wh-question or a that-clause
+   *  — as its complement, in place of the bare-NP filler of its
+   *  first slot. The complement clause stands in the meaning graph
+   *  under the 'complement' relation (verb → embedded clause root),
+   *  not under the slot's own relation: a clause is not an Earth
+   *  argument, and generation and the checker read it as a clause.
+   *  Set on the hand entry for 'know'; the parser's know-class
+   *  (parse.ts) extends the same construction to the cognition /
+   *  report verbs it can resolve, whose derived entries carry no
+   *  flag of their own. */
+  clausalComplement?: boolean;
   forms: { base: string; third: string; past: string; participle: string };
   semanticElement?: Element;
   /** Provenance of this entry: set when the WordNet lexicon provider
@@ -378,6 +417,30 @@ en(v("shout", [], [], { base: "shout", third: "shouts", past: "shouted", partici
   { prepSlot: { slot: "recipient", preps: ["at"] } }), "shout", "shouts", "shouted");
 en(v("worry", [], [], { base: "worry", third: "worries", past: "worried", participle: "worried" }), "worry", "worries", "worried");
 en(v("need", ["theme"], ["theme"], { base: "need", third: "needs", past: "needed", participle: "needed" }), "need", "needs", "needed");
+/* Transcript Slice 1: 'know' enters the hand lexicon. Until this
+ * entry it reached the parser only through the WordNet fallback
+ * (FrameNet 'Familiarity': one theme slot, nothing required at the
+ * VerbEntry level), so the verb at the centre of the know-questions
+ * was among the least-specified in the lexicon (diagnosis K2) and
+ * no frame anywhere said it could take a clause. The NP frame is
+ * the fallback's own — slots ["theme"], required [] — so every
+ * know + NP parse keeps the shape it has always had; what the hand
+ * entry adds is the irregular forms as the lexicon's own record
+ * and the clausal-complement frame: "know who i am", "know that
+ * you are here" fill the theme's place with a clause, under the
+ * 'complement' relation.
+ * Registered under the LEMMA only, deliberately: the inflected
+ * surfaces reach this entry by lemma through the verb-slot
+ * fallback's hand-entry precedence (the same adoption that gives
+ * an unregistered surface of 'make' the hand frame), so no parse
+ * changes — but registering the surface 'knows' itself made it a
+ * hand-vocabulary correction target for the token matcher, and
+ * with the WordNet provider off "blows" then "corrected" to
+ * 'knows' (edit distance 2) and parsed, where the provider-off
+ * parity test (fork-wordnet.test.ts) pins its failure. A hand
+ * surface is a correction target; a hand lemma is a frame. */
+en(v("know", ["theme"], [], { base: "know", third: "knows", past: "knew", participle: "known" },
+  { clausalComplement: true }), "know");
 
 /* English nouns / pronouns / adjectives / adverbs. */
 for (const n of ["cook", "onions", "book", "table", "ladder", "dog", "man", "school", "news",

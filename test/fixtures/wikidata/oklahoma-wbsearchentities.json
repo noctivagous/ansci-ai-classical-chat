@@ -1,0 +1,87 @@
+{
+ "searchinfo": {
+  "search": "Oklahoma"
+ },
+ "search": [
+  {
+   "id": "Q1649",
+   "title": "Q1649",
+   "pageid": 2115,
+   "concepturi": "http://www.wikidata.org/entity/Q1649",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q1649",
+   "display": {
+    "label": {
+     "value": "Oklahoma",
+     "language": "en"
+    },
+    "description": {
+     "value": "state of the United States of America",
+     "language": "en"
+    }
+   },
+   "label": "Oklahoma",
+   "description": "state of the United States of America",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Oklahoma"
+   }
+  },
+  {
+   "id": "Q640652",
+   "title": "Q640652",
+   "pageid": 602781,
+   "concepturi": "http://www.wikidata.org/entity/Q640652",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q640652",
+   "display": {
+    "label": {
+     "value": "University of Oklahoma",
+     "language": "en"
+    },
+    "description": {
+     "value": "public research university in Norman, Oklahoma, United States",
+     "language": "en"
+    }
+   },
+   "label": "University of Oklahoma",
+   "description": "public research university in Norman, Oklahoma, United States",
+   "match": {
+    "type": "alias",
+    "language": "mul",
+    "text": "Oklahoma"
+   },
+   "aliases": [
+    "Oklahoma"
+   ]
+  },
+  {
+   "id": "Q1364648",
+   "title": "Q1364648",
+   "pageid": 1304180,
+   "concepturi": "http://www.wikidata.org/entity/Q1364648",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q1364648",
+   "display": {
+    "label": {
+     "value": "Oklahoma!",
+     "language": "en"
+    },
+    "description": {
+     "value": "1943 musical; first musical written by the team of Rodgers and Hammerstein",
+     "language": "en"
+    }
+   },
+   "label": "Oklahoma!",
+   "description": "1943 musical; first musical written by the team of Rodgers and Hammerstein",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Oklahoma!"
+   }
+  }
+ ],
+ "search-continue": 3,
+ "success": 1
+}

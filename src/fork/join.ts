@@ -42,6 +42,7 @@ import type { Element, ParsedSentence } from "./sentence";
 import { semanticClassifications } from "./sentence";
 import { climbClassification } from "./wordnet-lex";
 import { lookupOverlay } from "./overlay";
+import { mergeEntities } from "./entities";
 
 /** Below this confidence a classification is recorded but does not
  *  drive derivations (the gate the cycle-probe evaluation demanded). */
@@ -115,6 +116,17 @@ export function buildForkGraph(
       g.addEdge({ from, to, type: link.type, properties: { source: "fork-classify" } });
     }
   }
+  /* Named-entity grounding (Transcript Slice 0, 2026-11-19;
+   * entities.ts): the WordNet extract's instance synsets —
+   * named entities — merged as Concept nodes with an IS_A
+   * (instance) edge to their class and its hypernym chain, the
+   * gloss and the retrieved provenance in the node properties.
+   * Added last, so a name the seed or the classification table
+   * already holds keeps its earlier node as the name lookup's
+   * first match; the entity node stands beside it under its
+   * own id. Entities carry no HAS_ELEMENT edge: being named
+   * earns no element classification. */
+  mergeEntities(g);
   return g;
 }
 

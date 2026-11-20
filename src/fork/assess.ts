@@ -25,7 +25,7 @@ import type { Element, ParsedSentence } from "./sentence";
 import type { Session } from "./session";
 import type { AspectReading, GroundingMark, ObjectHole, SemanticObject } from "./semantic-object";
 import { classificationsOf } from "./classify";
-import { emotionAspect, emotionPriorFor } from "./ledu";
+import { emotionAspect, emotionPriorFor, mixEmotionAspect } from "./ledu";
 import { buildSensesFace } from "./senses-scening";
 import { computeQuantityMentions } from "./quantification-language";
 import { tierOfProvenance } from "./pricing";
@@ -39,9 +39,12 @@ import { wordnetAdjective, wordnetNoun } from "./wordnet-lex";
  * OKU's classification table speaks for contributes its readings,
  * the concrete word retained as each reading's value. Emotion
  * readings route through the LEDU→EDU bridge (ledu.ts), which
- * names the canonical emotion; all other aspects come direct
- * from the table. Classification attaches to aspects, never to
- * the object wholesale.
+ * names the canonical emotion; a word the emotion-mix table
+ * files as a MIX (emotion-mix.ts) reads through the bridge's
+ * mix reading instead — the mix served as such, components and
+ * relations, with no single element asserted. All other aspects
+ * come direct from the table. Classification attaches to
+ * aspects, never to the object wholesale.
  */
 export function classifyAspects(parsed: ParsedSentence): AspectReading[] {
   const readings: AspectReading[] = [];
@@ -54,7 +57,7 @@ export function classifyAspects(parsed: ParsedSentence): AspectReading[] {
         readings.push(r);
       }
     };
-    const emotion = emotionAspect(n.lemma);
+    const emotion = emotionAspect(n.lemma) ?? mixEmotionAspect(n.lemma);
     if (emotion) push(emotion);
     for (const e of classificationsOf(n.lemma)) {
       if (e.aspect === "emotion") continue; // routed via the LEDU above
@@ -278,13 +281,74 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   );
   // A self-query asks about the system itself: an interrogative
   // predication of "you" by a question word ("Who are you?",
-  // "What are you?").
+  // "What are you?"). The predication must be OF "you": the
+  // predicated-as edge runs from the "you" node to the question
+  // word. A looser reading — any predicated-as edge anywhere,
+  // a "you" anywhere, a question word anywhere — captured the
+  // clausal complements Slice 1 made parseable: in "do you
+  // know who i am?" the predication is the visitor's (i → who)
+  // one clause down, and "you" is only the matrix verb's agent,
+  // yet the question was answered with the system's identity
+  // (Transcript Slice 2, 2026-11-19; diagnostic IM4/K3).
   const isSelfQuery = Boolean(
     interrogative &&
-      parsed.meaning.edges.some((e) => e.relation === "predicated-as") &&
-      parsed.meaning.nodes.some((n) => n.lemma.toLowerCase() === "you") &&
-      parsed.meaning.nodes.some((n) => n.questionWord && (n.lemma.toLowerCase() === "who" || n.lemma.toLowerCase() === "what")),
+      parsed.meaning.edges.some((e) => {
+        if (e.relation !== "predicated-as") return false;
+        const from = parsed.meaning.nodes.find((n) => n.id === e.from);
+        const to = parsed.meaning.nodes.find((n) => n.id === e.to);
+        return (
+          from?.lemma.toLowerCase() === "you" &&
+          Boolean(to?.questionWord) &&
+          (to?.lemma.toLowerCase() === "who" || to?.lemma.toLowerCase() === "what")
+        );
+      }),
   );
+  // The where-question split (Transcript Slice 4, 2026-11-19;
+  // diagnostic SD2): a copular where-question draws ONE shape
+  // in the parse — the "where" question word as root, the
+  // subject standing to it in the location relation — and the
+  // subject alone decides whose location is asked after. The
+  // self-query recognition above cannot see the shape (it keys
+  // on a predicated-as edge to a who/what question word; a
+  // where-question carries a location relation instead), so
+  // "Where are you?" was never recognised as self-directed and
+  // fell to the question path's shape decline. The split:
+  // subject "you" — a self-query of the LOCATION flavour,
+  // answered from Awareness Self's Place table; subject "i" —
+  // the VISITOR's location, marked on the act
+  // (act.visitorLocation) for the turn layer's own honest
+  // form; any other subject — a world question, which keeps
+  // the question path, where the where reader answers from
+  // the grounded entity record or declines at the subject.
+  // The verb-carried where-forms are not this shape and keep
+  // their owners: "Where do you live?" roots on 'live' (the
+  // C3 self-fact family, matter "home"), "Where were you
+  // born?" on 'bear' (matter "birthplace") — their roots are
+  // verbs, never the "where" node itself.
+  const whereDrawnSubject =
+    root && root.questionWord && root.lemma.toLowerCase() === "where"
+      ? parsed.meaning.edges
+          .filter((e) => e.relation === "location" && e.to === root.id)
+          .map((e) => nodeOf(e.from))[0]
+      : undefined;
+  // A trailing time word is mis-headed by the parse as the
+  // subject, the real subject standing as its qualifier
+  // ("Where are you now?" — now:subject, 'you' qualifying
+  // it). The time word is the question's frame, not the
+  // located thing — the same reading the wellbeing
+  // recognition below gives a time word in the patient slot
+  // — so the subject is read through the qualifier when the
+  // drawn subject is a time word carrying one.
+  const WHERE_TIME_FRAME = new Set(["now", "today", "tonight", "yesterday", "tomorrow", "then"]);
+  const whereSubject =
+    whereDrawnSubject && WHERE_TIME_FRAME.has(whereDrawnSubject.lemma.toLowerCase())
+      ? (parsed.meaning.edges
+          .filter((e) => e.relation === "qualifies" && e.to === whereDrawnSubject.id)
+          .map((e) => nodeOf(e.from))[0] ?? whereDrawnSubject)
+      : whereDrawnSubject;
+  const isSelfLocationQuery = Boolean(interrogative && whereSubject?.lemma.toLowerCase() === "you");
+  const isVisitorLocationQuery = Boolean(interrogative && whereSubject?.lemma.toLowerCase() === "i");
+
   // The capability self-query (Social Unit S3, 2026-11-18):
   // "What can you do?" — an interrogative whose verb root is
   // the lexical "do", whose agent is "you", whose clause
@@ -530,8 +594,21 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     // (d) The your-NP question: "What is your rank?" — the
     // graph draws "your" predicated as "what" and drops the
     // possessed noun; the token record holds it by position.
+    // The matter is the possessed NP's HEAD noun — the last
+    // token of the NP span after "your" (the span runs until
+    // the first function word) — not the span's first token:
+    // in a two-word NP the first token is the modifier, so
+    // "your last name" filed the matter "last" and the denial
+    // spoke it as a noun ("I don't have a last."), and "your
+    // favourite colour" would file "favourite" the same way
+    // (Transcript Slice 3, 2026-11-19; diagnostic IM1).
     // "Name" is the Identity table's own fact and routes to
-    // the identity flavour, not the denial.
+    // the identity flavour, not the denial; a MODIFIED name
+    // NP ("last name", "first name", "middle name" — any
+    // modifier) files the matter "name" under the fact
+    // flavour, and the turn layer answers it from the
+    // Identity table's one name rather than denying a part
+    // of a name the system does not divide.
     if (!selfFactMatter) {
       const yourNode = nodes.find((n) => n.lemma.toLowerCase() === "your");
       const whatNode = nodes.find((n) => n.questionWord && n.lemma.toLowerCase() === "what");
@@ -540,9 +617,14 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         whatNode &&
         edges.some((e) => e.from === yourNode.id && e.to === whatNode.id && e.relation === "predicated-as")
       ) {
-        const m = tokenAfter("your");
-        if (m === "name") selfFactName = true;
-        else if (m) selfFactMatter = m;
+        const npTokens: string[] = [];
+        for (const t of tokens.slice(tokens.indexOf("your") + 1)) {
+          if (!t || enIsFunctionWord(t)) break;
+          npTokens.push(t);
+        }
+        const head = npTokens[npTokens.length - 1];
+        if (head === "name" && npTokens.length === 1) selfFactName = true;
+        else if (head) selfFactMatter = head;
       }
     }
     // (f) Age: "How old are you?" — "how" predicated of "you"
@@ -679,7 +761,11 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
       }
     }
     const yourselfMatter = nodes.some(
-      (n) => n.lemma.toLowerCase() === "yourself" && (n.role === "theme" || n.role === "patient"),
+      // "about" (Transcript Slice 6): 'yourself' as a telling's
+      // about-topic ("tell me a bit about yourself") is the
+      // matter of the telling exactly as it was when the parse
+      // filed it as the theme.
+      (n) => n.lemma.toLowerCase() === "yourself" && (n.role === "theme" || n.role === "patient" || n.role === "about"),
     );
     if (yourselfMatter && rootNow) {
       const imperative = rootNow.states?.mood === "imperative";
@@ -982,7 +1068,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         ? "leave-taking"
         : isThanks
           ? "thanks"
-          : isSelfQuery || isCapabilityQuery || isSelfFactQuery || isAbilityQuery || identityRequest
+          : isSelfQuery || isCapabilityQuery || isSelfFactQuery || isAbilityQuery || identityRequest || isSelfLocationQuery
             ? "self-query"
             : parsed.query || interrogative
               ? "question"
@@ -1033,7 +1119,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   // certain reading of the act's form; the default statement
   // reading carries the residual doubt that the act may yet prove
   // social — the doubt slice 2's readers start spending.
-  const confidence = parsed.discourseAct || parsed.query || interrogative || isGreeting || isDaypartGreeting || isLeaveTaking || isSeeYou || isThanks || isSelfQuery || isSelfFactQuery ? 1 : 0.85;
+  const confidence = parsed.discourseAct || parsed.query || interrogative || isGreeting || isDaypartGreeting || isLeaveTaking || isSeeYou || isThanks || isSelfQuery || isSelfFactQuery || isSelfLocationQuery ? 1 : 0.85;
 
   const aspects = classifyAspects(parsed);
   const composition = rollUpComposition(aspects);
@@ -1065,17 +1151,20 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         ? {
             selfQuery: (isCapabilityQuery
               ? "capability"
-              : isAbilityQuery
-                ? "ability"
-                : selfFactMatter
-                  ? "fact"
-                  : "identity") as "identity" | "capability" | "fact" | "ability",
+              : isSelfLocationQuery
+                ? "location"
+                : isAbilityQuery
+                  ? "ability"
+                  : selfFactMatter
+                    ? "fact"
+                    : "identity") as "identity" | "capability" | "fact" | "ability" | "location",
             ...(selfFactMatter ? { selfFact: selfFactMatter } : {}),
             ...(isAbilityQuery ? { selfFact: abilityVerb, abilityModal } : {}),
           }
         : {}),
       ...(isWellbeingQuery ? { wellbeing: true } : {}),
       ...(isMeanQuery ? { meanQuery: true } : {}),
+      ...(isVisitorLocationQuery ? { visitorLocation: true } : {}),
       ...(isOfferHelp ? { offerHelp: true } : {}),
       ...(choiceQuery ? { choiceQuery, ...(choiceAlternatives ? { choiceAlternatives } : {}) } : {}),
       ...(posedMatter ? { posedMatter, ...(posedMatterHead ? { posedMatterHead } : {}) } : {}),

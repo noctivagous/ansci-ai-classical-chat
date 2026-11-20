@@ -110,6 +110,51 @@ function enPredicateClause(p: ParsedSentence, rootNode: MeaningNode, subjectForm
   return `${subj} ${copulaForm(rootNode)}${rootNode.states?.negated ? " not" : ""}${mods.length ? " " + mods.join(" ") : ""} ${comp}`;
 }
 
+/**
+ * One embedded complement clause (Transcript Slice 1), composed
+ * from its own root: a wh-copular clause surfaces as wh + subject
+ * + copula ("who i am"), a plain copular clause by the predicate
+ * machinery's own shape (subject + copula + complement), and a
+ * verbal clause as subject + finite verb + arguments, with a
+ * questioned argument fronted (R3's rule, one clause down). The
+ * complementiser itself is the matrix edge's marker, added by
+ * the caller.
+ */
+function enComplementClause(p: ParsedSentence, compRoot: MeaningNode): string {
+  if (compRoot.syntacticElement === "Wood") {
+    const entry = EN_LEXICON[compRoot.lemma] as VerbEntry;
+    if (!entry) return enNp(p, compRoot);
+    const agent = targets(p, compRoot.id, "agent")[0];
+    const form =
+      compRoot.states?.tense === "past" ? entry.forms.past : compRoot.states?.subjectPerson === "3sg" ? entry.forms.third : entry.forms.base;
+    const rest = orderedArgs(p, compRoot, entry).filter((n) => n.id !== agent?.id);
+    const qArg = rest.find((n) => n.questionWord);
+    const restSurface = rest.filter((n) => n.id !== qArg?.id).map((n) => (n.prep ? `${n.prep} ${enNp(p, n)}` : enNp(p, n)));
+    const nested = p.meaning.edges.find((e) => e.from === compRoot.id && e.relation === "complement");
+    const nestedSurface = nested ? `${nested.marker ? nested.marker + " " : ""}${enComplementClause(p, nodeById(p, nested.to))}` : "";
+    const parts = [
+      ...(qArg ? [qArg.form.toLowerCase()] : []),
+      ...(agent ? [enNp(p, agent)] : []),
+      form,
+      ...restSurface,
+      ...(nestedSurface ? [nestedSurface] : []),
+    ];
+    return parts.join(" ");
+  }
+  const inEdge = p.meaning.edges.find(
+    (e) => e.to === compRoot.id && (e.relation === "predicated-as" || e.relation === "predicate" || e.relation === "location"),
+  );
+  if (inEdge) {
+    const subject = nodeById(p, inEdge.from);
+    const copula = copulaForm(compRoot);
+    if (compRoot.questionWord) return `${compRoot.form.toLowerCase()} ${enNp(p, subject)} ${copula}`;
+    if (inEdge.relation === "location") return `${enNp(p, subject)} ${copula} ${compRoot.prep ?? "in"} ${enNp(p, compRoot)}`;
+    const comp = compRoot.syntacticElement === "Earth" ? enNp(p, compRoot) : compRoot.form.toLowerCase();
+    return `${enNp(p, subject)} ${copula}${compRoot.states?.negated ? " not" : ""} ${comp}`;
+  }
+  return enNp(p, compRoot);
+}
+
 function enGenerate(p: ParsedSentence): string {
   const root = nodeById(p, p.meaning.rootId);
   const punct = root.states?.mood === "interrogative" ? "?" : ".";
@@ -168,6 +213,40 @@ function enGenerate(p: ParsedSentence): string {
         : person === "1sg" ? "am" : person === "3sg" ? "is" : "are";
       if (inEdge.relation === "contains") return `${cap(root.form)} ${copula} ${other.prep ?? "in"} ${enNp(p, other)}?`;
       return `${cap(root.form)} ${copula} ${enNp(p, other)}?`;
+    }
+  }
+
+  /* Clausal complement (Transcript Slice 1): the matrix verb keeps
+   * its root and its agent; the embedded clause follows it under
+   * its complementiser, composed by enComplementClause. This runs
+   * before the wh-question path below: the embedded clause's own
+   * question word is not the matrix clause's question, and letting
+   * that path take it would re-ask the embedded clause as the
+   * matrix one ("Who do you know?"). A negated matrix composes by
+   * the generic path's carrier rule (the contracted auxiliary +
+   * base form). */
+  const compEdge = p.meaning.edges.find((e) => e.from === root.id && e.relation === "complement");
+  if (compEdge) {
+    const entry = EN_LEXICON[root.lemma] as VerbEntry;
+    if (entry) {
+      const agent = targets(p, root.id, "agent")[0];
+      const compRoot = nodeById(p, compEdge.to);
+      const compSurface = `${compEdge.marker ? compEdge.marker + " " : ""}${enComplementClause(p, compRoot)}`;
+      let verbSurface: string;
+      if (root.states?.negated && root.states?.aux) {
+        verbSurface = `${NEG_CONTRACTION[root.states.aux] ?? `${root.states.aux} not`} ${entry.forms.base}`;
+      } else if (root.states?.modal) {
+        verbSurface = `${root.states.modal} ${entry.forms.base}`;
+      } else {
+        verbSurface =
+          root.states?.tense === "past" ? entry.forms.past : root.states?.subjectPerson === "3sg" ? entry.forms.third : entry.forms.base;
+      }
+      const words = [
+        ...(agent ? [agent.questionWord ? cap(agent.form) : enNp(p, agent)] : []),
+        verbSurface,
+        compSurface,
+      ];
+      return cap(words.join(" ")) + punct;
     }
   }
 
@@ -438,9 +517,13 @@ function orderedArgs(p: ParsedSentence, root: MeaningNode, entry: VerbEntry): Me
   const out: MeaningNode[] = [];
   const rels = [...entry.slots, ...(entry.prepSlot ? [entry.prepSlot.slot] : [])];
   for (const rel of rels) out.push(...targets(p, root.id, rel));
-  // Any other argument relations, in graph order.
+  // Any other argument relations, in graph order. "about"
+  // (Transcript Slice 6) rides here: the topic node carries its
+  // preposition, so argSurface renders "about dogs" — a
+  // statement or question with an about-phrase round-trips
+  // with the phrase, never silently without it.
   for (const e of p.meaning.edges) {
-    if (e.from === root.id && ["patient", "theme", "recipient", "location", "goal", "time"].includes(e.relation)) {
+    if (e.from === root.id && ["patient", "theme", "recipient", "location", "goal", "time", "about"].includes(e.relation)) {
       const n = nodeById(p, e.to);
       if (!out.includes(n)) out.push(n);
     }

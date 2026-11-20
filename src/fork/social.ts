@@ -41,6 +41,7 @@ import { lookupClassification } from "./classify";
 import { interlocutorKey } from "./interlocutor-store";
 import { CAPABILITIES, LIMITS } from "./capabilities";
 import { IDENTITY } from "./identity";
+import { PLACE } from "./place";
 import type { SemanticObject } from "./semantic-object";
 import type { Session } from "./session";
 
@@ -309,6 +310,20 @@ export function requestIdentity(): { name: string; kindLine: string } {
 
 export function requestCapabilities(): { capabilities: string[]; limits: string[] } {
   return { capabilities: [...CAPABILITIES], limits: [...LIMITS] };
+}
+
+/**
+ * The Place table's fact, through the same one address
+ * (Transcript Slice 4, 2026-11-19): the place this
+ * deployment is configured as being in, or null — no place
+ * configured, the table's honest standing (place.ts's
+ * header records why). A self-location question is answered
+ * from exactly what this returns: the place, spoken, when
+ * one is configured; the located decline naming
+ * self-location as the gap when none is.
+ */
+export function requestPlace(): { place: string | null } {
+  return { place: PLACE.place };
 }
 
 /**

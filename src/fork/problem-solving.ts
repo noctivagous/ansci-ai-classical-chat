@@ -51,6 +51,15 @@
  * where solving is taken up. No division machinery exists
  * yet — the seats stand on the map and in the unit's
  * PLACEHOLDER, awaiting their own slices.
+ *
+ * The first build slice (design §6; commissioned by the
+ * owner 2026-11-19) lives in problem-records.ts: the
+ * ProblemRecord type and its session-scoped register, seat
+ * movement with history, the need registry extended with
+ * "lack-of-information" and "how-to-proceed", and the
+ * decline-registration function. It is deliberately not
+ * wired into the turn: the hook that feeds it real decline
+ * records is the wiring slice, separately commissioned.
  */
 
 import type { SemanticObject } from "./semantic-object";

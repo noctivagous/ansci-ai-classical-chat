@@ -2419,3 +2419,195 @@ this part does not claim it. What the determination
 closes is the degree's outcome: any asserted predication
 the system can price and cannot support now draws the
 stance, where before it drew silence.
+
+## Part J — The vocabulary pass: second determinations on the blocked items (2026-11-19)
+
+The §7 list's closes-when names a second determinations pass
+"commissioned on a vocabulary decision". This part is that
+pass, written under the owner's vocabulary commission (their
+"1a", 2026-11-19). Each determination below is entered as
+design; where the machinery now produces what the
+determination names, the build is recorded with its
+verification (the pass's tests, test/fork-vocab-pass.test.ts,
+drive the sealed items' own sentences — the items carry no
+expected graphs, so the verification is the atom's presence
+on the item's text and the negative controls, not a score).
+Where the parse does not produce the shape the determination
+names, the item stays blocked and the determination records
+what it waits on. Nothing here closes an item by assertion.
+
+### J.1 Discourse acts: the act is an atom (H-059, H-060, H-061, H-068)
+
+A sealed item whose whole content is a discourse act scored
+a graph with the act nowhere in it: the parse has recorded
+the act since Part D D2 (a topic proposal for "What about
+X?", a reason query for a bare "Why?"), but the atomiser
+carried no atom for it. **Determination: an utterance's
+discourse act atomises as `discourse: act = <act>`, in a
+family of its own.** The topic proposal's topic and the
+reason query's question record already atomise as they did;
+the act atom is the missing member, not a replacement.
+
+A correction — "No, I meant the common cold" — is the same
+shape one layer up: a propositional clause carrying an act
+the proposition does not state. **Determination: a
+turn-initial "No," set off by its comma, before a clause
+that carries tense, is a correction of the exchange's
+current reading, and atomises as `discourse: act =
+correction`.** The comma is part of the shape, and the
+tense is part of the shape: "No one came." opens with the
+same word and is a plain statement (no comma — the word is
+a quantifier there), and a bare "No." has no clause to
+correct with. The determination is atom-level: the parse's
+act union and the assessment's act kinds are not extended
+by this part — their consumers price acts the atomiser does
+not, and a correction is a proposition with a force, not a
+non-proposition of D2's kind. Named consequence: generation
+does not yet carry the correction opener, so the atom's G1
+preservation waits on generation learning it; at G0 the act
+stands in the record.
+
+Build: the atomiser (features.ts) emits the act atom from
+the parse's record, and the correction from the connective
+graph's retained tokens under the shape above. Verified on
+the items' sentences and the two look-alikes.
+
+### J.2 Containment: the `contains` edge atomises as a link (H-014)
+
+Part D declared the relation ("containment: a container
+holds a contained entity") and the parse produces it —
+"What's in it?" parses to a container node sourcing a
+`contains` edge to the questioned, contained node — but no
+atom set carried the relation, so the edge atomised to
+nothing: the uncommissioned sibling of G.5's location
+extension, whose named consequence was identical in shape.
+**Determination: a `contains` edge atomises as a link,
+`connective: <container>|contains|<contained> = present`**,
+with the links family, beside `chains-to` and
+`predicated-as`. Build: one member added to the atomiser's
+link set. Verified on the item's sentence.
+
+### J.3 Event ordering: the chains-to family extended to the English ordering words (H-020, H-021; H-018 in part)
+
+The graph's `chains-to` edge chains clauses (the zh path);
+English states event order inside one clause, with ordering
+words, and no atom carried it. **Determination: a
+'before'/'after' modulator on an event predicate whose
+agent and theme are both filled states a sequence between
+the agent's event and the theme, and atomises as a
+`chains-to` link between them — the earlier term chaining
+to the later, the ordering word riding as the link's
+marker** (`tent|chains-to|campfire = before`). **An ordinal
+modulator ('first', 'second', 'third', 'last') on an event
+predicate is an ordering position over such a sequence, and
+atomises as the predicate's `ordering` attachment** beside
+its modulates atom. Build: the atomiser derives both from
+the edges the parse already produces. Verified on the
+items' sentences; an unordered telling draws neither atom.
+
+H-018 ("First we set up the tent, then we cooked dinner.")
+is the family's remaining member, and this part does not
+close it: its order is stated BETWEEN clauses, and the
+English parse does not produce the second clause — 'cooked'
+is demoted to a `result` edge of the first predicate, its
+patient 'dinner' attached to the wrong verb (the G0 dump is
+cited in GAPS §7). The determination the item waits on is
+not lexical: English multi-clause chaining in the parse,
+for which the zh chains-to path (parse.ts) is the existing
+pattern. When the parse produces two event predicates
+under a sequence marker, the link this part defines is the
+atom they will carry; the item is blocked on the mechanism,
+not on the vocabulary.
+
+### J.4 The causal adjunct: 'because of' names a cause (H-002, determination entered; the item stays blocked)
+
+**Determination: a 'because of' adjunct states the cause of
+its clause's event, and atomises as an attachment of the
+cause to the predicate — `attachment: <cause>|cause =
+<predicate>`**, in the shape Part G's time adjunct already
+uses (`<adjunct>|time = <predicate>`). The determination is
+entered; the build cannot follow it yet. The parse of "We
+moved the picnic indoors because of the rain" never
+produces the main clause: its graph holds three nodes
+('rain' as root, 'we', 'indoors') — 'moved' and 'picnic'
+never become nodes at all, the because-of fragment having
+captured the parse. The item waits on the English parse
+taking up a clause with a causal adjunct; the atom above
+is what that parse will emit when it does.
+
+### J.5 The items this pass does not determine a build for
+
+For each, the determination is the record of what the item
+waits on, with the parse evidence cited in GAPS §7:
+
+- **H-025 (manner).** "How do people react when someone
+  apologizes?" — the parse takes 'people' as its predicate
+  and 'react' as a patient; 'react' is not taken up as a
+  verb and the when-clause is not formed. A manner atom
+  presupposes both. Waits on: verb coverage for 'react'
+  and when-clause subordination in the English parse.
+- **H-032 (resultative 'go').** The outcome content already
+  atomises (`attachment: brown|result = go` — verified in
+  the current G0). What the item additionally names — the
+  subject's resulting state, predicated of it — cannot be
+  derived from the graph: the result complement's node
+  record is identical in shape for the adjective 'brown'
+  and the particle 'up' (role "result", Fire), so the graph
+  carries no category distinguishing a state the subject
+  enters from a particle the verb takes. Waits on: the
+  parse retaining a category for result complements.
+- **H-033 (definite description + 'here').** The copular
+  description "the third day of rain" never becomes a node
+  ('day' is absent from the graph; 'rain' is misread as the
+  predicate and 'here' as its patient). Waits on: the
+  parse's copular-NP path over ordinal + of-PP descriptions,
+  with a locative 'here'.
+- **H-053, H-066 (relation questions).** "How are X and Y
+  related?" needs the coordinated pair held as the
+  question's joint subject and a relation asked between
+  them. H-053's parse drops both nouns entirely (a passive
+  'relate' with a suppressed agent); H-066's misreads 'rain'
+  as the predicate and 'related' as its result. Waits on:
+  coordinated-subject formation in questions.
+- **H-057 ('made of').** The material relation the question
+  asks after is not produced: the parse reads 'make' as an
+  active past predicate with the bicycle as its agent and
+  the question word as its patient, and the stranded 'of'
+  is lost. Waits on: the 'be made of' construction in the
+  parse — and, behind it, the item's second lack, material
+  data for 'bicycle' in the graph, which no determination
+  here supplies.
+- **H-072 (possessive NP).** "My neighbour's phone number"
+  — the asked entity never becomes a node; the possessive
+  's is silently corrected to a plural inside the parse
+  ('neighbour's' → 'neighbours', recorded in its token
+  record) and the graph holds 'neighbour' with det 'my'.
+  Waits on: possessive-NP formation in the English parse.
+- **H-075 (existential quantity).** The partitive
+  ('grains of sand'), the existential 'there', and the
+  quantity question are none of them formed; the graph is
+  nearly empty. Waits on: partitive and existential
+  formation, and a quantity-question shape.
+- **H-076 (question root).** The asked NP's head is
+  'price'; the parse roots the description at 'stock' and
+  loses 'price', 'Apple' and 'right now' from the graph.
+  Waits on: NP-head determination in copular questions
+  over compound + of-PP descriptions.
+- **H-077 (compounded PP/adjective).** Partially atomised
+  today, and the atoms that stand are recorded in GAPS §7:
+  the president qualified by 'current', modified by
+  'chess', predicated-as the question word. 'Club' (the
+  compound 'chess club') and the trailing PP 'in my town'
+  never become nodes. Waits on: compound-NP formation and
+  trailing-PP attachment in the parse.
+- **H-078 (weather question, future shape).** The modal
+  'will' is taken as the predicate root, 'weather' as its
+  recipient and 'be' as its theme — the future copular
+  question is not formed. Waits on: modal-copula question
+  formation ('What will X be like?').
+- **H-079 ('exact').** No determination is entered. F.4's
+  declared ontology failure stands: precision — 'exact',
+  'at this moment' — has no determination in this record,
+  and entering one would be the owner-level decision the
+  item waits on, not a vocabulary determination this pass
+  may write.

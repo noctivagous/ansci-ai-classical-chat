@@ -207,8 +207,13 @@ export interface SemanticObject {
      *  is the shape the sentence layer draws today ("Who are
      *  you?", "What are you?"); "capability" is reserved — the
      *  modal shapes it needs ("What can you do?") do not parse
-     *  yet, a located sentence-layer gap. */
-    selfQuery?: "identity" | "capability" | "fact" | "ability";
+     *  yet, a located sentence-layer gap. "location" (Transcript
+     *  Slice 4, 2026-11-19) is the self-location question
+     *  ("Where are you?"): answered from Awareness Self's Place
+     *  table (place.ts) — the configured place, or the located
+     *  decline naming self-location as the gap when none is
+     *  configured. */
+    selfQuery?: "identity" | "capability" | "fact" | "ability" | "location";
     /** Present on self-query objects of the "fact" flavour
      *  (conversation-shapes C3, 2026-11-18): the matter the
      *  question asks after, as spoken ("pets", "rank",
@@ -219,7 +224,12 @@ export interface SemanticObject {
      *  carries instead the lexical verb of the polar verb
      *  question ("swim", "eat"), and abilityModal records the
      *  frame — modal ("Can you swim?") or bare present ("Do
-     *  you eat meat?") — the denial is composed in. */
+     *  you eat meat?") — the denial is composed in. On a
+     *  your-NP question (C3 shape (d)) the matter is the
+     *  possessed NP's head noun (Transcript Slice 3,
+     *  2026-11-19): "name" there marks a modified name NP
+     *  ("last name", "first name"), answered from the
+     *  Identity table's one name, not denied. */
     selfFact?: string;
     abilityModal?: boolean;
     /** Present on statement objects whose wondering frame
@@ -251,6 +261,19 @@ export interface SemanticObject {
      *  routing it to the question path, which declined it
      *  ("nothing you have told me says what was meant"). */
     meanQuery?: boolean;
+    /** Present on question objects that ask after the
+     *  VISITOR's location ("Where am I?" — Transcript Slice 4,
+     *  2026-11-19): the mirror image of the self-location
+     *  self-query. The system has no way of knowing where the
+     *  person it talks with is — no register holds it and
+     *  nothing perceives it — so the Planner answers it in its
+     *  own honest form: from the conversation's record when
+     *  the visitor has established their location in it, and
+     *  otherwise with the located decline naming exactly that
+     *  gap. Marked here so the turn layer gives it that form
+     *  rather than the question path's shape decline or the
+     *  world-location routing. */
+    visitorLocation?: boolean;
     /** Present on question objects that are the visitor's
      *  offer of help ("Can I help you?" — S2, the S programme,
      *  2026-11-19): a social act in question dress — the

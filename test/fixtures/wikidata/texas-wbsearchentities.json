@@ -1,0 +1,87 @@
+{
+ "searchinfo": {
+  "search": "Texas"
+ },
+ "search": [
+  {
+   "id": "Q1439",
+   "title": "Q1439",
+   "pageid": 1869,
+   "concepturi": "http://www.wikidata.org/entity/Q1439",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q1439",
+   "display": {
+    "label": {
+     "value": "Texas",
+     "language": "en"
+    },
+    "description": {
+     "value": "state of the United States of America",
+     "language": "en"
+    }
+   },
+   "label": "Texas",
+   "description": "state of the United States of America",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Texas"
+   }
+  },
+  {
+   "id": "Q916484",
+   "title": "Q916484",
+   "pageid": 866933,
+   "concepturi": "http://www.wikidata.org/entity/Q916484",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q916484",
+   "display": {
+    "label": {
+     "value": "Texas",
+     "language": "en"
+    },
+    "description": {
+     "value": "Scottish musical group; alternative rock band",
+     "language": "en"
+    }
+   },
+   "label": "Texas",
+   "description": "Scottish musical group; alternative rock band",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Texas"
+   }
+  },
+  {
+   "id": "Q49213",
+   "title": "Q49213",
+   "pageid": 51194,
+   "concepturi": "http://www.wikidata.org/entity/Q49213",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q49213",
+   "display": {
+    "label": {
+     "value": "University of Texas at Austin",
+     "language": "en"
+    },
+    "description": {
+     "value": "public university in Austin, Texas, USA",
+     "language": "en"
+    }
+   },
+   "label": "University of Texas at Austin",
+   "description": "public university in Austin, Texas, USA",
+   "match": {
+    "type": "alias",
+    "language": "mul",
+    "text": "Texas"
+   },
+   "aliases": [
+    "Texas"
+   ]
+  }
+ ],
+ "search-continue": 3,
+ "success": 1
+}

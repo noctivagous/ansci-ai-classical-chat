@@ -66,6 +66,12 @@ export interface EventRecord {
   theme?: string;
   location?: string;
   recipient?: string;
+  /** The about-phrase's topic (Transcript Slice 6): what the
+   *  event's content ranges over, under the parse's 'about'
+   *  relation — distinct from the theme, which is what the
+   *  event is OF ("know about dogs" tells what the knowing is
+   *  about, not what is known). */
+  about?: string;
   turn: number;
   text: string;
 }
@@ -445,6 +451,18 @@ export interface Session {
    *  composition loop for its duration and cleared after;
    *  never read outside it. */
   compositionStartTurn?: number;
+  /** A processing transient, not a record (union composition,
+   *  2026-11-19): while the Wikidata turn wrapper
+   *  (wikidata-turn.ts) runs a turn it has detected as one of
+   *  the first-consumer shapes, the consultation it will make
+   *  if the turn declines — the shape and the subject (the
+   *  subject as a lowercase lemma). Set by the wrapper for
+   *  the turn's duration and cleared after; read only by
+   *  turn.ts's entity-answer sites, which stand down for a
+   *  consulted subject (wikidataConsulted there). Absent on
+   *  every bare processTurn call, where the entity answers
+   *  stand exactly as gated. */
+  wikidataConsult?: { shape: "where" | "capital" | "country"; subject: string };
   /** The session's disposition (§9.1): setup, set at session
    *  start, changeable only between sessions in v1. */
   disposition: Composition;
@@ -500,6 +518,14 @@ export interface Session {
    *  discipline reads it (a move does not fire twice over the
    *  same standing material; a movement re-arms it). */
   uptakes: UptakeRecord[];
+  /** The ProblemSolving Unit's problem register
+   *  (problem-records.ts, first build slice 2026-11-19):
+   *  the session's kept, typed problems — seated, borne,
+   *  registered against a need — including every decline
+   *  filed into it. Session-scoped by ruling (design 4a):
+   *  the records ride the session in memory and nothing
+   *  survives a new session. */
+  problems: import("./problem-records").ProblemRecord[];
 }
 
 /**
@@ -513,9 +539,19 @@ export interface UptakeRecord {
    *  emotion name, or "uncategorised:<word>". */
   register: string;
   degree: "high" | "plain" | "low";
-  /** The grounded feeling: its lemma and its record's turn. */
+  /** The grounded feeling: its lemma and its record's turn.
+   *  On narrative ground (UN-2) these carry the grounding
+   *  EVENT's verb and turn — the record's feeling slot reads
+   *  as the ground's source either way. */
   feelingLemma: string;
   feelingTurn: number;
+  /** UN-2: the event-register entry id, when the move stood
+   *  on narrative ground. Absent on stated-ground moves. */
+  entry?: string;
+  /** MIX-2: the emotion-mix entry's name, when the move
+   *  stood on a mix ground (register "mix:<name>"). Absent
+   *  on every other ground. */
+  mix?: string;
 }
 
 /** The running scene: the scene fragments are placed into. */
@@ -595,6 +631,7 @@ export function newSession(
     quantityFlags: [],
     initiatives: [],
     uptakes: [],
+    problems: [],
   };
 }
 

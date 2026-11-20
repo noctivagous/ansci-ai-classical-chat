@@ -19,10 +19,15 @@
  * The six shape specimens of the design (§2.5) are driven at
  * reply level with their must-nots checked. Where a
  * specimen's natural wording files under no authority
- * ('disappointed', 'upset', 'devastated', 'proud' have no
- * classification entry and no canonical face), the specimen
- * is pinned as the located remainder it is — a vocabulary
- * pass's business, not an improvised filing here.
+ * ('disappointed', 'upset', 'devastated', 'proud' had no
+ * classification entry and no canonical face when this file
+ * was written), the specimen was pinned as the located
+ * remainder it was — a vocabulary pass's business, not an
+ * improvised filing here. The vocabulary pass (V1,
+ * 2026-11-19) has since filed all four by the established
+ * routes; its pins live in test/fork-vocab-pass.test.ts and
+ * the P-027 specimen below is re-pinned to the filed
+ * behaviour, its reason in place.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -184,20 +189,30 @@ test("UP-2 specimen P-123 (wistfulness): met at its own kind and degree — grie
   assert.equal(traces[1].uptake.degree, "plain");
 });
 
-test("UP-2 specimen P-027 (commiseration): a filed register over a spoiled plan is met; the design's own words stand as the located remainder", () => {
+test("UP-2 specimen P-027 (commiseration): a filed register over a spoiled plan is met; the design's own words were the located remainder, since filed by the vocabulary pass", () => {
   // With a register the authorities file, commiseration
   // fires over the telling:
   const { replies } = drive(["Hello.", "My weekend was ruined. I am sad."]);
   assert.ok(replies[1].includes("I am sorry. You are sad."));
   assert.ok(!replies[1].includes("What did you plan?"));
   // 'disappointed' and 'upset' — the specimen's natural
-  // words — file under NO authority (no classification
-  // entry, no canonical face): no register stands, so no
-  // uptake is owed. Located remainder for the vocabulary
-  // pass; an improvised filing here would break the
-  // ask-the-owner discipline.
+  // words — filed under NO authority when this test was
+  // written (no classification entry, no canonical face),
+  // so no register stood and no uptake was owed; the
+  // remainder was located for the vocabulary pass rather
+  // than improvised here. RE-PINNED 2026-11-19 (V1 of the
+  // vocabulary pass): the pass filed both words by the
+  // established routes — 'disappointed' under grief by the
+  // canonical face (dissatisfaction at an unmet expectation
+  // is grief's family; Glasgow arousal 3.82, the unmarked
+  // degree), 'upset' under worry by the classification
+  // climb (its state synset IS the worried synset) — so
+  // the register now stands and the move is owed at its
+  // priced weight. The pass's own pins live in
+  // test/fork-vocab-pass.test.ts.
   const rem = drive(["Hello.", "I am disappointed."]);
-  assert.equal(rem.traces[1].uptake, undefined);
+  assert.equal(rem.replies[1], "I am sorry. You are disappointed.");
+  assert.equal(rem.traces[1].uptake?.register, "grief");
 });
 
 /* ------------------------------------------------------------------ */

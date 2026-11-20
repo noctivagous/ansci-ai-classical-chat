@@ -90,6 +90,10 @@ export type EdgeType =
   // slice 2c, ahead of the data they will run over)
   | "HAS_PROPERTY" // bearer -> property concept
   | "CAPABLE_OF" // bearer -> capability concept
+  // Wikidata KB tier (slice W2 — see src/fork/wikidata-bank.ts:
+  // retrieved associations banked into the base partition)
+  | "CAPITAL_OF" // capital -> territory (Wikidata P36, inverted at import)
+  | "LOCATED_IN" // thing -> containing place/country (Wikidata P17/P131)
   // FrameNet (slice 2d, design §6.2): lexical unit -> frame it evokes
   | "EVOKES"
   | "HAS_FRAME_ELEMENT"
@@ -268,8 +272,18 @@ export class Graph {
   nodeByName(name: string): GraphNode | undefined {
     const want = name.toLowerCase();
     const matches = this.allNodes().filter((nd) => nd.name.toLowerCase() === want);
+    // Named-entity grounding nodes (src/fork/entities.ts, Slice 0)
+    // are never name referents: an entity or its class may share
+    // a name with an ordinary concept ("table" the furniture
+    // class stands above some entity's class; "turkey" names
+    // both a country and a bird), and several checks read a
+    // nodeByName hit as "the graph holds this kind" — a reading
+    // an entity's class chain must not satisfy. Entity nodes
+    // stand in the graph by id and edge (their IS_A instance
+    // relations), and their name index is lookupEntity.
+    const referable = matches.filter((nd) => !nd.properties["entity"] && !nd.properties["entityClass"]);
     // A word and its DictionaryEntry share a name; the concept is the referent.
-    return matches.find((nd) => nd.type !== "DictionaryEntry") ?? matches[0];
+    return referable.find((nd) => nd.type !== "DictionaryEntry") ?? referable[0];
   }
 
   allNodes(): GraphNode[] {

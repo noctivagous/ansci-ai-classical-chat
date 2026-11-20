@@ -135,6 +135,36 @@ export const CLASSIFICATIONS: ClassificationEntry[] = [
   cre("afraid", "Water", "emotion", "state", 0.9, "the state of attested fear — category filing (fear → Water)"),
   cre("scared", "Water", "emotion", "state", 0.85, "fear's everyday state — category filing (fear → Water)"),
 
+  /* ---- Emotions, the vocabulary pass (V1, 2026-11-19) ----
+   * The sweep of the sealed conversation set and the
+   * EmpatheticDialogues material (GAPS §2, the vocabulary
+   * pass entry) found the feeling words no authority filed.
+   * Each entry below is filed by one of the established
+   * routes — the classification climb, the canonical face
+   * (a category's state form or degree variant), the
+   * category's own head entry — with its evidence in the
+   * note. Words whose category assignment is not reliable
+   * (disgusted, grateful, nostalgic, sentimental, surprised,
+   * desperate, impressed, caring) are NOT entered here: they
+   * stand as owner questions in GAPS §2, beside 'guilty'. */
+  cre("disappointed", "Metal", "emotion", "state", 0.8, "grief at an unmet expectation — disappointment's feeling sense is 'a feeling of dissatisfaction that results when your expectations are not realized': dissatisfaction at the lost outcome is grief's family (category filing, grief → Metal). Degree unmarked (Glasgow arousal 3.82, beside sad's 3.94; degree evidence: the Glasgow register)"),
+  cre("disappointment", "Metal", "emotion", "state", 0.8, "the feeling of dissatisfaction at an expectation not realized — grief's family (category filing, grief → Metal)"),
+  cre("upset", "Earth", "emotion", "state", 0.85, "filed by the WordNet climb (the 'sorry' route): its state synset {disquieted, distressed, disturbed, upset, worried} IS the worried synset — the climb reaches the filed anchor 'worried' at hop 0 (Earth @0.9). The synset's gloss also names grief ('anxious uneasiness or trouble or grief'); that pole stands here, labelled — the filing is the climb's, not a harmonisation of the two"),
+  cre("devastated", "Metal", "emotion", "state", 0.8, "grief at high degree — devastation's feeling sense is 'the feeling of being confounded or overwhelmed': grief overwhelmed, the register's high degree carried in the word's own sense (the Glasgow register carries no value for this word — recorded, not supplied)"),
+  cre("proud", "Fire", "emotion", "state", 0.7, "the state of pride — its own gloss names pride ('feeling self-respect or pleasure in something by which you measure your self-worth'); category filing (pride → Fire), at pride's own confidence"),
+  cre("annoyed", "Wood", "emotion", "state", 0.8, "anger at low degree — its synset gloss is 'aroused to impatience or anger': annoyance is irritation predicated, and irritation files under anger in the owner's attested table; the degree is the irritation family's, low"),
+  cre("anxious", "Earth", "emotion", "state", 0.9, "the state of anxiety — category filing (worry → Earth), as 'worried' stands beside 'worry'"),
+  cre("apprehension", "Water", "emotion", "state", 0.85, "fear at low degree — the owner's determination (2026-11-19, the attested fivefold table) files apprehension under fear as a family variant at low degree; entered here so the table carries the ruling beside the LEDU face and the register walk's filing layer (category filing, fear → Water)"),
+  cre("apprehensive", "Water", "emotion", "state", 0.85, "the state of apprehension — fear at low degree (the owner's determination, 2026-11-19; category filing, fear → Water). Its synset mate 'worried' is no counter-evidence: the gloss ('mentally upset over possible misfortune or danger') is dread of a possible, fear's forward face — as 'dread' already files"),
+  cre("ashamed", "Fire", "emotion", "state", 0.6, "the state of shame — category filing (shame → Fire); the category is contested and kept low, as its head entry records"),
+  cre("embarrassed", "Fire", "emotion", "state", 0.6, "shame's state — its glosses name shame ('made to feel uncomfortable because of shame or wounded pride'; 'feeling... ashamed'); category filing (shame → Fire), contested and low with its category"),
+  cre("terrified", "Water", "emotion", "state", 0.85, "fear at high degree — its gloss is 'thrown into a state of intense fear': the degree is in the word's own sense (the Glasgow register carries no value for this word — recorded, not supplied)"),
+  cre("joyful", "Fire", "emotion", "state", 0.85, "joy's state form — category filing (joy → Fire)"),
+  cre("hopeful", "Wood", "emotion", "state", 0.7, "the state of hope — category filing (hope → Wood), at hope's own confidence"),
+  cre("optimistic", "Wood", "emotion", "state", 0.7, "hope's outlook form predicated as a state (the sealed set's own use: 'grateful and optimistic in one quick moment') — category filing (hope → Wood)"),
+  cre("jealous", "Wood", "emotion", "state", 0.65, "the state of jealousy — category filing (jealousy → Wood), at jealousy's own confidence"),
+  cre("content", "Earth", "emotion", "state", 0.75, "the adjective of contentment — satisfied; keyed to the emotion aspect, as the (concept, aspect) discipline keys 'cold' (the noun's content senses are not this entry); category filing (contentment → Earth)"),
+
   /* ---- Body & everyday states (fork-creative) ---- */
   cre("tired", "Earth", "state", "state", 0.8, "the spleen's load in TCM idiom"),
   cre("fatigue", "Earth", "state", "state", 0.8),

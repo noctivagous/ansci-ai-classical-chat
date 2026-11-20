@@ -458,6 +458,313 @@ function whExpectedType(wh: string): string {
   }
 }
 
+/* ================= Clausal complements (Transcript Slice 1) =================
+ * The construction the diagnostic probe isolated (SD1/IM2/K2):
+ * a clause standing as a verb's complement — "do you know who i
+ * am?", "i know that you are here." The matrix dispatch below is
+ * single-clause and keys its branch on the FIRST be/verb item in
+ * the whole token stream, so an embedded clause's copula hijacked
+ * the matrix parse (the throw site varied with mood; the cause
+ * was constant). The remedy is at the same place: BEFORE the
+ * dispatch runs, a clause-taking verb followed immediately by a
+ * complementiser ('that') or a wh-word is taken as a matrix verb
+ * whose complement is a clause, and the embedded clause is parsed
+ * as a clause in its own right, into the same graph, under the
+ * 'complement' relation (sentence.ts). The branch is attempted
+ * only on that exact signature and falls through whole when the
+ * embedded clause does not parse — every sentence it does not
+ * claim keeps the reading it has always had.
+ *
+ * The know-class: 'know' itself (hand entry, clausalComplement)
+ * plus the cognition/report verbs the parser can already resolve
+ * through the WordNet fallback. The list is the class, stated
+ * once here; a verb outside it followed by 'that' keeps the old
+ * paths (a relative 'that' follows a noun, never the verb, so it
+ * is never this signature in the first place). */
+
+/** Lemmas whose verbs take a clausal complement in this slice,
+ *  beyond the hand lexicon's flagged entry ('know'). */
+const EN_CLAUSAL_COMPLEMENT_VERBS = new Set([
+  "know", "think", "believe", "say", "wonder", "remember",
+  "understand", "hope", "forget", "learn", "suppose", "imagine",
+  "realize", "realise", "notice", "see", "hear", "feel", "tell", "mean",
+]);
+
+function enSubjectPerson(chunk: EnChunk): string {
+  return chunk.head.entry && "person" in chunk.head.entry
+    ? (chunk.head.entry as { person?: string }).person ?? "3sg"
+    : chunk.head.lower.endsWith("s") ? "3pl" : "3sg";
+}
+
+/** Resolve an item in verb position to its verb entry: the item's
+ *  own entry when it already carries one, else the WordNet
+ *  derivation, adopted in place — the verb-slot fallback's own
+ *  rule, applied inside an embedded clause. */
+function enResolveVerbItem(item: EnItem): VerbEntry | undefined {
+  if (item.entry?.kind === "verb") return item.entry as VerbEntry;
+  const derived = wordnetVerb(item.lower);
+  if (!derived) return undefined;
+  const handEntry = EN_LEXICON[derived.lemma];
+  const verbEntry = handEntry && handEntry.kind === "verb" && !("source" in handEntry && handEntry.source === "wordnet") ? (handEntry as VerbEntry) : derived;
+  const f = verbEntry.forms;
+  item.entry = verbEntry;
+  item.kind = "verb";
+  item.formTag =
+    item.lower === ingForm(f.base) ? "ing"
+    : item.lower === f.base ? "base" : item.lower === f.third ? "third" : item.lower === f.past && item.lower === f.participle ? "past/participle" : item.lower === f.past ? "past" : item.lower === f.participle ? "participle" : "base";
+  registerDerivedEntry(verbEntry);
+  return verbEntry;
+}
+
+/** The post-verbal argument loop of a verbal clause, shared by an
+ *  embedded clause and kept deliberately to the main path's own
+ *  rules: bare chunks fill the frame's slots in order, PPs fill
+ *  the prep slot or goal/location (with the temporal resolution),
+ *  adverbs modulate. Returns false when a bare chunk arrives with
+ *  no slot left — an excess the embedded parse does not claim. */
+function enFillVerbArgs(b: Builder, root: MeaningNode, verb: VerbEntry, items: EnItem[], start: number, slots?: string[]): boolean {
+  const bareSlots = [...(slots ?? verb.slots)];
+  let i = start;
+  while (i < items.length) {
+    const item = items[i];
+    if (item.lower === "about") {
+      // The about-phrase (Transcript Slice 6): 'about' classifies
+      // as an adverb in the item stream (it is not in EN_PREP),
+      // so neither the adverb rule below nor the prep rule ever
+      // files it as a phrase — position decides, as in the
+      // imperative branch: 'about' before a chunk is the
+      // preposition, and its topic attaches under the 'about'
+      // relation, never as the verb's theme and never as a
+      // location. A chunkless 'about' falls through to the
+      // adverb reading below ("walking about").
+      const c = enChunk(items, i + 1);
+      if (c) {
+        const n = enNodeFromChunk(b, c.chunk, "about");
+        n.prep = "about";
+        b.edge(root, n, "about");
+        i = c.next;
+        continue;
+      }
+    }
+    if (item.kind === "adverb") {
+      const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
+      b.edge(aNode, root, "modulates");
+      i++;
+      continue;
+    }
+    if (item.kind === "prep") {
+      const c = enChunk(items, i + 1);
+      if (!c) return false;
+      let slot = verb.prepSlot && verb.prepSlot.preps.includes(item.lower) ? verb.prepSlot.slot : item.lower === "to" ? "goal" : "location";
+      if (slot === "location") {
+        const headLemma = c.chunk.head.entry?.lemma ?? c.chunk.head.lower;
+        const cls = lookupClassification(headLemma);
+        if (cls && (cls.aspect === "season" || cls.aspect === "time")) slot = "time";
+      }
+      const n = enNodeFromChunk(b, c.chunk, slot);
+      n.prep = item.lower;
+      b.edge(root, n, slot as Relation);
+      i = c.next;
+      continue;
+    }
+    const c = enChunk(items, i);
+    if (!c) return false;
+    const slot = bareSlots.shift();
+    if (!slot) return false;
+    const n = enNodeFromChunk(b, c.chunk, slot);
+    b.edge(root, n, slot as Relation);
+    i = c.next;
+  }
+  return true;
+}
+
+/** A verbal embedded clause: subject chunk + verb + arguments,
+ *  built into b; its root is the verb node. */
+function enEmbeddedVerbalClause(b: Builder, emb: EnItem[], subjC: { chunk: EnChunk; next: number }, verbPos: number): MeaningNode | null {
+  const verbItem = emb[verbPos];
+  if (!verbItem) return null;
+  const verb = enResolveVerbItem(verbItem);
+  if (!verb) return null;
+  const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
+  root.states = {
+    voice: "active",
+    tense: verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
+    verbForm: verbItem.formTag,
+    mood: "indicative",
+    subjectPerson: enSubjectPerson(subjC.chunk),
+  };
+  const agent = enNodeFromChunk(b, subjC.chunk, "agent");
+  b.edge(root, agent, "agent");
+  // A complement-taking embedded verb takes its own clausal
+  // complement the same way ("…that you know who i am"): the
+  // construction recurses one clause down, as it must if the
+  // embedded clause is genuinely parsed as a clause.
+  const afterVerb = emb[verbPos + 1];
+  const nestedThat = afterVerb?.lower === "that";
+  const nestedWh = !!afterVerb && (afterVerb.kind === "wh" || afterVerb.lower === "how");
+  if (afterVerb && (nestedThat || nestedWh) && (verb.clausalComplement || EN_CLAUSAL_COMPLEMENT_VERBS.has(verb.lemma))) {
+    const nested = enEmbeddedClause(b, emb.slice(verbPos + 1 + (nestedThat ? 1 : 0)));
+    if (!nested) return null;
+    b.edge(root, nested, "complement", nestedThat ? "that" : undefined);
+    return root;
+  }
+  if (!enFillVerbArgs(b, root, verb, emb, verbPos + 1)) return null;
+  return root;
+}
+
+/** A copular embedded clause whose subject chunk and copula
+ *  position are known: subject + be + complement, the predicate
+ *  clause's own shapes (locative PP, NP chunk, adjective). Its
+ *  root is the complement node, as in the matrix predicate path. */
+function enEmbeddedCopularClause(b: Builder, emb: EnItem[], subjC: { chunk: EnChunk; next: number }, bePos: number): MeaningNode | null {
+  const beItem = emb[bePos];
+  const subject = enNodeFromChunk(b, subjC.chunk, "subject");
+  const person = enSubjectPerson(subjC.chunk);
+  const negItem = emb[bePos + 1]?.kind === "neg" ? emb[bePos + 1] : undefined;
+  const compAt = bePos + 1 + (negItem ? 1 : 0);
+  const firstAfter = emb[compAt];
+  if (!firstAfter) return null;
+  let root: MeaningNode;
+  if (firstAfter.kind === "prep") {
+    const pc = enChunk(emb, compAt + 1);
+    if (!pc || pc.next !== emb.length) return null;
+    root = enNodeFromChunk(b, pc.chunk, "location");
+    root.prep = firstAfter.lower;
+    root.states = { copulaTense: EN_BE[beItem.lower], mood: "indicative", subjectPerson: person };
+    b.edge(subject, root, "location");
+    return root;
+  }
+  const compChunk = enChunk(emb, compAt);
+  if (compChunk && compChunk.next === emb.length && (firstAfter.kind === "det" || firstAfter.kind === "noun" || firstAfter.kind === "proper" || firstAfter.kind === "pronoun")) {
+    root = enNodeFromChunk(b, compChunk.chunk, "predicate");
+  } else {
+    const adj = emb.slice(compAt).find((r) => r.kind === "adjective") ??
+      emb.slice(compAt).find((r) => r.kind === "noun" && wordnetAdjective(r.lower) !== undefined);
+    if (!adj) return null;
+    const aEntry = adj.kind === "adjective" ? adj.entry : wordnetAdjective(adj.lower);
+    if (adj.kind !== "adjective" && aEntry) registerDerivedEntry(aEntry, adj.lower);
+    root = b.node(
+      {
+        lemma: aEntry ? aEntry.lemma : adj.lower,
+        form: adj.text,
+        syntacticElement: "Fire",
+        ...(aEntry && "semanticElement" in aEntry && aEntry.semanticElement ? { semanticElement: aEntry.semanticElement } : {}),
+        role: "predicate",
+      },
+      [adj.index],
+    );
+  }
+  root.states = {
+    copulaTense: EN_BE[beItem.lower],
+    mood: "indicative",
+    subjectPerson: person,
+    ...(negItem ? { negated: true, negation: { negator: "not", carrier: beItem.lower } } : {}),
+  };
+  b.edge(subject, root, predRelation(root));
+  return root;
+}
+
+/**
+ * Parse an embedded clause (the items after a matrix verb's
+ * complementiser / wh-word) into builder b, returning its root,
+ * or null when the clause is none of the shapes this construction
+ * claims. Claimed shapes:
+ *  - wh-copular with clause-final copula: "who i am",
+ *    "where oklahoma is", "what a dog is" — the wh-word is the
+ *    embedded clause's questioned predicate/location, its subject
+ *    stands between the wh-word and the copula, exactly as the
+ *    matrix copular question holds its questioned node as root;
+ *  - wh-verbal: "what you know" — the wh-word fills its ordinary
+ *    slot in the embedded clause (R3's rule, one clause down);
+ *  - plain copular: "you are here", "a dog is an animal";
+ *  - plain verbal: "you know dogs".
+ * The wh-copular mood is recorded as interrogative on the wh
+ * node: the embedded clause IS an indirect question, and the
+ * record says so where the clause's own root carries it — the
+ * matrix clause's mood lives on the matrix verb and is untouched.
+ */
+function enEmbeddedClause(b: Builder, emb: EnItem[]): MeaningNode | null {
+  if (emb.length < 2) return null;
+  const firstEmb = emb[0];
+  const isWh = firstEmb.kind === "wh" || firstEmb.lower === "how";
+  if (isWh) {
+    const last = emb[emb.length - 1];
+    if (last.kind === "be" && emb.length >= 3) {
+      const subjC = enChunk(emb, 1);
+      if (subjC && subjC.next === emb.length - 1) {
+        const subject = enNodeFromChunk(b, subjC.chunk, "subject");
+        const role = firstEmb.lower === "where" ? "location" : "predicate";
+        const whNode = b.node(
+          { lemma: firstEmb.lower, form: firstEmb.text, syntacticElement: "Earth", role, questionWord: true },
+          [firstEmb.index],
+        );
+        whNode.states = { copulaTense: EN_BE[last.lower], mood: "interrogative", subjectPerson: enSubjectPerson(subjC.chunk) };
+        b.edge(subject, whNode, firstEmb.lower === "where" ? "location" : predRelation(whNode));
+        return whNode;
+      }
+    }
+    // Wh-verbal: a subject chunk follows the wh-word and a verb
+    // follows the subject; the wh-word fills the verb's first slot.
+    const subjC = enChunk(emb, 1);
+    if (subjC && subjC.next < emb.length) {
+      const verbItem = emb[subjC.next];
+      const verb = verbItem ? enResolveVerbItem(verbItem) : undefined;
+      if (verb && verbItem) {
+        const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
+        root.states = {
+          voice: "active",
+          tense: verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
+          verbForm: verbItem.formTag,
+          mood: "indicative",
+          subjectPerson: enSubjectPerson(subjC.chunk),
+        };
+        const agent = enNodeFromChunk(b, subjC.chunk, "agent");
+        b.edge(root, agent, "agent");
+        const slot = verb.required[0] ?? verb.slots[0] ?? "patient";
+        const whNode = b.node(
+          { lemma: firstEmb.lower, form: firstEmb.text, syntacticElement: "Earth", role: slot, questionWord: true },
+          [firstEmb.index],
+        );
+        b.edge(root, whNode, slot as Relation);
+        const rest = [...verb.slots];
+        const at = rest.indexOf(slot);
+        if (at >= 0) rest.splice(at, 1);
+        // Remaining arguments fill the slots the wh-word did not.
+        const ok = enFillVerbArgs(b, root, verb, emb, subjC.next + 1, rest);
+        return ok ? root : null;
+      }
+    }
+    // Wh-subject verbal: "who came …" — the wh-word is the agent.
+    const verbItem = emb[1];
+    const verb = verbItem ? enResolveVerbItem(verbItem) : undefined;
+    if (verb && verbItem) {
+      const root = b.node({ lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" }, [verbItem.index]);
+      root.states = {
+        voice: "active",
+        tense: verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
+        verbForm: verbItem.formTag,
+        mood: "indicative",
+        subjectPerson: "3sg",
+      };
+      const whNode = b.node(
+        { lemma: firstEmb.lower, form: firstEmb.text, syntacticElement: "Earth", role: "agent", questionWord: true },
+        [firstEmb.index],
+      );
+      b.edge(root, whNode, "agent");
+      return enFillVerbArgs(b, root, verb, emb, 2) ? root : null;
+    }
+    return null;
+  }
+  // Plain clause: copular when a copula follows the subject chunk,
+  // verbal when a verb does.
+  const subjC = enChunk(emb, 0, true);
+  if (!subjC) return null;
+  const after = emb[subjC.next];
+  if (after?.kind === "be") return enEmbeddedCopularClause(b, emb, subjC, subjC.next);
+  if (after) return enEmbeddedVerbalClause(b, emb, subjC, subjC.next);
+  return null;
+}
+
 /** Measurable-property head nouns: a "what is the X of Y" question over
  *  one of these asks for a quantity, not a kind (stage 3, case 12). */
 const MEASURABLE_HEADS = new Set([
@@ -1041,6 +1348,130 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     }
   }
 
+  /* --- Clausal complement (Transcript Slice 1): a clause-taking
+   *     verb followed immediately by 'that' or a wh-word takes the
+   *     whole following clause as its complement. The attempt runs
+   *     BEFORE the verb-slot fallback and the single-clause
+   *     dispatch below, both of which key on the first be/verb item
+   *     in the WHOLE stream — left to them, the embedded clause's
+   *     copula steers the matrix parse (IM2): the interrogatives
+   *     threw at the subject, the statements at the complement,
+   *     and "i know that you are here." silently rooted on the
+   *     embedded 'here' with 'know' gone. (The fallback's copula
+   *     guard is the same hijack from the other side: with an
+   *     embedded copula present it refuses to upgrade a derived
+   *     matrix verb at all — "i think that you are here.") The
+   *     candidate scan is a probe: it reads lemmas without
+   *     adopting any entry, claims only the FIRST clause-taking
+   *     verb in that signature, and the build — in a scratch
+   *     builder, the candidate adopted only once the embedded
+   *     clause and the matrix subject have both parsed — falls
+   *     through whole when its shapes fail, so a sentence this
+   *     construction does not claim keeps its old reading. --- */
+  {
+    let compBuilt: ParsedSentence | undefined;
+    for (let k = contentStart + 1; k < items.length - 1 && !compBuilt; k++) {
+      const cand = items[k];
+      const next = items[k + 1];
+      const isThat = next?.lower === "that";
+      const isWh = !!next && (next.kind === "wh" || next.lower === "how");
+      if (!isThat && !isWh) continue;
+      let lemma: string | undefined;
+      let flagged = false;
+      if (cand.entry?.kind === "verb") {
+        lemma = (cand.entry as VerbEntry).lemma;
+        flagged = !!(cand.entry as VerbEntry).clausalComplement;
+      } else {
+        const hand = EN_LEXICON[cand.lower];
+        if (hand?.kind === "verb") {
+          lemma = (hand as VerbEntry).lemma;
+          flagged = !!(hand as VerbEntry).clausalComplement;
+        } else {
+          lemma = wordnetVerb(cand.lower)?.lemma;
+        }
+      }
+      if (!lemma || (!flagged && !EN_CLAUSAL_COMPLEMENT_VERBS.has(lemma))) continue;
+      const embItems = items.slice(k + 1 + (isThat ? 1 : 0));
+      const matrixItems = items.slice(contentStart, k);
+      const auxMain = matrixItems.find((i) => i.kind === "aux" || i.kind === "modal");
+      const negMain = matrixItems.find((i) => i.kind === "neg");
+      // The matrix subject is what remains of the matrix items
+      // once the carrier (auxiliary/modal) and the negator are
+      // set aside: "do you know …", "i know …", "she knows …".
+      const subjItems = matrixItems.filter((i) => i !== auxMain && i.kind !== "neg");
+      /* The subject side is checked FIRST, before anything is
+       * adopted: a noun that merely carries a complement-verb
+       * derivation ("a feeling that I won" — 'feeling' probes as
+       * 'feel') is not a matrix verb, and its matrix side does
+       * not parse as subject + this verb. Such a candidate is
+       * simply passed over, with nothing adopted and nothing to
+       * restore. Only once the subject stands is the embedded
+       * clause parsed — and that parse ADOPTS its verb items in
+       * place, so the candidate-and-embedded items' classifications
+       * are snapshotted here and restored if the build fails: a
+       * failed attempt must leave the item stream exactly as the
+       * fallthrough dispatch expects it (the E2 regression: the
+       * discarded attempt's adopted 'won' stayed verb-classified
+       * and stole the matrix verb slot from 'have'). */
+      const whSubject = subjItems.length === 1 && subjItems[0].kind === "wh";
+      const subjC = whSubject ? undefined : enChunk(subjItems, 0);
+      if (!whSubject && (!subjC || subjC.next !== subjItems.length)) continue;
+      const snapshot = items.slice(k).map((i) => ({ item: i, kind: i.kind, entry: i.entry, formTag: i.formTag }));
+      const restore = () => { for (const s of snapshot) { s.item.kind = s.kind; s.item.entry = s.entry; s.item.formTag = s.formTag; } };
+      try {
+        const sb = new Builder();
+        const embRoot = enEmbeddedClause(sb, embItems);
+        if (!embRoot) { restore(); break; }
+        let agentNode: MeaningNode | undefined;
+        let person = "3sg";
+        let query: ParsedSentence["query"];
+        if (whSubject) {
+          // A questioned matrix subject: "who knows who i am?"
+          agentNode = sb.node(
+            { lemma: subjItems[0].lower, form: subjItems[0].text, syntacticElement: "Earth", role: "agent", questionWord: true },
+            [subjItems[0].index],
+          );
+          query = { relation: "agent", expectedType: whExpectedType(subjItems[0].lower) };
+        } else if (subjC) {
+          agentNode = enNodeFromChunk(sb, subjC.chunk, "agent");
+          person = enSubjectPerson(subjC.chunk);
+        }
+        if (!agentNode) { restore(); break; }
+        const matrixVerb = enResolveVerbItem(cand);
+        if (!matrixVerb) { restore(); break; }
+        const root = sb.node(
+          { lemma: matrixVerb.lemma, form: cand.text, syntacticElement: "Wood", role: "verb" },
+          [cand.index, ...(auxMain ? [auxMain.index] : []), ...(negMain ? [negMain.index] : [])],
+        );
+        root.states = {
+          voice: "active",
+          tense: auxMain?.lower === "did" || cand.formTag === "past" || cand.formTag === "past/participle" ? "past" : "present",
+          verbForm: cand.formTag,
+          mood: interrogative ? "interrogative" : "indicative",
+          subjectPerson: person,
+          ...(auxMain && auxMain.kind === "aux" ? { aux: auxMain.lower } : {}),
+          ...(auxMain && auxMain.kind === "modal" ? { modal: auxMain.lower } : {}),
+          ...(negMain ? { negated: true, negation: { negator: "not", carrier: auxMain?.lower } } : {}),
+          ...enAspectBundle(auxMain?.kind === "aux" ? auxMain : undefined, undefined, cand, false, false),
+        };
+        sb.edge(root, agentNode, "agent");
+        sb.edge(root, embRoot, "complement", isThat ? "that" : undefined);
+        compBuilt = {
+          meaning: sb.graph(root),
+          connective: connective("en", tokens, spans),
+          realizes: sb.realizes,
+          scopeAttachments: scope,
+          ...(query ? { query } : {}),
+        };
+      } catch {
+        restore();
+        compBuilt = undefined; // The claimed shapes failed: the old dispatch stands.
+      }
+      break; // Only the first candidate in the signature is claimed.
+    }
+    if (compBuilt) return compBuilt;
+  }
+
   let verbItem = items.find((i) => i.kind === "verb");
   if (!verbItem) {
     // WordNet fallback (wordnet-lex.ts): no hand-lexicon verb exists,
@@ -1164,6 +1595,7 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     }
   }
   const first = items[contentStart];
+
 
   /* --- Conditional (H2): if-clause as a condition relation between two
    *     clause graphs (Metal logical); the main clause carries the
@@ -1310,6 +1742,25 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       let i = verbItem.index + 1;
       while (i < items.length) {
         const item = items[i];
+        // The about-phrase (Transcript Slice 6, diagnostic IM3):
+        // 'about' classifies as an adverb, so the prep test
+        // below stopped this loop at it and the phrase was
+        // silently dropped — "what do you know about dogs?"
+        // parsed to know/you/what alone and its topic never
+        // entered the graph. Position decides, as in the
+        // imperative branch: 'about' before a chunk is the
+        // preposition, and its topic attaches under the
+        // 'about' relation — not the verb's prep slot, not a
+        // location, and not the questioned theme.
+        if (item.lower === "about") {
+          const c = enChunk(items, i + 1);
+          if (!c) break;
+          const n = enNodeFromChunk(b, c.chunk, "about");
+          n.prep = "about";
+          b.edge(root, n, "about");
+          i = c.next;
+          continue;
+        }
         if (item.kind !== "prep") break;
         const c = enChunk(items, i + 1);
         if (!c) break;
@@ -1334,6 +1785,19 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       let i = verbItem.index + 1;
       while (i < items.length) {
         const item = items[i];
+        if (item.lower === "about") {
+          // The about-phrase (Transcript Slice 6): as in the
+          // object-question loop above — 'about' before a chunk
+          // is the preposition, its topic under 'about'.
+          const c = enChunk(items, i + 1);
+          if (c) {
+            const n = enNodeFromChunk(b, c.chunk, "about");
+            n.prep = "about";
+            b.edge(root, n, "about");
+            i = c.next;
+            continue;
+          }
+        }
         if (item.kind === "adverb") {
           const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
           b.edge(aNode, root, "modulates");
@@ -1832,6 +2296,26 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
   let i = verbItem.index + 1;
   while (i < items.length) {
     const item = items[i];
+    if (item.lower === "about") {
+      // The about-phrase (Transcript Slice 6): 'about' classifies
+      // as an adverb, so the adverb rule below took the word as a
+      // modulator and the following chunk filled a bare slot —
+      // "i know about dogs." filed 'dog' as know's THEME, the
+      // thing known, where the sentence says only what the
+      // knowing is about. Position decides, as in the imperative
+      // branch: 'about' before a chunk is the preposition, and
+      // its topic attaches under the 'about' relation. A
+      // chunkless 'about' falls through to the adverb reading.
+      const c = enChunk(items, i + 1);
+      if (c) {
+        const n = enNodeFromChunk(b, c.chunk, "about");
+        n.prep = "about";
+        b.edge(root, n, "about");
+        spans.push({ start: i, end: c.chunk.end + 1, label: "pp" });
+        i = c.next;
+        continue;
+      }
+    }
     if (item.kind === "adjective") {
       // Resultative complement (R6): a bare post-verbal adjective is the
       // clause's result content — the generating Wood→Fire arc itself,

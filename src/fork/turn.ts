@@ -90,13 +90,24 @@ import { isAttestedWord } from "./token-resolve";
 import { classificationsOf, lookupClassification, type ClassificationEntry } from "./classify";
 import { climbClassification, climbRecognitions, wordnetAdjective, wordnetNoun } from "./wordnet-lex";
 import { derive, type Derivation, type DerivedConclusion } from "./join";
+import { lookupEntity } from "./entities";
 import { classifiedOrigin, holderOf, recordEntity, resolvePronoun, supersedeRecord, supersedeState, type FrameRecord, type Session, type StateRecord, type SupersessionRecord, type TopicRecord } from "./session";
 import { renderComposition } from "./composition";
 import { priceDerivation, tierOfProvenance, weakestTier, type PricingRecord, type Tier } from "./pricing";
 import { priceWithBoundary, selectMove, type BiasRecord } from "./disposition";
 import { COHESION_MARKERS, ROLE_QUESTION_WORD, historySource, planClarification, planComposition, planCorrection, planPredication, planRecordPredication, planRoleQuestion, planSelfIdentity, planThanksReceipt, planWellbeingAnswer, serialiseReplyGraph, type CohesionRelation, type CompositionOrder, type DegreeGrade, type PredicationSubject, type PricedConclusion, type QuestionFilledRole } from "./plan";
 import { rankedTopics, salienceOf, stateMovements, type LedgerPointer } from "./discourse-record";
-import { assessUptakeGround, buildUptakeReply, inRegister, UPTAKE_WEIGHT_THRESHOLD, type UptakeGround } from "./uptake";
+import {
+  assessNarrativeGround,
+  assessUptakeGround,
+  buildNarrativeUptakeReply,
+  buildUptakeReply,
+  inRegister,
+  UPTAKE_NARRATIVE_THRESHOLD,
+  UPTAKE_WEIGHT_THRESHOLD,
+  type NarrativeUptakeGround,
+  type UptakeGround,
+} from "./uptake";
 import { rivalSplits } from "./sense";
 import { assessInformation, assessUtterance } from "./assess";
 import { SENSE_CHANNELS } from "./semantic-object";
@@ -109,7 +120,7 @@ import {
   seedSceneNeeds,
 } from "./info-object";
 import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, isCorrespondenceTerm, premiseDegree, premiseSupport, priceNormalcyFlags, priceSurvivingNeeds } from "./coherence";
-import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, recordLastReply, requestCapabilities, requestIdentity } from "./social";
+import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, recordLastReply, requestCapabilities, requestIdentity, requestPlace } from "./social";
 import { routeProblemSolving } from "./problem-solving";
 import { assessNormalcy, normalcyFlagOf, FUNCTION_WORDS } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
@@ -119,7 +130,8 @@ import { normaliseKind, parseNumberToken, pluraliseKind, renderQuantity } from "
 import { authorReplyObject } from "./reply";
 import { generate } from "./generate";
 import { canonicalEmotion, type EmotionKind } from "./edu";
-import { uncategorisedEmotionWord } from "./ledu";
+import { canonicalNameFor, uncategorisedEmotionWord } from "./ledu";
+import { mixFor, type EmotionMixEntry } from "./emotion-mix";
 
 export interface TurnTrace {
   turn: number;
@@ -290,6 +302,20 @@ export interface TurnTrace {
     stoodDown?: string;
     composedWithSteering?: boolean;
     stoodDownSteering?: string;
+    /** UN-1/UN-2: which ground the assessment stood on —
+     *  "stated" (the visitor's filed feeling words) or
+     *  "narrative" (an event-register match over a bound
+     *  event). Absent on pre-UN traces reads as stated. */
+    ground?: string;
+    /** UN-1: the event-register entry id, on narrative
+     *  ground. */
+    entry?: string;
+    /** MIX-2: on a mix ground, the mix entry's name and its
+     *  components as "register/element" pairs — the trace
+     *  proof the mix was never collapsed: the components
+     *  stand in the record together, and no one of them is
+     *  the register. */
+    mix?: { name: string; components: string[] };
   };
   /**
    * E1 (the emotional-uptake programme, 2026-11-19): a feeling
@@ -402,6 +428,34 @@ export interface TurnTrace {
    *  whether a kind has its classifying quality, and the
    *  Classification answered, cited as definition. */
   definitionalAnswer?: { subject: string; quality: string; ground: string };
+  /** The entity answer (Transcript Slice 0): the question asked
+   *  what a named entity is, and the grounded entity record
+   *  (entities.ts — a WordNet instance synset, retrieved
+   *  provenance) answered with its gloss and type. A
+   *  where-question over a grounded entity files here too
+   *  (Transcript Slice 4): the gloss is the location-bearing
+   *  fact held for it, and the ground says so. */
+  entityAnswer?: { subject: string; name: string; synsetId: string; classes: string[]; ground: string };
+  /** The about-topic (Transcript Slice 6): this turn's clause
+   *  carried an about-phrase, and the parse filed its topic
+   *  under the 'about' relation (sentence.ts) — the topic as
+   *  the visitor named it (its form and lemma) and the ground
+   *  in words. Set for any turn whose root carries the edge,
+   *  whatever the turn's outcome: a decline over such a turn
+   *  is a decline ABOUT this topic, and the record says so
+   *  rather than letting the outcome read as about nothing
+   *  (diagnostic IM3). */
+  aboutTopic?: { topic: string; form: string; ground: string };
+  /** The construction gap (Transcript Slice 7): this turn's
+   *  sentence was well-formed but its shape is one the
+   *  sentence layer does not build, and the reply is the
+   *  LOCATED decline for that gap (owner ruling, 2026-11-19,
+   *  amending S4's whole-utterance rephrase for this class) —
+   *  the recognised shape's name, the parse failure that
+   *  evidences it, and the ground in words. Absent when the
+   *  failure is not recognisably a construction gap: those
+   *  keep the rephrase (see constructionGapOf). */
+  constructionGap?: { shape: string; failure: string; ground: string };
   /** The unanchored-definite question (Part 3d ii): a definite
    *  noun phrase whose referent stands in neither the scene
    *  graph nor the Session record, asked after instead of
@@ -417,6 +471,36 @@ export interface TurnTrace {
    *  evidence, so the settlement discharges the question's
    *  answer need exactly as the ledger's how-many hook does. */
   handAnswered?: { by: string; evidence: string };
+  /**
+   * W2 (the Wikidata adapter, 2026-11-19): this turn's
+   * Wikidata record, written by the async wrapper
+   * (wikidata-turn.ts) — processTurn itself is synchronous
+   * and never fetches. The record names the action taken
+   * (answered from the bank with no fetch; looked up, banked
+   * and answered; lookup unavailable; resolution ambiguous;
+   * no exact resolution), the subject asked after, and, for
+   * any reply resting on banked facts, the retrieved
+   * provenance: dataset "wikidata" and the subject item's
+   * QID (§3.5: a retrieved fact is never dressed in
+   * derivation language — this record is where its standing
+   * is shown). `priorDecline` keeps the located decline the
+   * turn first ended in, for audit, when the lookup replaced
+   * its reply.
+   */
+  wikidata?: {
+    action:
+      | "answered-from-bank"
+      | "looked-up-and-banked"
+      | "lookup-unavailable"
+      | "lookup-ambiguous"
+      | "lookup-no-resolution";
+    subject: string;
+    qid?: string;
+    dataset?: "wikidata";
+    fetched: boolean;
+    detail: string;
+    priorDecline?: string;
+  };
   /**
    * The schematic walk of the turn: the ordered node ids
    * (ai-system/system-map.ts) the turn actually passed through,
@@ -546,7 +630,7 @@ export interface TurnTrace {
     subject: string;
     presupposed: string;
     established: string;
-    source: "record" | "graph";
+    source: "record" | "graph" | "self";
     outcome: "stated" | "insistence-met-as-supposition" | "insistence-not-adopted" | "absence-stated";
     ground: string;
   };
@@ -867,6 +951,14 @@ function directedTargetGap(
  *  episode of the visitor's own (IMP-3). */
 const REPORT_VERBS = new Set(["read", "hear", "watch", "learn"]);
 
+/** FIX (ii): the cognition predicates of the empathy clause
+ *  — the verbs by which a sympathy 'sorry' names its ground
+ *  in the OTHER's situation ("sorry, because I know /
+ *  understand / remember …"). A closed class of the shape,
+ *  in the manner of REPORT_VERBS above: the leg it serves
+ *  reads the telling's surface, as IMP-3's legs do. */
+const EMPATHY_COGNITION = new Set(["know", "understand", "realise", "realize", "remember", "imagine"]);
+
 /** IMP-3: is the feeling bound to its object or occasioned
  *  by a report, on its own telling's evidence? The caller
  *  supplies the telling's token stream (the current turn's
@@ -891,12 +983,116 @@ function feelingObjectBound(
   state: StateRecord,
 ): boolean {
   const isEmotion =
-    lookupClassification(state.lemma)?.aspect === "emotion" || canonicalEmotion(state.lemma) !== undefined;
+    lookupClassification(state.lemma)?.aspect === "emotion" ||
+    canonicalEmotion(state.lemma) !== undefined ||
+    /* FIX (ii): the LEDU's canonical faces are emotion
+     * authorities too — 'sorry' files under grief by the
+     * face climb while carrying no classification emotion
+     * entry and no canonical name of its own, so without
+     * this disjunct the function's legs never judged it. */
+    canonicalNameFor(state.lemma) !== state.lemma;
   if (!isEmotion) return false;
   const words = tokens.map((t) => t.toLowerCase().replace(/[^a-z']/g, ""));
   const at = words.indexOf(state.lemma);
   if (at >= 0 && words[at + 1] === "of" && words[at + 2] && !enIsFunctionWord(words[at + 2])) return true;
+  /* FIX (ii) (the narrative programme, 2026-11-19): the
+   * sympathy/apology leg. A 'sorry' whose telling binds it
+   * to ANOTHER's situation is not the visitor's own venting
+   * state: the formula shape — "sorry for …", where the
+   * sorry takes the other's state of affairs as its object,
+   * whatever follows — and the empathy-clause shape —
+   * "sorry, because …", where the clause grounds the sorry
+   * in the other's situation by a cognition predicate
+   * (know / understand / realise / remember / imagine) or
+   * by addressing the other ('you'). Registration stands
+   * (E1's filing of 'sorry' under grief is the owner's,
+   * reversible by them); what stands down is the STEERING
+   * ground — the receipt meets the turn, not the
+   * cross-examination (run 5's P-024 regression: a sympathy
+   * turn answered "You were sorry. What did you say or
+   * do?"). An own-act apology — "sorry because I broke it",
+   * no formula object, no cognition predicate, no second
+   * person — binds to the visitor's own doing and still
+   * steers, as the control in the programme's tests pins. */
+  if (state.lemma === "sorry" && at >= 0) {
+    if (words[at + 1] === "for") return true;
+    const becauseAt = words.indexOf("because", at + 1);
+    if (becauseAt >= 0) {
+      const clause = words.slice(becauseAt + 1);
+      if (clause.some((w) => EMPATHY_COGNITION.has(w)) || clause.includes("you")) return true;
+    }
+  }
   return session.events.some((e) => e.turn === stateTurn && e.agent === "you" && REPORT_VERBS.has(e.verb));
+}
+
+/** FIX (iii): the adverbial subordinators whose clause
+ *  carries its own event. Conditionals ('if', 'unless') are
+ *  excluded by design — the conditional construction owns
+ *  them, and a supposed event is not a told one. */
+const ADVERBIAL_SUBORDINATORS = new Set([
+  "before", "after", "when", "whenever", "because", "since", "while", "until", "although", "though", "as",
+]);
+
+/**
+ * FIX (iii): the subordinate-clause event of a telling, if
+ * it carries one — the span after the first adverbial
+ * subordinator (or, sentence-initially, the span before the
+ * comma), parsed on its own and read for a verb root with
+ * roles. The span is the telling's own tokens; the event's
+ * text is the clause as told. Returns undefined where the
+ * span does not parse to a role-carrying verb root — most
+ * subordinate material is not an event, and the gate is the
+ * sub-parse's own yield, not the subordinator's promise.
+ */
+function subordinateClauseEvent(
+  parsed: ParsedSentence,
+  turn: number,
+  resolve: (lemma: string) => string,
+  session: Session,
+): EventRecordShape | undefined {
+  const tokens = parsed.connective.tokens;
+  const lower = tokens.map((t) => t.toLowerCase().replace(/[^a-z']/g, ""));
+  let span: string[] | undefined;
+  for (let i = 0; i < lower.length; i += 1) {
+    if (!ADVERBIAL_SUBORDINATORS.has(lower[i])) continue;
+    if (i === 0) {
+      const comma = tokens.findIndex((t) => t.endsWith(","));
+      if (comma < 2) return undefined;
+      span = tokens.slice(1, comma);
+    } else {
+      span = tokens.slice(i + 1);
+    }
+    break;
+  }
+  if (!span || span.length < 3) return undefined;
+  const spanText = span.join(" ").replace(/[.,\s]+$/, "");
+  let sub: ParsedSentence;
+  try {
+    sub = parse(`${spanText}.`, "en");
+  } catch {
+    return undefined;
+  }
+  const subRoot = nodeById(sub, sub.meaning.rootId);
+  if (!subRoot || subRoot.syntacticElement !== "Wood" || subRoot.role !== "verb") return undefined;
+  const agentNode = targets(sub, subRoot.id, "agent")[0];
+  const patient = targets(sub, subRoot.id, "patient")[0]?.lemma;
+  const theme = targets(sub, subRoot.id, "theme")[0]?.lemma;
+  if (!agentNode && !patient && !theme) return undefined;
+  for (const n of sub.meaning.nodes) {
+    if (n.syntacticElement === "Earth") recordEntity(session, n.lemma, turn);
+  }
+  const ev: EventRecordShape = {
+    verb: subRoot.lemma,
+    agent: agentNode ? resolve(agentNode.lemma) : undefined,
+    patient: patient ? resolve(patient) : undefined,
+    theme,
+    location: targets(sub, subRoot.id, "location")[0]?.lemma,
+    recipient: targets(sub, subRoot.id, "recipient")[0]?.lemma,
+    turn,
+    text: spanText,
+  };
+  if (ev.location) ev.location = resolve(ev.location);
+  return ev;
 }
 
 /** IMP-3: the consumed-object possession shape, judged on a
@@ -1280,7 +1476,7 @@ function earlierLink(
   }
   for (const ev of [...session.events].reverse()) {
     if (ev.turn >= turn) continue;
-    const shared = [ev.patient, ev.theme, ev.location, ev.recipient].find((f) => f !== undefined && wanted.has(f));
+    const shared = [ev.patient, ev.theme, ev.location, ev.recipient, ev.about].find((f) => f !== undefined && wanted.has(f));
     if (!shared) continue;
     const clause = soundEventClause(session, ev, { lowerSubject: true });
     if (!clause) continue;
@@ -1512,7 +1708,7 @@ function recognitionReceipt(
     /* X1: the link to earlier material, where the record
      * holds one (earlierLink) — appended to the formed
      * receipt, in the record family's wording. */
-    const link = earlierLink(session, turn, [event.patient, event.theme, event.location, event.recipient]);
+    const link = earlierLink(session, turn, [event.patient, event.theme, event.location, event.recipient, event.about]);
     if (link) {
       trace.recognition.link = {
         kind: link.kind,
@@ -1632,6 +1828,10 @@ function tryUptakeReply(
       returning: ground.returning,
       provenance: ground.provenance,
       stoodDown: reason,
+      ground: "stated",
+      ...(ground.mix
+        ? { mix: { name: ground.mix.entry.name, components: ground.mix.entry.components.map((c) => `${c.register}/${c.element}`) } }
+        : {}),
     };
     return undefined;
   };
@@ -1679,6 +1879,7 @@ function tryUptakeReply(
     degree: ground.degree,
     feelingLemma: ground.feeling.lemma,
     feelingTurn: ground.feeling.turn,
+    ...(ground.mix ? { mix: ground.mix.entry.name } : {}),
   });
   trace.uptake = {
     register: ground.registerKey,
@@ -1687,11 +1888,116 @@ function tryUptakeReply(
     returning: ground.returning,
     provenance: ground.provenance,
     stanceLemma: built.stanceLemma,
+    ground: "stated",
+    ...(ground.mix
+      ? { mix: { name: ground.mix.entry.name, components: ground.mix.entry.components.map((c) => `${c.register}/${c.element}`) } }
+      : {}),
   };
   trace.planNote =
     (trace.planNote ? `${trace.planNote}; ` : "") +
     `uptake (UP-1/UP-2): the telling's register '${ground.registerKey}' is met by the Planner's uptake move — ` +
     `generated from the register filing, the telling's own predications, and the record's movement; one acknowledgement head, ahead of the receipt`;
+  return { reply: built.reply, ground };
+}
+
+/**
+ * UN-2: the narrative arm of the uptake move. The gates are
+ * the family's own, read for the narrative ground: the
+ * telling-level guards first (a match the telling does not
+ * carry — modal, negated, mediated — stands down by the
+ * guard's name), then the narrative threshold (derived
+ * support priced above the stated ground's), the open
+ * phase, pending business, and the episode discipline in
+ * its narrative form: an uptake record standing for THIS
+ * telling — the same event record, answered on this same
+ * turn (a multi-segment turn can carry one telling past
+ * more than one site) — is not answered twice. A NEW
+ * telling of the event-kind on a later turn is a new event
+ * in the record and may be met again: the visitor chose to
+ * tell it, and an event's standing does not restate the way
+ * a feeling's does. The S0 matcher gate has no narrative
+ * analogue: the event clause renders under the record's own
+ * admission, which is the gate for event renderings
+ * everywhere. The reply is the narrative licence's two
+ * sentences — the stance, and the event as told — never a
+ * feeling predicated of the visitor.
+ */
+function tryNarrativeUptakeReply(
+  session: Session,
+  trace: TurnTrace,
+  turn: number,
+  parsed: ParsedSentence,
+  event: EventRecordShape | undefined,
+): { reply: string; ground: NarrativeUptakeGround } | undefined {
+  if (!event || trace.correction) return undefined;
+  const ground = assessNarrativeGround(session, event, parsed);
+  if (!ground) return undefined;
+  const standDown = (reason: string): undefined => {
+    trace.uptake = {
+      register: ground.registerKey,
+      degree: ground.degree,
+      weight: ground.weight,
+      returning: ground.returning,
+      provenance: ground.provenance,
+      stoodDown: reason,
+      ground: "narrative",
+      entry: ground.match.entry.id,
+    };
+    return undefined;
+  };
+  if (ground.guardReason) {
+    return standDown(`the telling-level guard stands the narrative ground down: ${ground.guardReason}`);
+  }
+  if (ground.weight < UPTAKE_NARRATIVE_THRESHOLD) {
+    return standDown(
+      `the narrative ground's weight (${ground.weight}) does not clear the narrative threshold (${UPTAKE_NARRATIVE_THRESHOLD}) — derived support is priced above the stated ground's, and this telling remains receipt matter`,
+    );
+  }
+  const phase = conversationPhase(session);
+  if (phase !== "open") {
+    return standDown(`the conversation phase is '${phase}' — uptake is an open-phase move`);
+  }
+  const pending = session.conversation.pending;
+  if (pending && (pending.kind === "clarification" || pending.kind === "stance-repair")) {
+    return standDown(`a ${pending.kind} stands pending — that business owns the turn`);
+  }
+  const answered = session.uptakes.some(
+    (u) => u.entry === ground.match.entry.id && u.feelingTurn === ground.event.turn && u.turn === turn,
+  );
+  if (answered) {
+    return standDown(
+      `this telling of the event-kind '${ground.match.entry.id}' (its event stands at turn ${ground.event.turn}) already drew the narrative move on this turn — one telling is not answered twice`,
+    );
+  }
+  const built = buildNarrativeUptakeReply(ground, (e) => soundEventClause(session, e, { withRecipient: false }));
+  if (!built) {
+    return standDown(
+      "the telling's event fails the record's rendering admission (S0) — a stance with no renderable object stands down with it, and the receipt answers the turn",
+    );
+  }
+  session.uptakes.push({
+    turn,
+    register: ground.registerKey,
+    degree: ground.degree,
+    feelingLemma: ground.event.verb,
+    feelingTurn: ground.event.turn,
+    entry: ground.match.entry.id,
+  });
+  trace.uptake = {
+    register: ground.registerKey,
+    degree: ground.degree,
+    weight: ground.weight,
+    returning: ground.returning,
+    provenance: ground.provenance,
+    stanceLemma: built.stanceLemma,
+    ground: "narrative",
+    entry: ground.match.entry.id,
+  };
+  trace.planNote =
+    (trace.planNote ? `${trace.planNote}; ` : "") +
+    `uptake (UN-2, narrative ground): the telling's event files under the register '${ground.registerKey}' by the ` +
+    `event-register authority (entry '${ground.match.entry.id}'); the move takes the stance and names the event as ` +
+    `told — no feeling is predicated of the visitor, who stated none`;
   return { reply: built.reply, ground };
 }
 
@@ -2137,7 +2443,13 @@ function answerMentionFromRecord(
   if (root.lemma !== "mention" && root.lemma !== "tell") return undefined;
   const agent = targets(parsed, root.id, "agent")[0];
   if (agent?.lemma !== "i") return undefined;
-  const theme = targets(parsed, root.id, "theme")[0];
+  /* The matter asked after: the theme the parse kept, or —
+   * for the tell-form, whose matter is an about-phrase
+   * ("Did I tell you about the soup?") — the about-topic
+   * (Transcript Slice 6: the phrase now files under the
+   * 'about' relation, where before it filled the theme slot
+   * by position). Either is the thing the check is about. */
+  const theme = targets(parsed, root.id, "theme")[0] ?? targets(parsed, root.id, "about")[0];
   if (!theme) return undefined;
   const lemma = theme.lemma;
   if (lemma.length < 2 || NON_THING_FILL.has(lemma.toLowerCase())) return undefined;
@@ -2158,7 +2470,7 @@ function answerMentionFromRecord(
     session.topics.some((t) => t.lemma === lemma && toldAt(t.raisedTurn)) ||
     session.entities.some((e) => e.lemma === lemma && toldAt(e.turn)) ||
     session.events.some(
-      (e) => toldAt(e.turn) && [e.patient, e.theme, e.location, e.recipient].includes(lemma),
+      (e) => toldAt(e.turn) && [e.patient, e.theme, e.location, e.recipient, e.about].includes(lemma),
     ) ||
     session.states.some((s) => toldAt(s.turn) && (s.holder === lemma || s.lemma === lemma));
   /* IMP-4(d): the check is rendered from the system's
@@ -2313,6 +2625,270 @@ function answerSelfFactFromRecord(
 }
 
 /**
+ * The know-question routing (Transcript Slice 2, 2026-11-19;
+ * diagnostic IM4/K3, programme item 2): Slice 1 made the
+ * know-questions parse whole — root 'know', its NP theme or
+ * its complement clause in the graph — but nothing routed
+ * them: "do you know my name?" declined as graph knowledge
+ * ("nothing on name"), and the embedded wh-forms were taken
+ * for self-queries by assessment's loose predication reading
+ * (fixed in assess.ts) and answered with the system's own
+ * identity. This reader is narrow by construction — the root
+ * is 'know', the agent the system ('you') — and routes by
+ * what the question asks after:
+ *
+ * - MY NAME (the theme is 'name' under the visitor's own
+ *   possessive): the Interlocutor register answers, in the
+ *   X4 name-remembrance reader's own forms — the name as
+ *   learned, or the honest not-told. A visitor's name is
+ *   session fact, never graph knowledge (K3).
+ * - WHO THE VISITOR IS (the complement is a wh-copular clause
+ *   predicating 'who' of 'i'): the register answers likewise.
+ * - WHAT A THING IS (the complement predicating 'what' of a
+ *   thing subject): answered about the subject from what the
+ *   system holds — a grounded entity's record (Slice 0) where
+ *   one stands — or declined LOCATED at the subject, naming
+ *   it as the gap, in the fallthrough decline's convention.
+ *
+ * Everything else stands down: the NP-theme forms already
+ * decline located at their theme through the fallthrough
+ * below (an entity theme naming what is held), the
+ * where-complements likewise (probe 7), and "what do you
+ * know?" — whose answer is an owner's design call, undecided
+ * — is not this reader's shape at all (its theme is the
+ * question word itself, which no branch here touches).
+ *
+ * Transcript Slice 6: the about-form of that same question —
+ * "what do you know about dogs?" — stands down here too, for
+ * the same reason: what it should ANSWER is the same
+ * undecided call. What Slice 6 changes is the representation
+ * the stand-down carries: the parse now files the topic
+ * under the 'about' relation (trace.aboutTopic), and the
+ * missing-role decline below phrases its reply and its
+ * ground with the topic, so the outcome is about dogs and
+ * not about nothing.
+ */
+function answerKnowQuestion(
+  session: Session,
+  trace: TurnTrace,
+  parsed: ParsedSentence,
+  root: MeaningNode,
+): TurnResult | undefined {
+  if (root.lemma !== "know") return undefined;
+  const agent = targets(parsed, root.id, "agent")[0];
+  if (agent?.lemma !== "you") return undefined;
+  const identity = session.interlocutor.identity;
+  const theme = targets(parsed, root.id, "theme")[0];
+  if (theme?.lemma === "name" && theme.det === "my") {
+    trace.recordAnswer = {
+      source: "self-fact",
+      ground: identity
+        ? `the question asks whether the system knows the visitor's name, and the Interlocutor register ` +
+          `holds it ('${identity.name}', learned at ${identity.learnedAt}) — the register answers`
+        : "the question asks whether the system knows the visitor's name, and the Interlocutor register " +
+          "holds none — the register answers no, honestly",
+    };
+    trace.planNote =
+      "answered from the Interlocutor register (Transcript Slice 2): the visitor's name is session fact " +
+      "(C6), held as told — the register is the answer's source, not the graph";
+    trace.wordingNotDerived = true;
+    return { reply: identity ? `Yes. Your name is ${identity.name}.` : "No. You have not told me your name.", trace };
+  }
+  const comp = parsed.meaning.edges.find((e) => e.from === root.id && e.relation === "complement");
+  if (!comp) return undefined;
+  const embRoot = nodeById(parsed, comp.to);
+  const embSubject = parsed.meaning.edges
+    .filter((e) => e.to === embRoot.id && e.relation === "predicated-as")
+    .map((e) => nodeById(parsed, e.from))[0];
+  if (embRoot.lemma === "who" && embSubject?.lemma === "i") {
+    trace.recordAnswer = {
+      source: "self-fact",
+      ground: identity
+        ? `the question asks whether the system knows who the visitor is, and the Interlocutor register ` +
+          `holds their stated identity ('${identity.name}', learned at ${identity.learnedAt}) — the register answers`
+        : "the question asks whether the system knows who the visitor is, and the Interlocutor register " +
+          "holds no stated identity — the register answers no, honestly",
+    };
+    trace.planNote =
+      "answered from the Interlocutor register (Transcript Slice 2): who the visitor is is session fact, " +
+      "held by the Social Unit's register (stated, S6) — not the system's identity, and not graph knowledge";
+    trace.wordingNotDerived = true;
+    return { reply: identity ? `Yes. You are ${identity.name}.` : "No. You have not told me who you are.", trace };
+  }
+  if (embRoot.lemma === "what" && embSubject && !embSubject.questionWord) {
+    const subjectLemma = embSubject.lemma.toLowerCase();
+    // A pronoun subject asks after a person, not a thing's
+    // definition: the register shapes above own the visitor,
+    // and third parties stand down to the ordinary paths.
+    if (EN_LEXICON[subjectLemma]?.kind === "pronoun" || subjectLemma === "you" || subjectLemma === "i") return undefined;
+    const entity = !lookupClassification(subjectLemma) ? lookupEntity(subjectLemma) : undefined;
+    if (entity) {
+      trace.entityAnswer = {
+        subject: subjectLemma,
+        name: entity.name,
+        synsetId: entity.synsetId,
+        classes: entity.classes,
+        ground:
+          `the question asks, as the complement of 'know', what '${subjectLemma}' is, and the subject is a ` +
+          `grounded named entity: wordnet instance synset ${entity.synsetId} (${entity.lemmas.join(", ")}), ` +
+          `an instance of ${entity.classes.join(" and ")}, gloss "${entity.gloss}" — the entity record answers`,
+      };
+      trace.planNote =
+        "answered from the grounded entity record (Transcript Slice 2, on Slice 0's grounding): the know-" +
+        "question's complement asks what the named entity is, and the synset's gloss is what the system knows of it";
+      trace.wordingNotDerived = true;
+      return { reply: `Yes. ${entity.name} is ${entity.gloss}.`, trace };
+    }
+    trace.declineReason =
+      `the question asks, as the complement of 'know', what '${subjectLemma}' is, and what I know holds ` +
+      `no answer to that — the gap is knowledge, located at '${subjectLemma}' (§6)`;
+    return {
+      reply: `I can't answer that from what I know: nothing in what I know says what ${embSubject.det ? `${embSubject.det} ` : ""}${embSubject.form} is.`,
+      trace,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Union composition (2026-11-19): is a Wikidata consultation
+ * wired for this turn on this subject (and, where given, this
+ * shape)? The entity-grounding answers (Slices 0/2/4) were
+ * built while the Wikidata intake stood on hold by the
+ * owner's ruling — Slice 4's reader says so in its own
+ * header: the gloss answers at the level the grounding
+ * supports because "the intake that would hold more is on
+ * hold", and no place fact is fetched there. Where the
+ * intake IS wired — the async wrapper (wikidata-turn.ts)
+ * runs the turn with a consultation set on the session —
+ * the hold is lifted for the consulted shape and subject:
+ * the entity stand-in stands down, the turn ends in its
+ * ordinary located knowledge decline, and the wrapper's
+ * trigger (bank first, then lookup) owns the question, as
+ * slice W2 designed and gated it. Bare processTurn calls
+ * never carry a consultation, so the entity answers stand
+ * exactly as the transcript programme gated them; a
+ * consultation for another subject or shape changes
+ * nothing here.
+ */
+function wikidataConsulted(session: Session, subjectLemma: string, shape?: "where" | "country"): boolean {
+  const c = session.wikidataConsult;
+  return !!c && c.subject === subjectLemma && (shape === undefined || c.shape === shape);
+}
+
+/**
+ * The world-location reader (Transcript Slice 4, 2026-11-19):
+ * a copular where-question about a third-party subject —
+ * "Where is Oklahoma?", "Where is a dog?" The parse draws
+ * one shape for the whole where family (the "where" question
+ * word as root, the subject standing to it in the location
+ * relation); assessment's split takes the "you" subject to
+ * the self-query branch and the "i" subject to the
+ * visitor-location branch, and what reaches this reader is
+ * the world's share.
+ *
+ * A GROUNDED entity subject is answered from the entity
+ * record at the level the grounding supports (Slice 0's
+ * grounding: gloss + instance type, wordnet-retrieved
+ * provenance, nothing richer — the Wikidata intake that
+ * would hold more is on hold by the owner's ruling, and no
+ * place fact is fetched or invented here). For an entity
+ * like Oklahoma the gloss IS a location-bearing answer at
+ * coarse level — "a state in south central United States"
+ * states where it is, at the only level held — so the
+ * answer speaks the gloss, with the synset and its
+ * provenance cited in the trace, exactly as the what-is
+ * entity answer does. Before this slice the same turn
+ * declined while naming what was held; the held gloss
+ * answers the question as posed, so the decline was the
+ * mislocation.
+ *
+ * Any other subject — a kind ("a dog"), an ungrounded name —
+ * declines LOCATED AT THE SUBJECT: what is missing is a
+ * location for the subject the question itself names, and
+ * the decline says so. (A kind is held by its classification,
+ * which carries no whereabouts; a placed instance in a
+ * conversation's scene is a different question, and no scene
+ * answerer is claimed here.)
+ */
+function answerWhereQuestion(
+  session: Session,
+  trace: TurnTrace,
+  parsed: ParsedSentence,
+  root: MeaningNode,
+): TurnResult | undefined {
+  if (!root.questionWord || root.lemma.toLowerCase() !== "where") return undefined;
+  const subjectEdge = parsed.meaning.edges.find((e) => e.relation === "location" && e.to === root.id);
+  if (!subjectEdge) return undefined;
+  const drawnSubject = nodeById(parsed, subjectEdge.from);
+  // The time-frame reading, as assessment's split reads it:
+  // a trailing time word mis-headed as the subject ("Where
+  // is the dog now?" — now:subject, 'dog' qualifying it) is
+  // the question's frame; the subject is its qualifier. The
+  // determiner rode on the time word ("the dog" — 'the'
+  // stands on 'now'), so the phrase takes it from there when
+  // the qualifier carries none of its own.
+  let subject = drawnSubject;
+  let subjectDet = drawnSubject.det;
+  if (TIME_DEICTICS.has(drawnSubject.lemma.toLowerCase())) {
+    const qualifier = parsed.meaning.edges
+      .filter((e) => e.relation === "qualifies" && e.to === drawnSubject.id)
+      .map((e) => nodeById(parsed, e.from))[0];
+    if (qualifier) {
+      subject = qualifier;
+      subjectDet = qualifier.det ?? drawnSubject.det;
+    }
+  }
+  const subjectLemma = subject.lemma.toLowerCase();
+  // The split's other two shares own their subjects (and
+  // return before this reader in the turn); standing down
+  // here too keeps the reader world-only by construction.
+  if (subjectLemma === "you" || subjectLemma === "i") return undefined;
+  const entity = !lookupClassification(subjectLemma) ? lookupEntity(subjectLemma) : undefined;
+  // Union composition: under a wired Wikidata consultation
+  // for this subject, the gloss stand-in stands down (see
+  // wikidataConsulted) — the turn proceeds to its ordinary
+  // knowledge decline and the wrapper's trigger owns the
+  // question.
+  if (entity && wikidataConsulted(session, subjectLemma, "where")) return undefined;
+  if (entity) {
+    trace.entityAnswer = {
+      subject: subjectLemma,
+      name: entity.name,
+      synsetId: entity.synsetId,
+      classes: entity.classes,
+      ground:
+        `the question asks where '${subjectLemma}' is, and the subject is a grounded named entity: ` +
+        `wordnet instance synset ${entity.synsetId} (${entity.lemmas.join(", ")}), an instance of ` +
+        `${entity.classes.join(" and ")}, gloss "${entity.gloss}" — ingested into the graph with ` +
+        `provenance ${entity.provenance}; the gloss is the whole of what the grounding holds for the ` +
+        `entity, and the where-answer is given at that level (Transcript Slice 4)`,
+    };
+    trace.handAnswered = { by: "ontology-core/ontology-knowledge-unit/correspondence-graph", evidence: trace.entityAnswer.ground };
+    trace.planNote =
+      "answered from the grounded entity record (Transcript Slice 4, on Slice 0's grounding): the " +
+      "where-question is answered at the level the grounding supports — the entity's gloss, spoken as " +
+      "the answer; nothing richer is held or claimed (no coordinates, no containment chain — the " +
+      "intake that would hold more is on hold by the owner's ruling)";
+    trace.steeringNote =
+      "answered from the entity grounding (wordnet-retrieved) — the synset's gloss and instance type; " +
+      "the classification table was not consulted and holds no entry for a named entity";
+    return { reply: `${entity.name} is ${entity.gloss}.`, trace };
+  }
+  const held = lookupClassification(subjectLemma) !== undefined;
+  trace.declineReason =
+    `the question asks where '${subjectLemma}' is, and what I know holds no location for it — ` +
+    (held
+      ? `the subject is held as a kind, by its classification, which carries no whereabouts; `
+      : `nothing on the subject is held at all; `) +
+    `the gap is knowledge, located at the subject the question itself names (§6)`;
+  return {
+    reply: `I can't answer that from what I know: nothing in what I know says where ${subjectDet ? `${subjectDet} ` : ""}${subject.form} is.`,
+    trace,
+  };
+}
+
+/**
  * The accumulated-tellings reader (IMP-4(a), the
  * implementation programme, 2026-11-19): "What did I tell
  * you about the soup?" asks after the conversation's own
@@ -2401,7 +2977,7 @@ function answerTellingsFromRecord(
      * included: an event the topic agented ("my sister
      * lives in Chicago") is a telling about the topic as
      * much as one it was done to. */
-    if (![e.agent, e.patient, e.theme, e.location, e.recipient].includes(topic)) continue;
+    if (![e.agent, e.patient, e.theme, e.location, e.recipient, e.about].includes(topic)) continue;
     const clause = soundEventClause(session, e, { lowerSubject: true });
     if (clause) tellings.push({ turn: e.turn, sentence: clause });
   }
@@ -2457,7 +3033,17 @@ function answerTellingsFromRecord(
  *  - the LEDU's uncategorised register (ledu.ts) names the
  *    word a feeling whose category is NOT reliable — it
  *    registers with no element and no canonical face, and the
- *    word waits on the owner in GAPS §2.
+ *    word waits on the owner in GAPS §2;
+ *  - the emotion-mix table (emotion-mix.ts, MIX-2 of the
+ *    emotion-mix programme, 2026-11-19) files the word as a
+ *    MIX — it registers with no element and its concept is
+ *    the mix's name: the state stands in the record as the
+ *    mix, its components standing together in the filing,
+ *    never collapsed to one of them. The leg stands behind
+ *    the canonical name here (no ruled mix word is a
+ *    canonical name, so no competition exists); the uptake
+ *    walk's registerOf reads the same table ahead of its
+ *    canonical face, for the reason recorded there.
  *
  * A word no authority files is not a feeling this reader can
  * register: the scan is keyed on the authorities, never on a
@@ -2469,6 +3055,7 @@ interface StatedFeeling {
   entry?: ClassificationEntry;
   canonical?: EmotionKind;
   uncategorised?: boolean;
+  mix?: EmotionMixEntry;
   authority: string;
 }
 
@@ -2482,13 +3069,33 @@ function fileFeelingWord(word: string): Omit<StatedFeeling, "lemma" | "negated">
         `under the category-filing rule the element is its canonical category's Suwen element`,
     };
   }
-  const canonical = canonicalEmotion(word);
+  /* The canonical route is keyed by canonical NAMES: a
+   * variant face ('sorry', 'gloomy', 'furious') reaches its
+   * canonical emotion through the LEDU's face map
+   * (canonicalNameFor) — asked directly, canonicalEmotion
+   * answers only for the names themselves, and the face
+   * never files. (The reconciliation composition,
+   * 2026-11-20: the parse may carry a feeling clause on
+   * another root and drop the feeling from the graph —
+   * this scan is the designed compensation for exactly
+   * that shape, and its canonical leg must reach the
+   * faces the map files, 'sorry' → grief among them.) */
+  const canonical = canonicalEmotion(canonicalNameFor(word));
   if (canonical) {
     return {
       canonical,
       authority:
         `the EDU names '${word}' a canonical emotion (${canonical.hanzi}, ${canonical.name})` +
         (canonical.element ? `, filed at ${canonical.element}` : " — the tradition leaves it unsettled, so it files with no element"),
+    };
+  }
+  const mix = mixFor(word);
+  if (mix) {
+    return {
+      mix,
+      authority:
+        `the emotion-mix table files '${word}' as a MIX (${mix.provenance}) — it registers with no element ` +
+        `and its concept is the mix's name; the components stand together in the filing, never collapsed`,
     };
   }
   if (uncategorisedEmotionWord(word)) {
@@ -2578,8 +3185,14 @@ function scanStatedFeeling(text: string): StatedFeeling | undefined {
  * element where the filing carries one, and an origin that
  * names the evidence — the classification's own origin for a
  * table-filed word, "stated" for a word filed by the EDU's
- * naming or the LEDU's uncategorised register (the statement
- * itself is the evidence; no derivation stands behind it).
+ * naming, the LEDU's uncategorised register, or the
+ * emotion-mix table (the statement itself is the evidence; no
+ * derivation stands behind it). A mix filing carries no
+ * element and no classification aspect, so the value
+ * supersession rule (which needs both states' elements and a
+ * shared aspect) can never fire for or against a mix state —
+ * only the polarity rule reaches it (MIX-3's determination,
+ * read off this grain and recorded in GAPS §2).
  * The state passes through the same supersession as every
  * recorded state (findCorrection, R5): a feeling that restates
  * the emotion aspect at a different element supersedes the
@@ -2598,7 +3211,13 @@ function registerStatedFeeling(
   const state: StateRecord = {
     holder: "you",
     lemma: felt.lemma,
-    ...(felt.entry ? { concept: felt.entry.concept } : felt.canonical ? { concept: felt.canonical.name } : {}),
+    ...(felt.entry
+      ? { concept: felt.entry.concept }
+      : felt.canonical
+        ? { concept: felt.canonical.name }
+        : felt.mix
+          ? { concept: felt.mix.name }
+          : {}),
     ...(element ? { element } : {}),
     ...(felt.negated ? { negated: true } : {}),
     turn,
@@ -2667,6 +3286,139 @@ function feelingsFirstReceipt(session: Session, trace: TurnTrace, turn: number, 
 }
 
 /**
+ * The located decline for a CONSTRUCTION gap (Transcript
+ * Slice 7, 2026-11-19; owner ruling). The diagnostic (SD4)
+ * found the parse-failure exit's whole-utterance rephrase —
+ * S4's trigger (d), a request that never names the failure —
+ * locating the gap in the VISITOR's phrasing even when the
+ * gap is the system's own construction inventory. The owner
+ * ruled: a system-side construction gap surfaces as a
+ * LOCATED decline, not an unnamed rephrase; the rephrase
+ * request stays for genuine ambiguity. This amends the S4
+ * design by that ruling, for this class only.
+ *
+ * The reply (minimal draft wording, the owner's to settle —
+ * the established decline voice: the system's limit stated
+ * plainly, then its ground): the sentence's shape is named
+ * as the thing the system cannot yet take apart, located at
+ * the sentence layer. No clarification pending is opened:
+ * a located decline is not a clarification, and the next
+ * turn is not its fill.
+ */
+const CONSTRUCTION_GAP_REPLY =
+  "I can't take that sentence apart: its shape is one my sentence layer doesn't build yet.";
+
+/**
+ * Whether a parse failure is RECOGNISABLY a construction
+ * gap — well-formed English whose shape the sentence layer
+ * does not build — on the evidence the code actually holds
+ * at the failure exit. The bar is deliberately conservative;
+ * every condition must hold:
+ *
+ * 1. The failure is a CLAUSE-MACHINERY failure: the parser
+ *    threw at one of its clause sites ("cannot parse
+ *    complement / subject / copular question / main clause /
+ *    condition clause / existential subject of"). The other
+ *    failure wordings are excluded by name: "no verb found"
+ *    cannot distinguish a fragment or garble from a verb the
+ *    inventory lacks, and the bei-passive throw names a
+ *    missing LEXICON entry, which is a word gap, not a
+ *    construction.
+ * 2. Every word in the surface is attested (isAttestedWord —
+ *    the C4 attestation the token exit already trusts), with
+ *    the token exit's own passes (a capitalised non-initial
+ *    token is a name; a digit string attests by form). A
+ *    sentence carrying an unattested word may be sinking on
+ *    that word: undecidable, and the rephrase stands.
+ * 3. No token resolution GUessed a word into the sentence
+ *    (a "corrected" or "segmented" outcome): where the
+ *    matcher supplied a word, the surface as written was not
+ *    established as well-formed. An "unresolved" record whose
+ *    surface is itself attested (the C4 positional case) is
+ *    no bar.
+ * 4. A POSITIVE signature of a named unbuilt construction
+ *    matches the surface (below). A clause-machinery failure
+ *    with no signature — a truncated copular ("the dog is"),
+ *    a lone subordinate clause ("who the dog is"), word
+ *    salad of attested words — may be a fragment or garble
+ *    rather than an unbuilt shape: undecidable in code, and
+ *    the rephrase stands for it. That remainder is recorded
+ *    in this slice's report, not papered over.
+ *
+ * The signatures (each verified to stop at the parser on
+ * Slice 6's head, and recorded in the slice report):
+ *  (a) a clausal complement behind an intervening NP — the
+ *      Slice 1 report's recorded fall-through: a report verb
+ *      (tell/ask/show) + a pronoun object + a wh-word + an
+ *      embedded subject + a finite be/auxiliary standing in
+ *      the embedded clause ("tell me who i am."). Slice 1
+ *      built the complement directly behind the verb; the
+ *      NP-intervening form is not built.
+ *  (b) an infinitival subject clause: "to" + a non-function
+ *      word + a finite be + material after it ("to swim is
+ *      fun."). The gerund form ("running is fun.") parses;
+ *      the infinitival subject is not built.
+ *  (c) a whose-question: "whose" + a possessed NP + a finite
+ *      be + material after it ("whose dog is this?"). The
+ *      possessive question word heads no built question
+ *      shape.
+ * Returns the shape's name and the ground, or undefined.
+ */
+function constructionGapOf(
+  text: string,
+  err: unknown,
+  resolutions: TokenResolution[],
+): { shape: string; failure: string; ground: string } | undefined {
+  const failure = err instanceof Error ? err.message : String(err);
+  const site = /^cannot parse (complement|subject|copular question|main clause|condition clause|existential subject) of:/.exec(failure)?.[1];
+  if (!site) return undefined;
+  const rawWords = text.match(/[A-Za-z]+(?:'[A-Za-z]+)?|\d+/g) ?? [];
+  const words = rawWords.map((w) => w.toLowerCase());
+  if (words.length < 4) return undefined;
+  for (const r of resolutions) {
+    if (r.outcome === "corrected" || r.outcome === "segmented") return undefined;
+    if (r.outcome === "unresolved") {
+      const w = r.surface.toLowerCase().replace(/[^a-z']/g, "");
+      const named = r.tokenIndex > 0 && /^[A-Z]/.test(r.surface);
+      if (w && /[a-z]/i.test(r.surface) && !named && !isAttestedWord(w)) return undefined;
+    }
+  }
+  for (let i = 0; i < words.length; i++) {
+    if (/^\d+$/.test(words[i])) continue;
+    if (isAttestedWord(words[i])) continue;
+    if (i > 0 && /^[A-Z]/.test(rawWords[i])) continue;
+    return undefined;
+  }
+  const BE = new Set(["am", "is", "are", "was", "were"]);
+  const FINITE = new Set([...BE, "do", "does", "did", "has", "have", "had", "can", "could", "will", "would"]);
+  const WH = new Set(["who", "what", "where", "when", "why", "how", "which", "whose"]);
+  let shape: string | undefined;
+  if (
+    ["tell", "ask", "show"].includes(words[0]) &&
+    ["me", "him", "her", "us", "them"].includes(words[1] ?? "") &&
+    WH.has(words[2] ?? "") &&
+    words.some((w, idx) => idx >= 4 && FINITE.has(w))
+  ) {
+    shape = "a clausal complement behind an intervening noun phrase";
+  } else if (words[0] === "to" && words[1] && !enIsFunctionWord(words[1]) && BE.has(words[2] ?? "") && words.length >= 4) {
+    shape = "an infinitival subject clause";
+  } else if (words[0] === "whose" && words.some((w, idx) => idx >= 2 && BE.has(w) && idx < words.length - 1)) {
+    shape = "a whose-question";
+  }
+  if (!shape) return undefined;
+  return {
+    shape,
+    failure,
+    ground:
+      `the sentence's words are all attested and no resolution guessed one in, the failure is the clause ` +
+      `machinery's ('cannot parse ${site}'), and the surface carries the signature of ${shape} — a shape the ` +
+      `sentence layer does not build; the gap is the construction, located at the sentence layer (lpu/parser) ` +
+      `(Transcript Slice 7, owner ruling: a system-side construction gap surfaces as a located decline, ` +
+      `amending S4's whole-utterance rephrase for this class)`,
+  };
+}
+
+/**
  * The self-fact denial (conversation-shapes C3, factored out
  * for S1): the plain denial the limits facts support for a
  * matter the Self tables do not hold, composed in visitor
@@ -2684,6 +3436,25 @@ function selfFactDenial(matter: string, tokens: string[]): string {
     tokens.some((t) => t.toLowerCase() === "any") || matter.endsWith("s") || matter === "children";
   const article = anyForm ? "any" : /^[aeiou]/.test(matter) ? "an" : "a";
   return `I don't have ${article} ${matter}.`;
+}
+
+/**
+ * The modified-name answer (Transcript Slice 3, 2026-11-19):
+ * a question after a PART of the system's name ("What is
+ * your last name?", "What is your first name?") — assessment
+ * files the NP's head, "name", as the matter, and the answer
+ * is derived from the Identity table through the Social
+ * Unit's one address (requestIdentity), as every self fact
+ * is: the table holds ONE name, not divided into first and
+ * last, so the truthful answer says that, with the name
+ * itself. The wording is MINIMAL / DRAFT — the mechanism's
+ * truthful form only; the final visitor-facing wording of
+ * Self facts is the owner's to settle, as identity.ts's own
+ * header records for the whole table family.
+ */
+function selfNamePartAnswer(): string {
+  const facts = requestIdentity();
+  return `I have only the one name, ${facts.name}.`;
 }
 
 /**
@@ -3341,6 +4112,25 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
      * composeSegmentTurns). */
     const feltReceipt = feelingsFirstReceipt(session, trace, turn, text);
     if (feltReceipt) return feltReceipt;
+    /* The located decline for a construction gap (Transcript
+     * Slice 7, owner ruling amending S4 for this class): where
+     * the failure is recognisably the system's own unbuilt
+     * construction — well-formed English, every word
+     * attested, the clause machinery's failure, a named
+     * signature — the reply is the located decline naming the
+     * sentence-shape gap at the sentence layer, NOT the
+     * rephrase request, which would locate the gap in the
+     * visitor's phrasing. No clarification pending opens: the
+     * decline is not a clarification. Where the class is
+     * undecidable (constructionGapOf returns nothing) the
+     * rephrase below stands exactly as designed. */
+    const gap = constructionGapOf(text, err, trace.tokenResolutions);
+    if (gap) {
+      trace.constructionGap = gap;
+      trace.declineReason =
+        `the sentence could not be taken apart by the sentence layer, and the failure is a construction gap: ${gap.ground}`;
+      return { reply: CONSTRUCTION_GAP_REPLY, trace };
+    }
     // S4 (design §7d): the whole-utterance clarification — a
     // rephrase request that never names the failure (the trace
     // above keeps the located gap), with the pending opened so
@@ -3353,6 +4143,24 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
   const root = nodeById(parsed, parsed.meaning.rootId);
   trace.parseSummary = `root '${root.lemma}' (${root.syntacticElement}${root.role ? ", " + root.role : ""}); nodes: ${parsed.meaning.nodes.map((n) => n.lemma).join(", ")}; mood: ${root.states?.mood ?? "indicative"}`;
   trace.tokenResolutions = parsed.tokenResolutions ?? [];
+  /* The about-topic (Transcript Slice 6): the parse's 'about'
+   * edge, filed on the trace for any turn that carries one —
+   * the topic survives into the turn's record (and, through
+   * the assessed object's content, into the semantic object,
+   * whose meaning is this same graph) whatever the outcome. */
+  {
+    const aboutNode = targets(parsed, root.id, "about")[0];
+    if (aboutNode) {
+      trace.aboutTopic = {
+        topic: aboutNode.lemma,
+        form: aboutNode.form,
+        ground:
+          `the clause carries an about-phrase, and the parse files its topic '${aboutNode.lemma}' under the ` +
+          `'about' relation from '${root.lemma}' (Transcript Slice 6) — the turn, and any decline it reaches, ` +
+          `is about that topic`,
+      };
+    }
+  }
 
   /* Semantic objects (slice 1 — shadow; slice 2 — first
    * readers): SemanticAssessment's reading of this utterance as
@@ -3686,10 +4494,19 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
        * Like the capability presentation this branch composes
        * from the tables and authors no reply object. */
       const matter = openingObject.act.selfFact ?? "one";
-      const reply = selfFactDenial(matter, parsed.connective.tokens);
+      /* The modified-name case (Transcript Slice 3,
+       * 2026-11-19): the matter is the head "name" of a
+       * modified name NP ("last name", "first name") — not a
+       * fact the tables lack but the Identity table's one
+       * undivided name, answered from that table instead of
+       * denied. The bare "your name?" never reaches here: it
+       * files the identity flavour in assessment. */
+      const isNamePart = matter === "name";
+      const reply = isNamePart ? selfNamePartAnswer() : selfFactDenial(matter, parsed.connective.tokens);
       dischargeDemand(session, "self-answer");
-      trace.planNote =
-        `self answer (fact): the question asks after '${matter}' — a fact about the system the Self tables do not hold; the answer is the plain denial the limits facts support, never a decline-by-gap (conversation-shapes C3)`;
+      trace.planNote = isNamePart
+        ? `self answer (fact, name): the question asks after a part of the system's name ('${matter}' as the head of a modified name NP) — the Identity table holds one name, undivided, and the answer is derived from it, never a denial of a name part (Transcript Slice 3)`
+        : `self answer (fact): the question asks after '${matter}' — a fact about the system the Self tables do not hold; the answer is the plain denial the limits facts support, never a decline-by-gap (conversation-shapes C3)`;
       trace.wordingNotDerived = true;
       return { reply, trace };
     }
@@ -3755,9 +4572,100 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       trace.wordingNotDerived = true;
       return { reply: [...facts.capabilities, facts.limits[0]].join(" "), trace };
     }
+    if (which === "location") {
+      /* The self-location answer (Transcript Slice 4,
+       * 2026-11-19): "Where are you?" asks where the SYSTEM
+       * is — assessment now recognises the where+you shape as
+       * self-directed (the where-question split, assess.ts),
+       * and the fact is requested from Awareness Self's Place
+       * table through the Social Unit's one address, as every
+       * self fact is. The table's honest configuration is
+       * that NO place is configured: the system is a program,
+       * and its situation record — the Awareness frame —
+       * holds time only (month/day/hour, season, daypart);
+       * there is no place in it to answer from. So where no
+       * place is configured the reply is the located decline
+       * naming SELF-LOCATION as the gap — never the
+       * question-shape text, which would locate the gap in
+       * the question when it stands in the system's own
+       * record. A deployment that configures a place in the
+       * table answers with it instead. Like the capability
+       * presentation this branch composes from the table and
+       * authors no reply object. The wording is MINIMAL /
+       * DRAFT — the mechanism's truthful form only; the
+       * final visitor-facing wording of Self facts is the
+       * owner's to settle, as place.ts's header records. */
+      const facts = requestPlace();
+      dischargeDemand(session, "self-answer");
+      trace.wordingNotDerived = true;
+      if (facts.place) {
+        trace.planNote =
+          `self answer (location): the question asks where the system is, and Awareness Self's Place table ` +
+          `holds the deployment's configured place ('${facts.place}') — the answer is composed from the table ` +
+          `(Transcript Slice 4)`;
+        return { reply: `I am in ${facts.place}.`, trace };
+      }
+      trace.declineReason =
+        "the question asks where the system is, and no place is held for it: Awareness Self's Place table " +
+        "stands unconfigured and the situation record (the Awareness frame) holds time only — the gap is " +
+        "self-location, located at the system itself (§6)";
+      trace.planNote =
+        "self-location decline (Transcript Slice 4): the question is self-directed and was routed as such; " +
+        "the Place table holds no configured place and the frame holds no place at all, so the decline names " +
+        "self-location as the gap instead of the question's shape";
+      return { reply: "I don't have a place: nothing in my situation record says where I am.", trace };
+    }
     trace.planNote =
       "self answer (identity): the Social Unit requested the facts from Awareness Self's Identity table; the Planner predicates the name from record and the table's kindLine rides beside the generated sentence";
     return { reply: selfIdentityReply(session, trace), trace };
+  }
+
+  /* The visitor-location question (Transcript Slice 4,
+   * 2026-11-19): "Where am I?" asks after the VISITOR's
+   * location — the mirror image of the self-location
+   * self-query, marked on the act by assessment's
+   * where-question split. The system has no way of knowing
+   * where the person it talks with is: no register holds it
+   * and nothing perceives it. The one honest exception is
+   * the conversation's own record: where the visitor has
+   * established their location in it — a recorded event with
+   * the visitor as agent, a location fill, and the residence
+   * verb ("I live in Paris.") — the record answers, as the
+   * record readers answer. Otherwise the reply is the
+   * located decline naming exactly that gap: not the
+   * question's shape (the shape is answerable — for the
+   * system, and for the world), and not a knowledge gap
+   * about the world, but the plain fact that the visitor's
+   * location is not the system's to know. The wording is
+   * MINIMAL / DRAFT, the owner's to settle like all
+   * hand-composed text. */
+  if (openingObject?.act.visitorLocation) {
+    const told = [...session.events].reverse().find((e) => e.agent === "you" && e.verb === "live" && e.location);
+    if (told && told.location) {
+      trace.recordAnswer = {
+        source: "event",
+        ground:
+          `the question asks where the visitor is, and the conversation's own record holds it as told: ` +
+          `the event '${told.verb}' recorded at turn ${told.turn} carries the visitor as agent with ` +
+          `location '${told.location}' — the record answers`,
+        event: { verb: told.verb, role: "location", filler: told.location, turn: told.turn },
+      };
+      trace.planNote =
+        "answered from the conversation record (Transcript Slice 4): the visitor's location as they " +
+        "themselves established it in this conversation — the record is the source; nothing is " +
+        "perceived, sensed or inferred";
+      trace.wordingNotDerived = true;
+      return { reply: `You told me you live in ${cap(told.location)}.`, trace };
+    }
+    trace.declineReason =
+      "the question asks where the visitor is, and the system has no way of knowing that: no register " +
+      "holds the visitor's location and this conversation has not established it — the gap is the " +
+      "visitor's location, located at the visitor (§6)";
+    trace.planNote =
+      "visitor-location decline (Transcript Slice 4): the question is the visitor's own location, which " +
+      "no source the system holds can supply — the decline names that gap, not the question's shape";
+    trace.wordingNotDerived = true;
+    return { reply: "I have no way of knowing where you are.", trace };
   }
 
   /* The visitor's own clarification request (conversation-
@@ -4318,11 +5226,46 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       theme: targets(parsed, root.id, "theme")[0]?.lemma,
       location: targets(parsed, root.id, "location")[0]?.lemma,
       recipient: targets(parsed, root.id, "recipient")[0]?.lemma,
+      about: targets(parsed, root.id, "about")[0]?.lemma,
       turn,
       text,
     };
     if (ev.patient) ev.patient = resolve(ev.patient);
     if (ev.location) ev.location = resolve(ev.location);
+    /* FIX (iii) (the narrative programme, 2026-11-19): the
+     * subordinate clause's own event. The parse flattens an
+     * adverbial subordinate clause into the root clause's
+     * edges — "I used to do some weight lifting before I
+     * injured my leg" recorded ONE event ('use', its patient
+     * swollen with the subordinate clause's leavings), so the
+     * injury the visitor told stood in no event of its own
+     * and the reader's history leg could never serve it
+     * (run 5's P-036: the spine starved at the ledger's
+     * grain, not the reader's). The mechanism is general —
+     * subordinate clauses as a class: the first adverbial
+     * subordinator in the telling's tokens introduces a
+     * clause span; the span is parsed on its own, and where
+     * it yields a verb root carrying roles, its event is
+     * recorded with its holder and roles AS TOLD, ahead of
+     * the root event (the order keeps the turn's last event
+     * the root's, as every existing reader of the ledger
+     * expects). Scope, stated plainly: adverbial clauses
+     * only — complement and relative clauses ('that', 'who')
+     * are the root clause's own material; conditionals
+     * ('if', 'unless') are the conditional construction's
+     * territory, and a supposed event is not recorded as a
+     * told one; one subordinate event per sentence; events
+     * only, no subordinate states; and the subordinate
+     * clause's own modality is not retained — narrative
+     * assessment reads root events, whose parse the record
+     * keeps. */
+    const subEvent = subordinateClauseEvent(parsed, turn, resolve, session);
+    if (
+      subEvent &&
+      !(subEvent.verb === ev.verb && subEvent.agent === ev.agent && subEvent.patient === ev.patient && subEvent.theme === ev.theme)
+    ) {
+      session.events.push(subEvent);
+    }
     session.events.push(ev);
     // A classified verb-state (sleep) is also a state of its agent.
     const c = classificationOf(root.lemma);
@@ -4529,12 +5472,33 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
      * unfilled recipient. */
     const tellingsAnswer = answerTellingsFromRecord(session, trace, parsed, root, turn);
     if (tellingsAnswer) return tellingsAnswer;
+    /* The know-question routing (Transcript Slice 2,
+     * 2026-11-19): "do you know …?" routed by what it asks
+     * after — the visitor's name and identity from the
+     * Interlocutor register, an embedded what-is from what
+     * the system holds or declined located at its subject —
+     * before the missing-role and fallthrough declines below
+     * can file the whole family as graph knowledge. */
+    const knowAnswer = answerKnowQuestion(session, trace, parsed, root);
+    if (knowAnswer) return knowAnswer;
     /* The self-fact readers (X4, the X programme,
      * 2026-11-19): occupation, possession and name
      * remembrance — the Interlocutor picture's contents,
      * answered as told. */
     const selfFactAnswer = answerSelfFactFromRecord(session, trace, parsed, root, turn);
     if (selfFactAnswer) return selfFactAnswer;
+    /* The world-location reader (Transcript Slice 4,
+     * 2026-11-19): a copular where-question over a
+     * third-party subject — answered from the grounded
+     * entity record where the subject is grounded, declined
+     * located at the subject where it is not — before the
+     * missing-role machinery and the fallthrough below can
+     * file the family as an unanswerable shape. The split's
+     * self and visitor shares never reach here (their act
+     * branches return above); the reader also stands down
+     * for them by construction. */
+    const whereAnswer = answerWhereQuestion(session, trace, parsed, root);
+    if (whereAnswer) return whereAnswer;
     /* R3 (§6): this decline, like every decline, cites its
      * ground. Where the parse carries a query record over a
      * verb, the question asks for the filler of one role of
@@ -4657,9 +5621,24 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
               : q.relation === "location" || q.relation === "goal"
                 ? `where it was ${participle}${tail}`
                 : `what the ${q.relation} of '${root.lemma}' was${tail}`;
+        /* Transcript Slice 6: where the question carries an
+         * about-phrase, the decline is ABOUT its topic — the
+         * tail above already phrases the reply with it ("what
+         * was known about dogs"), and the ground names it too,
+         * so the outcome is located at the topic the visitor
+         * named and not at nothing (diagnostic IM3: probe 10
+         * formerly reached this very decline with the topic
+         * lost at the parse, indistinguishable from probe 2's
+         * topic-less question — whose own answer remains the
+         * owner's undecided call, untouched here). */
+        const aboutNode = targets(parsed, root.id, "about")[0];
         trace.declineReason =
           `the question asks for the ${q.relation} of '${root.lemma}', and no ${root.lemma} event in the situation ` +
-          `fills that role — the missing role is the decline's ground (§6)`;
+          `fills that role — the missing role is the decline's ground (§6)` +
+          (aboutNode
+            ? `; the question's about-topic is '${aboutNode.lemma}', carried in the parse under the 'about' ` +
+              `relation — the decline is about that topic`
+            : ``);
         return {
           reply: `I can't answer that from what I know: nothing you have told me says ${phrase}.`,
           trace,
@@ -4690,6 +5669,24 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
      * whatever its gap was. */
     {
       const subject = nameableQuestionSubject(parsed);
+      /* Transcript Slice 0: a GROUNDED entity subject. The
+       * entity is in the notes now (entities.ts), so the
+       * nothing-on-it decline below would be false; what is
+       * missing is anything beyond the entity's gloss and
+       * type that answers the question as posed (a whereabouts,
+       * a property, a relation) — the decline names what IS
+       * held and locates the gap past it. */
+      const entity = subject ? lookupEntity(subject) : undefined;
+      if (subject && entity && !wikidataConsulted(session, subject)) {
+        trace.declineReason =
+          `the question asks after '${subject}', which what I know does hold — as ${entity.gloss} ` +
+          `(wordnet instance ${entity.synsetId}, ${entity.provenance}) — but nothing held answers the question ` +
+          `as posed; the gap is knowledge beyond the entity's gloss and type, located at '${subject}' (§6)`;
+        return {
+          reply: `I can't answer that from what I know: I have ${subject} as ${entity.gloss}, but nothing in what I know answers that.`,
+          trace,
+        };
+      }
       if (subject && lookupClassification(subject) === undefined && derive(session.graph, subject).conclusions.length === 0) {
         trace.declineReason =
           `the question asks after '${subject}', and what I know holds nothing on it — the gap is knowledge, ` +
@@ -4737,7 +5734,36 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     if (allSplits.length && !splits.length) {
       trace.planNote = `the split classification of '${allSplits[0].lemma}' stands, but the conversation has already settled its reading ('${session.conversation.clarifiedSenses[allSplits[0].lemma.toLowerCase()].anchor}') through clarification — no second asking (Social Unit S4)`;
     }
-    if (splits.length) {
+    /* Feelings first at the R3 exit (E1 × R3 composition,
+     * the reconciliation of 2026-11-20): where this turn
+     * states the visitor's own feeling — registered by the
+     * surface scan above, or recorded from the parse as an
+     * emotion state of the visitor (the feelingObjectBound
+     * emotion test) — the feeling owns the reply at the
+     * receipt/uptake sites below, and the split
+     * clarification stands down. R3's ground is that a
+     * reply STEERING by a split classification would steer
+     * by the tie-keep convention; a feelings receipt steers
+     * by no classification — it meets the stated feeling —
+     * and feelings-first already gives a stated feeling
+     * precedence over the turn's other exits. The split
+     * stands in the sense pass's own trace; no
+     * clarification pending is opened. */
+    const statedFeeling =
+      surfaceFeeling ??
+      (newState &&
+      newState.holder === "you" &&
+      (lookupClassification(newState.lemma)?.aspect === "emotion" ||
+        canonicalEmotion(newState.lemma) !== undefined ||
+        canonicalNameFor(newState.lemma) !== newState.lemma)
+        ? newState
+        : undefined);
+    if (splits.length && statedFeeling) {
+      trace.planNote =
+        `the split classification of '${splits[0].lemma}' stands, but this turn states the visitor's feeling ('${statedFeeling.lemma}'), ` +
+        `which owns the reply under feelings-first — the clarification stands down (E1 × R3 composition)`;
+    }
+    if (splits.length && !statedFeeling) {
       const split = splits[0];
       const node = nodeById(parsed, split.nodeId);
       const outcome = planClarification({
@@ -4858,6 +5884,104 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
         trace.planNote =
           "premise stance on an assertion (conversation-shapes C7, S5's pattern): Coherence's premise degree is contradiction from the graph — the reply states the established ground; the assertion is not adopted and does not stand as a state";
         return { reply: `${cap(predSubjectA.form)} is ${established}, as I have it.`, trace };
+      }
+      /* The self-predication guard (Transcript Slice 5,
+       * 2026-11-19; the diagnostic's SD3): the same asserted
+       * predication, predicated OF THE SYSTEM — the subject
+       * is the visitor's "your", the possessive the parse
+       * keeps as the subject of a statement about the system
+       * ("your last name is smith."). Coherence's premise
+       * degree cannot see this claim: it reads the record
+       * and the graph, "your" is neither's term, and the
+       * possessed noun — WHICH fact of the system is being
+       * predicated — is dropped by the parse entirely, so on
+       * the graph reading the claim is mere absence and the
+       * false state stood banked, unchallenged (probe 19).
+       * The system's own facts live in the Self tables, so
+       * the guard stands beside C7 rather than inside
+       * premiseDegree: the degree's contract is a subject +
+       * quality reading over record and graph, while this
+       * check needs the token record for the slot and the
+       * tables through the Social Unit's one address —
+       * turn-layer materials both.
+       *
+       * The slot is read from the tokens exactly as Slice
+       * 3's shape (d) reads it: the span after "your", to
+       * the first function word, its LAST token the head
+       * noun. The tokens are the object's retained surface —
+       * the words as the visitor wrote them. (The parse's
+       * own token stream will not do for the value: token
+       * resolution has already substituted its reading for
+       * an unknown name there — "ansci" arrives in the graph
+       * as "anti", lemma and tokens alike — so a value read
+       * from the parse could never agree with the table.)
+       * The one slot the tables decide today is the
+       * name: the Identity table holds one name, undivided,
+       * so a bare or modified name NP ("your name", "your
+       * last name") is decidable — the offered value is the
+       * surface's final token, the predicate as written.
+       * Where the offered value is the
+       * held name, the claim AGREES: no stance, the ordinary
+       * path acknowledges it and the state stands as told.
+       * Where it differs, the turn takes C7's consequences
+       * with the Self table as the authority: the reply
+       * states the held fact (Slice 3's name composer — the
+       * one name, undivided), the asserted state is set
+       * aside so the false name does not stand in the
+       * record, and the disagreement is recorded. No
+       * stance-repair pending opens: the pending's
+       * insistence renderings are built from subject/quality
+       * lemmas ("X is Y, as I have it"), and no lemma pair
+       * renders a your-NP premise truthfully — a repeat
+       * assertion simply meets this guard again, and the
+       * false state is set aside again. Any other head noun
+       * is a slot the tables do not cover (a favourite
+       * colour, a home): existing behaviour stands, no
+       * coverage invented. The Place table is not a source
+       * here: it stands unconfigured — it holds NO place,
+       * which is the absence of a fact, not a rival fact a
+       * predication could contradict — and a location
+       * predication ("you are in paris.") banks no state
+       * for a stance to set aside. Capability claims in
+       * modal dress ("you can fly.") draw verb events, not
+       * predicated-as states, so the assertion machinery
+       * this guard extends honestly does not reach them. */
+      if (subjectLemma === "your") {
+        const surface = assessed[0]?.surface ?? text;
+        const tokens = surface.split(/\s+/).map((t) => t.toLowerCase().replace(/[^a-z']/g, ""));
+        const yourAt = tokens.indexOf("your");
+        const npTokens: string[] = [];
+        if (yourAt >= 0) {
+          for (const t of tokens.slice(yourAt + 1)) {
+            if (!t || enIsFunctionWord(t)) break;
+            npTokens.push(t);
+          }
+        }
+        const head = npTokens[npTokens.length - 1];
+        if (head === "name") {
+          const identity = requestIdentity();
+          const offered = [...tokens].reverse().find((t) => t.length > 0) ?? "";
+          if (offered && offered !== identity.name.toLowerCase()) {
+            session.states.splice(assertedIdx, 1);
+            recordDisagreement(session, `your name is ${offered}`, `my name is ${identity.name}`);
+            trace.stance = {
+              subject: subjectLemma,
+              presupposed: root.lemma,
+              established: identity.name,
+              source: "self",
+              outcome: "stated",
+              ground:
+                `the assertion predicates a name of the system ('${offered}'), and Awareness Self's Identity table ` +
+                `holds the system's name as '${identity.name}' — one name, undivided (the modified name NP's head is 'name', ` +
+                `read from the token record as Slice 3's shape (d) reads it); the premise arrived as an assertion — ` +
+                `the asserted state was set aside and the disagreement recorded, as a graph-contradicted assertion's is (C7)`,
+            };
+            trace.planNote =
+              "premise stance on a self-predication (Transcript Slice 5, C7's pattern with the Self tables as the source): " +
+              "the assertion names the system against the Identity table — the reply states the held name; the assertion is not adopted and does not stand as a state";
+            return { reply: selfNamePartAnswer(), trace };
+          }
+        }
       }
       /* The absence stance (S3, the S programme, 2026-11-19;
        * determination recorded as Part I of the repair
@@ -5225,6 +6349,25 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
         ? "What's on your mind when you lie awake?"
         : "What's on your mind when it happens?";
       trace.steeringBaseReply = ack;
+      if (uptakeAttempt) {
+        /* FIX (i) (the narrative programme, 2026-11-19): a
+         * firing registered above must render under the
+         * composition rules or stand down by a named rule —
+         * this early return previously ran AFTER
+         * tryUptakeReply had registered the firing and
+         * discarded it by ordering (run 5: P-044 'dream',
+         * P-079 'hope' fired, trace-recorded, never
+         * rendered). The composition is the branch's own
+         * non-verb-carried one: the uptake head takes the
+         * acknowledgement's place (one head, ruling 4) and
+         * the verb-carried follow follows it under its own
+         * derivation. */
+        if (trace.uptake) trace.uptake.composedWithSteering = true;
+        trace.steeringNote =
+          "the verb-carried steering composes under the registered uptake firing (FIX i): the uptake head is the " +
+          "reply's acknowledgement, and the follow the cycles priced follows it — a registered firing never vanishes by ordering";
+        return { reply: `${uptakeAttempt.reply} ${follow}`, trace };
+      }
       return { reply: `${ack} ${follow}`, trace };
     }
     /* S0 (the S programme, 2026-11-19): the temporal clause
@@ -5351,16 +6494,31 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       { objectEvent: thisEvent },
     );
     if (uptake) return { reply: uptake.reply, trace };
-    // R2: the recognition receipt — an event the turn
-    // established, with its object filled, is shown.
-    const receipt = recognitionReceipt(session, trace, turn, ackName, { event: thisEvent }, parsed);
-    if (receipt) return { reply: receipt, trace };
-    // E1: the event carried no object to show, but the turn
-    // stated a feeling the feelings-first scan registered
-    // (the feel-verb's own clause is the common shape: "I
-    // feel guilty" graphs as an objectless 'feel' event) —
-    // the feeling is the turn's content to show, under the
-    // same receipt construction and disciplines.
+    /* UN-2: the narrative arm — where the turn carries NO
+     * stated feeling candidate at all, its event may still
+     * carry a register narratively (the event-register
+     * authority over a bound event). Where a stated feeling
+     * stood and its ground stood down, the narrative arm does
+     * not take the turn over: the stated ground owns the
+     * telling's feeling business, and its stand-downs are
+     * the record's account of it. */
+    if (!surfaceFeeling && thisState?.holder !== "you") {
+      const narrative = tryNarrativeUptakeReply(session, trace, turn, parsed, thisEvent);
+      if (narrative) return { reply: narrative.reply, trace };
+    }
+    // E1: the turn stated a feeling the feelings-first scan
+    // registered — the feeling is the turn's content to
+    // show, ahead of the event receipt below (feelings
+    // first at this branch, the E1 × R2 composition of
+    // 2026-11-20: the parse may carry the feeling clause
+    // on the event's root — "I am sorry, because I know
+    // that concern" graphs on 'know' — and the event is
+    // the feeling's subordinate material, not the turn's
+    // business). The feel-verb's own clause is the other
+    // common shape ("I feel guilty" graphs as an
+    // objectless 'feel' event). The showing is the same
+    // receipt construction, under the same disciplines;
+    // where it stands down, the event receipt follows.
     if (surfaceFeeling && !trace.correction) {
       const feltReceipt = recognitionReceipt(session, trace, turn, ackName, {
         state: surfaceFeeling,
@@ -5368,6 +6526,10 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
       }, parsed);
       if (feltReceipt) return { reply: feltReceipt, trace };
     }
+    // R2: the recognition receipt — an event the turn
+    // established, with its object filled, is shown.
+    const receipt = recognitionReceipt(session, trace, turn, ackName, { event: thisEvent }, parsed);
+    if (receipt) return { reply: receipt, trace };
     return { reply: acknowledgementFor(turn, ackName), trace };
   }
 
@@ -5389,6 +6551,24 @@ function processTurnInner(session: Session, text: string, opts?: { clarification
     surfaceFeeling ?? (newState?.holder === "you" ? newState : undefined),
   );
   if (uptake) return { reply: uptake.reply, trace };
+  /* UN-2: the narrative arm at the fallback — a telling no
+   * branch claimed and no stated feeling grounded may still
+   * carry its register in its event. The turn's last event
+   * is the telling's root event (the recording order keeps
+   * subordinate events ahead of it), and the same
+   * no-stated-candidate condition binds here as at the
+   * plain-event site. */
+  if (!surfaceFeeling && newState?.holder !== "you") {
+    const lastEvent = session.events[session.events.length - 1];
+    const narrative = tryNarrativeUptakeReply(
+      session,
+      trace,
+      turn,
+      parsed,
+      lastEvent?.turn === turn ? lastEvent : undefined,
+    );
+    if (narrative) return { reply: narrative.reply, trace };
+  }
   // R2: the recognition receipt — a state the turn
   // established that no steering branch claimed (it carries
   // no element for the cycles to steer by) is still shown
@@ -5682,7 +6862,7 @@ function initiativeCandidates(session: Session, trace: TurnTrace, turn: number):
     if (session.events.some((e) => e.turn === s.turn && e.verb === s.lemma && e.agent === s.holder)) continue;
     if (topic.lastTouchedTurn > s.turn) continue;
     if (session.states.some((o) => o.holder === s.holder && o.turn > s.turn)) continue;
-    if (session.events.some((e) => e.turn > s.turn && [e.patient, e.theme, e.location, e.recipient].includes(s.holder))) continue;
+    if (session.events.some((e) => e.turn > s.turn && [e.patient, e.theme, e.location, e.recipient, e.about].includes(s.holder))) continue;
     if (
       session.initiatives.some(
         (i) => i.state && i.state.holder === s.holder && i.state.lemma === s.lemma && i.state.stateTurn === s.turn,
@@ -6049,6 +7229,7 @@ function computeMapPath(trace: TurnTrace): string[] {
     return path;
   }
   if (trace.declineReason) {
+    if (trace.wikidata) path.push("intake/wikidata");
     if (trace.pricing && trace.planNote?.includes("priced decline")) {
       path.push("reasoning/derivation", "reasoning/pricing", "reasoning/decline-floor");
       return path;
@@ -6067,6 +7248,9 @@ function computeMapPath(trace: TurnTrace): string[] {
   }
   if (trace.coherence?.length) path.push("coherence/coherence-analysis");
   if (trace.social?.length) path.push("awareness/social-unit");
+  // The entity answer (Slice 0) is read off the correspondence
+  // graph the grounding was ingested into.
+  if (trace.entityAnswer) path.push("reasoning/derivation", "ontology-core/ontology-knowledge-unit/correspondence-graph");
   const correctionOnly = Boolean(trace.correction && trace.replyGraph && !trace.derivationPath);
   const planned = Boolean(trace.replyGraph || trace.gapQuestion || trace.clarification);
   const derived = Boolean(trace.derivationPath || trace.cyclePath);
@@ -6074,6 +7258,7 @@ function computeMapPath(trace: TurnTrace): string[] {
   if (trace.derivationPath) path.push("reasoning/derivation");
   if (trace.pricing) path.push("reasoning/pricing");
   if (planned) path.push("reasoning/planner", "lpu/generator");
+  if (trace.wikidata) path.push("intake/wikidata");
   path.push("verbalizer");
   if (trace.initiative) path.push("reasoning/planner", "lpu/generator", "verbalizer");
   return path;
@@ -6285,6 +7470,36 @@ function answerPredicateQuestion(
         return { reply: outcome.sentence, trace };
       }
     }
+  }
+
+  /* Transcript Slice 2 (2026-11-19; diagnostic IM4/K3): the
+   * visitor-identity question — "Who am I?" predicated-as
+   * shape reaches this function with the speaker as subject
+   * and 'who' as predicate, and until now fell to the graph
+   * decline below ("nothing on i in my notes"). Who the
+   * visitor is is session fact, not graph knowledge: the one
+   * place it lives is the Interlocutor register (the Social
+   * Unit's picture, identity learned as stated, S6/C6), and
+   * the register answers — the name as told where one was
+   * learned, the honest not-told where none was. The unit
+   * holds no copy of its own here; this reader reads the
+   * register through the session, as the X4 name reader above
+   * does. */
+  if (subjectLemma === "i" && predicateLemma === "who" && !isWhy) {
+    const identity = session.interlocutor.identity;
+    trace.recordAnswer = {
+      source: "self-fact",
+      ground: identity
+        ? `the question asks who the visitor is, and the Interlocutor register holds their stated identity ` +
+          `('${identity.name}', learned at ${identity.learnedAt}) — the register answers`
+        : "the question asks who the visitor is, and the Interlocutor register holds no stated identity — " +
+          "the answer is the honest not-told, from the register, not a graph absence",
+    };
+    trace.planNote =
+      "answered from the Interlocutor register (Transcript Slice 2): the visitor's identity is session fact " +
+      "held by the Social Unit's register (stated, S6) — the graph was not consulted for who the visitor is";
+    trace.wordingNotDerived = true;
+    return { reply: identity ? `You are ${identity.name}.` : "You have not told me who you are.", trace };
   }
 
   /* Insistence on a standing stance (Social Unit S5, design
@@ -6688,13 +7903,70 @@ function answerPredicateQuestion(
     }
   }
 
+  /* The entity answer (Transcript Slice 0, 2026-11-19): the
+   * question asks WHAT a named entity is — the predicate is
+   * the question word itself — and the subject is a grounded
+   * entity (entities.ts: a WordNet instance synset ingested
+   * into the graph, gloss + type, retrieved provenance). The
+   * answer is the record the graph holds: the entity predicated
+   * with its gloss, the same shape the definitional answer
+   * above gives a kind — here the ground is the synset, cited
+   * in the trace, not spoken. A classified subject is not this
+   * shape (the Classification's routes own it), and an
+   * ungrounded name falls through to the missing decline
+   * below, unchanged: grounding is by attested instance
+   * synset, never by the question's capitalisation. */
+  if (predicateLemma === "what" && !isWhy && !lookupClassification(subjectLemma)) {
+    const entity = lookupEntity(subjectLemma);
+    // Union composition: under a wired Wikidata consultation
+    // for the country shape on this subject, the entity
+    // stand-in stands down (see wikidataConsulted) — the
+    // missing decline below stands and the wrapper's trigger
+    // owns the question.
+    if (entity && !wikidataConsulted(session, subjectLemma, "country")) {
+      trace.entityAnswer = {
+        subject: subjectLemma,
+        name: entity.name,
+        synsetId: entity.synsetId,
+        classes: entity.classes,
+        ground:
+          `the subject '${subjectLemma}' is a grounded named entity: wordnet instance synset ${entity.synsetId} ` +
+          `(${entity.lemmas.join(", ")}), an instance of ${entity.classes.join(" and ")}, gloss "${entity.gloss}" — ` +
+          `ingested into the graph with provenance ${entity.provenance}`,
+      };
+      trace.handAnswered = { by: "ontology-core/ontology-knowledge-unit/correspondence-graph", evidence: trace.entityAnswer.ground };
+      trace.planNote =
+        "answered from the grounded entity record: the question asks what the named entity is, and the " +
+        "entity's synset — its gloss, predicated of the name — is the answer; no element classification " +
+        "is claimed for it, and nothing beyond the gloss and type the extract holds is asserted";
+      trace.steeringNote =
+        "answered from the entity grounding (wordnet-retrieved) — the synset's gloss and instance type; " +
+        "the classification table was not consulted and holds no entry for a named entity";
+      return { reply: `${entity.name} is ${entity.gloss}.`, trace };
+    }
+  }
+
   const graph = session.graph;
   const subjectNode = graph.nodeByName(subjectLemma);
   const qualityNode = graph.allNodes().find(
     (n) => n.type === "Quality" && (n.name === predicateLemma || graph.synonymsOf(n).includes(predicateLemma)),
   );
   const missing: string[] = [];
-  if (!subjectNode || !lookupClassification(subjectLemma)) missing.push(`I have nothing on ${subjectLemma} in my notes`);
+  if (!subjectNode || !lookupClassification(subjectLemma)) {
+    /* Slice 0: a grounded entity subject IS in the notes — as
+     * its gloss — so the nothing-on-it text would be false.
+     * What is missing is a connection from the entity to the
+     * asked quality, and the decline says exactly that. (A
+     * type-check answer — "is oklahoma a state?" answered from
+     * the instance edge — is a later slice's shape, not this
+     * one's; the gap stays located here.) */
+    const entity = lookupEntity(subjectLemma);
+    missing.push(
+      entity && !lookupClassification(subjectLemma)
+        ? `I have ${subjectLemma} in my notes as ${entity.gloss}, but nothing that connects it to '${predicateLemma}'`
+        : `I have nothing on ${subjectLemma} in my notes`,
+    );
+  }
   if (!qualityNode) missing.push(`I have no way to connect anything to '${predicateLemma}'`);
 
   const path =

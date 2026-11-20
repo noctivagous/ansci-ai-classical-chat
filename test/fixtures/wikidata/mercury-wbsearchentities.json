@@ -1,0 +1,84 @@
+{
+ "searchinfo": {
+  "search": "Mercury"
+ },
+ "search": [
+  {
+   "id": "Q165745",
+   "title": "Q165745",
+   "pageid": 166349,
+   "concepturi": "http://www.wikidata.org/entity/Q165745",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q165745",
+   "display": {
+    "label": {
+     "value": "Mercury Records",
+     "language": "en"
+    },
+    "description": {
+     "value": "American record label",
+     "language": "en"
+    }
+   },
+   "label": "Mercury Records",
+   "description": "American record label",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Mercury Records"
+   }
+  },
+  {
+   "id": "Q613883",
+   "title": "Q613883",
+   "pageid": 578146,
+   "concepturi": "http://www.wikidata.org/entity/Q613883",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q613883",
+   "display": {
+    "label": {
+     "value": "Mercury",
+     "language": "en"
+    },
+    "description": {
+     "value": "automobile marque of the Ford Motor Company",
+     "language": "en"
+    }
+   },
+   "label": "Mercury",
+   "description": "automobile marque of the Ford Motor Company",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Mercury"
+   }
+  },
+  {
+   "id": "Q1231263",
+   "title": "Q1231263",
+   "pageid": 1172548,
+   "concepturi": "http://www.wikidata.org/entity/Q1231263",
+   "repository": "wikidata",
+   "url": "//www.wikidata.org/wiki/Q1231263",
+   "display": {
+    "label": {
+     "value": "Mercury",
+     "language": "en"
+    },
+    "description": {
+     "value": "commune in Savoie, France",
+     "language": "en"
+    }
+   },
+   "label": "Mercury",
+   "description": "commune in Savoie, France",
+   "match": {
+    "type": "label",
+    "language": "en",
+    "text": "Mercury"
+   }
+  }
+ ],
+ "search-continue": 3,
+ "success": 1
+}

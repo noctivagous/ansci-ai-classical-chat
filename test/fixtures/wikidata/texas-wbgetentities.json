@@ -1,0 +1,505 @@
+{
+ "entities": {
+  "Q1439": {
+   "type": "item",
+   "id": "Q1439",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "Texas"
+    }
+   },
+   "claims": {
+    "P36": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P36",
+       "hash": "0d37a1c3e0f5f4bc165088f00005a26078c0fee8",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 16559,
+         "id": "Q16559"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "Q1439$0fcfcd8a-4bba-2f47-26df-e3a3e9a25f35",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "6286f51193b788ecac4f7a63e1f7dc781012ed27",
+        "snaks": {
+         "P248": [
+          {
+           "snaktype": "value",
+           "property": "P248",
+           "hash": "d1d1b10a05a8f3fc5d26bb4aeb6849617ad81fc7",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 5375741,
+             "id": "Q5375741"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ],
+         "P1417": [
+          {
+           "snaktype": "value",
+           "property": "P1417",
+           "hash": "577627a52a7f603c80aaa5e75c3ac4bb5af65572",
+           "datavalue": {
+            "value": "place/Austin-Texas",
+            "type": "string"
+           },
+           "datatype": "external-id"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P248",
+         "P1417"
+        ]
+       }
+      ]
+     }
+    ],
+    "P17": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P17",
+       "hash": "be4c6eafa2984964f04be85667263f5642ba1a72",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 30,
+         "id": "Q30"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "q1439$25597685-96EA-4797-8153-1F7899A76EA3",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "19e304149cca805f56653407449afe82fb56db1a",
+        "snaks": {
+         "P5573": [
+          {
+           "snaktype": "value",
+           "property": "P5573",
+           "hash": "71b362f43235fbb526f145f6510b4f75e0f3f022",
+           "datavalue": {
+            "value": "2928",
+            "type": "string"
+           },
+           "datatype": "external-id"
+          }
+         ],
+         "P248": [
+          {
+           "snaktype": "value",
+           "property": "P248",
+           "hash": "c619cc6e0e5fe3733a8c4a47939343e5970e0e9d",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 265049,
+             "id": "Q265049"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ],
+         "P813": [
+          {
+           "snaktype": "value",
+           "property": "P813",
+           "hash": "0c8bd92e73708301fbdef488186bd3197b7c3d1c",
+           "datavalue": {
+            "value": {
+             "time": "+2018-08-06T00:00:00Z",
+             "timezone": 0,
+             "before": 0,
+             "after": 0,
+             "precision": 11,
+             "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+            },
+            "type": "time"
+           },
+           "datatype": "time"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P5573",
+         "P248",
+         "P813"
+        ]
+       },
+       {
+        "hash": "8adfdf96101d5c32b6b769c4633401ec06e02307",
+        "snaks": {
+         "P248": [
+          {
+           "snaktype": "value",
+           "property": "P248",
+           "hash": "88b1aea91b49e7281dc2608b867987d014c88992",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 55259097,
+             "id": "Q55259097"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ],
+         "P813": [
+          {
+           "snaktype": "value",
+           "property": "P813",
+           "hash": "e89ed975a583a10e83aa56ce16069435a04494bf",
+           "datavalue": {
+            "value": {
+             "time": "+2024-09-17T00:00:00Z",
+             "timezone": 0,
+             "before": 0,
+             "after": 0,
+             "precision": 11,
+             "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+            },
+            "type": "time"
+           },
+           "datatype": "time"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P248",
+         "P813"
+        ]
+       }
+      ]
+     }
+    ],
+    "P131": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P131",
+       "hash": "747e26ecc669b145ce67d7a7368283164499cf8b",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 30,
+         "id": "Q30"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "q1439$29CED847-1EDE-4817-BF87-CC11004C889D",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "d5847b9b6032aa8b13dae3c2dfd9ed5d114d21b3",
+        "snaks": {
+         "P143": [
+          {
+           "snaktype": "value",
+           "property": "P143",
+           "hash": "5a343e7e758a4282a01316d3e959b6e653b767fc",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 11920,
+             "id": "Q11920"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P143"
+        ]
+       }
+      ]
+     }
+    ],
+    "P361": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P361",
+       "hash": "405e3b6d298fbc677b01b2e1c5aee6673b98f558",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 578170,
+         "id": "Q578170"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "Q1439$2BDCAC52-F26F-4792-BD6A-9B47D23FC2C8",
+      "rank": "normal"
+     }
+    ],
+    "P625": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P625",
+       "hash": "4d61aa0cacdd2cc9f1cffbd59df8062e6d029f1f",
+       "datavalue": {
+        "value": {
+         "latitude": 31,
+         "longitude": -100,
+         "altitude": null,
+         "precision": 1,
+         "globe": "http://www.wikidata.org/entity/Q2"
+        },
+        "type": "globecoordinate"
+       },
+       "datatype": "globe-coordinate"
+      },
+      "type": "statement",
+      "id": "q1439$B2D6226E-BBCC-434D-90A5-94FA1EE315E4",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "fa278ebfc458360e5aed63d5058cca83c46134f1",
+        "snaks": {
+         "P143": [
+          {
+           "snaktype": "value",
+           "property": "P143",
+           "hash": "e4f6d9441d0600513c4533c672b5ab472dc73694",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 328,
+             "id": "Q328"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P143"
+        ]
+       }
+      ]
+     }
+    ],
+    "P31": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P31",
+       "hash": "09e673adf0ae862df8d4e06c649d61af5efc2cfb",
+       "datavalue": {
+        "value": {
+         "entity-type": "item",
+         "numeric-id": 35657,
+         "id": "Q35657"
+        },
+        "type": "wikibase-entityid"
+       },
+       "datatype": "wikibase-item"
+      },
+      "type": "statement",
+      "id": "Q1439$A0CFEB86-D65B-45C9-BEF2-E4AF002D8795",
+      "rank": "normal"
+     }
+    ],
+    "P1082": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P1082",
+       "hash": "a72c481f0394f71be279dd3673c59c70c5275672",
+       "datavalue": {
+        "value": {
+         "amount": "+28995881",
+         "unit": "1"
+        },
+        "type": "quantity"
+       },
+       "datatype": "quantity"
+      },
+      "type": "statement",
+      "qualifiers": {
+       "P585": [
+        {
+         "snaktype": "value",
+         "property": "P585",
+         "hash": "09f85c089438e099c1cd33998f5c59a57729afd2",
+         "datavalue": {
+          "value": {
+           "time": "+2020-00-00T00:00:00Z",
+           "timezone": 0,
+           "before": 0,
+           "after": 0,
+           "precision": 9,
+           "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+          },
+          "type": "time"
+         },
+         "datatype": "time"
+        }
+       ]
+      },
+      "qualifiers-order": [
+       "P585"
+      ],
+      "id": "Q1439$655a10f4-4194-b955-2223-b2bd48e0e6e6",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "89e0b2758a0bee4d06bb2d7718aa1c1c326a1620",
+        "snaks": {
+         "P1065": [
+          {
+           "snaktype": "value",
+           "property": "P1065",
+           "hash": "2c29856001b08abf97706b8e5f69b5b61a0f60b1",
+           "datavalue": {
+            "value": "https://web.archive.org/web/20111028064539/http://2010.census.gov/2010census/data/apportionment-pop-text.php",
+            "type": "string"
+           },
+           "datatype": "url"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P1065"
+        ]
+       }
+      ]
+     }
+    ],
+    "P571": [
+     {
+      "mainsnak": {
+       "snaktype": "value",
+       "property": "P571",
+       "hash": "accb5aaaf5543b14771a500aa9c33c5b8c3b04ce",
+       "datavalue": {
+        "value": {
+         "time": "+1845-12-29T00:00:00Z",
+         "timezone": 0,
+         "before": 0,
+         "after": 0,
+         "precision": 11,
+         "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+        },
+        "type": "time"
+       },
+       "datatype": "time"
+      },
+      "type": "statement",
+      "id": "Q1439$FFFD66DC-A3B5-4EE1-88C6-CDDAFD90ECE6",
+      "rank": "normal",
+      "references": [
+       {
+        "hash": "fa278ebfc458360e5aed63d5058cca83c46134f1",
+        "snaks": {
+         "P143": [
+          {
+           "snaktype": "value",
+           "property": "P143",
+           "hash": "e4f6d9441d0600513c4533c672b5ab472dc73694",
+           "datavalue": {
+            "value": {
+             "entity-type": "item",
+             "numeric-id": 328,
+             "id": "Q328"
+            },
+            "type": "wikibase-entityid"
+           },
+           "datatype": "wikibase-item"
+          }
+         ]
+        },
+        "snaks-order": [
+         "P143"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "sitelinks": {
+    "enwiki": {
+     "site": "enwiki",
+     "title": "Texas",
+     "badges": []
+    }
+   }
+  },
+  "Q16559": {
+   "type": "item",
+   "id": "Q16559",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "Austin"
+    }
+   },
+   "claims": {}
+  },
+  "Q30": {
+   "type": "item",
+   "id": "Q30",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "United States"
+    }
+   },
+   "claims": {}
+  },
+  "Q35657": {
+   "type": "item",
+   "id": "Q35657",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "U.S. state"
+    }
+   },
+   "claims": {}
+  },
+  "Q578170": {
+   "type": "item",
+   "id": "Q578170",
+   "labels": {
+    "en": {
+     "language": "en",
+     "value": "contiguous United States"
+    }
+   },
+   "claims": {}
+  }
+ }
+}

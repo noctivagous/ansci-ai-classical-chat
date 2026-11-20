@@ -57,7 +57,16 @@ const ROLE_RELATIONS = new Set([
   "agent", "patient", "theme", "recipient", "location", "goal",
 ]);
 const ATTACH_RELATIONS = new Set(["qualifies", "modulates", "degree", "result", "time"]);
-const LINK_RELATIONS = new Set(["chains-to", "modifier", "condition", "predicated-as", "links"]);
+/* "contains" rides with the links (the vocabulary pass, Part J.2):
+ * the relation is declared in the graph's vocabulary (Part D,
+ * stage 3) and the parse produces it ("What's in it?" — the
+ * container node sourcing a contains edge to the contained,
+ * questioned node), but no atom set carried it, so the edge
+ * atomised to nothing — the uncommissioned sibling of G.5's
+ * location extension, closed the same way: the determination
+ * is the design (repair-programme Part J.2); this line is its
+ * build. */
+const LINK_RELATIONS = new Set(["chains-to", "modifier", "condition", "predicated-as", "links", "contains"]);
 
 function atom(family: string, key: string, value: string): FeatureAtom {
   return { family, key, value };
@@ -185,6 +194,69 @@ export function extractFeatures(p: ParsedSentence): FeatureAtom[] {
     atoms.push(
       atom("particle-scope", `scope:${s.kind}:${s.form}`, s.targetId ? lemmaOf(s.targetId) : "clause"),
     );
+  }
+
+  /* ---- The vocabulary pass (Part J): the discourse-act and
+   * event-ordering atoms. ---- */
+
+  // Discourse acts (J.1): the parse already records the act on
+  // the sentence (Part D D2 — a topic proposal, a bare reason
+  // query); until now no atom carried it, so a sealed item
+  // whose whole content is the act scored a graph with the act
+  // nowhere in it. The atom is the act's name, family
+  // "discourse".
+  if (p.discourseAct) {
+    atoms.push(atom("discourse", "act", p.discourseAct));
+  }
+  // A correction (J.1): a turn-initial "No," set off by its
+  // comma, before a clause that carries tense — the surface
+  // shape of a speaker replacing the exchange's current
+  // reading with the proposition that follows. The comma is
+  // part of the shape: "No one came." opens with the same
+  // word and is a plain statement, and a bare "No." has no
+  // clause to correct with. The act is atom-level only: the
+  // parse's act union and the assessment's act kinds are not
+  // extended by this pass (their consumers price acts the
+  // atomiser does not).
+  {
+    const toks = p.connective.tokens;
+    const propositional = predicates.some(
+      (n) => n.states?.tense !== undefined || n.states?.copulaTense !== undefined,
+    );
+    if (
+      propositional &&
+      toks.length > 2 &&
+      toks[0].toLowerCase() === "no" &&
+      toks[1] === ","
+    ) {
+      atoms.push(atom("discourse", "act", "correction"));
+    }
+  }
+  // Event ordering (J.3): the chains-to family extended to the
+  // English ordering words. A 'before'/'after' modulator on an
+  // event predicate, with the predicate's agent and theme both
+  // filled, states a sequence between the agent's event and
+  // the theme: the earlier term chains to the later. An
+  // ordinal modulator ('first', 'second', 'third', 'last') on
+  // an event predicate is an ordering position over such a
+  // sequence, and atomises as the predicate's ordering
+  // attachment beside its modulates atom.
+  const ORDINALS = new Set(["first", "second", "third", "last"]);
+  for (const pred of predicates) {
+    const agentEdge = p.meaning.edges.find((e) => e.from === pred.id && e.relation === "agent");
+    const themeEdge = p.meaning.edges.find((e) => e.from === pred.id && e.relation === "theme");
+    for (const e of p.meaning.edges) {
+      if (e.to !== pred.id || e.relation !== "modulates") continue;
+      const word = lemmaOf(e.from);
+      if ((word === "before" || word === "after") && agentEdge && themeEdge) {
+        const earlier = word === "before" ? agentEdge.to : themeEdge.to;
+        const later = word === "before" ? themeEdge.to : agentEdge.to;
+        atoms.push(atom("connective", `${lemmaOf(earlier)}|chains-to|${lemmaOf(later)}`, word));
+      }
+      if (ORDINALS.has(word)) {
+        atoms.push(atom("attachment", `${pred.lemma}|ordering`, word));
+      }
+    }
   }
 
   atoms.push(atom("connective", "entry", p.meaning.entryElement));

@@ -21,6 +21,7 @@
 import { lookupClassification } from "./classify";
 import { canonicalEmotion } from "./edu";
 import { emotionReach, type EmotionReach } from "./edu-reach";
+import { mixDerivation, mixFor } from "./emotion-mix";
 import { affectPriorFor, type GlasgowFact } from "./normalcy-unit";
 import { tierOfProvenance } from "./pricing";
 import type { AspectReading } from "./semantic-object";
@@ -94,6 +95,38 @@ const CANONICAL_FACE: Record<string, string> = {
   afraid: "fear",
   scared: "fear",
   nervous: "fear",
+  /* The vocabulary pass (V1, 2026-11-19): the state forms
+   * and degree variants the sweep of the sealed set and the
+   * EmpatheticDialogues material found unfiled, each filed
+   * by an established route with its evidence in the
+   * classification table's notes (classify.ts). Two of the
+   * sweep's filings stand WITHOUT a face here, deliberately:
+   * 'anxious' and 'upset' file under worry by the table
+   * (the category route; the climb), and a face to 'worry'
+   * would route their register reading through the EDU's
+   * canonical seat for 憂 (Metal) ahead of the table —
+   * against the owner's layered determination, which seats
+   * the worry register at Earth. The worry faces the owner
+   * determination itself covers (worry / worried / anxiety)
+   * read their filing from that layer in the register walk;
+   * these two register under their own names at Earth until
+   * that layer is extended, which is its owner's to do —
+   * the fragmentation is recorded in GAPS §2. */
+  disappointed: "grief",
+  disappointment: "grief",
+  devastated: "grief",
+  annoyed: "anger",
+  apprehension: "fear",
+  apprehensive: "fear",
+  terrified: "fear",
+  joyful: "joy",
+  proud: "pride",
+  hopeful: "hope",
+  optimistic: "hope",
+  jealous: "jealousy",
+  ashamed: "shame",
+  embarrassed: "shame",
+  content: "contentment",
 };
 
 /** The canonical emotion a word expresses, per the mapping
@@ -157,5 +190,37 @@ export function emotionAspect(lemma: string): AspectReading | undefined {
       (kind?.element && kind.element !== entry.element
         ? `; the canonical emotion's own correspondence is ${kind.element} — both stand, labelled`
         : ""),
+  };
+}
+
+/** The MIX reading of a word (MIX-1 of the emotion-mix
+ *  programme, 2026-11-19): where the emotion-mix table
+ *  (emotion-mix.ts) files the word as an emotion MIX, the
+ *  reading serves the mix AS SUCH — the word as said
+ *  (retention: the value is the word, as in every reading
+ *  this bridge serves), its components standing together,
+ *  and their cycle relations as the machinery derives them.
+ *  No single element is asserted: the reading's element
+ *  field stays absent rather than collapsing the mix to one
+ *  component's phase, and no tier or confidence is carried —
+ *  no seated filing prices a mix, and the provenance (the
+ *  owner's determination) is named in the source line
+ *  instead. Parallel to emotionAspect above, which serves a
+ *  seated word's correspondence; this serves a combination's
+ *  composition. The two never both fire for one word: a mix
+ *  word stands in no classification entry (an entry asserts
+ *  one element), so emotionAspect returns undefined for it
+ *  and this reading is the word's only emotion reading. */
+export function mixEmotionAspect(lemma: string): AspectReading | undefined {
+  const mix = mixFor(lemma);
+  if (!mix) return undefined;
+  const word = lemma.toLowerCase();
+  return {
+    aspect: "emotion",
+    value: lemma,
+    source:
+      `LEDU→EDU: '${word}' is filed as an emotion MIX (the mix form; ${mix.provenance}): ` +
+      `${mixDerivation(mix)}. The word stands as said; no single element or register is ` +
+      `asserted for it — a mix is its components and their relations, never an average of them`,
   };
 }

@@ -268,6 +268,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit": {
       "order": 1
     },
+    "ontology-core/ontology-knowledge-unit/paramorphic-concept-unit": {
+      "order": 4
+    },
     "ontology-core/emotion-desire-unit": {
       "order": 2
     },

@@ -91,12 +91,21 @@ test("X1: a later telling links to the established topic it touches (the P-036 s
   // leg." — the leg was established a turn earlier (the
   // weight-lifting telling raised it as a topic) and the
   // receipt now shows the connection, from the record.
-  assert.equal(r.reply, "Ok. You injured the leg. We were talking about the leg.");
+  // RE-PIN (FIX (iii), the narrative programme, 2026-11-19):
+  // the link's GRADE rose. The before-clause's injury now
+  // records as its own event (the subordinate-clause
+  // recording), so the reader's event leg — which the link
+  // order prefers — serves "You told me you injured the
+  // leg." where the topic leg's "We were talking about the
+  // leg." stood. The test's claim stands at the higher
+  // grade: a later telling links to the established material
+  // it touches, now by the event that carries it.
+  assert.equal(r.reply, "Ok. You injured the leg. You told me you injured the leg.");
   // The link record carries its rendered sentence since
   // IMP-3 (the implementation programme, 2026-11-19): the
   // composition's boundary discipline strips a link by the
   // sentence its own trace records.
-  assert.deepEqual(r.trace.recognition?.link, { kind: "topic", turn: 3, lemma: "leg", sentence: "We were talking about the leg." });
+  assert.deepEqual(r.trace.recognition?.link, { kind: "event", turn: 3, lemma: "leg", sentence: "You told me you injured the leg." });
 });
 
 test("X1: a state receipt links to the earlier event that established its subject (the soup control)", () => {

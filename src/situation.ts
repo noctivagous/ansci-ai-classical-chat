@@ -6,9 +6,21 @@
  * user-stated override, and never stored as a fact or written to the
  * graph. Slice 2b computes the canonical form: season-here from §8.10a's
  * (date, hemisphere) arcs, light aspect from §6.7's canonical season
- * profiles, marked `source: "canonical"`. The computed solar
- * night-proportion path (§8.10b) arrives with the knowledge base in
- * slice 2f — nothing here pretends to measure what it has not measured.
+ * profiles, marked `source: "canonical"`.
+ *
+ * Slice 2f / W3 (2026-11-19): the §8.10 computation is now factored
+ * into shared, exported primitives — hemisphereForLatitude,
+ * latitudeBandForLatitude, seasonForDayOfYear, and the §8.10b solar
+ * night-proportion computation (solarDeclinationDegrees /
+ * nightProportionFor / computedLightAspect) — so there is ONE
+ * implementation with two callers (§8.10's rule): computeSituation
+ * below (the live Situation) and the Wikidata bank's place
+ * associations (src/fork/wikidata-bank.ts), which compute a banked
+ * place's hemisphere, latitude band, season and night proportion
+ * from its banked coordinates through these same functions. The
+ * live Situation's light aspect stays on the canonical profile in
+ * this slice (the 2b SA-TONIGHT-canonical form); the computed
+ * proportion is what the bank-fed place path consumes.
  */
 
 export type LocationSource = "host-config" | "user-stated" | "kb";
@@ -84,6 +96,81 @@ const OPPOSITE_SEASON: Record<string, string> = {
   autumn: "spring",
   winter: "summer",
 };
+
+/* ---------- §8.10 / §8.11 shared primitives (one implementation,
+ * two callers: the live Situation below, and the Wikidata bank's
+ * place associations in src/fork/wikidata-bank.ts) ---------- */
+
+/** §8.11 hemisphere: the sign of latitude; equatorial within ±10°. */
+export function hemisphereForLatitude(lat: number): "north" | "south" | "equatorial" {
+  return Math.abs(lat) <= 10 ? "equatorial" : lat > 0 ? "north" : "south";
+}
+
+/** §8.11 latitude band: polar |φ| ≥ 66.5°, tropical |φ| ≤ 23.5°. */
+export function latitudeBandForLatitude(lat: number): "polar" | "temperate" | "tropical" {
+  return Math.abs(lat) >= 66.5 ? "polar" : Math.abs(lat) <= 23.5 ? "tropical" : "temperate";
+}
+
+/**
+ * §8.10a season-here: a function of (day-of-year, hemisphere),
+ * never of the month alone — the December rule. The southern
+ * season is the opposite one; the equatorial fallback is the
+ * nearest-anchor (northern-arc) season, capped downstream.
+ */
+export function seasonForDayOfYear(
+  dayOfYear: number,
+  hemisphere: "north" | "south" | "equatorial",
+): string {
+  const northern = northernSeasonForDayOfYear(dayOfYear);
+  return hemisphere === "south" ? OPPOSITE_SEASON[northern] : northern;
+}
+
+/** Day-of-year (1–366) of a Date, by its UTC calendar day. */
+export function dayOfYearUTC(date: Date): number {
+  const start = Date.UTC(date.getUTCFullYear(), 0, 0);
+  const thisDay = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  return Math.floor((thisDay - start) / 86_400_000);
+}
+
+const DEG = Math.PI / 180;
+
+/**
+ * §8.10b solar declination, approximated from day-of-year:
+ * δ ≈ −23.44° · cos(360°/365 · (N + 10)).
+ */
+export function solarDeclinationDegrees(dayOfYear: number): number {
+  return -23.44 * Math.cos(((360 / 365) * (dayOfYear + 10)) * DEG);
+}
+
+/**
+ * §8.10b night proportion from (day-of-year, latitude): the
+ * sunrise hour-angle equation cos H = −tan φ · tan δ gives day
+ * length 2H/15 hours; night proportion = 1 − dayLength/24.
+ * Where |tan φ · tan δ| > 1 there is no sunrise or no sunset
+ * that day: polar night (proportion 1) or polar day (0).
+ */
+export function nightProportionFor(dayOfYear: number, lat: number): number {
+  const phi = lat * DEG;
+  const delta = solarDeclinationDegrees(dayOfYear) * DEG;
+  const cosH = -Math.tan(phi) * Math.tan(delta);
+  if (cosH <= -1) return 0; // the sun never sets: polar day
+  if (cosH >= 1) return 1; // the sun never rises: polar night
+  const dayLengthHours = (2 * (Math.acos(cosH) / DEG)) / 15;
+  return 1 - dayLengthHours / 24;
+}
+
+/**
+ * The computed light aspect (§8.10b): the night proportion fed
+ * directly into §6.7's light-aspect Yin proportion, marked
+ * `source: "computed"` — the marking is part of the value.
+ */
+export function computedLightAspect(
+  dayOfYear: number,
+  lat: number,
+): { yinProportion: number; band: "predominant" | "present" | "faint"; source: "computed" } {
+  const yinProportion = nightProportionFor(dayOfYear, lat);
+  return { yinProportion, band: bandOf(yinProportion), source: "computed" };
+}
 
 export interface SituationOptions {
   instant: Date;
@@ -167,17 +254,15 @@ export function computeSituation(opts: SituationOptions): Situation {
   let seasonHere: string | undefined = opts.statedSeason;
   if (location && !("unknown" in location)) {
     const lat = location.lat;
-    derived.hemisphere = Math.abs(lat) <= 10 ? "equatorial" : lat > 0 ? "north" : "south";
-    derived.latitudeBand = Math.abs(lat) >= 66.5 ? "polar" : Math.abs(lat) <= 23.5 ? "tropical" : "temperate";
+    // The shared §8.10/§8.11 primitives (one implementation, two
+    // callers — the Wikidata bank computes banked places' situation
+    // associations through these same functions).
+    derived.hemisphere = hemisphereForLatitude(lat);
+    derived.latitudeBand = latitudeBandForLatitude(lat);
     if (!seasonHere) {
-      const northern = northernSeasonForDayOfYear(dayOfYear);
       // THE DECEMBER RULE (§8.10a): season is a function of (date,
-      // hemisphere), never of the month alone — the southern season is
-      // the opposite one, shifted six months.
-      seasonHere =
-        derived.hemisphere === "south"
-          ? OPPOSITE_SEASON[northern]
-          : northern; // equatorial: nearest-anchor season (§8.10a fallback)
+      // hemisphere), never of the month alone.
+      seasonHere = seasonForDayOfYear(dayOfYear, derived.hemisphere);
     }
   }
   if (seasonHere) derived.seasonHere = seasonHere;

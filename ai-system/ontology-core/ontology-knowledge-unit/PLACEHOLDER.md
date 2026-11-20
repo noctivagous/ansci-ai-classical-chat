@@ -39,6 +39,19 @@ number lore: the filed numbers live here, in the OKU; the unit holds
 the machinery (the ledger operations, the implied counts, the
 Luoshu).
 
+## Its newest resident unit (2026-11-19)
+
+The **ParamorphicConcept Unit**
+(`ontology-core/ontology-knowledge-unit/paramorphic-concept-unit`,
+placeholder, 0%) — the owner's ruling, 2026-11-19: all paramorphic
+concepts are in a ParamorphicConcept Unit in the OKU. It holds the six
+concepts of the paramorphic-components record — Grid, Graph, Tree,
+Path, Protocol, Logic — as a registry of data (substrate, parameters,
+shared operations, the system's instances, invariants) in
+`src/fork/paramorphic-concepts.ts`. The instances (this unit's own
+correspondence graph and classification table among them) stay where
+they live; nothing is moved, and no engine runs yet.
+
 ## Where the working code lives today
 
 `src/fork/classify.ts` (the table and its consumers) and the foundation

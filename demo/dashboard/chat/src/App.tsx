@@ -305,6 +305,30 @@ function Trace({ ex }: { ex: Exchange }) {
 
 const EXAMPLES = ["Hello.", "I have three apples.", "How many apples do I have?", "I was furious."];
 
+/** Copy text to the clipboard: the async clipboard API where it
+ *  is available, the textarea + execCommand path elsewhere. */
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      ok = false;
+    }
+    ta.remove();
+    return ok;
+  }
+}
+
 export default function App() {
   const sessionObjs = useRef(new Map<number, Session>());
   const nextId = useRef(1);
@@ -324,6 +348,24 @@ export default function App() {
   const [showTrace, setShowTrace] = useState(false);
   const [showWalk, setShowWalk] = useState(false);
   const [showDeclines, setShowDeclines] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  /** Copy what is VISIBLE: the text is read from the rendered
+   *  transcript node itself, not re-derived from the exchange
+   *  data, so the settings-bar toggles decide what is copied at
+   *  exactly the granularity the page renders — a turn's walk
+   *  path, decline or trace is in the copy only while its toggle
+   *  shows it, and a trace's body only while that turn's trace
+   *  is expanded, because that is what is on screen. */
+  const copyTranscript = async () => {
+    if (!active || active.exchanges.length === 0) return;
+    const text = transcriptRef.current?.innerText?.trim();
+    if (!text) return;
+    if (await copyToClipboard(text)) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    }
+  };
 
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -438,6 +480,19 @@ export default function App() {
           </button>
         </div>
         <span className="spacer" />
+        <button
+          className="copy-btn"
+          onClick={copyTranscript}
+          disabled={active.exchanges.length === 0}
+          title={
+            active.exchanges.length === 0
+              ? "Nothing to copy yet — this session has no turns"
+              : "Copy what this session's transcript currently shows to the clipboard"
+          }
+          data-testid="copy-transcript"
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
         <span className="note">browser build — WordNet &amp; FrameNet providers off</span>
         <a className="navlink" href="../">
           ← Map

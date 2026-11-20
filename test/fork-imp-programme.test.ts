@@ -519,7 +519,13 @@ test("IMP-3: the established-topic link stands (P-036 control)", () => {
     "I used to do some weight lifting before I injured my leg.",
     "I injured it in college and again last year falling off a horse.",
   ]);
-  assert.equal(r.reply, "Ok. You injured the leg. We were talking about the leg.");
+  // RE-PIN (FIX (iii), the narrative programme, 2026-11-19):
+  // the control's claim — the established link stands under
+  // IMP-3's boundary discipline — stands; its grade rose
+  // with the subordinate-clause recording, which now stands
+  // the before-clause's injury in the ledger as its own
+  // event, so the event leg serves where the topic leg did.
+  assert.equal(r.reply, "Ok. You injured the leg. You told me you injured the leg.");
 });
 
 /* ---------------- IMP-4: parse + record-answer completions ---------------- */

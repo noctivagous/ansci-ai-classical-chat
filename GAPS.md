@@ -773,6 +773,64 @@ synthetic-returner gates.
   striking:* no judgement is entered here; the bar is
   the owner's to strike or not. The item stands, with
   this run as its fifth record.
+  *Run 6 record (2026-11-19, on the owner's commission; full
+  report and per-probe results held outside the repo at
+  `~/workspace/ansci-probe-run6-output/`):* the set was run
+  once against `bbe9986` — the narrative-uptake programme's
+  tip on this file's integrated base (`d71009c`): UN-1 (the
+  event-register authority and the narrative ground), UN-2
+  (the narrative rendering licence), and the FIX slice (the
+  three located items) — unmodified, in its own worktree,
+  the seal verified before running (sha256 `d77c072f…6a1`,
+  unchanged; the runner recomputes and aborts on mismatch).
+  Protocol identical to runs 1–5; the uptake trace now also
+  carries its ground (stated | narrative) and, on narrative
+  ground, the event-register entry, so the grounds are
+  counted apart. 128 probes, 385 turns, 0 machinery errors.
+  **Verdicts: 30 pass (23%), 73 partial (57%), 25 fail
+  (20%)** — against run 5's 30 / 72 / 26 (per source:
+  DailyDialog 12/18/5, unchanged; EmpatheticDialogues
+  3/20/9, P-024's move the family's only change;
+  Persona-Chat 11/12/5, unchanged; BlendedSkillTalk 4/10/4,
+  unchanged; Wizard of Wikipedia 0/13/2, unchanged — its
+  pass count unmoved for the sixth consecutive scoring).
+  **Movement: one up, none down** — **P-024, fail →
+  partial**: run 5's regression is repaired (FIX (ii),
+  recorded under the C1 item below); the turn receipts the
+  sympathy 'sorry' and no longer cross-examines it, and
+  what keeps it from a pass is the hope segment's own
+  steering over a hope whose object the same breath
+  states. The invariants held for the seventh consecutive
+  scoring: **zero confabulation and zero misattribution**
+  across all 385 turns. 124 probes are byte-identical to
+  run 5; the four differing probes are P-024 (above),
+  P-036 and P-044 (verdicts held; under the C1 item below)
+  and P-019 (first turn only — a garbled trailing segment
+  absent; the two systems answer the turn identically in
+  isolation, the difference a process-level lexicon-state
+  effect of running the set in one process; final reply
+  identical, verdict carried). Read against the bar
+  (pass/partial/fail, run 5 beside, on the scoring
+  script's assignment): (1) opens/closes 6/8/1 of 15
+  (unchanged); (2) self-answers 6/2/0 of 8 (unchanged);
+  (3) thanks 8/2/0 of 10 (unchanged); (4) attribution and
+  acknowledgement 7/33/15 of 55 (was 7/32/16 — P-024);
+  (5) testimony/grounding 0/18/2 of 20 (unchanged — **zero
+  passes in seven consecutive scorings**); (6)
+  clarification 2/6/3 of 11 (unchanged); (7) decline form
+  1/9/6 of 16 (unchanged); (8) false premise 0/2/0 of 2
+  (unchanged); (9) interlocutor's picture 5/13/5 of 23
+  (unchanged); (10) turn-taking 12/26/11 of 49 (was
+  12/25/12 — P-024). Failure shapes: rephrase finals 1
+  (P-121, unchanged); bare-"Ok." finals 25; ack+receipt
+  finals 59; decline finals 16. *Limits, as the report
+  states them:* scoring was in-loop judgment under run
+  1's rubric — nobody independent scored this run; 124
+  verdicts carried on identical behaviour; partner turns
+  were not fed; bar 9's first-contact/returning part is
+  unevidenced. *On striking:* no judgement is entered
+  here; the bar is the owner's to strike or not. The
+  item stands, with this run as its sixth record.
 - **Found ahead of the checklist — gaps of record (accepted
   2026-11-18).** 18 of the sealed probes test things this
   section did not name. They cluster where conversation meets
@@ -2212,6 +2270,574 @@ synthetic-returner gates.
   register, the negative gating specimens demonstrably not
   firing, the no-template audit passing; this build is
   the mechanism, not the judgement.
+  *Status (2026-11-19, UN-1 + UN-2 + FIX — the
+  narrative-uptake programme, branch
+  `build/uptake-narrative` on the integrated tip
+  `d71009c`, unpushed):* **the narrative ground is built**
+  — UP-1's scope line above ("event-carried registers are
+  not claimed in v1") is superseded by an authority, as
+  the line itself foresaw. UN-1: `src/fork/event-register.ts`,
+  a banked event-register table sibling to the
+  classification table, filing event-kinds under the
+  registers (death / loss / harm of a bound person →
+  grief; the visitor's achievement → joy; threat to a
+  bound person → fear; ruin of the visitor's own
+  undertaking → grief at low degree), each entry this
+  programme's determination with its ground recorded as a
+  note. The governing doctrine is the owner's (below):
+  register and degree are separate axes — the register
+  from the event-kind, the degree from the kind's weight
+  at the binding's closeness, the two determinations
+  named apart in every derivation. The binding is half of
+  every entry: the visitor's own agency or patienthood,
+  kin by the surface's possessive or by unattributed
+  standing in the visitor's own telling, possession in
+  the surface; an event bound to nobody in the room (the
+  neighbour's father — a competing possessor stands in
+  the surface; the newborn in the news story) matches
+  nothing. The guards are the family's: a modal,
+  subjunctive or negated clause is not a told event; a
+  telling occasioned by a mediated report on its own turn
+  stands down (IMP-3's discipline). `assessNarrativeGround`
+  stands beside the stated ground in `uptake.ts`, priced
+  as derived support: the narrative threshold is 3 (the
+  stated ground's is 2), cleared through the degree axis
+  alone (high 3, plain 2, low 1, a returning event-kind
+  +1) — a parent's death clears it on its telling; a
+  plain narrative ground is receipt matter until the
+  register returns. UN-2: the rendering licence is
+  narrower than the stated ground's, by testimony
+  discipline — the stance, and the event as told under
+  the record's own S0 admission; **never a feeling
+  predicated of the visitor**, who stated none. Where a
+  stated feeling rides a narrative event, the stated
+  ground owns the predication, as UP-1 already composes.
+  The arm is wired at the plain-event branch and the
+  acknowledgement fallback, only where the turn carries
+  no stated feeling candidate; traces carry the ground
+  (stated | narrative) and the entry id. The no-template
+  audit gains a narrative arm. FIX, the three items run
+  5 located: (i) branch (c)'s verb-carried early return
+  no longer discards a registered firing — it composes
+  under it as the branch's other path does (P-044,
+  P-079); (ii) the steering ground discriminates a
+  feeling bound to another's situation — `feelingObjectBound`
+  gains the sympathy/apology leg (the formula 'sorry
+  for …'; the empathy clause 'sorry, because I
+  know/understand …', or a because-clause addressed to
+  'you'), and its emotion test the LEDU-face disjunct,
+  without which 'sorry' was judged by no leg;
+  registration stands (E1's filing is the owner's), the
+  receipt answers the turn (P-024; controls pinned: an
+  own-act apology and an unbound own grief still steer);
+  (iii) an adverbial subordinate clause carrying its own
+  verb and roles records its own event at the recording
+  layer — the span after the first adverbial
+  subordinator, parsed on its own, roles as told, ahead
+  of the root event (adverbial clauses only; complements
+  and relatives stay the root's material; conditionals
+  stay the conditional construction's; one per sentence;
+  events only) — P-036's injury now stands in the ledger
+  at its own grain, and run 6's reading of what that
+  does and does not serve is in the run record above.
+  Two re-pins, both the same intended change (FIX
+  (iii)'s): the X1 P-036 specimen and the IMP-3 P-036
+  control, whose link grade rose from topic to event,
+  each reasoned in place. Gates per slice and at the
+  programme tip: suite 1079 pass / 0 fail / 3 skipped;
+  demo 29/29; holdout clean; sense A 11/11 · B 5/6;
+  `ai:check` OK. *Withheld from the table, as owner
+  questions:* anger at a complained-of act (the
+  complaint's meeting is the social layer's, and no entry
+  files it) and pensiveness at a setback (a real
+  correspondence the programme judged contestable without
+  a stated feeling) — the table ships without both, and
+  they stand in the programme's report to the owner, not
+  in the code. *Located remainders:* the DR-2 history
+  leg's gating (state-receipt calls only) and its
+  two-item threshold — P-036's full spine does not serve
+  on the sealed conversation, by the reader's design, not
+  the ledger's grain; the stance selection for the
+  uncategorised registers ('sorry' for everything but
+  joy), priced by P-044's held verdict in run 6; the
+  subordinate clause's own modality is not retained, so
+  narrative assessment reads root events only.
+  *Owner determinations recorded (2026-11-19, the
+  emotion filings):* first, a correction. An earlier
+  same-day filing message (excitement/joy/love → Fire;
+  grief/sadness/pensiveness → Metal; anger/irritation →
+  Wood; fear/apprehension/fright → Water) was **corrected
+  by the owner before any code was changed under it** —
+  "we are going for attested in the tradition" — and is
+  superseded in full: pensiveness → Metal, fright →
+  Water and love → Fire under that message are withdrawn
+  and were never carried. The governing determination is
+  the **attested fivefold table**: Wood 木 anger /
+  frustration — liver; Fire 火 joy / elation — heart;
+  Earth 土 worry / pensiveness — spleen; Metal 金 grief
+  / sadness — lung; Water 水 fear — kidney. Family
+  variants sit inside the registers at degrees:
+  excitement/elation under joy, irritation/frustration
+  under anger, sadness under grief, apprehension under
+  fear at low degree. **Worry files with pensiveness at
+  Earth** — the standing tension (the classification
+  table classes worry as Earth; the framework's canonical
+  憂 stands at Metal) resolves to the table's Earth
+  filing under this ruling, both provenances recorded,
+  neither harmonised away. **Fright 驚 is not in the
+  table**: it keeps its canonical unsettled standing.
+  **Love is not in the table**: it stands in no filing,
+  and its standing is reported, not changed. Adopted the
+  same day (the owner's ".", accepting the
+  recommendations): the **layered mapping** — the seven
+  emotions （七情： joy, anger, worry, pensiveness,
+  grief, fear, fright) are the *recognition vocabulary*,
+  words filing into the seven-name space with variants at
+  degrees; the five wills （五志） are the
+  *correspondence layer*, element and organ attached
+  where attested (joy Fire/heart, anger Wood/liver,
+  pensiveness Earth/spleen, **worry Earth/spleen**, grief
+  Metal/lung, fear Water/kidney). **Fright stands
+  recognised but UNSEATED**: no element, no organ
+  (attested — fright disorders the qi rather than
+  residing); where 'fright' reaches the uptake ground it
+  does so as a recognised register with no element
+  correspondence, and the register walk now says so in
+  those terms. **The six desires stay in the SenseUnit**:
+  no desire→element bridge is built in this programme;
+  the orifice bridge is deferred until a desire needs an
+  element. *What the determinations changed in code, and
+  what already agreed:* the register walk
+  (`registerOf`/`degreeOf` in `uptake.ts`) gains the
+  owner's filing layer — worry read at Earth/spleen with
+  both provenances named in its authority string;
+  apprehension filed under fear at low degree, elation
+  under joy, frustration under anger (all three filed
+  nowhere before); fright's authority string restated in
+  the layered terms (recognised, unseated). Already in
+  agreement, untouched: pensiveness at Earth/spleen
+  (canonical, in the EDU's table and the classification
+  table alike); excitement under joy/Fire; irritation
+  under anger/Wood; sadness under grief/Metal; love
+  filed nowhere. *Located divergence, recorded not
+  rebuilt:* the EDU's canonical table itself
+  (`edu.ts`) still seats 憂 (worry) at Metal/lung,
+  against the ruling's correspondence seat of
+  Earth/spleen; the layered mapping aligns what this
+  programme touches (the register walk reads worry at
+  Earth), and the EDU table's own restatement is a
+  separate piece of work, not this programme's to
+  improvise.
+
+- **The vocabulary pass — V1: the register-word filings
+  (2026-11-19, the owner's "1a" commission; branch
+  `build/vocabulary-pass` on the narrative-uptake tip).**
+  The discourse build's located remainder named four words
+  no authority filed — disappointed, upset, devastated,
+  proud — and the commission added a systematic sweep. The
+  sweep extracted the emotion-bearing vocabulary of the
+  sealed conversation set (the 128 probes' visitor turns)
+  and the EmpatheticDialogues material (its 32 emotion
+  labels among them): 169 candidates, tested against the
+  three authorities (the classification table's emotion
+  aspect; the LEDU's canonical face and the EDU's canonical
+  names; the LEDU's uncategorised register). 17 stood
+  filed; 152 filed under none. Each unfiled word was
+  determined by the established routes only — the
+  classification climb (WordNet ancestry to a filed anchor,
+  the route that settled 'sorry'), the canonical face (a
+  category's state form or degree variant; Glasgow arousal
+  admissible as degree evidence only, cited as provenance),
+  the category's own head entry — or withheld as
+  contestable, under the standing rule that category
+  fittings beyond the record are the owner's to give.
+  **Filed (17 classification entries, 15 canonical faces):**
+  *disappointed* → grief/Metal, plain degree — the
+  canonical-face route: disappointment's feeling sense is
+  dissatisfaction at an expectation not realized, grief's
+  family (Glasgow arousal 3.82, beside sad's 3.94; degree
+  evidence: the Glasgow register). *disappointment* →
+  grief/Metal (the feeling noun of the same). *upset* →
+  worry/Earth — **the climb's filing**: its state synset
+  {disquieted, distressed, disturbed, upset, worried} IS
+  the worried synset, so the climb reaches the filed
+  anchor 'worried' at hop 0; the synset's gloss also names
+  grief ('anxious uneasiness or trouble or grief') — that
+  pole is recorded in the entry's note, labelled, and the
+  filing is the climb's, not a harmonisation of the two.
+  *devastated* → grief/Metal at **high degree** (its
+  feeling sense: 'the feeling of being confounded or
+  overwhelmed'; the Glasgow register carries no value for
+  the word — recorded in the note, not supplied; the noun
+  'devastation' was NOT filed — its dominant senses are
+  destruction events, unlike the pure feeling-noun
+  'sadness'). *proud* → pride/Fire at pride's own 0.7 (its
+  gloss names pride). *annoyed* → anger/Wood at **low
+  degree** (its gloss: 'aroused to impatience or anger' —
+  annoyance is irritation predicated, and irritation files
+  under anger in the owner's table). *anxious* →
+  worry/Earth, the state of anxiety, as 'worried' stands
+  beside 'worry' (the climb's rival — 'nervous' at
+  Water/0.7 — is recorded here, not in the entry: the state
+  synsets name uneasiness, and the category route governs
+  the state form as it governed 'worried'). *apprehension*
+  → fear/Water at low degree, and *apprehensive* → fear/
+  Water at low degree — the owner's own 2026-11-19
+  determination, entered in the table so it stands beside
+  the LEDU face and the register walk's filing layer that
+  already carried it (apprehensive's synset mate 'worried'
+  is no counter-evidence: its gloss is dread of a possible,
+  fear's forward face, as 'dread' already files).
+  *ashamed* → shame/Fire and *embarrassed* → shame/Fire,
+  both at shame's contested 0.6 (embarrassed's glosses name
+  shame outright). *terrified* → fear/Water at **high
+  degree** ('thrown into a state of intense fear'; no
+  Glasgow value — recorded). *joyful* → joy/Fire (the
+  state form). *hopeful* → hope/Wood and *optimistic* →
+  hope/Wood (the sealed set's own use predicates it as a
+  state: 'grateful and optimistic in one quick moment').
+  *jealous* → jealousy/Wood. *content* (the adjective) →
+  contentment/Earth, keyed to the emotion aspect as the
+  (concept, aspect) discipline keys 'cold'; the noun's
+  senses are not this entry.
+  **The worry-seat discipline (a located fragmentation,
+  recorded, not repaired here).** Two of the filings —
+  'anxious' and 'upset' — stand WITHOUT a canonical face,
+  deliberately. A face to 'worry' would route their
+  register reading through the EDU's canonical seat for
+  憂 (Metal) ahead of the table — against the owner's
+  layered determination, which seats the worry register at
+  Earth. The worry faces the owner's determination itself
+  covers (worry/worried/anxiety) read their filing from
+  that layer in the register walk; 'anxious' and 'upset'
+  register under their own names at Earth until that layer
+  is extended, which is its owner's to do. The uptake
+  behaviour is otherwise identical (the stance and the
+  threshold read the register's filing, not its name); what
+  fragments is the register NAME in the trace ('anxious',
+  'upset' — not 'worry') and any future counting by
+  register.
+  **P-027, before and after.** Before: "I am disappointed."
+  drew "Ok." — no register stood, no uptake was owed, and
+  the specimen's commiseration shape was pinned as this
+  pass's located remainder. After: the feeling registers
+  through the table (grief, Metal); the trace prices it
+  grief / plain degree / weight 2 — the plain first-telling
+  weight, clearing the stated threshold (2) on its own
+  numbers, no threshold tuned — and the reply is the
+  move's whole acknowledgement at grief's pace: "I am
+  sorry. You are disappointed." Over the specimen's own
+  telling ("My weekend was ruined. I am disappointed.")
+  the event is receipted and the feeling met: "Ok. I am
+  sorry. You are disappointed." The uptake test's remainder
+  pin is re-pinned to the filed behaviour, its reason in
+  place.
+  **Two machinery notes.** (i) The anchor audit gained two
+  named collided anchors: 'anxious' and 'apprehension' are
+  cue anchors whose every cue-selected synset was pinned
+  first by a named rival (the anxiety synset is 'nervous''s
+  pin; apprehension's fear synset is 'dread''s) — the
+  report already named collisions as inspectable; the
+  anchor test's invariant now admits the state only when
+  the shortfall is fully explained by the named collisions.
+  No climb behaviour changed: the pins were the rivals'
+  before these entries existed. (ii) 'proud' meets the
+  standing stance remainder — the move's stance is 'sorry'
+  for every register but joy — so a pride telling is met
+  "I am very sorry. You are proud." (its degree is high by
+  the Glasgow evidence, arousal 6.09, read by the degree
+  machinery's standing rule). The filing makes pride
+  reachable; the stance selection is the move family's
+  recorded remainder, not this pass's to tune.
+  **Not filed, with evidence (the sweep's negative
+  results).** 'irked' (P-012's object-experiencer use, "it
+  really irked me"): its category is not in doubt —
+  irritation, anger at low degree — but NO filing was
+  entered, because the word cannot reach the filing
+  machinery: the verb stands outside the parse's verb
+  inventory (every carrier shape sinks at the parse exit)
+  and its surface mis-resolves at the token layer ('irked'
+  → 'red'). A table entry would be inert data claiming a
+  filing the system cannot use; the word waits on the verb
+  inventory, not on a category judgement. The stances and
+  traits (anticipating, confident, prepared, faithful,
+  trusting, shy) file nothing — no register claims them.
+  'alone' is a circumstance (P-113's own testimony: "i am
+  alone but i'm not lonely" — loneliness carries the
+  feeling). 'bad' (P-010 "I felt really bad") is unspecific
+  negative, borrowing its register from context; no
+  category claims it. 'hurt' in the material is a verb
+  done to a third party; 'hate' a verb of attitude toward
+  an object; neither is a predicated state. 'empty',
+  'trapped', 'lost', 'down' appear in idiom or event uses
+  only. The stimulus-side adjectives (scary, stressful,
+  terrible) name the occasion, not the feeler's state —
+  the state forms are the filings' business. 'pleasure'
+  appears in the formula "business or pleasure??" — the
+  social layer's, though it climbs to joy in isolation.
+  'tired' already stands filed as a body state (Earth) —
+  not an emotion filing, untouched. Two grouped residues
+  are extraction artefacts, listed as groups, no filing
+  sought: frame-pattern false positives (function words
+  and fragments the feeling-frame pattern caught) and
+  norm evaluatives (amazing, awesome, beautiful, good,
+  great, nice, wonderful and their kin — appraisals of
+  things, not predicated states). 'desire' stands where
+  the owner's ruling put it: the six desires stay in the
+  SenseUnit. 'love' stands exactly as it stood — **no
+  filing, its standing reported, not changed** (23 probes
+  use it; the attested table does not carry it).
+  **'guilty' stands unchanged** — the uncategorised
+  register, element-less, the owner's to fit; its
+  candidacies (grief, shame) stand as §2's earlier record
+  states them.
+  **Withheld — the owner's questions (unencoded, listed
+  verbatim for the owner's word).**
+  (1) *disgusted / disgust* (P-027's own Empathetic-
+  Dialogues label): no seat among the seven claims it.
+  For standing outside the scheme: disgust's core is
+  revulsion at contamination, a rejection reflex the
+  七情 list does not name. For Earth: the spleen/stomach
+  idiom — revulsion is the stomach's rejection, and
+  pensiveness/worry's seat is the spleen — a creative
+  fitting, and weak. Withheld.
+  (2) *grateful / gratitude* (P-015 predicates it):
+  for joy/Fire — the pride precedent (a warm social
+  feeling filed under its head at Fire) and its gloss, 'a
+  feeling of thankfulness and appreciation'. Against: it
+  is a directed, moral-social feeling — thankfulness
+  TOWARD a benefactor — of a kind the seven do not
+  obviously house. Withheld.
+  (3) *nostalgic / nostalgia*: a MIX by the owner's own
+  doctrine, and mixes are named by cycle relation, not
+  averaged — grief/Metal for the loss leg ('unhappy about
+  being away and longing for familiar things') and
+  pensiveness/Earth for the longing-thought leg. No mix
+  machinery exists; filing either leg alone would misname
+  it. Withheld. **ANSWERED (2026-11-19): the owner ruled
+  the mix — nostalgia is a mix of pensiveness, sadness and
+  joy — and commissioned the machinery ("do mix
+  machinery"). Both provenances stand: this question's
+  two-leg reading, from the word's gloss (grief/Metal +
+  pensiveness/Earth), and the owner's three-component
+  ruling, which adds the joy/Fire leg the gloss reading
+  did not carry. The entry stands filed in the emotion-mix
+  table; the mix programme's entry below records it.**
+  (4) *sentimental*: grief/Metal candidacy (tenderness
+  toward what is past) against pensiveness/Earth
+  (dwelling in feeling-thought); its uses in the material
+  are too thin to price the legs. Withheld. **ANSWERED
+  (2026-11-19): the owner ruled sentimental a mix of ALL
+  FIVE elements — the five seated registers standing at
+  once — superseding both single-leg candidacies above,
+  which stand here as the question's provenance. The entry
+  stands filed in the emotion-mix table; the mix
+  programme's entry below records it.**
+  (5) *surprised / surprise* (P-108 predicates it): the
+  fright candidacy — 驚 is recognised in the seven but
+  UNSEATED under the owner's layered mapping, and
+  surprise's gloss ('the astonishment you feel when
+  something totally unexpected happens') is fright's
+  shape. Against: English surprise is valence-free (a
+  pleasant surprise is not startle), and filing an
+  unseated register's English face is a determination
+  about fright itself. Withheld — this question is
+  fright's standing, asked through its commonest word.
+  (6) *impressed*: for joy/Fire via admiration ('a
+  feeling of delighted approval and liking'); against —
+  it is an evaluative stance toward another's work, not
+  a state the seven name. Withheld.
+  (7) *desperate*: for grief via despair (its gloss:
+  'arising from or marked by despair or loss of hope';
+  P-015's state-list use); against — its dominant use is
+  urgency ('desperate for…', a desperate situation), and
+  the despair filing would be carried by a minority
+  sense. Withheld.
+  (8) *caring*: love's everyday face in the material. The
+  question is not caring's category but love's standing:
+  whether the head's unfiled standing extends to its
+  faces. Withheld with its head.
+  (9) *Sentence-initial capitals and attestation* (§6's
+  audit): 'Oulong' (P-080) is absent from the wordfreq
+  table in both spellings ('oulong' too) and stands
+  capitalised sentence-initially, where the proper-name
+  pass deliberately does not reach — its specimen is
+  'Wethr', a sentence-initial misspelling correctly
+  doubted. Run 6 doubted 'Oulong' ("Did you mean long, or
+  ruling?") and the parse then read 'long' into the
+  telling. Extending the pass to sentence-initial
+  capitals attests Oulong and every sentence-initial
+  misspelling alike; holding it keeps the Wethr
+  discipline and doubts the Oulongs. The pass's boundary
+  is the owner's to move. Withheld.
+  (10) *Regular derivations and attestation* (§6's
+  audit): 'fascinatingly' is absent as a whole while its
+  stem attests at 4.13. A suffix rule (a regular -ly
+  derivation attests by its stem) is a form-class rule of
+  the hyphen pass's family; against it, the same corpus
+  carries derivations misspelt ('stupidiest'), and the
+  rule attests both shapes alike. Withheld.
+
+- **The emotion-mix programme — a mix becomes a filing form
+  (2026-11-19, the owner's commission: "do mix machinery").**
+  The owner's doctrine, standing since the bittersweet
+  discussion: an emotion can be a MIX of elements, as a
+  material is; a mix is filed by its COMPONENTS and their
+  CYCLE RELATIONS — never averaged, never collapsed to a
+  single element or register. Register and degree remain
+  separate axes; a mix carries its own degree evidence. The
+  layered scheme stands over the form: the components are
+  named in the 七情 recognition space and seated by the 五志
+  correspondence.
+  **MIX-1 · The filing form.** The entries live in a table
+  of their own, `src/fork/emotion-mix.ts`, beside the
+  classification table: an entry names its word(s), its
+  components as (register, element) pairs, and its
+  provenance, in the vocabulary pass's manner. A mix word
+  stands in NO classification entry — an entry asserts one
+  element, and entering a mix word there would collapse it
+  at the data layer. The components' cycle relations are
+  DERIVED from the elements by the existing cycle machinery
+  (GENERATES/CONTROLS, sentence.ts), never stored as
+  assertions. The LEDU reading for a mix word (ledu.ts,
+  served by the assessment behind the seated reading)
+  serves the mix as such: the word as said (retention), its
+  components, and their relations, the mix form named in
+  the source line; the reading asserts no element, so a mix
+  contributes nothing to the composition roll-up — a mix is
+  not a predominance claim over an object.
+  **The two entries (owner determinations, 2026-11-19).**
+  *nostalgia / nostalgic*: pensiveness (Earth) + grief
+  (Metal) + joy (Fire). The owner named the components
+  "pensiveness, sadness, joy": sadness stands in the entry
+  as the GRIEF component — sadness is grief's canonical
+  face (the classification table files 'sad' under grief),
+  so the component is the register and the owner's word is
+  its face; both provenances are named in the entry's note.
+  Derived structure: a generating chain Fire→Earth→Metal,
+  with Fire also controlling Metal. *sentimental*: ALL
+  FIVE elements — the five seated registers standing at
+  once (anger Wood, joy Fire, pensiveness Earth, grief
+  Metal, fear Water); both cycles run fully among its
+  components. Worry is not a sixth component: it shares
+  pensiveness' Earth seat, and the ruling counts elements.
+  Fright is no component of any mix under this form: it is
+  unseated, and a mix of elements has no seatless
+  component. The two entries answer withheld questions (3)
+  and (4) above, which are marked answered with both
+  provenances.
+  **MIX-2 · The register walk reads mixes** (uptake.ts's
+  registerOf/degreeOf, and the E1 registration path in
+  turn.ts's fileFeelingWord). A mix word registers as a MIX
+  register (key `mix:<name>`); E1 registration records the
+  state with the mix's name as its concept, no element, and
+  the stated origin. The determinations:
+  (i) DEGREE — the mix's own: Glasgow arousal read on the
+  word itself at the family's standing thresholds, cited as
+  provenance; a mix has no single register to borrow a
+  degree from, and no component's degree or arousal is
+  read. Both ruled words price PLAIN: 'nostalgic' carries
+  no Glasgow value (the unmarked degree, said so in the
+  evidence), 'sentimental' arousal 5.588.
+  (ii) WEIGHT — the stated-ground spine, unchanged: degree
+  (high 3 / plain 2 / low 1) + returning 1 + riding event
+  1, threshold 2. The visitor DID state a feeling, in their
+  own word; the mix form is named in the derivation. A
+  mix's return is read on the MIX's own timeline (its
+  register key), never on a component's: a component's
+  standings add no weight — they feed the stance alone.
+  Specimens: "I am nostalgic." — weight 2, fires. Restated
+  after other conversation — returning, weight 3, met
+  again (a new episode).
+  (iii) STANCE — the determination: the stance follows the
+  ONE component register the visitor's own record
+  foregrounds — a component feeling of theirs standing
+  (unnegated) in the record at the telling — and where no
+  component is foregrounded, or more than one is, NO stance
+  sentence is generated: the predication of the word as
+  told is the whole acknowledgement head (the neutral
+  acknowledgement). Choosing either filed stance
+  unconditionally would collapse every telling of the mix
+  to that one component; the foregrounded-component rule
+  reads the stance off the visitor's own telling instead.
+  Foregrounding reads REGISTERS, not elements: worry
+  standing does not foreground the pensiveness component
+  (they share the Earth seat but are two recognition
+  registers), and a negated component state foregrounds
+  nothing (the absence family owns negations). Specimens:
+  sadness told, then "I am nostalgic." → "I am sorry. You
+  are nostalgic." (grief foregrounded); joy standing, then
+  nostalgia → "I am glad. You are nostalgic."; nothing
+  standing → "You are nostalgic." alone. Through the front
+  door the two-components-standing case is rare by the
+  ledger's own grain — the value supersession keeps one
+  emotion-aspect value standing — and the rule for it is
+  pinned at ground level in the programme's tests.
+  (iv) PREDICATION — the mix WORD as told is predicated
+  ("You are nostalgic."), as for any stated feeling; no
+  component is ever predicated of the visitor (they did
+  not state one). The trace carries the mix's name and
+  components on firing and on stand-down — the record's
+  proof the mix was never collapsed.
+  **MIX-3 · Presentation to future consumers**
+  (determinations only; no Advice build stands in this
+  programme). (a) THE ADVICE ANALYSIS (the Advice Unit
+  design — workspace record ansci-advice-unit-design.md —
+  is the consumer-to-be): what this programme's readings
+  serve it is the mix GROUND — the component list as
+  (register, element) pairs, the pairwise relations
+  derived among them, and the foregrounded component where
+  the record shows one. The analysis's counteraction reads
+  PER COMPONENT: each seated component has a cycle
+  position, and the 情志相勝 walk runs from each
+  component's element; a mix as a whole has no element, so
+  there is no single counteraction for it, and the mix is
+  never an advice instrument as a whole. The serving also
+  names the relations INSIDE the mix — a component can
+  already counteract another within the visitor's own
+  feeling (nostalgia: joy/Fire controls grief/Metal) —
+  which is the analysis's natural first read alongside the
+  foregrounded component. (b) THE DISCOURSE RECORD
+  READER's movement servings, determined from the ledger's
+  actual grain (and verified at reply level in the
+  programme's tests): a mix register behaves as ONE
+  register for return and timeline purposes — the reader
+  serves it through the state timeline under its own
+  register key, standing and polarity-superseded links
+  alike — and as NO element for supersession purposes. The
+  value rule can never fire for or against a mix state:
+  registration passes it no classification aspect (a mix
+  filing has none) and it carries no element, and a seated
+  replacer reads the standing state's aspect from the
+  classification table, where a mix word stands in no
+  entry. Only the polarity rule reaches a mix state: the
+  same word restated negated supersedes it. So a seated
+  feeling stated after a mix does not supersede the mix,
+  and a mix stated after a seated feeling does not
+  supersede it — the mix register stands BESIDE the seated
+  registers in the ledger, not in their slot; movement
+  chains (built from the supersession deltas) contain a
+  mix only at a polarity link.
+  **Bittersweet stands untouched.** Its two readings —
+  Wood controls the sweet (Earth), and bitter = Fire
+  generating the sweet on the flavour axis — stand
+  unreconciled in this record (the E programme's entry
+  above carries both), neither is a ruled filing, and no
+  mix entry encodes it: it remains the standing example
+  awaiting the owner's reconciliation.
+  The mix form now exists for the day the owner rules it.
+  **Gates.** MIX-1: suite 1095 pass / 0 fail / 3 skipped
+  (baseline 1090/0/3 + the five new tests), demo 29/29,
+  holdout clean, sense A 11/11 · B 5/6, ai:check OK.
+  MIX-2 and final: suite 1106 pass / 0 fail / 3 skipped
+  (the MIX-2 code tip; MIX-3 changes no code), demo 29/29, holdout
+  clean, sense A 11/11 · B 5/6, ai:check OK. No re-pins
+  beyond the vocabulary pass's two withheld pins for the
+  answered words (reasoned in place in its test file): no
+  existing behaviour moved — the negative control
+  ("I am sad.") is byte-identical, and every new leg stands
+  only where no authority filed before, so the full suite
+  is itself the regression check.
 
 ## 3. Classification coverage (measured 2026-11-18)
 
@@ -2690,6 +3316,56 @@ visible in the record.
   punctuation: the turn is now taken up whole, and P-030's
   conversation stands recovered end to end (with S0's
   receipt soundness on its final turn).
+  *The margin audited (the vocabulary pass, 2026-11-19).*
+  Every word type the two sealed sets use (1,099 types:
+  the conversation set's visitor turns and the v2 holdout's
+  items) was tested against the attestation union and the
+  turn layer's form passes. In the narrow band of the line
+  (Zipf 2.7–3.3) stand 33 types: 21 at or above 3.0,
+  attested by Determination 1 as drawn; 12 below it.
+  Failing the union entirely: 36 types, of which the
+  passes cover 21 — 15 digit strings (Determination 2),
+  the hyphen compounds 'ex-girlfriend' and 'part-time'
+  (IMP-1's compound pass; their parts stand at 4.81/4.68
+  and 5.78/6.29), and 4 mid-sentence capitals (the C4
+  proper-name pass: 'Darlene', 'Goblet' in its title,
+  'Kalina', 'Ravenclaw'). Of the 15 types no pass covers,
+  6 are the corpus's own misspellings ('cimbing',
+  'girlfirned', 'stupidiest', 'wallmart', 'jst', 'reall')
+  — the doubt working as designed — and the
+  correctly-spelled remainder ('barbeque' 2.70,
+  'calisthenics' 2.38, 'condiment' 2.70, 'corkscrew' 2.71,
+  'geyser' 2.80, 'irked' 2.75, 'overheated' 2.89,
+  'squeezes' 2.79, 'talker' 2.96, 'teases' 2.84,
+  'typewriters' 2.71) drew **no** spurious clarification
+  in run 6: the resolver settled each inside the parse,
+  attestation being the trigger's last source, not its
+  only one. ('irked' sank at the parse exit, not the token
+  exit — its verb stands outside the parse's verb
+  inventory; §2's vocabulary entry records it.)
+  *Determination: the line stands as drawn at 3.0.*
+  Lowering it toward 2.7 would attest eleven words that
+  caused no failure, and the set's own error-shaped forms
+  stand immediately beneath any lowered line ('jst' 2.44,
+  'reall' 2.08, 'qwerty' 2.5). Two classes are recorded
+  without a rule. *The possessive class:* 'neighbour's'
+  (H-072) fails the union while its stem attests — a
+  regular form, and the hyphen pass's inflection strips
+  are its sibling shape — but its one sealed occurrence
+  drew no clarification (it was confidently corrected to
+  the plural inside the parse: the resolver-step residue
+  Determination 1 already names as a further
+  determination), and every pass in that exit answers a
+  named failure; this one has none yet. The rule's shape
+  is recorded here — a token ending in 's whose stem
+  attests is attested by its stem — for the day a specimen
+  fails on it. *The derivation class:* 'fascinatingly'
+  (absent as a whole; its stem 'fascinating' stands at
+  4.13) drew no doubt in run 6 either; it stands as an
+  owner question in §2's vocabulary entry, beside the
+  sentence-initial capitals, because the same corpus
+  carries derivations misspelt ('stupidiest'), and a
+  suffix rule attests both shapes alike.
 
 ## 7. Evidence and evaluation
 
@@ -2843,6 +3519,78 @@ visible in the record.
   determinations pass is commissioned on a vocabulary
   decision, the determinations are entered, and a further
   re-authored set scores these items.
+  *Second determinations pass — the vocabulary pass
+  (2026-11-19, the owner's "1a" commission; determinations
+  entered as Part J of the repair programme; builds verified
+  against the items' own sentences in
+  test/fork-vocab-pass.test.ts — the items carry no expected
+  graphs, so verification is the determined atom's presence
+  on the item's text with its negative controls, not a
+  score).* **Unblocked (7):** H-014 — the `contains` edge
+  the parse already produced now atomises as a link (J.2),
+  the G.5-pattern fix; H-059 — a turn-initial "No," before a
+  tensed clause atomises as `discourse: act = correction`
+  (J.1; generation does not yet carry the opener, so the
+  atom's G1 preservation is a named remainder); H-060,
+  H-068 — `discourse: act = topic-proposal`, the act the
+  parse has recorded since D2, now atomised (J.1); H-061 —
+  `discourse: act = reason-query` (J.1); H-020 — the ordinal
+  atomises as the predicate's `ordering` attachment (J.3);
+  H-021 — `chains-to` extended to the English ordering
+  words: `tent|chains-to|campfire = before` (J.3, the named
+  first candidate, landed). **Determination entered, item
+  still blocked (1):** H-002 — the causal adjunct's atom is
+  determined (J.4: `attachment: <cause>|cause =
+  <predicate>`), but the parse never produces the main
+  clause for its sentence ('moved' and 'picnic' become no
+  nodes at all; the graph holds 'rain' as root, 'we',
+  'indoors'); it waits on the English parse taking up a
+  clause with a causal adjunct. **Still blocked, their
+  waits made precise (13):** H-018 — the chains-to family's
+  remaining member: its order is between clauses, and the
+  English parse demotes 'cooked' to a `result` edge of
+  'set', 'dinner' to its patient; waits on English
+  multi-clause chaining in the parse (the zh chains-to path
+  is the existing pattern; J.3). H-025 — the parse takes
+  'people' as predicate and 'react' as patient; waits on
+  verb coverage for 'react' and when-clause subordination.
+  H-032 — its outcome content already atomises (`brown |
+  result = go`, verified); the resulting-state predication
+  waits on the parse retaining a category for result
+  complements (the node records for 'brown' and the
+  particle 'up' are identical in shape). H-033 — 'day'
+  never becomes a node; waits on the copular-NP path over
+  ordinal + of-PP descriptions. H-053 — both nouns dropped
+  by the parse (passive 'relate', suppressed agent); H-066
+  — 'rain' misread as predicate, 'related' as its result;
+  both wait on coordinated-subject formation in questions.
+  H-057 — 'make' misread as active with the bicycle as
+  agent, the stranded 'of' lost; waits on the 'be made of'
+  construction, and behind it on bicycle material data,
+  which no determination here supplies. H-072 — the asked
+  entity never becomes a node; the possessive 's is
+  silently corrected to a plural inside the parse
+  ('neighbour's' → 'neighbours' in its token record);
+  waits on possessive-NP formation. H-075 — partitive,
+  existential and quantity-question shapes none formed;
+  waits on all three. H-076 — the parse roots the
+  description at 'stock', losing 'price', 'Apple' and
+  'right now'; waits on NP-head determination in copular
+  questions. H-077 — partially atomised (the atoms that
+  stand: `president | qualifies = current`, `president |
+  modifier | chess`, `president | predicated-as | who`);
+  'club' and 'in my town' never become nodes; waits on
+  compound-NP formation and trailing-PP attachment. H-078 —
+  'will' taken as the predicate root; waits on modal-copula
+  question formation. H-079 — no determination entered, by
+  design: F.4's declared ontology failure stands, and
+  entering a determination for 'exact' would be the
+  owner-level decision the item waits on (J.5). *What this
+  item still waits on:* the third leg of its closes-when —
+  a further re-authored set scoring these items (a
+  custodian step, beyond this pass) — and, for the 14 items
+  above whose determinations are entered or whose waits are
+  named, the parse mechanisms each names.
 - **Sealed-run divergences — adjudicated (§5 holds the
   detail).** Of the run's 99 non-preserved atoms, adjudication
   found 93 to be parser defects in eight mechanisms, 4 author
@@ -3168,10 +3916,17 @@ AnSci — GAPS
 │          sealed and scored once on the merged tree — G0 74.6%
 │          pooled over 52 items; the 20 v1 items at 99.6% again,
 │          H-058's cold atom their only divergence)
-│   ├─ [ ] Second determinations pass for the 21 vocabulary-blocked
+│   ├─ [x] Second determinations pass for the 21 vocabulary-blocked
 │          items (discourse acts · opposition · event ordering ·
 │          manner · containment · cause; chains-to extension the
-│          named first candidate)
+│          named first candidate) — DONE 2026-11-19, the vocabulary
+│          pass: determinations entered as repair-programme Part J;
+│          7 items unblocked (H-014, H-059, H-060, H-061, H-068,
+│          H-020, H-021), H-002's determination entered with the
+│          item still blocked on the parse, 13 still blocked with
+│          their waits made precise (§7's item, in place). The
+│          closes-when's third leg — a further re-authored set
+│          scoring these items — remains a custodian step.
 │   ├─ [ ] WP2's independent-human benchmark (the full WP2 claim;
 │          human-shaped, cannot be supplied inside this loop)
 │   ├─ [ ] Get judgment from outside this loop (evaluator-shaped evidence;

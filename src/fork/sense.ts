@@ -25,6 +25,14 @@
  *    against it. There is no negative term in the scorer.
  *  - Choice: the live candidate with the most support; ties keep the
  *    baseline. An overturn is recorded as a SenseDecision.
+ *  - Lesk tie-break (added 2026-11-19, lesk.ts): a tie at the top
+ *    is the one place this arithmetic itself declares an absence
+ *    of evidence (the rival-split shape, R3). There, and only
+ *    there, the Lesk ranking of the tied elements' candidate
+ *    senses — gloss overlap with the sentence, adapted form, plus
+ *    the frequency prior — may supply the deciding evidence. A
+ *    Lesk tie changes nothing. Coherence remains the decider
+ *    wherever its support differs at all.
  *
  * Idempotent: context and baseline are computed from the table and
  * the cached baseline climb, never from a previously chosen element,
@@ -42,6 +50,7 @@
 import { GENERATES, CONTROLS, type Element, type ParsedSentence } from "./sentence";
 import { lookupClassification } from "./classify";
 import { climbCandidates, climbClassification } from "./wordnet-lex";
+import { leskCandidateScores } from "./lesk";
 
 export const CONFIDENCE_BAND = 0.25;
 export const SUPPORT_SAME = 1.0;
@@ -57,6 +66,14 @@ export interface SenseDecision {
   support: Partial<Record<Element, number>>;
   /** The distinct context elements that voted. */
   context: Element[];
+  /** Lesk totals per live element (the best live candidate's
+   *  total for that element), present only when the Lesk
+   *  tie-break was consulted — i.e. when coherence support tied
+   *  at the top between live elements. */
+  lesk?: Partial<Record<Element, number>>;
+  /** True when the Lesk tie-break supplied the deciding
+   *  evidence (a tie coherence itself could not separate). */
+  leskTieBreak?: boolean;
 }
 
 /** An element's relation to a candidate element, for support. */
@@ -124,10 +141,11 @@ function analyseSenseNode(node: ParsedSentence["meaning"]["nodes"][number], node
 export function applySenseSelection(parsed: ParsedSentence): SenseDecision[] {
   const decisions: SenseDecision[] = [];
   const nodes = parsed.meaning.nodes;
+  const round4 = (x: number): number => Math.round(x * 10000) / 10000;
   for (const node of nodes) {
     const analysis = analyseSenseNode(node, nodes);
     if (!analysis) continue;
-    const { baseline, liveElements, context, support } = analysis;
+    const { baseline, live, liveElements, context, support } = analysis;
     let chosen = baseline;
     let bestSupport = support[baseline] ?? 0;
     for (const el of liveElements) {
@@ -136,9 +154,76 @@ export function applySenseSelection(parsed: ParsedSentence): SenseDecision[] {
         bestSupport = support[el] ?? 0;
       }
     }
+    /* Lesk tie-break (lesk.ts): when coherence support TIES at
+     * the top between two or more live elements, the coherence
+     * pass has declared — by its own arithmetic — that it has no
+     * evidence to separate them, and the choice above stands only
+     * by the tie-keep convention. That, and only that, is where
+     * Lesk enters: each tied element is scored by the best Lesk
+     * total among its live candidates (gloss overlap with the
+     * sentence, adapted form, plus the frequency prior). A unique
+     * Lesk maximum among the tied elements decides; a Lesk tie
+     * (or no readable candidate address) leaves the convention
+     * exactly as it was. Coherence support that differs at all
+     * remains decisive and Lesk is never consulted. */
+    let lesk: Partial<Record<Element, number>> | undefined;
+    let leskTieBreak = false;
+    const top = Math.max(...liveElements.map((el) => round4(support[el] ?? 0)));
+    const tied = liveElements.filter((el) => round4(support[el] ?? 0) === top);
+    if (tied.length >= 2) {
+      const scores = leskCandidateScores(
+        node.lemma,
+        live,
+        parsed.connective.tokens,
+        nodes.filter((n) => n.id !== node.id).map((n) => n.lemma),
+      );
+      lesk = {};
+      live.forEach((candidate, i) => {
+        const s = scores[i];
+        if (!s) return;
+        // Eligibility: a candidate may speak for its element only
+        // if it carries actual OVERLAP evidence (sentence or
+        // context-gloss). A prior-only score is the frequency
+        // ranking restated — letting it break a tie would let the
+        // isolated prior overturn the baseline in sentences with
+        // no evidence at all (the "She found rest." brake case),
+        // which is precisely what the band-and-brake design
+        // forbids context machinery to do.
+        if (s.sentenceScore + s.contextScore <= 0) return;
+        const el = candidate.element;
+        lesk![el] = Math.max(lesk![el] ?? -Infinity, round4(s.total));
+      });
+      let bestEl: Element | undefined;
+      let bestScore = -Infinity;
+      let unique = false;
+      for (const el of tied) {
+        const v = lesk[el];
+        if (v === undefined) continue;
+        if (v > bestScore) {
+          bestScore = v;
+          bestEl = el;
+          unique = true;
+        } else if (v === bestScore) {
+          unique = false;
+        }
+      }
+      if (bestEl !== undefined && unique && bestEl !== chosen) {
+        chosen = bestEl;
+        leskTieBreak = true;
+      }
+    }
     const overturned = chosen !== baseline;
     if (overturned) node.semanticElement = chosen;
-    decisions.push({ lemma: node.lemma, baseline, chosen, overturned, support, context });
+    decisions.push({
+      lemma: node.lemma,
+      baseline,
+      chosen,
+      overturned,
+      support,
+      context,
+      ...(lesk ? { lesk } : {}),
+      ...(leskTieBreak ? { leskTieBreak } : {}),
+    });
   }
   return decisions;
 }
