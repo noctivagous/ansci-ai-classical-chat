@@ -93,3 +93,56 @@ Outside the square:
   with slack against the centre is a placement error.
 - The registry and layout data do not change; this record governs the
   drawn page's geometry (frame positions and sizes) only.
+
+## Built (2026-11-20)
+
+Implemented on the root page (`demo/dashboard/root/index.html`),
+branch `track/luoshu-layout`, based on the fork→ansci rename
+(`b9720ab`). Placement only: every frame kept its drawn size; only
+positions changed, plus the scaffold drawing itself.
+
+Measurements (declared frame sizes as the natural sizes):
+
+| Region | Natural size | Palace |
+|---|---|---|
+| intake | 1186×196 | 4 |
+| surfaces + verbalizer (stacked) | 760×327 | 9 |
+| awareness | 378×909 | 2 |
+| lpu | 1226×902 | 3 |
+| knowledge + ontology-core (stacked) | 1186×985 | 5 |
+| coherence | 378×263 | 7 |
+| functions + error-failure (stacked) | 1186×520 | 8 |
+| session-and-situation | 378×388 | 1 |
+| reasoning | 1186×227 | 6 |
+
+Columns (widest region + 40 padding): 1266 · 1226 · 1226.
+Rows (tallest region + 40 padding): 949 · 1025 · 560.
+The scaffold square is 3718×2534 at (222,166) inside the System frame
+(3782×2784 at (190,90)); the world is 4240×2938. Each cell
+carries its Luoshu number in its outer corner. The centre stacks
+Knowledge above the OntologyCore, so the correspondence graph lands
+nearest the square's centre point. Externals: Person and the reply
+surface outside the System frame's left and right edges at the IN/OUT
+port height; Clock and the Configuration register keep their places
+astride/above the frame's top edge; Unplaced sits in the margin strip
+below the square, inside the frame.
+
+Magnet audit (drawn): every ring region's centre-facing edge or
+corner sits at cell padding (20) from the grid line; all remaining
+slack is on the outer sides — palace 4 slack above/left, palace 9
+above, palace 2 right, palace 7 right, palace 8 left, palace 1 below,
+palace 6 below/right. Edge palaces 3 and 7 are centred vertically in
+their row, palace 9's stack and palace 1 are centred horizontally in
+their column: their slack toward the centre point is zero in the
+magnet direction and split on the perpendicular axis.
+
+Mechanism adaptations (page internals, disclosed in the slice
+report): the world widened 3400→4240 (CSS, viewBox, and the two
+viewBox strings in `layoutContainers`); the snapshot world height
+1950→2938; `scopeForPoint`'s LPU bounds updated to the LPU frame's
+new drawn bounds (242…1468 × 1176…2078) — that rectangle is the LPU's
+own bbox by construction; the stop-popover clamps follow the world
+size (3380→4220, 1942→2930); the fit fallback rect and all RECTS /
+NODE_POS entries moved with their frames. The scaffold lines are
+paths in the wires layer, so the runtime's vertex shifting stretches
+them in step with the frames they bound.
