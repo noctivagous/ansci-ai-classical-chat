@@ -31,10 +31,16 @@ correspondences, whose first deposit is Suwen ch. 4's number row
 ingested store (`src/fork/ingested.ts`,
 `INGESTED_ASSERTIONS_CH4_NUMBERS`) — and, since 2026-11-17, an active
 unit of its own living over that slice: the **QuantificationUnit**
-(`ontology-core/ontology-knowledge-unit/quantification-unit`, 45%),
-the slice's specialist reader, with the **UnitsMeasurement Unit**
+(45%), the slice's specialist reader, with the **UnitsMeasurement Unit**
 (50%) nested inside it. Language reaches them through the LPU's
-QuantificationLanguageUnit. The QuantificationUnit keeps no private
+QuantificationLanguageUnit. Since 2026-11-19 the QuantificationUnit
+stands one level down, inside **Mathematics**
+(`ontology-core/ontology-knowledge-unit/mathematics`) — the larger
+unit the owner ruled (2026-11-18) to hold the Quantification Unit and
+the **Geometry Unit** together, the two to work with each other; the
+Geometry Unit stands there as a placeholder seat, its contents not
+yet stated. The QuantificationUnit's address is now
+`ontology-core/ontology-knowledge-unit/mathematics/quantification-unit`. The QuantificationUnit keeps no private
 number lore: the filed numbers live here, in the OKU; the unit holds
 the machinery (the ledger operations, the implied counts, the
 Luoshu).

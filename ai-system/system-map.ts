@@ -622,30 +622,56 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "The classification table: (concept, aspect) assertions with provenance and confidence. 164 entries; coverage is the constraint."
     },
     {
-      "id": "ontology-core/ontology-knowledge-unit/quantification-unit",
-      "title": "QuantificationUnit",
+      "id": "ontology-core/ontology-knowledge-unit/mathematics",
+      "title": "Mathematics",
       "type": "Unit",
       "parent": "ontology-core/ontology-knowledge-unit",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "ontology-core/ontology-knowledge-unit/mathematics",
+      "file": null,
+      "external": false,
+      "currentCode": null,
+      "summary": "Mathematics: the larger unit inside the Ontology Knowledge Unit that holds the Quantification Unit and the Geometry Unit, which will work with each other (owner's direction, 2026-11-18, in the ProblemSolving design §9; placement ruled the same day and built 2026-11-19). The QuantificationUnit moved one level down under Mathematics, staying inside the OKU over its Numbers slice; the Geometry Unit stands here as a placeholder seat, its contents not yet stated. Mathematics is a container, not a solver: ProblemSolving's MathPS section delegates its solving to the units standing here and keeps no math machinery of its own. Placement only — no code of its own, and no Geometry need kind is registered until the Geometry Unit is built."
+    },
+    {
+      "id": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit",
+      "title": "QuantificationUnit",
+      "type": "Unit",
+      "parent": "ontology-core/ontology-knowledge-unit/mathematics",
       "state": "partial",
       "percent": 45,
-      "path": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "path": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit",
       "file": null,
       "external": false,
       "currentCode": "src/fork/quantification.ts",
-      "summary": "The QuantificationUnit: the system's authority on quantity, living INSIDE the Ontology Knowledge Unit over its Numbers slice (owner's placement, 2026-11-17 — moved into the OKU, superseding an earlier System-level seat). It is the specialist reader of the OKU Numbers slice — Suwen ch. 4's number row (eight/Wood, seven/Fire, five/Earth, nine/Metal, six/Water), banked in the ingested store — and keeps no private number lore. Its three jobs: READ quantities stated and implied (between implies two); TRACK them in a ledger held on the Session (stated amounts, event deltas as transfers/gains, each a new record, the latest standing as current); COMPUTE from the tracked state (how-many answers, and inconsistency flags — a delta larger than the tracked amount is flagged, never silently applied). The Luoshu is built in as its working apparatus (the nine palaces, the 15 invariant, the flight path) — machinery in the unit, distinct from the OKU's filed numbers; the tension stands labelled (ch. 4 files Wood/east as 8; the Luoshu places 3 in the east palace, 8 in the north-east). Language reaches it through the LPU's QuantificationLanguageUnit. Placed and built 2026-11-17 at the owner's direction."
+      "summary": "The QuantificationUnit: the system's authority on quantity, living inside Mathematics in the Ontology Knowledge Unit over its Numbers slice (owner's placement, 2026-11-17 — moved into the OKU, superseding an earlier System-level seat; moved one level down under Mathematics 2026-11-19, per the owner's 2026-11-18 ruling). It is the specialist reader of the OKU Numbers slice — Suwen ch. 4's number row (eight/Wood, seven/Fire, five/Earth, nine/Metal, six/Water), banked in the ingested store — and keeps no private number lore. Its three jobs: READ quantities stated and implied (between implies two); TRACK them in a ledger held on the Session (stated amounts, event deltas as transfers/gains, each a new record, the latest standing as current); COMPUTE from the tracked state (how-many answers, and inconsistency flags — a delta larger than the tracked amount is flagged, never silently applied). The Luoshu is built in as its working apparatus (the nine palaces, the 15 invariant, the flight path) — machinery in the unit, distinct from the OKU's filed numbers; the tension stands labelled (ch. 4 files Wood/east as 8; the Luoshu places 3 in the east palace, 8 in the north-east). Language reaches it through the LPU's QuantificationLanguageUnit. Placed and built 2026-11-17 at the owner's direction."
     },
     {
-      "id": "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit",
+      "id": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit/units-measurement-unit",
       "title": "UnitsMeasurement Unit",
       "type": "Unit",
-      "parent": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "parent": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit",
       "state": "partial",
       "percent": 60,
-      "path": "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit",
+      "path": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit/units-measurement-unit",
       "file": null,
       "external": false,
       "currentCode": "src/fork/units-measurement.ts",
       "summary": "The UnitsMeasurement Unit: the QuantificationUnit's sub-unit for units of measurement (owner, 2026-11-17 — nested inside the QuantificationUnit). A quantity is a number OF something: this unit names the somethings — each unit's dimension (weight, length, volume, count, temperature) and its factor to the dimension's base unit, across three systems in one table: traditional Chinese （銖/兩/斤， 寸/尺/丈/里， 合/升/斗， and the counting measure words 個/隻/條/本/張/頭 — the units the banked classical quantities, bencao dosages above all, are stated in), Imperial (ounce/pound/stone, inch/foot/yard/mile, imperial pint/gallon), and SI (gram/kilogram, metre, litre). Conversion runs only within a dimension; across dimensions it refuses, typed. Temperature is a scale, not a factor: Fahrenheit/Celsius convert by offset and ratio, separately. Traditional factors are the MODERN STANDARDISED values （斤 = 500 g, 兩 = 50 g, 里 = 500 m, 尺 = 1/3 m, 升 = 1 L), labelled as such — historical values varied by dynasty and no dynasty table is banked. Placed and built 2026-11-17. Extended the same day with the QUDT port: every SI/Imperial factor cross-checked against the QUDT units vocabulary (CC BY 4.0; all shared units agreed), and QUDT-supplied coverage added under source 'qudt' — the US liquid variants distinguished from their Imperial namesakes (us-pint/us-gallon/us-quart/us-fluid-ounce, imperial quart and fluid ounce), plus two new dimensions: area (acre) and pressure (pascal, psi). The hand table remains the authority; traditional rows untouched."
+    },
+    {
+      "id": "ontology-core/ontology-knowledge-unit/mathematics/geometry-unit",
+      "title": "Geometry Unit",
+      "type": "Unit",
+      "parent": "ontology-core/ontology-knowledge-unit/mathematics",
+      "state": "placeholder",
+      "percent": 0,
+      "path": "ontology-core/ontology-knowledge-unit/mathematics/geometry-unit",
+      "file": null,
+      "external": false,
+      "currentCode": null,
+      "summary": "The Geometry Unit: ruled to stand inside Mathematics beside the Quantification Unit, the two to work with each other (owner's direction, 2026-11-18, ProblemSolving design §9; placeholder seat placed 2026-11-19). A placeholder seat only: the unit's contents have never been stated, nothing is designed and nothing is built. The one place quantity and geometry already meet is the UnitsMeasurement Unit's area dimension. Per the same ruling, a Geometry need kind is registered when this unit is built — not before — and until then geometry-shaped problems route nowhere and are not forced under quantification."
     },
     {
       "id": "ontology-core/ontology-knowledge-unit/paramorphic-concept-unit",
@@ -1343,7 +1369,7 @@ export const SYSTEM_MAP: SystemMap = {
     },
     {
       "from": "lpu/quantification-language-unit",
-      "to": "ontology-core/ontology-knowledge-unit/quantification-unit",
+      "to": "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit",
       "kind": "connection",
       "label": "uses"
     },

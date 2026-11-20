@@ -64,7 +64,7 @@ verb). Limits, recorded not hidden:
 ## Who uses it / who it uses
 
 - **Uses:** the QuantificationUnit
-  (`ontology-core/ontology-knowledge-unit/quantification-unit`)
+  (`ontology-core/ontology-knowledge-unit/mathematics/quantification-unit`)
   — the "uses" cord on the map; and, for unit words, its
   UnitsMeasurement Unit.
 - **Used by:** SemanticAssessment, which consults this unit at

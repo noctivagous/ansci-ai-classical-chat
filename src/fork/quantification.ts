@@ -1,10 +1,12 @@
 /**
  * quantification.ts — the QuantificationUnit: the system's
- * authority on quantity, living INSIDE the Ontology Knowledge
- * Unit (ai-system/ontology-core/ontology-knowledge-unit/
- * quantification-unit), over the OKU's Numbers slice
- * (owner's placement, 2026-11-17 — the unit moved into the
- * OKU, superseding an earlier System-level seat).
+ * authority on quantity, living inside Mathematics in the
+ * Ontology Knowledge Unit (ai-system/ontology-core/
+ * ontology-knowledge-unit/mathematics/quantification-unit),
+ * over the OKU's Numbers slice (owner's placement,
+ * 2026-11-17 — the unit moved into the OKU, superseding an
+ * earlier System-level seat; moved one level down under
+ * Mathematics 2026-11-19, per the owner's 2026-11-18 ruling).
  *
  * The pattern is the EDU/SenseUnit one: the unit is the
  * specialist reader of its OKU slice and keeps NO private

@@ -30,7 +30,11 @@ engine instead, and says so.
 
 Sync loop: the schematic is revised in its Muse artifact first
 (fast iteration), then the new revision replaces `root/index.html`,
-the site is rebuilt, and the change is pushed.
+the site is rebuilt, and the change is pushed. The page's registry
+copy is gated against `ai-system/system-map.ts` by
+`ai-system/check-page.mjs`: it runs as part of `npm run ai:check`,
+first in this package's build (a stale page fails the build), and as
+a warning in `npm run dev`.
 
 The deploy is pinned by `wrangler.jsonc`: its assets directory is
 `./dist`, so both the root page and the `/dashboard/` subtree are

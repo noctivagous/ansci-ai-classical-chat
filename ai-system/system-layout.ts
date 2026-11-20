@@ -262,11 +262,17 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "ontology-core/ontology-knowledge-unit/classification": {
       "order": 2
     },
-    "ontology-core/ontology-knowledge-unit/quantification-unit": {
+    "ontology-core/ontology-knowledge-unit/mathematics": {
       "order": 3
     },
-    "ontology-core/ontology-knowledge-unit/quantification-unit/units-measurement-unit": {
+    "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit": {
       "order": 1
+    },
+    "ontology-core/ontology-knowledge-unit/mathematics/quantification-unit/units-measurement-unit": {
+      "order": 1
+    },
+    "ontology-core/ontology-knowledge-unit/mathematics/geometry-unit": {
+      "order": 2
     },
     "ontology-core/ontology-knowledge-unit/paramorphic-concept-unit": {
       "order": 4

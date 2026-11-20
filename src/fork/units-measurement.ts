@@ -1,7 +1,7 @@
 /**
  * units-measurement.ts — the UnitsMeasurement Unit: the
  * QuantificationUnit's sub-unit for units of measurement
- * (ai-system/ontology-core/ontology-knowledge-unit/
+ * (ai-system/ontology-core/ontology-knowledge-unit/mathematics/
  * quantification-unit/units-measurement-unit; owner, 2026-11-17:
  * nested inside the QuantificationUnit).
  *
