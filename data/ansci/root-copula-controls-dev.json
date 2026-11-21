@@ -1,0 +1,96 @@
+{
+  "id": "ansci-root-copula-controls-dev-v1",
+  "purpose": "Mutable development controls for noun/verb root selection and English copular predicates. This set is not sealed, not held out, and must not be used to claim generalization.",
+  "cases": [
+    {
+      "id": "plan-verb-transitive",
+      "family": "noun-verb",
+      "sentence": "They plan the trip.",
+      "expectedRoot": "plan",
+      "requiredNodes": ["plan", "they", "trip"],
+      "requiredEdges": [["plan", "agent", "they"], ["plan", "patient", "trip"]],
+      "note": "Plan is the finite verb; trip is its object. Paired with plan-noun-intransitive."
+    },
+    {
+      "id": "plan-noun-subject",
+      "family": "noun-verb",
+      "sentence": "The plan changed overnight.",
+      "expectedRoot": "change",
+      "requiredNodes": ["plan", "change"],
+      "requiredEdges": [["change", "agent", "plan"]],
+      "note": "Plan is a subject noun, not the clause predicate."
+    },
+    {
+      "id": "coat-verb-transitive",
+      "family": "noun-verb",
+      "sentence": "They coat the pan.",
+      "expectedRoot": "coat",
+      "requiredNodes": ["coat", "they", "pan"],
+      "requiredEdges": [["coat", "agent", "they"], ["coat", "theme", "pan"]],
+      "note": "Coat is a finite verb with an object. Paired with coat-noun-copula."
+    },
+    {
+      "id": "coat-noun-copula",
+      "family": "noun-verb",
+      "sentence": "The coat is red.",
+      "expectedRoot": "red",
+      "requiredNodes": ["coat", "red"],
+      "requiredEdges": [["coat", "predicated-as", "red"]],
+      "note": "Coat is the nominal subject; red is the copular predicate."
+    },
+    {
+      "id": "copula-adjective-simple",
+      "family": "copular-predicate",
+      "sentence": "The room is quiet.",
+      "expectedRoot": "quiet",
+      "requiredNodes": ["room", "quiet"],
+      "requiredEdges": [["room", "predicated-as", "quiet"]],
+      "note": "Simple adjective predicate control."
+    },
+    {
+      "id": "copula-nominal-modifier-pp",
+      "family": "copular-predicate",
+      "sentence": "The book on the table is blue.",
+      "expectedRoot": "blue",
+      "requiredNodes": ["book", "table", "blue"],
+      "requiredEdges": [["book", "predicated-as", "blue"]],
+      "note": "Checks that the subject survives a nominal PP before the copula."
+    },
+    {
+      "id": "copula-pp-complement",
+      "family": "copular-predicate",
+      "sentence": "The man is with a telescope.",
+      "expectedRoot": "telescope",
+      "requiredNodes": ["man", "telescope"],
+      "requiredEdges": [["man", "location", "telescope"]],
+      "note": "Copular prepositional complement; retain the locative relation without inventing a verb object."
+    },
+    {
+      "id": "copula-ambiguous-participle",
+      "family": "copular-predicate",
+      "sentence": "The cabinet is missing.",
+      "expectedRoot": "missing",
+      "requiredNodes": ["cabinet", "missing"],
+      "requiredEdges": [["cabinet", "predicate", "missing"]],
+      "note": "Distinguishes adjectival missing from the lexical verb miss."
+    },
+    {
+      "id": "copula-ambiguous-participle-with-pp",
+      "family": "copular-predicate",
+      "sentence": "The key to the cabinet is missing.",
+      "expectedRoot": "missing",
+      "requiredNodes": ["key", "cabinet", "missing"],
+      "requiredEdges": [["key", "predicate", "missing"], ["key", "modifier", "cabinet"]],
+      "note": "Combines adjective/verb ambiguity with a subject-internal PP. Separate from, but thematically related to, sealed F2 key case."
+    },
+    {
+      "id": "copula-progressive-transitive",
+      "family": "copular-predicate",
+      "sentence": "The scout is missing the target.",
+      "expectedRoot": "miss",
+      "requiredNodes": ["miss", "scout", "target"],
+      "requiredEdges": [["miss", "agent", "scout"], ["miss", "patient", "target"]],
+      "note": "Transitive progressive control: a following NP is evidence for the verbal reading of missing."
+    }
+  ]
+}

@@ -906,9 +906,11 @@ interface EnChunk {
 
 /** Prepositions whose PP, sitting between a subject chunk and its
  *  verb, is a modifier of the subject rather than an argument of
- *  the verb. Deliberately closed: "to" (goals), "by" (passive
- *  agents) and "of" (handled inside the chunk) are excluded. */
-const SUBJECT_PP_MODS = new Set(["in", "on", "at", "near", "from", "with"]);
+ *  the verb. The nominal "to" case ("the key to the cabinet") is
+ *  included when its complement parses as an NP; verbal goals do
+ *  not form a noun chunk. "By" (passive agents) and "of" (handled
+ *  inside the chunk) are excluded. */
+const SUBJECT_PP_MODS = new Set(["in", "on", "at", "near", "from", "with", "to"]);
 
 /** Parse an NP chunk starting at items[i]; returns chunk + next index.
  *  With absorbPP, trailing PP modifiers are absorbed into the chunk
@@ -1713,6 +1715,20 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       const formTag =
         it.lower === ingForm(f.base) ? "ing"
         : it.lower === f.base ? "base" : it.lower === f.third ? "third" : it.lower === f.past && it.lower === f.participle ? "past/participle" : it.lower === f.past ? "past" : it.lower === f.participle ? "participle" : "base";
+      // A copula + -ing surface can be a progressive verb or an
+      // adjectival predicate (is running vs is missing). When the
+      // surface has a WordNet adjective reading and no following bare NP
+      // that could fill a direct object, keep it available to the copula
+      // predicate branch. A following NP remains evidence for the verbal
+      // reading (is missing the target). This is a bounded default for
+      // an ambiguity the current graph cannot preserve as two analyses;
+      // it does not claim to resolve every stative/progressive contrast.
+      const hasPostCopularAdjective =
+        beItem &&
+        formTag === "ing" &&
+        wordnetAdjective(it.lower) &&
+        !["det", "noun", "pronoun", "proper"].includes(items[it.index + 1]?.kind ?? "");
+      if (hasPostCopularAdjective) continue;
       // With a copula present, only a participle or -ing surface can
       // be the clause's verb (passive / progressive). A base- or
       // third-shaped surface after the copula is its complement —
