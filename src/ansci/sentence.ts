@@ -263,6 +263,9 @@ export interface TokenResolution {
 export interface ParsedSentence {
   meaning: MeaningGraph;
   connective: ConnectiveGraph;
+  /** A conservatively identified embedded request, with token provenance.
+   * This is a candidate interpretation, not a capability or execution claim. */
+  embeddedTask?: { verb: string; object: string; verbToken: number; objectTokens: number[]; confidence: "candidate" };
   /** Token resolutions applied before item classification, when any
    *  token needed them (token-resolve.ts). The connective graph is
    *  built over the resolved tokens; this record is the provenance

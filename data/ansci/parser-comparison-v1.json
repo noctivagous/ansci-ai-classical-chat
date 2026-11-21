@@ -1,0 +1,14 @@
+[
+  { "id": "simple-transitive", "language": "en", "text": "I booked a room.", "target": "past transitive statement; agent I, predicate book, patient room" },
+  { "id": "modal-direct-request", "language": "en", "text": "Could you book a room?", "target": "request/capability distinction; predicate book, patient room" },
+  { "id": "embedded-help-request", "language": "en", "text": "Can you help me plan a trip?", "target": "help takes an embedded task; actor you, beneficiary me, task plan a trip" },
+  { "id": "negated-event", "language": "en", "text": "I did not book a room.", "target": "negation scopes over past book event; agent I, patient room" },
+  { "id": "coordination", "language": "en", "text": "I booked a room and reserved a car.", "target": "two coordinated predicates with shared agent I and separate objects" },
+  { "id": "attachment-ambiguity", "language": "en", "text": "I saw the woman with binoculars.", "target": "retain ambiguity: binoculars may modify saw or woman" },
+  { "id": "short-fragment", "language": "en", "text": "Flights, please.", "target": "fragment request; recover implied request without inventing unsupported details" },
+  { "id": "incomplete-embedded-task", "language": "en", "text": "Can you help me plan?", "target": "embedded task detected; missing plan object remains missing" },
+  { "id": "conditional-question", "language": "en", "text": "What if the flight is delayed?", "target": "conditional event/question; flight is subject of delayed, if has clause scope" },
+  { "id": "sentence-boundary", "language": "en", "text": "I booked a room. It was expensive.", "target": "two clauses; second-clause it resolves to room; expensive predicated of room" },
+  { "id": "chat-register", "language": "en", "text": "need hotel asap", "target": "telegraphic request; need has hotel as object, asap modifies request" },
+  { "id": "chinese-control", "language": "zh", "text": "我想订一间房。", "target": "Chinese control: I want to book one room; preserve want/book/room relations" }
+]

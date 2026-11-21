@@ -111,6 +111,90 @@ These observations confirm the sampled behavior, not every surface or input.
 aspect challenge scripts; the supplied audit found no turn-path caller. Check
 the appropriate admission policy before wiring any checker or live source.
 
+Ability-routing investigation (2026-11-20): `assess.ts` classifies a broad
+class of present-tense polar questions with `you` as agent as self-query
+abilities, excluding a small list of verbs. `turn.ts` then treats every
+such verb as a bodily act or habit and answers in the negative without a
+capability lookup or a decline. Fresh-session probes for help planning a
+trip, writing a letter, comparing options, and an unspecified “help me”
+all returned “I can't help you.” “Can you calculate 2 plus 2?” returned
+“I can't calculate.” None filed a problem. “Can you swim?” returned “I can't
+swim.”, a useful physical-ability control. “Can you explain photosynthesis?”
+took a different route and filed a knowledge decline. These are observed
+routes, not evidence that the requested tasks can all be completed.
+
+The earliest supported divergence is the ungrounded ability classification
+and unconditional denial, ahead of task routing. A general correction needs
+to distinguish evidence of inability from an unknown capability, and retain
+the embedded task through assessment so an appropriate existing operation
+can be considered. The current ProblemSolving router lists only quantity
+needs and its solver is unbuilt; routing all requests to it would not itself
+solve them. Review capability-registry coverage and parsed task structure,
+then test supported, unsupported, underspecified and physical requests before
+changing the route. Existing IMP-2 tests explicitly pin the false help denial
+and must be revised when the behavior changes.
+
+Follow-up inspection: `parse()` represents “help me plan a trip” with
+`help` as root and `me`, `plan`, and `trip` as separate patient/excess
+nodes; it does not encode `plan` as a task with `trip` as its object. The
+capability registry inventories callable low-level operations by explicit ID
+and input description; it does not map arbitrary request verbs to operations
+or establish that an operation is reachable from a chat turn. The existing
+ProblemSolving router currently accepts only the `quantification` need and
+the turn path invokes it for quantity content and how-many questions. These
+interfaces cannot yet support a general evidence-backed dispatch of the
+example tasks. A safe implementation needs a structured embedded-task
+representation and an explicit capability admission interface, with an
+unknown/clarification outcome when either cannot be established. Physical
+ability denials also require positive evidence of a physical requirement;
+the current broad ability branch provides none. Do not equate a registry
+entry with successful task execution or use a growing list of request
+phrases as the dispatcher.
+
+Parser increment (local, 2026-11-20): `ParsedSentence.embeddedTask` can
+carry an explicitly tentative verb, object surface and token positions for
+a simple controlled help request. It does not alter the original meaning
+graph or establish a controlled subject, capability or successful dispatch.
+The narrow admission declines incomplete and coordinated shapes; longer,
+ambiguous and other complement constructions remain open. The focused
+parser tests cover planning, writing, comparison, missing content, a
+physical question and coordination. The ability-answer route still denies
+the original request until a separately evidenced consumer is wired.
+
+Parser comparison and ontology-effect clarification (local, 2026-11-20): a
+12-input repeatable diagnostic now lives in
+`data/ansci/parser-comparison-v1.json` and
+`scripts/ansci-parser-compare.mjs`; results and limitations are in
+`docs/ansci/link-grammar-evaluation.md`. It confirms early-divergence
+problems (flattened embedded tasks, coordination, lost conditional roles,
+sentence-boundary collapse, and Chinese content loss). Link Grammar's
+linkage count is not an accuracy score, and its fragment result demonstrates
+that a parser can accept input with an implausible first linkage. These are
+builder-authored targets, not an independently adjudicated benchmark.
+
+The Wuxing question must be evaluated separately from syntactic coverage.
+`sentence.ts` defines and labels the cycles; `sense.ts` applies cycle-weighted
+support to some derived sense choices on the English parse path in `parse.ts`
+(the Chinese path returns before this call). Its builder-authored challenge
+currently improves 11/11 vs 3/11 (Set A) and 6/6 vs 3/6 (hash-sealed Set B)
+over isolated-climb baselines, but that shows a narrow sense/element-selection
+effect, not general parse accuracy or better chat. `check.ts` has unit-tested
+validators, but `src/ansci/turn.ts` imports only `assessMissingRoles`;
+`checkSentence` and `assessValency` have no source caller. The broad
+parser-dynamics claim in `cycle-probe-evaluation.md` was a desk evaluation,
+not a built test. Next evidence needed: an independently authored held-out
+ablation with the sense pass enabled/disabled, graph/role accuracy, and trace
+confirmation that claimed cycle mechanisms are reached through `processTurn`.
+
+Exploratory ablation (local, 2026-11-20): six isolated variants on ten new
+assistant-authored cases yielded no differences in the target element or
+the 17/20 provisional role assertions. A known development control changes
+Fire to Wood with the pass enabled, but also with same-element-only support
+and with Lesk-only, so it does not demonstrate an extra cycle-adjacency
+benefit. `docs/ansci/wuxing-ablation-v1.md` records methods, raw results,
+limits and live generating/controlling steering probes. Independent human
+annotation and a controlled steering ablation remain open.
+
 ### System-map audit procedure and progress (2026-11-20)
 
 The audit covers every node ID in `ai-system/system-map.ts`. The map's
@@ -4148,9 +4232,9 @@ AnSci — GAPS
 | awareness/social-unit/interlocutor | Register; partial/75 | not-started | — | — |
 | awareness/social-unit/conversation | Container; partial/70 | not-started | — | — |
 | lpu | Container; partial/80 | not-started | — | — |
-| lpu/parser | Unit; partial/85 | not-started | — | — |
+| lpu/parser | Unit; partial/85 | in-progress | gap | Parser comparison v1: 12 builder-authored inputs run through AnSci and Link Grammar; flattened tasks, coordination, conditional role loss, clause collapse, and Chinese content loss recorded in `docs/ansci/link-grammar-evaluation.md`; independently reviewed holdout pending. |
 | lpu/parser/token | Unit; partial/95 | not-started | — | — |
-| lpu/parser/sense | Unit; partial/70 | not-started | — | — |
+| lpu/parser/sense | Unit; partial/70 | in-progress | needs-evaluation | `npm run ansci:sense`: cycle-based sense selection A 11/11 vs 3/11 baseline, hash-sealed B 6/6 vs 3/6; builder-authored, English only, does not score syntax or chat quality; independent held-out ablation pending. |
 | lpu/parser/valency | Unit; partial/90 | in-progress | needs-evaluation | Static audit batch B; definition and challenge-script callers checked; conversational controls pending. |
 | lpu/parser/aspect-and-forms | Unit; partial/90 | not-started | — | — |
 | lpu/semantic-assessment | Unit; partial/70 | not-started | — | — |

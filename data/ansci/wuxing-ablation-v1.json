@@ -1,0 +1,12 @@
+[
+ {"text":"The spring filled the stream with water.","target":"spring","reading":"source of water","roles":[["fill","agent","spring"],["fill","patient","stream"]]},
+ {"text":"The spring brought flowers to the garden.","target":"spring","reading":"season","roles":[["bring","agent","spring"],["bring","theme","flower"]]},
+ {"text":"The bank approved the loan.","target":"bank","reading":"financial institution","roles":[["approve","agent","bank"],["approve","patient","loan"]]},
+ {"text":"The bank borders the river.","target":"bank","reading":"land beside river","roles":[["border","agent","bank"],["border","patient","river"]]},
+ {"text":"The crane lifted the heavy load.","target":"crane","reading":"lifting machine","roles":[["lift","agent","crane"],["lift","patient","load"]]},
+ {"text":"The crane flew over the lake.","target":"crane","reading":"bird","roles":[["fly","agent","crane"]]},
+ {"text":"The child caught a cold at school.","target":"cold","reading":"illness","roles":[["catch","agent","child"],["catch","patient","cold"]]},
+ {"text":"The cold froze the pond overnight.","target":"cold","reading":"low temperature","roles":[["freeze","agent","cold"],["freeze","patient","pond"]]},
+ {"text":"I need help with my travel plans.","target":"plan","reading":"travel arrangements","roles":[["need","agent","i"],["need","theme","help"]]},
+ {"text":"I booked a room and reserved a car.","target":"room","reading":"accommodation","roles":[["book","agent","i"],["book","patient","room"],["reserve","patient","car"]]}
+]
