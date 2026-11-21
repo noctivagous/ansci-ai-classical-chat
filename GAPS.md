@@ -98,6 +98,19 @@ The three-case behavioural audit is not a broad baseline. Expand it with
 independent conversational cases, trace evidence, negative controls and
 human review of usefulness; reserve unseen cases for later evaluation.
 
+Independent checks after the supplied static audit: the terminal chat's
+`scripts/ansci-chat.mjs:40` calls synchronous `processTurn`. A fresh-session
+`processTurn` call for “Can you help me plan a trip?” returned “I can't help
+you.”; its plan note identifies the ability-answer route and the session's
+problem list was empty. “What is the weather in Oklahoma City?” returned a
+missing-reading decline and `trace.weather.action = lookup-needed`; the async
+fetch is in `weather-turn.ts:processTurnWithWeather`. “What time is it?” in a
+fresh session without a supplied clock returned a generic knowledge decline.
+These observations confirm the sampled behavior, not every surface or input.
+`assessValency` has a definition in `check.ts` and callers in the valency and
+aspect challenge scripts; the supplied audit found no turn-path caller. Check
+the appropriate admission policy before wiring any checker or live source.
+
 ### System-map audit procedure and progress (2026-11-20)
 
 The audit covers every node ID in `ai-system/system-map.ts`. The map's
@@ -147,9 +160,14 @@ For each node, use this procedure and record the evidence in the ledger:
    changes, test the reported case, variations and negative controls and
    record the commit. Preserve unresolved findings as open.
 
-The progress ledger below is deliberately initialized as `not-started` for
-every current map node. Earlier structural and exploratory checks are
-recorded above, but they did not complete this per-node procedure. Resume by
+The supplied static audit is preserved in
+`docs/ansci/system-map-audit-2026-11-20.md` (audit of commit `546293d`).
+It examines all 106 nodes and cites code and existing tests, but its batch
+reviews did not run per-node tests or behavior probes. Its findings are
+evidence for continued review, not completion of step 4 above. Selected
+nodes below are `in-progress` where independent checks have begun; the
+other rows remain `not-started` under the complete procedure, not a denial
+that the supplied static review took place. Resume by
 auditing one node or a coherent subsystem at a time; update status and exact
 evidence pointers in the same change that records each batch. If the map
 changes, regenerate the ledger from the node IDs and audit new or changed
@@ -4133,7 +4151,7 @@ AnSci — GAPS
 | lpu/parser | Unit; partial/85 | not-started | — | — |
 | lpu/parser/token | Unit; partial/95 | not-started | — | — |
 | lpu/parser/sense | Unit; partial/70 | not-started | — | — |
-| lpu/parser/valency | Unit; partial/90 | not-started | — | — |
+| lpu/parser/valency | Unit; partial/90 | in-progress | needs-evaluation | Static audit batch B; definition and challenge-script callers checked; conversational controls pending. |
 | lpu/parser/aspect-and-forms | Unit; partial/90 | not-started | — | — |
 | lpu/semantic-assessment | Unit; partial/70 | not-started | — | — |
 | lpu/language-emotion-desire-unit | Unit; partial/45 | not-started | — | — |
@@ -4165,7 +4183,7 @@ AnSci — GAPS
 | reasoning/pricing | Table; partial/85 | not-started | — | — |
 | reasoning/decline-floor | Gate; partial/90 | not-started | — | — |
 | reasoning/compositions | Table; partial/85 | not-started | — | — |
-| reasoning/problem-solving | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving | Unit; placeholder/0 | in-progress | needs-evaluation | Static audit batch D; trip ability-answer probe produced no problem record; controls pending. |
 | reasoning/problem-solving/external | Unit; placeholder/0 | not-started | — | — |
 | reasoning/problem-solving/abstract | Unit; placeholder/0 | not-started | — | — |
 | reasoning/problem-solving/internal | Unit; placeholder/0 | not-started | — | — |
@@ -4206,9 +4224,9 @@ AnSci — GAPS
 | surfaces | Container; partial/70 | not-started | — | — |
 | surfaces/root-page | Surface; partial/90 | not-started | — | — |
 | surfaces/dashboard | Surface; partial/85 | not-started | — | — |
-| surfaces/chat | Surface; partial/45 | not-started | — | — |
+| surfaces/chat | Surface; partial/45 | in-progress | needs-evaluation | Static audit batch F; terminal entry calls synchronous processTurn at scripts/ansci-chat.mjs:40; other surfaces and behavior controls pending. |
 | surfaces/trace-view | Surface; partial/60 | not-started | — | — |
 | unplaced | Container; placeholder/0 | not-started | — | — |
 | person | Source; external/— | not-started | — | — |
-| clock | Source; external/— | not-started | — | — |
-| weather | Source; external/— | not-started | — | — |
+| clock | Source; external/— | in-progress | needs-evaluation | Static audit batch F; fresh bare-session time probe gave generic decline; supplied-clock and surface controls pending. |
+| weather | Source; external/— | in-progress | needs-evaluation | Static audit batch F; bare-session weather probe returned lookup-needed and decline; wrapper and live-source controls pending. |
