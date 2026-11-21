@@ -6,7 +6,7 @@
   "description": "AnSci capability and evaluation dashboard — a live, inspectable progress exhibit for the Wuxing sentence layer and knowledge graph. Runs the real fork engine in the browser.",
   "scripts": {
     "dev": "node ../../ai-system/check-page.mjs --warn; vite",
-    "build": "node ../../ai-system/check-page.mjs && vite build && vite build --config vite.engine.config.ts && vite build --config chat/vite.config.ts && cp root/index.html dist/index.html",
+    "build": "node scripts/prepare-browser-assets.mjs && node ../../ai-system/check-page.mjs && vite build && vite build --config vite.engine.config.ts && vite build --config chat/vite.config.ts && cp root/index.html dist/index.html && node scripts/check-browser-build.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

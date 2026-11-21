@@ -265,8 +265,11 @@
   .say{display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
   .say .utter{flex:1;border:1.5px solid var(--line-soft);border-radius:3px;padding:9px 11px;font-family:"IBM Plex Mono",monospace;font-size:14px;background:var(--panel2)}
   .say .utter span{color:var(--muted);font-size:10px;display:block;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
-  /* ===== functional chat (recorded real turns) ===== */
+  /* ===== functional chat (live engine) ===== */
   .chat-caption{font-size:12px;line-height:1.55;color:var(--muted);margin:0 0 10px;border-left:3px solid var(--accent);padding-left:9px}
+  .lexical-status{font-family:"IBM Plex Mono",monospace;font-size:11px;line-height:1.55;color:var(--muted);margin:0 0 10px}
+  .lexical-status[data-state="error"]{color:var(--danger,#d95336);font-weight:700}
+  .lexical-status[data-state="ready"]{color:var(--ink)}
   .chat-form{display:flex;gap:8px;margin-bottom:10px}
   .chat-form input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:3px;padding:10px 11px;font-family:"IBM Plex Mono",monospace;font-size:14px;background:var(--panel2);color:var(--ink);min-height:44px}
   .chat-form input:focus{outline:2px solid var(--accent);outline-offset:1px}
@@ -1114,7 +1117,7 @@
     </div>
 
     <div class="hintbar">
-      <span>🖱 Drag — pan</span><span>Scroll / pinch buttons — zoom</span><span>Click a box — inspect + focus</span><span>Double-click — zoom to box</span><span>Chat panel — say a recorded sentence and watch its real path</span>
+      <span>🖱 Drag — pan</span><span>Scroll / pinch buttons — zoom</span><span>Click a box — inspect + focus</span><span>Double-click — zoom to box</span><span>Chat panel — run a sentence through the live engine and watch its path</span>
     </div>
   </div>
 
@@ -1123,15 +1126,16 @@
     <section aria-label="Chat — a person says">
       <h2 class="acc-head"><button type="button" class="acc-btn" id="accBtnChat" aria-expanded="true" aria-controls="accBodyChat"><span class="acc-tri" aria-hidden="true">▾</span><span>A person says — chat</span></button></h2>
       <div class="acc-body" id="accBodyChat">
-      <p class="chat-caption" id="chatCaption">Recorded from the real turn loop. The live root page runs your sentence through the code itself.</p>
+      <p class="chat-caption" id="chatCaption">Loading required WordNet and FrameNet data… chat is disabled until both are ready.</p>
+      <p class="lexical-status" id="chatResourceStatus" role="status" aria-live="polite" data-state="loading">Loading required WordNet and FrameNet data…</p>
       <form class="chat-form" id="chatForm">
-        <input type="text" id="chatInput" autocomplete="off" placeholder="Type what the person says…" aria-label="What the person says" value="Hello.">
-        <button class="btn primary" type="submit" id="sayBtn">Say</button>
+        <input type="text" id="chatInput" autocomplete="off" placeholder="Type what the person says…" aria-label="What the person says" value="Hello." disabled>
+        <button class="btn primary" type="submit" id="sayBtn" disabled>Say</button>
       </form>
-      <div id="chipGroups" aria-label="Recorded example turns"></div>
+      <div id="chipGroups" aria-label="Example utterances"></div>
       <p class="session-hint" id="sessionHint"></p>
       <div class="convo" id="convoLog" aria-label="Conversation readout" aria-live="polite">
-        <div class="convo-empty">Nothing said yet. Type a recorded sentence above, or tap an example chip — the circle on the map walks the path that turn actually took through the code, and the recorded reply appears when the walk ends.</div>
+        <div class="convo-empty">Loading required WordNet and FrameNet data. Chat will enable after both are ready.</div>
       </div>
       <div class="trace-controls">
         <button class="btn" id="resetBtn2" type="button">Reset conversation</button>
@@ -1139,7 +1143,7 @@
       </div>
       <div class="nowstep" id="nowStep">
         <div class="ns-loc">Ready</div>
-        <div class="ns-text">Say something recorded. The packet is the utterance itself — follow it from the person, through each node the turn loop actually visited, to where that turn stopped. A decline stops the circle at the node where the code stopped.</div>
+        <div class="ns-text">Waiting for the live engine and required lexical data.</div>
       </div>
       <ol class="steplog" id="stepLog"></ol>
       </div>
@@ -1551,7 +1555,7 @@
     coherence:{name:'Coherence',path:'System ⊃ Coherence · UNIT',body:'The system\u2019s coherence demand, as a unit (the CoherenceProcessor of the worked example): analyses what arrives against who is talking, what is known of the situation, and what has been said — and says so when it doesn\u2019t make sense. Not one checkpoint: different units use it at different stages — on what comes in, at several levels, and on what goes out (the Verbalizer uses it to check what is said as it is verbalized). Consults Awareness and Session &amp; Situation. Design capture: docs/coherence-note.md.',ports:['IN — what arrives','OUT — coherence response']},
     'coherence-demand':{name:'Coherence Demand',path:'System ⊃ Coherence ⊃ Coherence Demand · REGISTER',body:'The <strong>standing demand that things make sense, held as state</strong>: the current <strong>degree level of not-knowing the situation</strong>, and the system\u2019s <strong>personal boundaries</strong>. When the level is high and the input doesn\u2019t fit, the system says so and replies accordingly. A Register — small, held current, rewritten as the situation settles. A <strong>placeholder</strong>.',ports:['HOLDS — not-knowing level + boundaries','READ BY — Coherence Analysis']},
     'coherence-analysis':{name:'Coherence Analysis',path:'System ⊃ Coherence ⊃ Coherence Analysis · UNIT',body:'Works in both directions, at several levels. Inbound: how what comes in makes sense — the words and the sentence, the situation, the stream of what has been said; what doesn\u2019t fit, and what information is missing (e.g. an unknown person\u2019s \u2018I was furious\u2019 → \u2018Furious about what?\u2019). Outbound: used by the Verbalizer — what goes out is checked as it is verbalized, so that what is said makes sense too.<br><br><strong>State:</strong> inbound readings built (a greeting\u2019s fit or opener-out-of-place demand; the opening feeling-statement\u2019s unexpressed-cause demand), composition comparisons (object × situation × disposition), and the outbound judging of reply objects before wording.<br><strong>Current code:</strong> <span class=\'mono\'>src/ansci/coherence.ts</span>',ports:['IN — arrival + demand state','OUT — formed response']},
-    config:{name:'Configuration Register',path:'System frame ⊃ Configuration · REGISTER',body:'A <strong>Register</strong> mounted on the System frame, drawn with the segmented top strip. It holds which configuration the general-purpose system is running: currently <strong>Chat — the first configuration</strong>. Everything inside the frame — LPU, Awareness, Session &amp; Situation — is configuration-neutral machinery; the configuration is what aims it. The recorded chat turns run under this configuration.',ports:['HOLDS — active configuration','READ BY — every unit']},
+    config:{name:'Configuration Register',path:'System frame ⊃ Configuration · REGISTER',body:'A <strong>Register</strong> mounted on the System frame, drawn with the segmented top strip. It holds which configuration the general-purpose system is running: currently <strong>Chat — the first configuration</strong>. Everything inside the frame — LPU, Awareness, Session &amp; Situation — is configuration-neutral machinery; the configuration is what aims it. Live chat turns run under this configuration.',ports:['HOLDS — active configuration','READ BY — every unit']},
     composer:{name:'Composer',path:'System ⊃ Awareness Unit ⊃ Current Activity ⊃ Composer · UNIT',body:'The <strong>one worker</strong> inside the Awareness Unit — a Unit, told by its chamfered output corner. Each turn it reads the other registers (self, place &amp; time, surroundings, activity) and <strong>writes the new situation statement</strong>. One writer, many readers: the Planner consults the situation register, but only the Composer may write it.',ports:['IN — all awareness registers','OUT — situation statement']},
     router:{name:'Intake Router',path:'System ⊃ Intake & Harboring ⊃ Intake Router · ROUTER',body:'A <strong>Router</strong> at the System edge: it governs <strong>intake</strong> — what may be asked for, and in what order. Local graph first, then <strong>CSKG → Wikidata → web → model</strong>, each tier only when the one before it cannot genuinely answer. What returns enters through the same point, to the Retrieval Harborer.',ports:['IN — knowledge need','OUT — routed answer + provenance']},
     gate:{name:'Decline Floor — Gate',path:'System ⊃ Reasoning ⊃ Gate (Derivation → Planner)',body:'A <strong>Gate</strong> standing astride the pathway cord between Derivation and Planner. It prices passage: support at or above the floor passes and may be asserted; below it, passage is refused and the turn is routed elsewhere — to a gap question, or to the situation. The harbor gate and the confidence band are gates of the same type.',ports:['IN — priced derivation','OUT — pass / refuse']},
@@ -1660,17 +1664,9 @@
   var infoPopClose=document.getElementById('infoPopClose');
   if(infoPopClose) infoPopClose.addEventListener('click',function(e){ e.stopPropagation(); hideInfoPop(); });
 
-  /* ---------- functional chat — RECORDED REAL TURNS ----------
-     This static preview cannot run the repo's code. Every turn below was
-     recorded by running the actual turn loop (processTurn) in the repo on
-     2026-11-16: the path is the ordered list of schematic node ids that
-     turn actually took, and the reply is the engine's exact reply.
-     The circle walks exactly that list; a decline or parse failure stops
-     the circle at the node where the code stopped, and the stop popover
-     appears at that node carrying the exact stop text. Anything not
-     recorded is NOT walked and NOT answered — the readout says so plainly.
-     Sessions (anger, normalcy, apples, owed) must be followed in order: a later turn said
-     first is treated as unrecorded. */
+  /* ---------- live schematic chat + example utterances ----------
+     The utterance list below supplies example chips only. Replies and
+     paths always come from the live engine after required data loads. */
   var NODE_POS={
     'person':[104,1536],
     'lpu/parser/token':[393,1379],'lpu/parser/sense':[619,1379],'lpu/parser/valency':[393,1505],'lpu/parser/aspect-and-forms':[619,1505],
@@ -1697,11 +1693,11 @@
     'coherence/coherence-analysis':'coherence-analysis'
   };
   var NODE_INFO={
-    'person':{loc:'Outside the System — a person',text:'A person says the recorded utterance. The circle starts here, at the Person source.'},
-    'lpu/parser/token':{loc:'Parser ⊃ Token',text:'Tokenised and normalised — the recorded turn passes through Token.'},
+    'person':{loc:'Outside the System — a person',text:'A person says an utterance. The circle starts here, at the Person source.'},
+    'lpu/parser/token':{loc:'Parser ⊃ Token',text:'Tokenised and normalised — the live turn passes through Token.'},
     'lpu/parser/sense':{loc:'Parser ⊃ Sense',text:'Sense settles which meaning of each word is meant; the Lexicon it consults sits in Knowledge, reached by connection cord.'},
     'lpu/parser/valency':{loc:'Parser ⊃ Valency',text:'Argument structure checked — what each verb requires, and whether a required role is missing.'},
-    'lpu/parser/aspect-and-forms':{loc:'Parser ⊃ Aspect & Forms',text:'Tense, aspect and form bundles recorded for the turn.'},
+    'lpu/parser/aspect-and-forms':{loc:'Parser ⊃ Aspect & Forms',text:'Tense, aspect and form bundles assessed for the turn.'},
     'lpu/parser':{loc:'Parser Unit',text:'The meaning graph leaves the Parser and the turn moves on.'},
     'session-and-situation':{loc:'Session & Situation',text:'The turn is recorded in the session record — states and origins, the event, topics.'},
     'awareness':{loc:'Awareness Unit',text:'The situation statement is read for this turn — who is here, what is standing, what is happening.'},
@@ -1713,39 +1709,15 @@
     'lpu/normalcy-assessment':{loc:'LPU ⊃ NormalcyAssessment',text:'NormalcyAssessment reads the assessed information object — its parse, its surface, the Session as it stood before the turn — and files its flags on the envelope: obviousness, self-redundancy, gibberish. Readings about the communication, never the content. Coherence Analysis prices them by kind next; no reply ever speaks one.'},
     'lpu/quantification-language-unit':{loc:'LPU ⊃ QuantificationLanguageUnit',text:'The QuantificationLanguageUnit maps the turn\u2019s quantity content \u2014 numerals, quantifiers, implied counts \u2014 into the QuantificationUnit\u2019s records, and the mentions are applied to the Session\u2019s quantity ledger \u2014 the turn passes here whenever the utterance carries a quantity.'},
     'lpu/generator':{loc:'Generator Unit',text:'The selected move arrives at the Generator as a reply meaning graph and becomes surface wording.'},
-    'verbalizer':{loc:'Verbalizer · uses the LPU',text:'The Verbalizer says the recorded reply — it appears in the conversation readout.'},
+    'verbalizer':{loc:'Verbalizer · uses the LPU',text:'The Verbalizer says the generated reply — it appears in the conversation readout.'},
     'ontology-core/ontology-knowledge-unit/correspondence-graph':{loc:'Ontology Knowledge Unit ⊃ Correspondence graph',text:'Derivation consults the Correspondence graph — and finds nothing it can use.'},
     'coherence/coherence-analysis':{loc:'Coherence ⊃ Coherence Analysis',text:'Coherence Analysis works out what doesn\u2019t fit and what would — and prices the needs the travelling envelope still carries; a need that survives is carried onto the reply object.'}
   };
-  var PARSE_PATH=['person','lpu/parser/token','lpu/parser/sense','lpu/parser/valency','lpu/parser/aspect-and-forms','lpu/parser'];
-  var RECORDED=[
-    {say:'Hello.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','coherence/coherence-analysis','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'Hello.',session:null,idx:0},
-    {say:'I heard the news.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:'anger',idx:0},
-    {say:'I was furious.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You were furious when you heard the news. What did you say when you heard the news?',session:'anger',idx:1},
-    {say:'I shouted at him.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','awareness','reasoning/derivation','reasoning/pricing','verbalizer']),reply:'You shouted at him. Now that it\u2019s out — what would help you settle?',session:'anger',idx:2},
-    {say:'Is winter cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:"That's its definition: winter is cold.",session:null,idx:0},
-    {say:'Is the table cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','coherence/coherence-analysis','verbalizer']),reply:'What table? You just started talking.',session:null,idx:0,note:"No normalcy flag rides on this turn — an unanchored definite is a comprehension gap, not an oddity of the communication: 'table' has no referent in the scene graph or the Session record, and the Classification holds no such kind. The turn asks back; the question's answer need survives, priced, on the envelope."},
-    {say:'What was put in the soup?',path:PARSE_PATH.concat(['session-and-situation']),reply:'I can\u2019t answer that from what I know: nothing you have told me says what the agent of \u2018put\u2019 was.',session:null,idx:0,stop:'decline'},
-    {say:'I gave him.',path:PARSE_PATH.concat(['session-and-situation','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'You gave. What did you give him?',session:null,idx:0},
-    {say:'Blorp zizzle frak.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:'What is that? Gibberish?',session:null,idx:0,note:"The gibberish flag (moderate) rides this turn's envelope: no content arrived — of 3 content tokens, 1 failed resolution outright and 2 arrived only as spelling guesses, and none is attested as a real word. Frequency and familiarity evidence graded the flag's strength; they did not fire it. The priced move is the repair question — the flag itself is never spoken as a verdict."},
-    /* Normalcy session — recorded 2026-11-18 by running processTurn on the normalcy build: the soup pair (a statement acknowledged; the same question then answered from the record, its self-redundancy flag priced internally and nowhere spoken) and the winter question (answered from the definition, its obviousness flag likewise internal). */
-    {say:'The soup is hot.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:'normalcy',idx:0},
-    {say:'Is the soup hot?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:'You said so.',session:'normalcy',idx:1,note:"The self-redundancy flag rides this turn's envelope: the record already settles the question — 'soup is hot' stands in the record from turn 1, stated by the speaker themselves. NormalcyAssessment filed it, Coherence Analysis priced it by kind, and the reply answers from the record. The oddity is registered internally — an Awareness-side note on the trace — and nowhere spoken."},
-    {say:'Is winter cold?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/senses-scening-unit','session-and-situation','lpu/normalcy-assessment','coherence/coherence-analysis','verbalizer']),reply:"That's its definition: winter is cold.",session:'normalcy',idx:2,note:"The obviousness flag rides this turn's envelope: cold is winter's classifying quality for temperature, settled by the Classification itself, without testimony. The reply answers from the definition; the oddity is registered internally and nowhere spoken."},
-    {say:'I have 5 apples.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:'apples',idx:0},
-    {say:'Sally bought 3 of them.',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'Ok.',session:'apples',idx:1},
-    {say:'How many do I have left?',path:PARSE_PATH.concat(['lpu/semantic-assessment','lpu/quantification-language-unit','session-and-situation','verbalizer']),reply:'You have two apples left.',session:'apples',idx:2},
-    {say:'She blushed the rabbit.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','verbalizer']),reply:'Ok. Noted.',session:null,idx:0},
-    /* Owed hello session — recorded 2026-11-18 by running processTurn on the envelope build: 'I found rest.' draws a clarification question, and the 'Hello.' that follows it is answered through the whole route (SemanticAssessment → Session & Situation → Coherence Analysis → Planner) with the situate-owed need surviving onto the reply object. */
-    {say:'I found rest.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'Do you mean rest as in sleep, or as in relief?',session:'owed',idx:0},
-    {say:'Hello.',path:PARSE_PATH.concat(['lpu/semantic-assessment','session-and-situation','coherence/coherence-analysis','awareness','reasoning/planner','lpu/generator','verbalizer']),reply:'Hello.',session:'owed',idx:1,note:"The situate-owed need survives this turn: the clarification question asked at turn 1 still stands unanswered. Coherence Analysis priced it as surviving, and it is carried onto the reply object's envelope — the greeting is returned with the debt on record, and the Open Unknowns view lists it."}
+  var CHIP_GROUPS=[
+    {label:'Examples',says:['Hello.','How are you?','I heard the news.','Can you help me plan a trip?','Did you see the ball game?','Do you like baseball?','The soup is hot.','Is the soup hot?','I have 5 apples.','Sally bought 3 of them.','How many do I have left?','I found rest.','Blorp zizzle frak.']}
   ];
-  var SESSION_LEN={anger:3,normalcy:3,apples:3,owed:2};
-  var SESSION_NAME={anger:'Anger session',normalcy:'Normalcy session',apples:'Apples session',owed:'Owed hello session'};
-  var sessionProgress={anger:0,normalcy:0,apples:0,owed:0};
-  /* LIVE mode: set when a sibling engine.js defines window.AnSciLive
-     (see the loader at the end of the chat section). Recorded mode is
-     the default and is unchanged when no engine is present. */
+  /* LIVE mode is set only after the sibling engine confirms required
+     lexical data is loaded. The page fails closed while loading or on error. */
   var LIVE=false;
   var builtOnly=false;
   function isBoxVisible(boxId){
@@ -1758,27 +1730,6 @@
     if(!(nid in SYSTEM_MAP)) return true;
     return SYSTEM_MAP[nid]>0;
   }
-  function normSay(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[.?!]+$/,''); }
-  function findRecorded(raw){
-    var n=normSay(raw), match=null, freeMatch=null, nextMatch=null;
-    for(var i=0;i<RECORDED.length;i++){
-      if(normSay(RECORDED[i].say)!==n) continue;
-      var t=RECORDED[i];
-      if(!match) match=t;
-      if(!t.session){ if(!freeMatch) freeMatch=t; }
-      else if(t.idx===sessionProgress[t.session]){ if(!nextMatch) nextMatch=t; }
-    }
-    /* session-aware, narrowly: a session turn that is exactly that
-       session's next expected turn beats a session-less turn with the
-       same say; every other case keeps the first-match behaviour. */
-    if(nextMatch && freeMatch) match=nextMatch;
-    if(!match) return {status:'unrecorded'};
-    if(!match.session) return {status:'ok',turn:match};
-    var prog=sessionProgress[match.session];
-    if(match.idx===prog) return {status:'ok',turn:match};
-    if(match.idx===0 && prog>=SESSION_LEN[match.session]){ sessionProgress[match.session]=0; return {status:'ok',turn:match}; }
-    return {status:'order',turn:match,expected:prog};
-  }
   var logEl=document.getElementById('stepLog'), nowEl=document.getElementById('nowStep');
   var packet=document.getElementById('packet'), packetLabel=document.getElementById('packetLabel'), tracePath=document.getElementById('tracePath');
   var helloBubble=document.getElementById('helloBubble');
@@ -1786,6 +1737,7 @@
   var convoLog=document.getElementById('convoLog'), chatForm=document.getElementById('chatForm'),
       chatInput=document.getElementById('chatInput'), sayBtn=document.getElementById('sayBtn'),
       chipGroups=document.getElementById('chipGroups'), sessionHint=document.getElementById('sessionHint');
+  var lexicalStatus=document.getElementById('chatResourceStatus'), chatCaption=document.getElementById('chatCaption');
   var newConvoBtn=document.getElementById('newConvoBtn');
   var stopPop=document.getElementById('stopPop'), stopPopLoc=document.getElementById('stopPopLoc'), stopPopBody=document.getElementById('stopPopBody');
   function hideStopPop(){ if(stopPop) stopPop.hidden=true; }
@@ -1826,7 +1778,7 @@
     you.innerHTML='<span class="who-l">A person says</span>';
     you.appendChild(document.createTextNode('\u201C'+utter+'\u201D'));
     var sys=document.createElement('div'); sys.className='convo-sys pending';
-    sys.innerHTML='<span class="who-l">System</span>'+(LIVE?'— walking the live path… —':'— walking the recorded path… —');
+    sys.innerHTML='<span class="who-l">System</span>— walking the live path… —';
     wrap.appendChild(you); wrap.appendChild(sys); convoLog.appendChild(wrap);
     convoLog.scrollTop=convoLog.scrollHeight;
     return sys;
@@ -1843,48 +1795,22 @@
     sysEl.appendChild(document.createTextNode(text));
     convoLog.scrollTop=convoLog.scrollHeight;
   }
-  /* ----- example chips + session hint ----- */
-  var CHIP_GROUPS=[
-    {label:'Recorded turns',says:['Hello.','Is winter cold?','Is the table cold?','What was put in the soup?','I gave him.','Blorp zizzle frak.']},
-    {label:'Anger session — say in order',session:'anger'},
-    {label:'Normalcy session — say in order',session:'normalcy'},
-    {label:'Apples session — say in order',session:'apples'},
-    {label:'Owed hello session — say in order',session:'owed'}
-  ];
-  function turnBySay(s){ for(var i=0;i<RECORDED.length;i++) if(RECORDED[i].say===s) return RECORDED[i]; return null; }
+  /* ----- example utterances ----- */
   function refreshChips(){
     chipGroups.innerHTML='';
-    CHIP_GROUPS.forEach(function(g){
+    CHIP_GROUPS.forEach(function(group){
       var wrap=document.createElement('div'); wrap.className='chip-group';
-      var lbl=document.createElement('span'); lbl.className='cg-lbl'; lbl.textContent=g.label; wrap.appendChild(lbl);
+      var label=document.createElement('span'); label.className='cg-lbl'; label.textContent=group.label; wrap.appendChild(label);
       var row=document.createElement('div'); row.className='chips';
-      /* a session group's chips come from that group's own entries, not
-         the global by-say lookup — two turns can share a say ('Hello.')
-         and the session chip must carry its own number and state */
-      var entries=g.says?g.says.map(function(s){return turnBySay(s);}):RECORDED.filter(function(t){return t.session===g.session;}).sort(function(a,b){return a.idx-b.idx;});
-      entries.forEach(function(t){
-        if(!t) return;
-        var s=t.say;
-        var b=document.createElement('button'); b.type='button'; b.className='chip'; b.disabled=walking;
-        b.textContent=(t.session?(t.idx+1)+'. ':'')+s;
-        if(t.session && !LIVE){
-          var prog=sessionProgress[t.session];
-          if(t.idx<prog) b.classList.add('done');
-          if(t.idx===prog || (t.idx===0 && prog>=SESSION_LEN[t.session])) b.classList.add('next');
-        }
-        b.addEventListener('click',function(){ chatInput.value=s; say(s); });
-        row.appendChild(b);
+      group.says.forEach(function(utterance){
+        var button=document.createElement('button'); button.type='button'; button.className='chip'; button.disabled=walking || !LIVE;
+        button.textContent=utterance;
+        button.addEventListener('click',function(){ chatInput.value=utterance; say(utterance); });
+        row.appendChild(button);
       });
       wrap.appendChild(row); chipGroups.appendChild(wrap);
     });
-    var parts=[];
-    ['anger','normalcy','apples','owed'].forEach(function(sk){
-      var prog=sessionProgress[sk], len=SESSION_LEN[sk];
-      if(prog>=len) parts.push('<strong>'+SESSION_NAME[sk]+':</strong> complete — say turn 1 to run it again');
-      else { var nx=RECORDED.filter(function(t){return t.session===sk && t.idx===prog;})[0]; parts.push('<strong>'+SESSION_NAME[sk]+':</strong> next is turn '+(prog+1)+' of '+len+' — \u201C'+nx.say+'\u201D'); }
-    });
-    if(LIVE){ sessionHint.innerHTML='Live mode — the engine holds the real session, so session turns said in order are remembered naturally; anything you type is answered live.'; return; }
-    sessionHint.innerHTML='Sessions run in order; a later turn said first counts as unrecorded. '+parts.join(' · ');
+    if(sessionHint) sessionHint.textContent=LIVE?'Each example runs through the live engine and shares this conversation session.':'Examples are disabled until the live engine and required lexical data are ready.';
   }
   /* ----- the walk ----- */
   var walking=false, walkSteps=[], cur=-1, raf=null, segTimer=null, currentTurn=null, pendingSys=null;
@@ -1905,12 +1831,7 @@
       var li=document.createElement('li');
       var txt=s.text;
       if(s.last && currentTurn){
-        if(currentTurn.live){
-          txt=currentTurn.stop?('The walk <strong>stops here</strong> — the engine\u2019s stop message: <code>\u201C'+(currentTurn.popText||currentTurn.reply)+'\u201D</code>'):('The live reply is said: <code>\u201C'+currentTurn.reply+'\u201D</code>');
-        } else {
-          txt=currentTurn.stop?('The walk <strong>stops here</strong> — the recorded '+(currentTurn.stop==='parse'?'error':'decline')+': <code>\u201C'+currentTurn.reply+'\u201D</code>'):('The recorded reply is said: <code>\u201C'+currentTurn.reply+'\u201D</code>');
-        }
-        if(currentTurn.note) txt+=' '+currentTurn.note;
+        txt=currentTurn.stop?('The walk <strong>stops here</strong> — the engine\u2019s stop message: <code>\u201C'+(currentTurn.popText||currentTurn.reply)+'\u201D</code>'):('The live reply is said: <code>\u201C'+currentTurn.reply+'\u201D</code>');
       }
       li.innerHTML='<span class="n">'+(i+1)+'</span><span><span class="sl2">'+s.loc+'</span>'+txt+'</span>';
       logEl.appendChild(li);
@@ -1930,7 +1851,7 @@
     lightBox(s.box); if(s.box) select(s.box,false);
     var txt=s.text;
     if(s.last && currentTurn){
-      txt=currentTurn.stop?('The walk <strong>stops here</strong>. The stop message is shown on the map, at this node, and in the readout below.'):(s.text+' <code>\u201C'+currentTurn.reply+'\u201D</code>'+(currentTurn.note?' '+currentTurn.note:''));
+      txt=currentTurn.stop?('The walk <strong>stops here</strong>. The stop message is shown on the map, at this node, and in the readout below.'):(s.text+' <code>\u201C'+currentTurn.reply+'\u201D</code>');
     }
     nowEl.innerHTML='<div class="ns-loc">Step '+(i+1)+' / '+walkSteps.length+(builtOnly?' · Built only — visible nodes only':'')+' — '+s.loc+'</div><div class="ns-text">'+txt+'</div>';
     Array.prototype.forEach.call(logEl.children,function(li,j){
@@ -1939,8 +1860,7 @@
     });
   }
   /* ----- camera follow + walk execution mode (Run / Step by step / No Delay) -----
-     The camera lives in this walk layer, so recorded walks and live
-     walks (the sibling engine) share it. On every segment the view
+     The camera lives in this walk layer, so live walks share it. On every segment the view
      animates concurrently with the ball — same duration, ease-in-out
      cubic — to the destination step's framing; at walk start it moves
      to step 0's framing, and at walk end it returns to the view saved
@@ -2074,8 +1994,19 @@
     animateTo(cur+1,function(){ if(walking) afterStep(); });
   }
   function setFormEnabled(on){
-    chatInput.disabled=!on; sayBtn.disabled=!on;
-    chipGroups.querySelectorAll('.chip').forEach(function(c){ c.disabled=!on; });
+    var available=on && LIVE;
+    chatInput.disabled=!available; sayBtn.disabled=!available;
+    chipGroups.querySelectorAll('.chip').forEach(function(c){ c.disabled=!available; });
+  }
+  function setLexicalStatus(state,message){
+    if(lexicalStatus){ lexicalStatus.dataset.state=state; lexicalStatus.textContent=message; }
+    if(state==='ready'){
+      if(chatCaption) chatCaption.textContent='Live — every sentence runs through the code itself.';
+      enableLive();
+    } else {
+      if(chatCaption) chatCaption.textContent='Chat disabled — the live engine requires WordNet and FrameNet before it can process a turn.';
+      setFormEnabled(false);
+    }
   }
   function finishWalk(){
     walking=false; stepWaiting=false; if(stepBtn) stepBtn.disabled=true; setFormEnabled(true);
@@ -2096,7 +2027,6 @@
     }
     if(pendingSys) setSysReply(pendingSys,turn);
     pendingSys=null;
-    if(turn.session) sessionProgress[turn.session]=turn.idx+1;
     if(turn.stop && turn.live){
       replyBubble.style.opacity='1'; replyBubble.textContent='\u201C'+turn.reply+'\u201D';
       replyNote.textContent='— walk stopped at '+lastStep.loc+' —';
@@ -2107,7 +2037,7 @@
       showStopPop(lastStep,turn);
     } else {
       replyBubble.style.opacity='1'; replyBubble.textContent='\u201C'+turn.reply+'\u201D';
-      replyNote.textContent=turn.live?'— live reply —':'— recorded reply —';
+      replyNote.textContent='— live reply —';
     }
     refreshChips();
   }
@@ -2171,86 +2101,66 @@
     if(walking) return;
     var utter=String(raw||'').trim();
     if(!utter) return;
-    if(LIVE){ liveSay(utter); return; }
-    hideStopPop(); hideInfoPop(); packet.classList.remove('stopped');
-    helloBubble.textContent='\u201C'+utter+'\u201D';
-    var found=findRecorded(utter);
-    if(found.status!=='ok'){
+    if(!LIVE){
       var sys=convoTurnEl(utter);
-      var msg='Not a recorded turn. This preview walks recorded turns from the real engine, so nothing was walked and no reply was made up. The live root page runs every sentence through the code itself.';
-      if(found.status==='order'){
-        msg='\u201C'+found.turn.say+'\u201D is turn '+(found.turn.idx+1)+' of the '+SESSION_NAME[found.turn.session]+', and sessions run in order — turn '+(found.expected+1)+' comes first. Said out of order it counts as unrecorded: '+msg;
-      }
+      var reason=window.AnSciLive && window.AnSciLive.reason;
+      var msg=reason ? 'Chat disabled because required lexical data failed to load: '+reason : 'Chat disabled while the live engine and required lexical data are loading.';
       setSysNotice(sys,msg);
-      packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); lightBox(null);
-      nowEl.innerHTML='<div class="ns-loc">Not recorded</div><div class="ns-text">'+msg+'</div>';
-      logEl.innerHTML='';
+      setLexicalStatus(window.AnSciLive && window.AnSciLive.status==='error'?'error':'loading',msg);
       return;
     }
-    var turn=found.turn;
-    currentTurn=turn;
-    pendingSys=convoTurnEl(turn.say);
-    packetLabel.textContent='\u201C'+turn.say+'\u201D';
-    replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— walking… —';
-    walkSteps=buildWalkSteps(turn);
-    buildLog();
-    /* walk start: cancel any in-flight camera return, save the
-       current view as the return view, and move the camera to
-       step 0's framing as the walk begins */
-    cancelCamAnim();
-    returnView={x:view.x,y:view.y,k:view.k};
-    camHold=false; stepWaiting=false; if(stepBtn) stepBtn.disabled=true;
-    walking=true; setFormEnabled(false);
-    cur=-1; showStep(0);
-    animateCameraTo(frameTargetForStep(walkSteps[0]),750);
-    afterStep();
+    liveSay(utter);
   }
   if(chatForm) chatForm.addEventListener('submit',function(e){ e.preventDefault(); say(chatInput.value); chatInput.value=''; });
   function resetConversation(){
     cancelWalk('Walk cleared by reset.');
     if(LIVE && window.AnSciLive){ try{ window.AnSciLive.reset(); }catch(e){} }
-    sessionProgress={anger:0,normalcy:0,apples:0,owed:0};
     hideStopPop(); hideInfoPop();
     packet.classList.remove('show','stopped'); tracePath.classList.remove('lit'); tracePath.setAttribute('d',''); lightBox(null);
     helloBubble.textContent='…';
     replyBubble.style.opacity='.28'; replyBubble.textContent='…'; replyNote.textContent='— no reply yet —';
-    convoLog.innerHTML='<div class="convo-empty">'+(LIVE?'Nothing said yet. Type a sentence above, or tap an example chip — the circle on the map walks the path your sentence actually takes through the code, and the reply appears when the walk ends.':'Nothing said yet. Type a recorded sentence above, or tap an example chip — the circle on the map walks the path that turn actually took through the code, and the recorded reply appears when the walk ends.')+'</div>';
+    convoLog.innerHTML='<div class="convo-empty">'+(LIVE?'Nothing said yet. Type a sentence above, or tap an example chip — the circle on the map walks the path your sentence actually takes through the code, and the reply appears when the walk ends.':'Nothing said yet. Type a sentence above, or tap an example chip — the live engine walks the path your sentence actually takes through the code.')+'</div>';
     logEl.innerHTML='';
-    nowEl.innerHTML='<div class="ns-loc">Ready</div><div class="ns-text">'+(LIVE?'Say something. The packet is the utterance itself — follow it from the person, through each node the code actually visits, to where that turn stops. A stop leaves the circle at the node where the code stopped.':'Say something recorded. The packet is the utterance itself — follow it from the person, through each node the turn loop actually visited, to where that turn stopped. A decline stops the circle at the node where the code stopped.')+'</div>';
+    nowEl.innerHTML='<div class="ns-loc">Ready</div><div class="ns-text">'+(LIVE?'Say something. The packet is the utterance itself — follow it from the person, through each node the code actually visits, to where that turn stops. A stop leaves the circle at the node where the code stopped.':'Waiting for the live engine and required lexical data.')+'</div>';
     refreshChips();
   }
   ['resetBtn','resetBtn2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('click',resetConversation); });
-  /* "New conversation" — live mode only (hidden in recorded mode).
-     resetConversation() calls AnSciLive.reset() when live and clears
+  /* "New conversation" — shown after required live resources load.
+     resetConversation() calls AnSciLive.reset() and clears
      the readout, the taken path and the map lighting. */
   if(newConvoBtn) newConvoBtn.addEventListener('click',resetConversation);
   refreshChips();
 
-  /* ===== live mode — optional sibling engine.js =====
-     On load the page tries to load "engine.js" from beside itself
-     (relative URL, async). Failure is silent: no engine, no live mode,
-     the recorded preview runs exactly as before. When the script loads
-     and defines window.AnSciLive with say(text) and reset(), the page
-     switches to live mode: every sentence goes to the engine, the
-     returned path is walked with the same machinery, the caption
-     changes, and the New conversation control appears. */
+  /* Required live mode. The schematic is not a recorded-chat fallback:
+     both lexical datasets must be loaded before any turn can run. */
   function enableLive(){
     if(LIVE) return;
     LIVE=true;
-    var cap=document.getElementById('chatCaption');
-    if(cap) cap.textContent='Live — every sentence runs through the code itself.';
     if(newConvoBtn) newConvoBtn.hidden=false;
+    nowEl.innerHTML='<div class="ns-loc">Ready</div><div class="ns-text">Say something. The packet is the utterance itself — follow it from the person, through each node the code actually visits, to where that turn stops. A stop leaves the circle at the node where the code stopped.</div>';
     var empty=convoLog.querySelector('.convo-empty');
     if(empty) empty.textContent='Nothing said yet. Type a sentence above, or tap an example chip — the circle on the map walks the path your sentence actually takes through the code, and the reply appears when the walk ends.';
-    refreshChips();
+    refreshChips(); setFormEnabled(!walking);
   }
+  function syncEngineStatus(){
+    var api=window.AnSciLive;
+    if(!api){ setLexicalStatus('error','Required live engine failed to load. Rebuild and deploy the site with engine.js.'); return; }
+    if(api.status==='ready'){
+      var wordnet=api.resources && api.resources.wordnet;
+      var framenet=api.resources && api.resources.framenet;
+      setLexicalStatus('ready','Ready — WordNet '+(wordnet?wordnet.edition:'')+' and FrameNet '+(framenet?framenet.edition:'')+' loaded.');
+    } else if(api.status==='error'){
+      setLexicalStatus('error','Required lexical data failed to load: '+(api.reason||'no reason supplied by engine'));
+    } else {
+      setLexicalStatus('loading','Loading required WordNet and FrameNet data… chat is disabled until both are ready.');
+    }
+  }
+  window.addEventListener('ansci-engine-status',syncEngineStatus);
   (function loadEngine(){
     var s=document.createElement('script');
     s.src='engine.js'; s.async=true;
-    s.onload=function(){
-      if(window.AnSciLive && typeof window.AnSciLive.say==='function' && typeof window.AnSciLive.reset==='function') enableLive();
-    };
-    s.onerror=function(){ /* silent — recorded mode continues */ };
+    s.onload=function(){ syncEngineStatus(); };
+    s.onerror=function(){ setLexicalStatus('error','Required live engine failed to load from engine.js. Chat remains disabled.'); };
     (document.head||document.documentElement).appendChild(s);
   })();
 
@@ -2309,7 +2219,7 @@
       var touchesHidden=eps.some(function(ep){ return !isBoxVisible(ep.trim()); });
       el.classList.toggle('cord-hidden',touchesHidden);
     });
-    /* 4 — a chat walk in progress is cancelled; recorded paths are
+    /* 4 — a chat walk in progress is cancelled; live paths are
        re-filtered against visible nodes on the next Say */
     hideStopPop(); hideInfoPop();
     /* the view toggle's own refit wins: any camera animation is

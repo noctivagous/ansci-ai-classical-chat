@@ -1,14 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { parse } from "../../../src/ansci/parse";
 import { generate } from "../../../src/ansci/generate";
 import { checkSentence } from "../../../src/ansci/check";
 import { buildForkGraph, deriveSentence, type Derivation } from "../../../src/ansci/join";
 import { applySenseSelection, type SenseDecision } from "../../../src/ansci/sense";
-import { enableWordnetLexicon, wordnetAvailable } from "../../../src/ansci/wordnet-lex";
+import { initializeBrowserLexicalData, type BrowserLexicalReadiness } from "./browser-lexical-data";
 import type { ParsedSentence } from "../../../src/ansci/sentence";
 import GraphView, { ELEMENT_COLORS } from "./GraphView";
-
-enableWordnetLexicon(true);
 
 const EXAMPLES: { text: string; note: string }[] = [
   { text: "The dog bit the man.", note: "canonical clause" },
@@ -26,12 +24,6 @@ const EXAMPLES: { text: string; note: string }[] = [
   { text: "Tell me about winter.", note: "imperative" },
   { text: "Winter is coming.", note: "progressive, canonical round trip" },
   { text: "It is raining.", note: "weather predication — no Earth participant" },
-  { text: "我吃了饭。", note: "aspect particle as clause scope" },
-  { text: "你买什么？", note: "wh-in-situ: the question word stays in its slot" },
-  { text: "他跑得很快。", note: "degree complement carrying the main content" },
-  { text: "今天星期一。", note: "verbless nominal predication" },
-  { text: "他买三书。", note: "must be flagged: missing classifier" },
-  { text: "饭被吃了。", note: "agentless passive — slot suppressed, not filled" },
 ];
 
 interface LabResult {
@@ -46,9 +38,16 @@ interface LabResult {
 }
 
 function run(input: string, graph: ReturnType<typeof buildForkGraph>): LabResult {
-  const lang = /[\u4e00-\u9fff]/.test(input) ? "zh" : "en";
+  if (/[\u3400-\u9fff\uf900-\ufaff]/.test(input)) {
+    return {
+      input,
+      violations: [],
+      sense: [],
+      error: "This project currently supports English parsing and output only.",
+    };
+  }
   try {
-    const parsed = parse(input, lang as "en" | "zh");
+    const parsed = parse(input, "en");
     const sense = applySenseSelection(parsed);
     let regenerated: string | undefined;
     let genError: string | undefined;
@@ -74,11 +73,27 @@ function run(input: string, graph: ReturnType<typeof buildForkGraph>): LabResult
 export default function Lab() {
   const graph = useMemo(() => buildForkGraph(), []);
   const [text, setText] = useState("I was furious.");
-  const [result, setResult] = useState<LabResult>(() => run("I was furious.", buildForkGraph()));
-  const wn = wordnetAvailable();
+  const [result, setResult] = useState<LabResult | null>(null);
+  const [lexicalState, setLexicalState] = useState<
+    | { status: "loading"; reason: string }
+    | { status: "ready"; data: BrowserLexicalReadiness }
+    | { status: "error"; reason: string }
+  >({ status: "loading", reason: "Loading required WordNet and FrameNet data…" });
+
+  useEffect(() => {
+    let mounted = true;
+    initializeBrowserLexicalData().then(
+      (data) => { if (mounted) setLexicalState({ status: "ready", data }); },
+      (error: unknown) => {
+        if (mounted) setLexicalState({ status: "error", reason: error instanceof Error ? error.message : String(error) });
+      },
+    );
+    return () => { mounted = false; };
+  }, []);
 
   const go = (t: string) => {
     setText(t);
+    if (lexicalState.status !== "ready") return;
     setResult(run(t, graph));
   };
 
@@ -87,18 +102,20 @@ export default function Lab() {
       <h2>The live lab</h2>
       <p className="lede">
         This is the real engine, running in your browser — the same parser, checker, generator and
-        derivation code the evaluations measure. Type a sentence (English or Chinese) or pick an
-        example. Nothing here is canned.
+        derivation code the evaluations measure. Type an English sentence or pick an example.
+        English is the project's only language acceptance scope; older Chinese results are kept
+        as historical evidence.
       </p>
-      <p className="provider-status">
-        Engine status: hand lexicon + classification table <strong>live</strong> · WordNet provider{" "}
-        <strong>{wn ? "live" : "off in the web build"}</strong>
-        {!wn && " (its 20 MB extract is not bundled — derived classifications and live sense selection need the local build)"}{" "}
-        · FrameNet signatures <strong>off in the web build</strong>
+      <p className="provider-status" role="status" aria-live="polite" data-testid="lexical-status" data-state={lexicalState.status}>
+        {lexicalState.status === "loading"
+          ? lexicalState.reason
+          : lexicalState.status === "error"
+            ? `Analysis disabled: required WordNet / FrameNet data failed to load (${lexicalState.reason}).`
+            : `Required resources ready: WordNet ${lexicalState.data.wordnet.edition} and FrameNet ${lexicalState.data.framenet.edition}.`}
       </p>
       <div className="chips">
         {EXAMPLES.map((ex) => (
-          <button key={ex.text} className="chip" onClick={() => go(ex.text)} title={ex.note}>
+          <button key={ex.text} className="chip" disabled={lexicalState.status !== "ready"} onClick={() => go(ex.text)} title={ex.note}>
             {ex.text}
           </button>
         ))}
@@ -106,17 +123,18 @@ export default function Lab() {
       <div className="lab-input">
         <input
           value={text}
+          disabled={lexicalState.status !== "ready"}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && go(text)}
           placeholder="Type a sentence — e.g. The wind blows from the east."
           aria-label="sentence to parse"
         />
-        <button className="primary" onClick={() => go(text)}>
+        <button className="primary" disabled={lexicalState.status !== "ready"} onClick={() => go(text)}>
           Parse it
         </button>
       </div>
 
-      {result.error && (
+      {result?.error && (
         <div className="panel failure-panel">
           <h3>It cannot parse this — and says so</h3>
           <p>
@@ -129,7 +147,7 @@ export default function Lab() {
         </div>
       )}
 
-      {result.parsed && (
+      {result?.parsed && (
         <div className="lab-results">
           <div className="panel">
             <h3>Round trip</h3>
@@ -165,7 +183,7 @@ export default function Lab() {
             {result.sense.length === 0 ? (
               <p className="caveat">
                 No word in this sentence has competing anchored senses
-                {!wn && " (and the WordNet provider is off in this build, so no derived senses are in play)"}.
+                .
               </p>
             ) : (
               <ul>

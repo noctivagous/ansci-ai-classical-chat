@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { newSession, type FrameInput, type Session } from "../../../src/ansci/session";
 import { processTurn, type TurnResult } from "../../../src/ansci/turn";
 import { SCENARIOS } from "../../../src/ansci/scenarios";
 import { NEUTRAL_COMPOSITION, type Composition } from "../../../src/ansci/composition";
 import { WATER_DISPOSITION, WOOD_DISPOSITION } from "../../../src/ansci/disposition";
 import type { PricingRecord } from "../../../src/ansci/pricing";
+import { initializeBrowserLexicalData, type BrowserLexicalReadiness } from "./browser-lexical-data";
 import { ELEMENT_COLORS } from "./GraphView";
 
 interface Exchange {
@@ -289,6 +290,23 @@ function Trace({ ex }: { ex: Exchange }) {
 }
 
 export default function Ask() {
+  const [lexicalState, setLexicalState] = useState<
+    | { status: "loading"; reason: string }
+    | { status: "ready"; data: BrowserLexicalReadiness }
+    | { status: "error"; reason: string }
+  >({ status: "loading", reason: "Loading required WordNet and FrameNet data…" });
+
+  useEffect(() => {
+    let mounted = true;
+    initializeBrowserLexicalData().then(
+      (data) => { if (mounted) setLexicalState({ status: "ready", data }); },
+      (error: unknown) => {
+        if (mounted) setLexicalState({ status: "error", reason: error instanceof Error ? error.message : String(error) });
+      },
+    );
+    return () => { mounted = false; };
+  }, []);
+
   const [dispKey, setDispKey] = useState("neutral");
   const sessionRef = useRef<Session | null>(null);
   if (sessionRef.current === null) sessionRef.current = openSession(NEUTRAL_COMPOSITION);
@@ -311,6 +329,7 @@ export default function Ask() {
   };
 
   const send = (text: string) => {
+    if (lexicalState.status !== "ready") return;
     const trimmed = text.trim();
     if (!trimmed) return;
     try {
@@ -322,6 +341,7 @@ export default function Ask() {
   };
 
   const runScenario = (name: string) => {
+    if (lexicalState.status !== "ready") return;
     const sc = SCENARIOS.find((s) => s.name === name)!;
     const fresh = startSession(DISPOSITIONS.find((d) => d.key === dispKey)!.composition);
     const out: Exchange[] = [];
@@ -355,16 +375,19 @@ export default function Ask() {
         declines, with the ground named in the trace.
       </p>
       <p className="caveat">
-        <strong>Configuration of this build:</strong> this page runs the engine with its WordNet
-        and FrameNet providers off — they are disk-backed and are not shipped to the browser.
-        Sense selection and verb-argument analysis therefore run on the local layers alone, and
-        some of what looks like a miss here is this configuration, not the full system; the local
-        run described at the bottom of this page enables both.
+        <strong data-testid="lexical-status" data-state={lexicalState.status} role="status" aria-live="polite">
+          {lexicalState.status === "loading"
+            ? lexicalState.reason
+            : lexicalState.status === "error"
+              ? `Chat disabled: required WordNet / FrameNet data failed to load (${lexicalState.reason}).`
+              : `Required resources ready: WordNet ${lexicalState.data.wordnet.edition} (${lexicalState.data.wordnet.synsets.toLocaleString()} synsets) and FrameNet ${lexicalState.data.framenet.edition} (${lexicalState.data.framenet.frames.toLocaleString()} frames).`}
+        </strong>
       </p>
       <div className="chips" role="group" aria-label="disposition">
         {DISPOSITIONS.map((d) => (
           <button
             key={d.key}
+            disabled={lexicalState.status !== "ready"}
             className="chip"
             aria-pressed={d.key === dispKey}
             style={d.key === dispKey ? { borderColor: "var(--accent)", fontWeight: 700 } : undefined}
@@ -383,11 +406,11 @@ export default function Ask() {
       </p>
       <div className="chips">
         {SCENARIOS.map((s) => (
-          <button key={s.name} className="chip" onClick={() => runScenario(s.name)}>
+          <button key={s.name} className="chip" disabled={lexicalState.status !== "ready"} onClick={() => runScenario(s.name)}>
             {s.title}
           </button>
         ))}
-        <button className="chip ghost" onClick={reset}>
+        <button className="chip ghost" disabled={lexicalState.status !== "ready"} onClick={reset}>
           reset conversation
         </button>
       </div>
@@ -412,6 +435,7 @@ export default function Ask() {
       <div className="lab-input">
         <input
           value={draft}
+          disabled={lexicalState.status !== "ready"}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -424,6 +448,7 @@ export default function Ask() {
         />
         <button
           className="primary"
+          disabled={lexicalState.status !== "ready"}
           onClick={() => {
             send(draft);
             setDraft("");

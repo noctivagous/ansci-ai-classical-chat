@@ -2,10 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "url";
 
-// The fork engine's optional data providers (WordNet extract, FrameNet
-// bundle) load from disk under Node. In the browser build they are
-// stubbed out: the providers detect the failure and disable themselves,
-// and the dashboard labels them OFF rather than pretending otherwise.
+// Node disk-loading paths are stubbed in the browser. The required
+// WordNet and FrameNet bundles are installed via browser-lexical-data.ts.
 const stub = fileURLToPath(new URL("./src/node-stub.ts", import.meta.url));
 
 export default defineConfig({
@@ -18,9 +16,7 @@ export default defineConfig({
     outDir: "dist/dashboard",
   },
   // src/framenet.ts resolves its bundle directory from __dirname at
-  // module level (harmless under Node's CJS build). Give the browser
-  // bundle a defined value; the fs stub then reports the bundle absent
-  // and the provider disables itself, as designed.
+  // module level; define it for the browser bundle's unused disk path.
   define: {
     __dirname: JSON.stringify("/"),
     __filename: JSON.stringify("/index.js"),

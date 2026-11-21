@@ -2,9 +2,8 @@ import { useMemo } from "react";
 import { CAPABILITIES, EVIDENCE_AS_OF, SENSE_ROWS } from "./evidence";
 import Lab from "./Lab";
 import Ask from "./Ask";
-import Roadmap from "./Roadmap";
+import Roadmap from "./RoadmapView";
 import { parse } from "../../../src/ansci/parse";
-import { generate } from "../../../src/ansci/generate";
 
 function Bars({ bars }: { bars: { label: string; value: number; max: number }[] }) {
   return (
@@ -40,33 +39,6 @@ function LiveHasCold() {
   );
 }
 
-function LiveF1() {
-  const outcome = useMemo(() => {
-    try {
-      const p = parse("他不去学校。", "zh");
-      const negated = p.meaning.nodes.some((n) => n.states?.negated);
-      return { regenerated: generate(p), negated };
-    } catch (e) {
-      return { error: e instanceof Error ? e.message : String(e) };
-    }
-  }, []);
-  return (
-    <p className="live-outcome">
-      Live check, just now: <code>他不去学校。</code> (“He does not go to school”) regenerates as{" "}
-      <code>{outcome.regenerated ?? outcome.error}</code>
-      {outcome.regenerated && (
-        <>
-          {" "}
-          — negation present in the parse: <strong>{outcome.negated ? "yes" : "no"}</strong>.
-          {outcome.negated
-            ? " The negation survives the round trip: closed at stage 5."
-            : " The sentence comes back affirmative and the checker says nothing."}
-        </>
-      )}
-    </p>
-  );
-}
-
 const FIRST_STEPS: { priority: string; task: string; requirements: string }[] = [
   {
     priority: "1 · Dialogue core",
@@ -76,7 +48,7 @@ const FIRST_STEPS: { priority: string; task: string; requirements: string }[] = 
   },
   {
     priority: "2 · Reply generation",
-    task: "Built (2026-11-16): the planner builds a meaning graph for each reply from the turn's derivations and the session record, prices it, and the generator speaks from that graph — assertions, sets of conclusions, causal forms, gap questions, corrections, bounded initiative. English-first; the Chinese reply surface is separate work.",
+    task: "Built (2026-11-16): the planner builds a meaning graph for each reply from the turn's derivations and the session record, prices it, and the generator speaks from that graph — assertions, sets of conclusions, causal forms, gap questions, corrections, bounded initiative. English is the sole language in project scope for parsing and replies.",
     requirements:
       "No canned sentence whose content is not in the reply's own meaning graph — with one named exception: the steering probe's wording on turns no derivation backs, flagged wording-not-derived in every trace. Every claim inspectable back to the derivation that produced it. Confidence carried through — weak derivations surface hedged, and below the floor the turn declines with its ground recorded.",
   },
@@ -88,9 +60,9 @@ const FIRST_STEPS: { priority: string; task: string; requirements: string }[] = 
   },
   {
     priority: "4 · Independent evaluation",
-    task: "WP2, the judged benchmark; the first sealed set under the full C.5 protocol; and the H3 sense experiment, including its Chinese arm.",
+    task: "WP2, the judged benchmark; the first sealed set under the full C.5 protocol; and the English H3 sense experiment.",
     requirements:
-      "The tooling landed on 2026-11-15 — the sealed-set machinery and the review-triage queue are built and in the repo. What this needs now is people: an item author independent of the builders, a custodian distinct from the author, and judges who are never the builder. Bars are ratified before the run (precision ≥90% with the lower bound ≥85%; unsupported inferences ≤5%). H3 additionally needs 60 native Chinese speakers.",
+      "The tooling landed on 2026-11-15 — the sealed-set machinery and the review-triage queue are built and in the repo. What this needs now is people: an item author independent of the builders, a custodian distinct from the author, and judges who are never the builder. Bars are ratified before the run (precision ≥90% with the lower bound ≥85%; unsupported inferences ≤5%). H3 is scoped to English items and English-speaking judges.",
   },
   {
     priority: "5 · Feeders & banking",
@@ -125,7 +97,7 @@ const RECORDED_FAILURES: { title: string; body: string; status: string }[] = [
   },
   {
     title: "H3a vs H3b — the sense rivalry — is unsettled",
-    body: "Two preregistered accounts of sense priority (Water-first vs Earth-restraint) make different predictions in conflicted sentences. The deciding instrument is a human experiment — free interpretation before forced choice, dozens of judges, a Chinese arm with 60 native speakers. It cannot be supplied inside this project loop, so the rivalry stays honestly open.",
+    body: "Two preregistered accounts of sense priority (Water-first vs Earth-restraint) make different predictions in conflicted English sentences. The deciding instrument is an English-only human experiment — free interpretation before forced choice, with independent judges. It cannot be supplied inside this project loop, so the rivalry stays honestly open.",
     status: "preregistered 2026-11-15 · awaiting external judges",
   },
   {
@@ -159,7 +131,7 @@ export default function App() {
         <p className="intro">
           AnSci is an attempt to build a working mind out of classical machinery: a knowledge graph
           of ancient Chinese science — the body, the world and the heavens, interrelated through the
-          Five Phases (Wuxing, 五行） — joined to a sentence layer that parses English and Chinese{" "}
+          Five Phases (Wuxing, 五行） — joined to an English-only sentence layer{" "}
           <em>by means of</em> that same system. Classify a thing in the ontology, and its neighbours
           start telling you about it: that is the thesis, and it is being tested, not assumed.
         </p>
@@ -298,7 +270,7 @@ export default function App() {
         <div className="cards">
           <article className="card failure">
             <p className="card-area">Depth stage 5 — built · known defect F1, closed</p>
-            <h3>Chinese preverbal negation was dropped — fixed through the ontology</h3>
+            <h3>Historical defect: preverbal negation (outside current scope)</h3>
             <p>
               不 and 没 before a verb used to fall through every branch of the parser, so a
               negative sentence parsed — and regenerated — as its affirmative: a silent,
@@ -308,9 +280,10 @@ export default function App() {
               is selected by the negated verb's aspect bundle, and the negation family rose from
               84.4% to 91.2%, over its floor. The programme's ≥95% aggregate is now claimed —
               97.7–98.2% — with two families (precision, suppressed roles) declared ontology
-              failures in the stage report rather than quietly engineered around.
+              failures in the stage report rather than quietly engineered around. This Chinese
+              result is retained as historical evidence; Chinese parsing is not a current project
+              requirement; the project targets English parsing and output only.
             </p>
-            <LiveF1 />
             <p className="source">docs/ansci/stage-5-report.md · the pinning test was flipped deliberately, as the baseline prescribed</p>
           </article>
           <article className="card failure">
@@ -360,8 +333,8 @@ export default function App() {
       <footer>
         <h2>Run the whole thing locally</h2>
         <p>
-          This page runs the engine with its disk-backed providers off. The full system — WordNet
-          provider, FrameNet bundle, every evaluation runner — is in the repository:
+          This page loads WordNet and FrameNet from the required browser data assets. The full
+          system and every evaluation runner are in the repository:
         </p>
         <pre>{`npm install
 npm test                 # the suite (542 tests)

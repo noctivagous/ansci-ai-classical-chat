@@ -17,7 +17,7 @@ const record = (name, ok, detail) => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name} — ${detail}`);
 };
 
-const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml" };
+const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".json": "application/json" };
 const server = createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
   if (p.endsWith("/")) p += "index.html";
@@ -41,12 +41,25 @@ async function send(text) {
 }
 
 try {
-  // ---- map page: Full Chat button ----
+  // ---- required lexical assets gate both browser chat surfaces ----
+  await page.route("**/ansci-data/**", (route) => route.fulfill({ status: 503, body: "test: unavailable" }));
   await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => document.querySelector("#chatResourceStatus")?.dataset.state === "error");
+  const rootBlocked = await page.locator("#chatResourceStatus").textContent();
+  record("map: missing lexical data explains why chat is disabled", rootBlocked?.includes("WordNet") === true && rootBlocked.includes("failed"), rootBlocked);
+  record("map: missing lexical data keeps composer disabled", await page.locator("#chatInput").isDisabled() && await page.locator("#sayBtn").isDisabled(), "composer and Say remain disabled");
+  await page.unroute("**/ansci-data/**");
+
+  // ---- map page: Full Chat button and successful lexical readiness ----
+  await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.waitForFunction(() => document.querySelector("#chatResourceStatus")?.dataset.state === "ready", null, { timeout: 30000 });
+  const rootReady = await page.locator("#chatResourceStatus").textContent();
+  record("map: root schematic loads required WordNet and FrameNet", rootReady?.includes("WordNet") === true && rootReady.includes("FrameNet"), rootReady);
+  record("map: root composer enabled only after data load", await page.locator("#chatInput").isEnabled() && await page.locator("#sayBtn").isEnabled(), "composer enabled after ready status");
   const fullChat = page.locator('a[href="/chat/"]');
   record("map: Full Chat button present", (await fullChat.count()) === 1, `count=${await fullChat.count()} text="${(await fullChat.first().textContent())?.trim()}"`);
   await fullChat.first().click();
-  await page.waitForTimeout(600);
+  await page.locator('[data-testid="lexical-status"][data-state="ready"]').waitFor({ timeout: 30000 });
   record("map: Full Chat links to /chat/", page.url() === base + "/chat/", page.url());
 
   // ---- chat page structure ----

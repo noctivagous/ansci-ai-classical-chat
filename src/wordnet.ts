@@ -168,6 +168,12 @@ export function getDefaultExtract(): WordNetExtract {
   return defaultExtract;
 }
 
+/** Install an already-loaded extract (for browser builds that fetch the
+ *  same checked-in parts as static assets instead of reading disk). */
+export function installDefaultExtract(extract: WordNetExtract): void {
+  defaultExtract = extract;
+}
+
 /** lemma (lowercase) -> synset records, built once per extract. */
 const lemmaIndexCache = new WeakMap<WordNetExtract, Map<string, SynsetRecord[]>>();
 export function synsetsForLemma(extract: WordNetExtract, lemma: string): SynsetRecord[] {

@@ -23,13 +23,12 @@ Open English WordNet is itself derived from Princeton WordNet:
   https://wordnet.princeton.edu — used under the WordNet License
   (BSD-style, permissive): https://wordnet.princeton.edu/license-and-commercial-use
 
-FrameNet base layer (installed locally by scripts/import-framenet.py)
----------------------------------------------------------------------
-The FrameNet layer is NOT shipped in this repository: it is installed on
-demand by scripts/import-framenet.py (the bundle it writes to
-data/framenet/ and the raw download under data/raw/ are gitignored; a
-small fixture subset for tests lives in test/fixtures/framenet/). The
-data installed is
+FrameNet base layer (data/framenet/, src/framenet.ts)
+-------------------------------------------------------
+The trimmed FrameNet structure bundle in data/framenet/ is checked into
+this repository and deployed as same-origin browser assets. The raw
+download under data/raw/ is not shipped; a small fixture subset for tests
+lives in test/fixtures/framenet/. The included data is
 
   FrameNet Release 1.5
   © The Regents of the University of California / International

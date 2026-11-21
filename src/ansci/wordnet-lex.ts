@@ -139,6 +139,7 @@
  */
 import {
   getDefaultExtract,
+  installDefaultExtract,
   synsetsForLemma,
   synsetsForSurface,
   type WordNetExtract,
@@ -215,6 +216,17 @@ export function enableWordnetLexicon(on: boolean): void {
     entryCache.clear();
     derivedLemmas.clear();
   }
+}
+
+/** Install the checked-in WordNet extract loaded by a browser asset
+ *  adapter. This resets prior negative filesystem probes and derived
+ *  entries so the required browser provider becomes the active source. */
+export function installWordnetExtract(extract: WordNetExtract): void {
+  enableWordnetLexicon(false);
+  installDefaultExtract(extract);
+  extractCache = extract;
+  extractTried = true;
+  enabled = true;
 }
 
 /* ---------------- derived-entry registry ---------------- */

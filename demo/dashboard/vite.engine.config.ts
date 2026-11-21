@@ -3,10 +3,10 @@ import { fileURLToPath } from "url";
 
 // The live engine bundle for the schematic root page: src/engine-entry.ts
 // (the real fork turn loop) built as a single IIFE script, dist/engine.js,
-// sitting beside the root page at the site root. The page probes for it —
-// present, the page runs live; absent (the artifact preview), it walks
-// recorded turns instead. Same browser shims as the dashboard build:
-// the engine's disk-backed providers are stubbed and disable themselves.
+// sitting beside the root page at the site root. The page disables chat
+// until this engine confirms the required browser datasets are ready.
+// Node disk-loading paths are stubbed; lexical providers are installed
+// through the browser data loader.
 const stub = fileURLToPath(new URL("./src/node-stub.ts", import.meta.url));
 
 export default defineConfig({

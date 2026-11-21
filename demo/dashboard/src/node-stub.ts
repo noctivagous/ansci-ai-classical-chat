@@ -1,12 +1,16 @@
 /**
  * Browser stub for the Node builtins the engine's data loaders import.
- * Filesystem reads throw / report absence, which the WordNet and
- * FrameNet providers already handle by disabling themselves.
+ * Filesystem reads throw / report absence. WordNet and FrameNet are
+ * loaded separately from validated same-origin static browser assets;
+ * these stubs only disable their Node disk-loading paths.
  */
 export function readFileSync(): never {
   throw new Error("filesystem unavailable in the browser build");
 }
 export function writeFileSync(): never {
+  throw new Error("filesystem unavailable in the browser build");
+}
+export function mkdirSync(): never {
   throw new Error("filesystem unavailable in the browser build");
 }
 export function existsSync(): boolean {

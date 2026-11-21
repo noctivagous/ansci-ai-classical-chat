@@ -184,6 +184,12 @@ export function getDefaultFrameNetBundle(): FrameNetBundle | undefined {
   return defaultBundle;
 }
 
+/** Install an already-loaded bundle (for browser builds that fetch the
+ *  same checked-in parts as static assets instead of reading disk). */
+export function installDefaultFrameNetBundle(bundle: FrameNetBundle): void {
+  defaultBundle = bundle;
+}
+
 /* ------------------------------------------------------------------ */
 /* Node ids                                                            */
 /* ------------------------------------------------------------------ */

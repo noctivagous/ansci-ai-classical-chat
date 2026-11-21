@@ -94,6 +94,7 @@ body {
 .settingsbar .note {
   font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted); letter-spacing: .02em;
 }
+.settingsbar .resource-error { color: var(--trace-stop); font-weight: 700; }
 .settingsbar a.navlink {
   font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 600;
   letter-spacing: .04em; text-transform: uppercase; color: var(--ink);

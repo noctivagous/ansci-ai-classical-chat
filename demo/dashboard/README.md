@@ -19,14 +19,12 @@ app (source in `chat/`, its own Vite config) with one live engine
 session per tab and a settings bar for turn information (trace, walk
 path, declines); it builds into `dist/chat/` in the same build.
 
-The root page runs in two modes from one source. The build also emits
-`dist/engine.js` (from `src/engine-entry.ts`, via
-`vite.engine.config.ts`): the real fork turn loop as a single script.
-Served from this build, the page finds it and runs LIVE — every
-sentence goes through the code, and the walk drawn on the map is the
-turn trace's own mapPath. Where the script is absent (the Muse
-artifact preview), the same page walks recorded turns from the real
-engine instead, and says so.
+The root page runs the real fork turn loop from `dist/engine.js` (built
+from `src/engine-entry.ts`, via `vite.engine.config.ts`). It does not
+fall back to recorded turns. The map chat, `/chat/` app, and dashboard
+Ask panel remain disabled until WordNet and FrameNet load and validate.
+If the engine or either dataset is missing, each chat surface shows the
+failure reason and refuses turns.
 
 Sync loop: the schematic is revised in its Muse artifact first
 (fast iteration), then the new revision replaces `root/index.html`,
@@ -43,9 +41,12 @@ the Vite `outDir` (`dist/dashboard`) and serves only the app subtree
 — the root page is then built but never uploaded.
 
 The engine is imported from `../../src/ansci/` — the same TypeScript the
-test suite and evaluation runners measure. Nothing in the lab is canned.
-The disk-backed providers (WordNet extract, FrameNet bundle) are stubbed
-in the web build and the page labels them OFF rather than pretending.
+test suite and evaluation runners measure. WordNet and FrameNet are
+copied to same-origin `dist/ansci-data/` assets and installed through a
+browser loader before a chat session opens. The build validates source
+manifests and parts, enforces Cloudflare's per-file static-asset limit,
+and checks that the built site contains both datasets and fail-closed
+readiness gates. `NOTICE` is copied beside the deployed assets.
 
 ## Run locally
 

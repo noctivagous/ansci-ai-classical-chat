@@ -8,10 +8,8 @@ import { fileURLToPath } from "url";
 // produces the whole site — / (the schematic map page, copied from
 // root/index.html), /dashboard/ (the dashboard app) and /chat/
 // (this app) — and wrangler's pinned assets directory (./dist)
-// serves all three. Same browser shims as the dashboard and engine
-// builds: the fork engine's disk-backed providers (WordNet extract,
-// FrameNet bundle) are stubbed out and disable themselves, and the
-// page labels them OFF rather than pretending otherwise.
+// serves all three. Node disk-loading paths are stubbed, and the required
+// lexical providers are installed from same-origin assets before chat runs.
 const stub = fileURLToPath(new URL("../src/node-stub.ts", import.meta.url));
 const here = fileURLToPath(new URL(".", import.meta.url));
 

@@ -3,6 +3,7 @@ import { newSession, type FrameInput, type Session } from "../../../../src/ansci
 import { processTurn, type TurnResult } from "../../../../src/ansci/turn";
 import { NEUTRAL_COMPOSITION } from "../../../../src/ansci/composition";
 import type { PricingRecord } from "../../../../src/ansci/pricing";
+import { initializeBrowserLexicalData, type BrowserLexicalReadiness } from "../../src/browser-lexical-data";
 
 /**
  * AnSci — Full Chat (/chat/).
@@ -30,10 +31,9 @@ import type { PricingRecord } from "../../../../src/ansci/pricing";
  * located gap it stopped at). Registers join this bar in a later
  * slice; the bar is a row of toggles so they can.
  *
- * Browser-build configuration, as on the other surfaces: the
- * engine's WordNet and FrameNet providers are disk-backed, are
- * stubbed out of the web build and disable themselves — the
- * settings bar says so.
+ * Browser runtime: WordNet and FrameNet are required. Their checked-in
+ * data parts load from same-origin Cloudflare static assets before any
+ * session can accept a turn; a missing or invalid part keeps chat gated.
  */
 
 const ELEMENT_COLORS: Record<string, string> = {
@@ -330,6 +330,23 @@ async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 export default function App() {
+  const [lexicalState, setLexicalState] = useState<
+    | { status: "loading"; reason: string }
+    | { status: "ready"; data: BrowserLexicalReadiness }
+    | { status: "error"; reason: string }
+  >({ status: "loading", reason: "Loading required WordNet and FrameNet data…" });
+
+  useEffect(() => {
+    let mounted = true;
+    initializeBrowserLexicalData().then(
+      (data) => { if (mounted) setLexicalState({ status: "ready", data }); },
+      (error: unknown) => {
+        if (mounted) setLexicalState({ status: "error", reason: error instanceof Error ? error.message : String(error) });
+      },
+    );
+    return () => { mounted = false; };
+  }, []);
+
   const sessionObjs = useRef(new Map<number, Session>());
   const nextId = useRef(1);
   const counter = useRef(0);
@@ -374,6 +391,7 @@ export default function App() {
   }, [active?.id, active?.exchanges.length]);
 
   const newTab = () => {
+    if (lexicalState.status !== "ready") return;
     const tab = makeTab();
     setTabs((ts) => [...ts, tab]);
     setActiveId(tab.id);
@@ -387,6 +405,7 @@ export default function App() {
   };
 
   const send = (tabId: number, text: string) => {
+    if (lexicalState.status !== "ready") return;
     const trimmed = text.trim();
     if (!trimmed) return;
     const session = sessionObjs.current.get(tabId);
@@ -445,7 +464,7 @@ export default function App() {
             </button>
           ))}
         </div>
-        <button className="new-session" onClick={newTab} data-testid="new-session">
+        <button className="new-session" onClick={newTab} disabled={lexicalState.status !== "ready"} data-testid="new-session">
           + New session
         </button>
       </div>
@@ -493,7 +512,19 @@ export default function App() {
         >
           {copied ? "Copied" : "Copy"}
         </button>
-        <span className="note">browser build — WordNet &amp; FrameNet providers off</span>
+        <span
+          className={lexicalState.status === "error" ? "note resource-error" : "note"}
+          role="status"
+          aria-live="polite"
+          data-testid="lexical-status"
+          data-state={lexicalState.status}
+        >
+          {lexicalState.status === "loading"
+            ? lexicalState.reason
+            : lexicalState.status === "error"
+              ? `Chat disabled: required WordNet / FrameNet data failed to load (${lexicalState.reason}).`
+              : `WordNet ${lexicalState.data.wordnet.edition} and FrameNet ${lexicalState.data.framenet.edition} loaded; required resources ready.`}
+        </span>
         <a className="navlink" href="../">
           ← Map
         </a>
@@ -515,7 +546,7 @@ export default function App() {
             </p>
             <div className="examples">
               {EXAMPLES.map((s) => (
-                <button key={s} className="example-chip" onClick={() => send(active.id, s)}>
+                <button key={s} className="example-chip" disabled={lexicalState.status !== "ready"} onClick={() => send(active.id, s)}>
                   {s}
                 </button>
               ))}
@@ -553,12 +584,13 @@ export default function App() {
         <span className="prompt">visitor&gt;</span>
         <input
           value={active.draft}
+          disabled={lexicalState.status !== "ready"}
           onChange={(e) => setDraft(active.id, e.target.value)}
           placeholder="Say something…"
           aria-label="message"
           data-testid="composer-input"
         />
-        <button className="send" type="submit" data-testid="composer-send">
+        <button className="send" type="submit" disabled={lexicalState.status !== "ready"} data-testid="composer-send">
           Send
         </button>
       </form>

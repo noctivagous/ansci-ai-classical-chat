@@ -63,7 +63,7 @@ export const CAPABILITIES: Capability[] = [
     figure: "19/19 bundles · 98.6% irregular forms",
     measures: "bundle handling and irregular-form selection on the challenge inventory — not aspect understanding in free text",
     meaning:
-      "English and Chinese aspect were rebuilt as configurations over features (bounded, ongoing, perfect, experiential…) instead of single labels — 了/着/过 map distinctly, the perfect progressive round-trips exactly, and irregular verb forms are selected at 73/74 against a ratified ≥98% bar. The one miss is become's participle: identity forms are invisible to the forms index, a documented blindness, not a random error.",
+      "English aspect is handled as configurations over features (bounded, ongoing, perfect, experiential…) instead of single labels, and irregular verb forms are selected at 73/74 against a ratified ≥98% bar. Historical Chinese aspect results (了/着/过 and perfect-progressive round trips) are retained for the record but are outside the English-only project scope. The one English miss is become's participle: identity forms are invisible to the forms index, a documented blindness, not a random error.",
     source: "docs/ansci/aspect-challenge.md",
   },
   {
@@ -95,7 +95,7 @@ export const CAPABILITIES: Capability[] = [
     figure: "negation 91.2% · F1 closed",
     measures: "feature-family retention, negation included, on builder-authored challenge sets — not judged semantic correctness",
     meaning:
-      "Stage 5 was amended (Part F) to forbid silent engineering fixes: each remaining family had to be carried by the ontology or declared an ontology failure. Negation is now a structured state — a Water state with its Metal carrier recorded (the auxiliary in English; in Chinese the negator itself, its form 不/没 selected by the negated verb's aspect bundle, a rule that scored 15/15 on its admission probe including configurations the parser had never handled). Chinese preverbal negation, dropped at parse for the whole programme (defect F1), round-trips exactly; the negation family rose from 84.4% to 91.2%, over its 90% floor. Number gained counted-quantity atoms through the classifier — the Metal the noun generates — and temporal phrases resolve into the ontology's own time nodes. Two families are declared ontology failures in the report, in those words: precision (“the exact population”) and suppressed-role coverage.",
+      "Stage 5 was amended (Part F) to forbid silent engineering fixes: each remaining family had to be carried by the ontology or declared an ontology failure. English negation is a structured state with its auxiliary recorded as the carrier. The historical multilingual implementation also handled Chinese negator forms 不/没 and closed a Chinese preverbal-negation defect; those results are retained for the record, not as current requirements. The negation family rose from 84.4% to 91.2%, over its 90% floor. Number gained counted-quantity atoms through the classifier — the Metal the noun generates — and temporal phrases resolve into the ontology's own time nodes. Two families are declared ontology failures in the report, in those words: precision (“the exact population”) and suppressed-role coverage.",
     caveat: "Admission probes and challenge sets are builder-authored — internal evidence until independently authored sets reproduce them (Part C.5).",
     source: "docs/ansci/stage-5-report.md · docs/ansci/stage5-admission-probes.md",
   },
@@ -140,8 +140,8 @@ export const CAPABILITIES: Capability[] = [
     figure: "29/29 · 27 exact",
     measures: "stability of the standing exhibit across runs — the corpus was fitted during development, so this is not general accuracy",
     meaning:
-      "A fixed English+Chinese corpus in demo/wuxing-parser/ is regenerated on every run — including two sentences that must be FLAGGED (a tense-carrier violation, a missing classifier). Weakening an expectation to fake progress would be visible in the file's own history.",
-    caveat: "A fitted demonstration result, not general parser accuracy.",
+      "A fixed historical English+Chinese corpus in demo/wuxing-parser/ is regenerated on every run — including two sentences that must be FLAGGED (a tense-carrier violation, a missing classifier). Its Chinese cases are legacy evidence only; the current project scope and acceptance runs are English-only.",
+    caveat: "A fitted demonstration result, not general parser accuracy or a multilingual requirement.",
     source: "demo/wuxing-parser/RESULTS.md",
   },
 ];
