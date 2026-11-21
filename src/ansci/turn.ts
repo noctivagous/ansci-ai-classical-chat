@@ -2942,6 +2942,46 @@ function answerKnowQuestion(
     trace.wordingNotDerived = true;
     return { reply: identity ? `Yes. Your name is ${identity.name}.` : "No. You have not told me your name.", trace };
   }
+  // A relative clause under the know-question's NP is a
+  // description used to identify the requested thing, not an
+  // asserted event. Answer from an earlier matching event only;
+  // otherwise ask for the missing identity instead of treating
+  // the relative clause's location as the question's subject.
+  if (theme) {
+    const relativeRoot = parsed.meaning.edges
+      .filter((e) => e.from === theme.id && e.relation === "modifier")
+      .map((e) => nodeById(parsed, e.to))
+      .find((node) => node.role === "verb");
+    if (relativeRoot) {
+      const relativeAgent = targets(parsed, relativeRoot.id, "agent")[0]?.lemma.toLowerCase();
+      const relativeLocation = targets(parsed, relativeRoot.id, "location")[0]?.lemma.toLowerCase();
+      const match = [...session.events].reverse().find((event) =>
+        event.turn < trace.turn && event.verb === relativeRoot.lemma &&
+        event.agent?.toLowerCase() === (relativeAgent ?? theme.lemma.toLowerCase()) &&
+        (!relativeLocation || event.location?.toLowerCase() === relativeLocation),
+      );
+      if (match) {
+        const verb = EN_LEXICON[match.verb] as VerbEntry | undefined;
+        const form = verb?.forms?.third ?? match.verb;
+        const place = match.location ? ` in ${match.locationText ?? cap(match.location)}` : "";
+        trace.recordAnswer = {
+          source: "event",
+          event: { verb: match.verb, role: "location", filler: match.location ?? "", turn: match.turn },
+          ground: `an earlier stated event matches the relative description: ${match.agent} ${match.verb}${place}`,
+        };
+        trace.planNote = "the know-question's description matched an event already in the conversation record";
+        trace.wordingNotDerived = true;
+        return { reply: `Yes. You told me the team ${form}${place}.`, trace };
+      }
+      const noun = theme.form.toLowerCase();
+      trace.declineReason =
+        `the relative description narrows the requested ${noun}, but no earlier event in the conversation ` +
+        `identifies which ${noun} it is`;
+      trace.planNote = "the relative clause is a referent description; the conversation record has no matching event to identify it";
+      trace.wordingNotDerived = true;
+      return { reply: `I don't know which ${noun} you mean.`, trace };
+    }
+  }
   const comp = parsed.meaning.edges.find((e) => e.from === root.id && e.relation === "complement");
   if (!comp) return undefined;
   const embRoot = nodeById(parsed, comp.to);
@@ -4446,6 +4486,18 @@ function processTurnInnerBody(
     openClarification(session, { openedBy: `turn:${turn}`, point: "utterance", question: "Could you put that another way?" });
     return { reply: "Could you put that another way?", trace };
   }
+  // Resolve discourse pronouns before assessment builds grounding and scene
+  // records. Previously resolution happened only while recording events, so
+  // copular statements such as "It was in Chicago" kept "it" as a new scene
+  // figure even when the session already held a compatible antecedent.
+  for (const node of parsed.meaning.nodes) {
+    const pronoun = node.lemma.toLowerCase();
+    if (node.syntacticElement !== "Earth" || (pronoun !== "it" && pronoun !== "them")) continue;
+    const antecedent = resolvePronoun(session, pronoun, turn);
+    if (!antecedent) continue;
+    trace.resolutions.push({ pronoun, resolvedTo: antecedent.lemma });
+    node.lemma = antecedent.lemma;
+  }
   const root = nodeById(parsed, parsed.meaning.rootId);
   trace.parseSummary = `root '${root.lemma}' (${root.syntacticElement}${root.role ? ", " + root.role : ""}); nodes: ${parsed.meaning.nodes.map((n) => n.lemma).join(", ")}; mood: ${root.states?.mood ?? "indicative"}`;
   trace.tokenResolutions = parsed.tokenResolutions ?? [];
@@ -5523,14 +5575,23 @@ function processTurnInnerBody(
    *  predicable correction gets the delta graph (§8.7 S12). */
   let newStatePredicable = false;
 
-  if (isVerbRoot) {
+  // A question can mention a predicate as part of a relative clause
+  // ("Do you know the team that plays in New York?"). That clause
+  // describes the requested referent; it is not a telling that the
+  // speaker asserted. Only indicative turns enter the event ledger.
+  if (isVerbRoot && (root.states?.mood ?? "indicative") === "indicative") {
     const agent = targets(parsed, root.id, "agent")[0];
+    const locationNode = targets(parsed, root.id, "location")[0];
+    const locationModifier = locationNode && parsed.meaning.edges
+      .filter((e) => e.relation === "qualifies" && e.to === locationNode.id)
+      .map((e) => nodeById(parsed, e.from))[0];
     const ev = {
       verb: root.lemma,
       agent: agent ? resolve(agent.lemma) : undefined,
       patient: targets(parsed, root.id, "patient")[0]?.lemma,
       theme: targets(parsed, root.id, "theme")[0]?.lemma,
-      location: targets(parsed, root.id, "location")[0]?.lemma,
+      location: locationNode?.lemma,
+      locationText: locationNode ? [locationModifier?.form, locationNode.form].filter(Boolean).join(" ") : undefined,
       recipient: targets(parsed, root.id, "recipient")[0]?.lemma,
       about: targets(parsed, root.id, "about")[0]?.lemma,
       turn,
@@ -5538,6 +5599,31 @@ function processTurnInnerBody(
     };
     if (ev.patient) ev.patient = resolve(ev.patient);
     if (ev.location) ev.location = resolve(ev.location);
+    // Record embedded verbal predicates (including relative clauses) as
+    // their own attributed events. The graph already keeps their roles
+    // separate from the matrix event; preserving those edges here lets a
+    // later question consult what the speaker actually stated.
+    for (const embeddedRoot of parsed.meaning.nodes) {
+      if (embeddedRoot.id === root.id || embeddedRoot.role !== "verb" || embeddedRoot.syntacticElement !== "Wood") continue;
+      const embeddedAgent = targets(parsed, embeddedRoot.id, "agent")[0];
+      const embeddedPatient = targets(parsed, embeddedRoot.id, "patient")[0];
+      const embeddedTheme = targets(parsed, embeddedRoot.id, "theme")[0];
+      const embeddedLocation = targets(parsed, embeddedRoot.id, "location")[0];
+      const embeddedLocationModifier = embeddedLocation && parsed.meaning.edges
+        .filter((e) => e.relation === "qualifies" && e.to === embeddedLocation.id)
+        .map((e) => nodeById(parsed, e.from))[0];
+      if (!embeddedAgent && !embeddedPatient && !embeddedTheme && !embeddedLocation) continue;
+      session.events.push({
+        verb: embeddedRoot.lemma,
+        agent: embeddedAgent ? resolve(embeddedAgent.lemma) : undefined,
+        patient: embeddedPatient ? resolve(embeddedPatient.lemma) : undefined,
+        theme: embeddedTheme?.lemma,
+        location: embeddedLocation ? resolve(embeddedLocation.lemma) : undefined,
+        locationText: embeddedLocation ? [embeddedLocationModifier?.form, embeddedLocation.form].filter(Boolean).join(" ") : undefined,
+        turn,
+        text,
+      });
+    }
     /* FIX (iii) (the narrative programme, 2026-11-19): the
      * subordinate clause's own event. The parse flattens an
      * adverbial subordinate clause into the root clause's
@@ -5840,13 +5926,26 @@ function processTurnInnerBody(
     const q = parsed.query;
     const verbEntry = EN_LEXICON[root.lemma] as VerbEntry | undefined;
     if (q && isVerbRoot && verbEntry && verbEntry.kind === "verb") {
+      const askedRelation = q.expectedType === "location" ? "location" : q.relation;
+      const askedAgent = targets(parsed, root.id, "agent")[0]?.lemma.toLowerCase();
       const QUESTION_FILLERS = new Set(["what", "who", "where", "when", "which", "why"]);
-      const fillingEvent = [...session.events].reverse().find((e) => {
+      const fillingEvents = [...session.events].reverse().filter((e) => {
         if (e.turn >= turn || e.verb !== root.lemma) return false;
-        const v = (e as unknown as Record<string, unknown>)[q.relation];
+        if (askedAgent && e.agent?.toLowerCase() !== askedAgent) return false;
+        const v = (e as unknown as Record<string, unknown>)[askedRelation];
         return typeof v === "string" && !QUESTION_FILLERS.has(v);
       });
-      const filledBefore = fillingEvent !== undefined;
+      const distinctFillers = [...new Set(fillingEvents.map((e) => String((e as unknown as Record<string, unknown>)[askedRelation])))];
+      if (askedRelation === "location" && distinctFillers.length > 1) {
+        trace.declineReason =
+          "the record holds competing stated locations for the same event and agent (" +
+          distinctFillers.join(", ") + "); the location question needs clarification";
+        trace.planNote = "the record has competing location values, so it asks instead of choosing one";
+        trace.wordingNotDerived = true;
+        return { reply: "I have more than one location recorded: " + distinctFillers.join(" and ") + ". Which one do you mean?", trace };
+      }
+      const fillingEvent = fillingEvents[0];
+      const filledBefore = fillingEvents.length > 0;
       /* R1: the event answer. A recorded event of this verb
        * fills the asked role — the conversation itself
        * established what the question asks — so the answer
@@ -5862,14 +5961,21 @@ function processTurnInnerBody(
        * family's own clause shape (branch (f) below). */
       if (fillingEvent && fillingEvent.agent) {
         const ev = fillingEvent;
-        const filler = String((ev as unknown as Record<string, unknown>)[q.relation]);
+        const filler = String((ev as unknown as Record<string, unknown>)[askedRelation]);
         /* S0 (the S programme, 2026-11-19): the record answer
          * renders the event in the same family clause, so it
          * passes the same admission (soundEventClause). An
          * event whose fills cannot soundly be spoken is not
          * rendered as an answer — the declines below stand,
          * with the stand-down named in the plan note. */
-        const clause = soundEventClause(session, ev, { lowerSubject: true });
+        const clause = askedRelation === "location"
+          ? (() => {
+              const verb = EN_LEXICON[ev.verb] as VerbEntry | undefined;
+              const subject = ev.agent === "you" ? "you" : `the ${ev.agent}`;
+              const form = verb?.forms ? (ev.agent === "you" ? verb.forms.base : verb.forms.third) : ev.verb;
+              return ev.location ? `${subject} ${form} in ${ev.locationText ?? cap(ev.location)}` : undefined;
+            })()
+          : soundEventClause(session, ev, { lowerSubject: true });
         if (!clause) {
           trace.planNote =
             `the record holds an event of '${root.lemma}' filling the asked ${q.relation}, but its fills fail ` +
@@ -5878,9 +5984,9 @@ function processTurnInnerBody(
         trace.recordAnswer = {
           source: "event",
           ground:
-            `the question asks for the ${q.relation} of '${root.lemma}', and the recorded event of turn ${ev.turn} ` +
+            `the question asks for the ${askedRelation} of '${root.lemma}', and the recorded event of turn ${ev.turn} ` +
             `fills it ('${filler}') — the record answers, as what the person told`,
-          event: { verb: ev.verb, role: q.relation, filler, turn: ev.turn },
+          event: { verb: ev.verb, role: askedRelation, filler, turn: ev.turn },
         };
         trace.handAnswered = {
           by: "session-and-situation",

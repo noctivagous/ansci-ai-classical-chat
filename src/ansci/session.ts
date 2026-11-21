@@ -67,6 +67,7 @@ export interface EventRecord {
   patient?: string;
   theme?: string;
   location?: string;
+  locationText?: string;
   recipient?: string;
   /** The about-phrase's topic (Transcript Slice 6): what the
    *  event's content ranges over, under the parse's 'about'

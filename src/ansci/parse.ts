@@ -1078,7 +1078,9 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
   const compoundMods: EnItem[] = [];
   while (
     items[j + 1]?.kind === "noun" &&
-    wordnetVerb(items[j + 1].lower) === undefined &&
+    (wordnetVerb(items[j + 1].lower) === undefined ||
+      ["verb", "be", "aux", "comma", "terminal"].includes(items[j + 2]?.kind ?? "") ||
+      items[j + 2] === undefined) &&
     !isNumeralToken(head) &&
     !isNumeralToken(items[j + 1])
   ) {
@@ -2017,6 +2019,61 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
    *     clause-initial chunk's head is the very item 'that'
    *     follows. --- */
   const relPos = items.findIndex((it, k) => it.lower === "that" && k > contentStart && (items[k - 1]?.kind === "noun" || items[k - 1]?.kind === "pronoun"));
+  // Subject-gap relative embedded in a matrix object:
+  // "You know the team that plays in New York." The relative head
+  // supplies the subordinate subject, while the main clause keeps its
+  // own subject and object. This is distinct from the clause-initial
+  // subject-head relative below and is built compositionally.
+  if (relPos > contentStart + 1) {
+    const mainVerbItem = items.slice(contentStart, relPos).find((i) => i.kind === "verb");
+    const matrixSubject = mainVerbItem ? enChunk(items, contentStart) : null;
+    const headStart = relPos - 1;
+    const headChunk = enChunk(items, headStart);
+    const relativeVerb = items[relPos + 1];
+    const relativeEntry =
+      relativeVerb?.entry?.kind === "verb" ? relativeVerb.entry as VerbEntry : relativeVerb ? wordnetVerb(relativeVerb.lower) : undefined;
+    if (
+      mainVerbItem?.entry?.kind === "verb" &&
+      matrixSubject && matrixSubject.next === mainVerbItem.index &&
+      headChunk && headChunk.next === relPos &&
+      relativeVerb && relativeEntry
+    ) {
+      const mainEntry = mainVerbItem.entry as VerbEntry;
+      const matrixRoot = b.node(
+        { lemma: mainEntry.lemma, form: mainVerbItem.text, syntacticElement: "Wood", role: "verb" },
+        [mainVerbItem.index],
+      );
+      matrixRoot.states = {
+        voice: "active",
+        tense: mainVerbItem.formTag === "past" || mainVerbItem.formTag === "past/participle" ? "past" : "present",
+        verbForm: mainVerbItem.formTag,
+        mood: interrogative ? "interrogative" : "indicative",
+        subjectPerson: enSubjectPerson(matrixSubject.chunk),
+      };
+      const matrixAgent = enNodeFromChunk(b, matrixSubject.chunk, "agent");
+      const head = enNodeFromChunk(b, headChunk.chunk, "theme");
+      b.edge(matrixRoot, matrixAgent, "agent");
+      b.edge(matrixRoot, head, (mainEntry.slots[0] ?? "theme") as Relation);
+
+      const relativeRoot = b.node(
+        { lemma: relativeEntry.lemma, form: relativeVerb.text, syntacticElement: "Wood", role: "verb" },
+        [relativeVerb.index],
+      );
+      relativeRoot.states = { voice: "active", tense: relativeVerb.formTag === "past" ? "past" : "present", mood: "indicative", verbForm: relativeVerb.formTag ?? "third" };
+      b.edge(relativeRoot, head, "agent");
+      b.edge(head, relativeRoot, "modifier", "that");
+      const prep = items[relPos + 2];
+      if (prep?.kind === "prep") {
+        const location = enChunk(items, relPos + 3);
+        if (location) {
+          const place = enNodeFromChunk(b, location.chunk, "location");
+          place.prep = prep.lower;
+          b.edge(relativeRoot, place, "location");
+        }
+      }
+      return { meaning: b.graph(matrixRoot), connective: connective("en", tokens, spans), realizes: b.realizes, scopeAttachments: scope };
+    }
+  }
   if (relPos > 0) {
     const headC = enChunk(items, contentStart);
     const relSubjC = enChunk(items, relPos + 1);

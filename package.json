@@ -45,6 +45,7 @@
     "ansci:triage": "npm run build --silent && node scripts/ansci-triage.mjs",
     "ansci:parser-compare": "npm run build --silent && node scripts/ansci-parser-compare.mjs",
     "ansci:root-copula-controls": "npm run build --silent && node scripts/ansci-root-copula-controls.mjs",
+    "ansci:baseball-dialogue-controls": "npm run build --silent && node scripts/ansci-baseball-dialogue-controls.mjs",
     "ansci:audit": "npm run build --silent && node scripts/ansci-behaviour-audit.mjs"
   },
   "type": "commonjs",

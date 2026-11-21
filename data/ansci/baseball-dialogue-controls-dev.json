@@ -1,0 +1,60 @@
+{
+  "id": "ansci-baseball-dialogue-controls-dev-v1",
+  "purpose": "Mutable development replay from a user-reported web chat. Expectations describe the intended conversational content; this is not held-out or representative evidence.",
+  "turns": [
+    {
+      "id": "greeting",
+      "input": "hi",
+      "expected": { "act": "greeting" }
+    },
+    {
+      "id": "phatic-question",
+      "input": "how are you",
+      "expected": { "replyContains": "fine" }
+    },
+    {
+      "id": "sports-question",
+      "input": "did you see the ball game?",
+      "expected": {
+        "root": "see",
+        "requiredNodes": ["you", "game"],
+        "requiredEdges": [["see", "agent", "you"]],
+        "forbiddenNodeRoles": [["ball", "agent"], ["ball", "theme"], ["game", "patient"]]
+      }
+    },
+    {
+      "id": "game-introduction",
+      "input": "there was a ball game",
+      "expected": {
+        "requiredNodes": ["game", "ball"],
+        "requiredEdges": [["ball", "qualifies", "game"]]
+      }
+    },
+    {
+      "id": "topic-clarification",
+      "input": "baseball",
+      "expected": {
+        "linksToPriorTurn": ["baseball", "game"],
+        "topicUpdate": true
+      }
+    },
+    {
+      "id": "location-reference",
+      "input": "it was in New York",
+      "expected": {
+        "pronounResolvesTo": ["it", "baseball"],
+        "requiredNodes": ["york"],
+        "requiredEdges": [["new", "qualifies", "york"]]
+      }
+    },
+    {
+      "id": "relative-clause-question",
+      "input": "you know the team that plays in New York?",
+      "expected": {
+        "root": "know",
+        "requiredNodes": ["team", "play", "york"],
+        "requiredEdges": [["team", "modifier", "play"], ["play", "agent", "team"], ["play", "location", "york"]]
+      }
+    }
+  ]
+}

@@ -1107,6 +1107,16 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
   // stored in the same stream, and the stream role of an
   // utterance is read against utterances, not replies.
   const prev = [...session.objects].reverse().find((o) => o.producer === "person");
+  const bareTopic = parsed.meaning.nodes.length === 1 && parsed.meaning.nodes[0].role === "topic";
+  const prevCompound = prev && bareTopic
+    ? prev.content.meaning.edges
+        .filter((e) => e.relation === "qualifies")
+        .map((e) => ({
+          head: prev.content.meaning.nodes.find((n) => n.id === e.to),
+          modifier: prev.content.meaning.nodes.find((n) => n.id === e.from),
+        }))
+        .find((pair) => pair.head?.syntacticElement === "Earth" && pair.modifier?.syntacticElement === "Earth")
+    : undefined;
   const streamRole: SemanticObject["act"]["streamRole"] =
     turn === 1
       ? "opens"
@@ -1176,7 +1186,10 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     ...(quantities.length ? { quantities } : {}),
     ...(composition ? { composition } : {}),
     confidence,
-    links: { ...(prev ? { follows: prev.id } : {}) },
+    links: {
+      ...(prev ? { follows: prev.id } : {}),
+      ...(prevCompound?.head ? { continuesTopic: { objectId: prev!.id, topic: prevCompound.head.lemma.toLowerCase() } } : {}),
+    },
     trail: [{ unit: "lpu/semantic-assessment", note: `assessed as ${kind}` }],
   };
   /* The affect-prior consultation (the Glasgow scope

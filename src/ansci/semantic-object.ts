@@ -333,6 +333,9 @@ export interface SemanticObject {
     fills?: string;
     /** The object this one supersedes (slice 2+). */
     supersedes?: string;
+    /** A bare nominal follow-up that continues a recently described
+     *  compound topic. This records discourse continuity, not synonymy. */
+    continuesTopic?: { objectId: string; topic: string };
   };
   trail: TrailAnnotation[];
 }
