@@ -98,6 +98,72 @@ The three-case behavioural audit is not a broad baseline. Expand it with
 independent conversational cases, trace evidence, negative controls and
 human review of usefulness; reserve unseen cases for later evaluation.
 
+### System-map audit procedure and progress (2026-11-20)
+
+The audit covers every node ID in `ai-system/system-map.ts`. The map's
+percentages describe claimed completion toward the design goal; they are
+not audit results. `npm run ai:check` verifies map/path and root-page
+correspondence only.
+
+For each node, use this procedure and record the evidence in the ledger:
+
+1. **Resolve the claim.** Read the node's summary, parent, cords, path,
+   file and `currentCode`. Follow every named source file and identify the
+   claimed responsibility. For containers, include their child nodes and
+   their cross-unit seams.
+2. **Classify implementation.** Mark `implemented` only when executable
+   code exists for the responsibility; `partial` when only part exists;
+   `scaffold` when there is a placeholder or registry entry; and `external`
+   for sources outside the system. A source filename by itself is not
+   evidence that the mapped capability exists.
+3. **Check wiring.** Trace callers and data flow from the chat entry point
+   through the turn path. Mark whether the operation is reachable in an
+   ordinary conversation, reachable only through a special command or
+   script, or not wired. Follow the trace map and verify trace fields against
+   the actual path.
+4. **Check tests and behavior.** Inspect tests for the node's responsibility;
+   run the narrow relevant tests when practical. Then use at least one
+   representative user-facing case and a negative control for conversational
+   capabilities. Capture input, session setup, reply, relevant trace, and
+   expected behavior. A test that only repeats implementation assumptions
+   is evidence of regression stability, not usefulness.
+5. **Diagnose at the earliest supported divergence.** Separate missing
+   module/capability, missing knowledge/resource, interpretation, reasoning
+   or selection, reply planning/realisation, and unsupported input. State
+   competing explanations and what evidence would distinguish them. Do not
+   prescribe a local patch before checking upstream causes or reusable
+   mechanisms.
+6. **Assess design fit.** Where a general capability is wanted, look for
+   reusable libraries and research, but assess role, interface, license,
+   maintenance and fit before recommending adoption. Keep general operation
+   distinct from data-specific rules and adapters. For ontology-driven or
+   emergent claims, identify the exact traceable effect of the ontology and
+   test held-out situations; the existence of Wuxing or hexagram data alone
+   is not evidence of emergence.
+7. **Record disposition.** Use `gap`, `working-within-tested-scope`,
+   `needs-evaluation`, or `not-applicable` only with a short evidence note.
+   A node can have several findings. Mark `audited` only after implementation,
+   wiring, test evidence and disposition have all been reviewed. When code
+   changes, test the reported case, variations and negative controls and
+   record the commit. Preserve unresolved findings as open.
+
+The progress ledger below is deliberately initialized as `not-started` for
+every current map node. Earlier structural and exploratory checks are
+recorded above, but they did not complete this per-node procedure. Resume by
+auditing one node or a coherent subsystem at a time; update status and exact
+evidence pointers in the same change that records each batch. If the map
+changes, regenerate the ledger from the node IDs and audit new or changed
+nodes before calling the audit complete.
+
+Status meanings: `not-started`; `in-progress`; `audited-open` (procedure
+complete, findings remain); `audited-clear` (procedure complete, no known
+gap within stated scope). The `disposition` field can separately be
+`gap`, `working-within-tested-scope`, `needs-evaluation`, or
+`not-applicable`.
+
+| Node ID | Map claim (type; mapped state/percent) | Audit status | Disposition | Evidence / findings |
+|---|---|---|---|---|
+
 Findings applied 2026-11-18: the chatbot-era survey and the sealed
 probe harvest (§2, §7). The found-ahead candidates drafted in §2
 were ruled on the same day: the three drafted gaps are gaps of
@@ -4040,3 +4106,109 @@ AnSci — GAPS
            findings pass + finishing sweep given their word the
            same day)
 ```
+| system | Container; partial/55 | not-started | — | — |
+| configuration | Register; partial/50 | not-started | — | — |
+| awareness | Unit; partial/35 | not-started | — | — |
+| monitoring | Unit; partial/40 | not-started | — | — |
+| awareness/self | Container; partial/25 | not-started | — | — |
+| awareness/self/identity | Table; partial/75 | not-started | — | — |
+| awareness/self/capabilities | Table; partial/75 | not-started | — | — |
+| awareness/self/disposition | Register; partial/80 | not-started | — | — |
+| awareness/self/own-state | Register; partial/30 | not-started | — | — |
+| awareness/place-and-time | Container; partial/70 | not-started | — | — |
+| awareness/place-and-time/season-daypart | Register; partial/85 | not-started | — | — |
+| awareness/place-and-time/channel | Register; partial/40 | not-started | — | — |
+| awareness/surroundings | Container; partial/25 | not-started | — | — |
+| awareness/surroundings/standing-topics | Register; partial/75 | not-started | — | — |
+| awareness/surroundings/other-presences | Register; placeholder/0 | not-started | — | — |
+| awareness/current-activity | Container; partial/30 | not-started | — | — |
+| awareness/current-activity/composer | Unit; placeholder/0 | not-started | — | — |
+| awareness/current-activity/situation-statement | Register; partial/15 | not-started | — | — |
+| awareness/current-activity/last-act | Register; partial/35 | not-started | — | — |
+| awareness/current-activity/open-gaps | Register; partial/55 | not-started | — | — |
+| awareness/social-unit | Unit; partial/95 | not-started | — | — |
+| awareness/social-unit/interlocutor | Register; partial/75 | not-started | — | — |
+| awareness/social-unit/conversation | Container; partial/70 | not-started | — | — |
+| lpu | Container; partial/80 | not-started | — | — |
+| lpu/parser | Unit; partial/85 | not-started | — | — |
+| lpu/parser/token | Unit; partial/95 | not-started | — | — |
+| lpu/parser/sense | Unit; partial/70 | not-started | — | — |
+| lpu/parser/valency | Unit; partial/90 | not-started | — | — |
+| lpu/parser/aspect-and-forms | Unit; partial/90 | not-started | — | — |
+| lpu/semantic-assessment | Unit; partial/70 | not-started | — | — |
+| lpu/language-emotion-desire-unit | Unit; partial/45 | not-started | — | — |
+| lpu/senses-scening-unit | Unit; partial/55 | not-started | — | — |
+| lpu/quantification-language-unit | Unit; partial/45 | not-started | — | — |
+| lpu/normalcy-assessment | Unit; partial/45 | not-started | — | — |
+| lpu/generator | Unit; partial/80 | not-started | — | — |
+| lpu/unplaced | Unit; placeholder/0 | not-started | — | — |
+| session-and-situation | Register; partial/75 | not-started | — | — |
+| session-and-situation/states-and-origins | Register; partial/85 | not-started | — | — |
+| session-and-situation/events | Register; partial/70 | not-started | — | — |
+| session-and-situation/topics | Register; partial/80 | not-started | — | — |
+| session-and-situation/open-unknowns | Register; partial/50 | not-started | — | — |
+| session-and-situation/corrections | Register; partial/80 | not-started | — | — |
+| knowledge | Container; partial/70 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/correspondence-graph | Store; partial/75 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/classification | Table; partial/60 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/mathematics | Unit; placeholder/0 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/mathematics/quantification-unit | Unit; partial/45 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/mathematics/quantification-unit/units-measurement-unit | Unit; partial/60 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/mathematics/geometry-unit | Unit; placeholder/0 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit/paramorphic-concept-unit | Unit; placeholder/0 | not-started | — | — |
+| knowledge/lexicon | Store; partial/80 | not-started | — | — |
+| knowledge/variant-graph | Store; partial/45 | not-started | — | — |
+| knowledge/banked | Store; partial/65 | not-started | — | — |
+| reasoning | Container; partial/80 | not-started | — | — |
+| reasoning/derivation | Unit; partial/85 | not-started | — | — |
+| reasoning/planner | Unit; partial/80 | not-started | — | — |
+| reasoning/pricing | Table; partial/85 | not-started | — | — |
+| reasoning/decline-floor | Gate; partial/90 | not-started | — | — |
+| reasoning/compositions | Table; partial/85 | not-started | — | — |
+| reasoning/problem-solving | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/external | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/abstract | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/internal | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/internal-system | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/external-system | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/user-problems | Unit; placeholder/0 | not-started | — | — |
+| reasoning/problem-solving/reasoning-error-failure | Unit; placeholder/0 | not-started | — | — |
+| intake | Container; partial/25 | not-started | — | — |
+| intake/router | Router; partial/30 | not-started | — | — |
+| intake/cskg | Source; partial/50 | not-started | — | — |
+| intake/wikidata | Source; partial/85 | not-started | — | — |
+| intake/web | Source; placeholder/0 | not-started | — | — |
+| intake/model | Source; placeholder/0 | not-started | — | — |
+| retrieval-harborer | Unit; partial/45 | not-started | — | — |
+| retrieval-harborer/pipeline | Unit; partial/45 | not-started | — | — |
+| retrieval-harborer/gate | Gate; partial/70 | not-started | — | — |
+| ontology-core | Container; placeholder/0 | not-started | — | — |
+| ontology-core/ontology-knowledge-unit | Unit; partial/60 | not-started | — | — |
+| ontology-core/emotion-desire-unit | Unit; partial/50 | not-started | — | — |
+| ontology-core/sense-unit | Unit; partial/40 | not-started | — | — |
+| ontology-core/normalcy-unit | Unit; partial/35 | not-started | — | — |
+| functions | Unit; placeholder/0 | not-started | — | — |
+| functions/ordering-and-sorting | Unit; placeholder/0 | not-started | — | — |
+| functions/search | Unit; placeholder/0 | not-started | — | — |
+| functions/editing | Unit; placeholder/0 | not-started | — | — |
+| functions/external-query | Unit; placeholder/0 | not-started | — | — |
+| functions/file-system | Unit; placeholder/0 | not-started | — | — |
+| functions/timekeeping | Unit; partial/40 | not-started | — | — |
+| functions/scheduling | Unit; partial/40 | not-started | — | — |
+| functions/expectation | Unit; partial/40 | not-started | — | — |
+| functions/calendar | Unit; partial/40 | not-started | — | — |
+| functions/timeline | Unit; partial/40 | not-started | — | — |
+| error-failure | Unit; placeholder/0 | not-started | — | — |
+| verbalizer | Unit; partial/40 | not-started | — | — |
+| coherence | Unit; placeholder/0 | not-started | — | — |
+| coherence/coherence-demand | Register; placeholder/0 | not-started | — | — |
+| coherence/coherence-analysis | Unit; partial/60 | not-started | — | — |
+| surfaces | Container; partial/70 | not-started | — | — |
+| surfaces/root-page | Surface; partial/90 | not-started | — | — |
+| surfaces/dashboard | Surface; partial/85 | not-started | — | — |
+| surfaces/chat | Surface; partial/45 | not-started | — | — |
+| surfaces/trace-view | Surface; partial/60 | not-started | — | — |
+| unplaced | Container; placeholder/0 | not-started | — | — |
+| person | Source; external/— | not-started | — | — |
+| clock | Source; external/— | not-started | — | — |
+| weather | Source; external/— | not-started | — | — |
