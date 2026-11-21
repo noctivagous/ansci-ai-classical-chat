@@ -1913,6 +1913,36 @@ function recognitionReceipt(
     // bare acknowledgement speaks instead of the garble.
     const clause = soundEventClause(session, event);
     if (!clause) return undefined;
+    /* A repeated telling is a relation to an existing record,
+     * not a new fact plus an independently appended link. The
+     * former construction produced the tautology "You heard X.
+     * You told me you heard X."  Compare the event's recorded
+     * roles rather than its turn number or its surface text, so
+     * paraphrase and punctuation do not control the outcome. */
+    const earlierSameEvent = session.events.find(
+      (earlier) =>
+        earlier.turn < event.turn &&
+        earlier.verb === event.verb &&
+        earlier.agent === event.agent &&
+        earlier.patient === event.patient &&
+        earlier.theme === event.theme &&
+        earlier.location === event.location &&
+        earlier.recipient === event.recipient &&
+        earlier.about === event.about,
+    );
+    if (earlierSameEvent) {
+      trace.recognition = {
+        kind: "event",
+        detail:
+          `the turn repeated the event '${event.verb}' recorded at turn ${earlierSameEvent.turn}; ` +
+          "the receipt attributes the already-recorded event instead of restating it as new",
+      };
+      trace.planNote =
+        (trace.planNote ? `${trace.planNote}; ` : "") +
+        "recognition receipt (R2): the turn repeats an event already held in the record, so the receipt attributes that event once instead of echoing it and appending a duplicate link";
+      const attributed = `${clause.charAt(0).toLowerCase()}${clause.slice(1)}`;
+      return `${acknowledgementFor(turn)} You already told me ${attributed}.`;
+    }
     trace.recognition = {
       kind: "event",
       detail:

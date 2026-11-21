@@ -42,7 +42,8 @@
     "ansci:stage5-probes": "node scripts/ansci-stage5-probes.mjs",
     "ansci:stage5": "node scripts/ansci-stage5.mjs",
     "ansci:sealed": "npm run build --silent && node scripts/ansci-sealed.mjs",
-    "ansci:triage": "npm run build --silent && node scripts/ansci-triage.mjs"
+    "ansci:triage": "npm run build --silent && node scripts/ansci-triage.mjs",
+    "ansci:audit": "npm run build --silent && node scripts/ansci-behaviour-audit.mjs"
   },
   "type": "commonjs",
   "version": "0.1.0",

@@ -143,11 +143,13 @@ test("R2: the speaker's own unclassified state is receipted too — the fallthro
   assert.equal(r.trace.recognition?.kind, "state");
 });
 
-test("R2: the first turn keeps the fuller bare form — it is already the receipt's base", () => {
+test("R2: an event repeated in a later turn is attributed once, not echoed and linked as two duplicate claims", () => {
   const s = newSession();
-  const [r] = run(s, ["The soup is hot."]);
-  assert.equal(r.reply, "Ok. Noted.");
-  assert.equal(r.trace.recognition, undefined);
+  const [, first, repeated] = run(s, ["Hello.", "I heard the news.", "I heard the news."]);
+  assert.equal(first.reply, "Ok. You heard the news.");
+  assert.equal(repeated.reply, "Ok. You already told me you heard the news.");
+  assert.equal(repeated.trace.recognition?.kind, "event");
+  assert.match(repeated.trace.planNote ?? "", /repeats an event already held/);
 });
 
 test("R2: a negated telling keeps the bare form — an absence is not the acknowledgement's to receipt", () => {

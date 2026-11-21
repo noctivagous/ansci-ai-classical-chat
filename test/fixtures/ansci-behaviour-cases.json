@@ -1,0 +1,32 @@
+[
+  {
+    "id": "opening-event-is-not-yet-receipted",
+    "status": "known-failure",
+    "turns": ["I heard the news."],
+    "checks": [
+      { "kind": "no-opening-suppression" },
+      { "kind": "receipt" }
+    ]
+  },
+  {
+    "id": "repeated-event-is-attributed-once",
+    "status": "must-pass",
+    "turns": ["Hello.", "I heard the news.", "I heard the news."],
+    "checks": [
+      { "turn": 3, "kind": "receipt" },
+      { "turn": 3, "kind": "reply-includes", "value": "already told me" },
+      { "turn": 3, "kind": "no-duplicate-clause" },
+      { "turn": 3, "kind": "reply-excludes", "value": "You heard the news. You told me you heard the news." }
+    ]
+  },
+  {
+    "id": "record-answer-is-authored-as-a-reply-object",
+    "status": "must-pass",
+    "turns": ["The soup is hot.", "Is the soup cold?"],
+    "checks": [
+      { "turn": 2, "kind": "reply-object" },
+      { "turn": 2, "kind": "origin", "value": "generated" },
+      { "turn": 2, "kind": "trace-path-includes", "value": "lpu/parser" }
+    ]
+  }
+]
