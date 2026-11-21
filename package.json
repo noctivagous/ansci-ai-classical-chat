@@ -43,6 +43,7 @@
     "ansci:stage5": "node scripts/ansci-stage5.mjs",
     "ansci:sealed": "npm run build --silent && node scripts/ansci-sealed.mjs",
     "ansci:triage": "npm run build --silent && node scripts/ansci-triage.mjs",
+    "ansci:parser-compare": "npm run build --silent && node scripts/ansci-parser-compare.mjs",
     "ansci:audit": "npm run build --silent && node scripts/ansci-behaviour-audit.mjs"
   },
   "type": "commonjs",

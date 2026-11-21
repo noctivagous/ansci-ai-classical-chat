@@ -1229,6 +1229,32 @@ function parseEn(text: string): ParsedSentence {
     try {
       const result = parseEnBody(text, bodyTokens, bodyInterrogative);
       if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
+      /* A controlled infinitive after a recipient is an embedded task
+       * candidate, not another matrix patient. Preserve it separately until
+       * the sentence graph can represent controlled subjects and ambiguity.
+       * Require the complete simple shape and an attested verb; never infer
+       * an object for an incomplete or more complex clause. */
+      const root = result.meaning.nodes.find((n) => n.id === result.meaning.rootId);
+      const lower = bodyTokens.map((t) => t.toLowerCase());
+      const rootIndex = root ? (result.realizes[root.id] ?? [])[0] : undefined;
+      if (root?.lemma === "help" && rootIndex !== undefined) {
+        let index = rootIndex + 1;
+        if (["me", "you", "him", "her", "us", "them"].includes(lower[index] ?? "")) index++;
+        if (lower[index] === "to") index++;
+        const taskVerb = lower[index] && wordnetVerb(lower[index]);
+        const objectStart = index + 1;
+        const objectWords = bodyTokens.slice(objectStart);
+        if (taskVerb && objectWords.length > 0 && objectWords.length <= 3 &&
+            !objectWords.some((word) => [",", "and", "or", "if", "because", "not"].includes(word.toLowerCase()))) {
+          result.embeddedTask = {
+            verb: taskVerb.lemma,
+            object: objectWords.join(" "),
+            verbToken: index,
+            objectTokens: objectWords.map((_, offset) => objectStart + offset),
+            confidence: "candidate",
+          };
+        }
+      }
       return result;
     } catch (err) {
       // Parse-arbitrated candidate selection (v1): a context-free
