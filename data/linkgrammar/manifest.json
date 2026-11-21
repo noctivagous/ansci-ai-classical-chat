@@ -1,0 +1,66 @@
+{
+  "v": 1,
+  "source": "Link Grammar 5.13.2 (OpenCog), English dictionary 5.12.4, from https://github.com/opencog/link-grammar at master d937b69500839e94a55d1093875f8d4d1eb2fd96",
+  "edition": "5.12.4",
+  "license": "GNU Lesser General Public License v2.1 or later (LGPL-2.1+). Link Grammar copyright (C) 1991-1998 Daniel Sleator and Davy Temperley; (C) 2003 Peter Szolovits and MIT; (C) 2008-2020 Linas Vepstas; (C) 2013 Lian Ruiting; and the OpenCog contributors.",
+  "obtained": "A local checkout of the upstream repository (data/en/4.0.dict and data/en/words/), passed to scripts/import-linkgrammar.py as its source-dir argument; the raw checkout is not vendored in this repo.",
+  "counts": {
+    "dictEntries": 2238,
+    "macros": 453,
+    "wordEntries": 1810,
+    "entryHeads": 100716,
+    "formsSeen": 80067,
+    "formsShipped": 60154,
+    "shippedEntries": 1571,
+    "disjunctsExpanded": 22541246,
+    "disjunctsLive": 20997709,
+    "disjunctsDroppedByCost": 1543537,
+    "droppedOutsideVocab": 21691,
+    "droppedIdiomForms": 1342,
+    "formsDroppedByCost": 0,
+    "entriesOverCap": 0,
+    "missingWordsFiles": 0,
+    "unknownWordRefs": 0,
+    "vocabWordnetLemmaRows": 212478,
+    "vocabWordnetSurfaceRows": 129800,
+    "vocabSupplementBases": 2441,
+    "treesShipped": 1571,
+    "treeNodesTotal": 321953,
+    "treeNodesMax": 1407,
+    "treesOversized": 0
+  },
+  "notConverted": [
+    "The Link Grammar solver \u2014 ported only as the bounded subset in src/ansci/linkage.ts (the coverage slice): lazy disjunct generation from the shipped expression trees plus a bounded counting search. Upstream's full pruning stage, post-processing and panic modes are not ported; the trees of entries over the recorded node cap ship as null (treesOversized).",
+    "4.0.knowledge (post-processing rules) and 4.0.constituent-knowledge \u2014 solver data, not dictionary data.",
+    "4.0.affix and 4.0.regex (morphology splitting and the CAPITALIZED-WORDS / UNKNOWN-WORD regex classes) \u2014 the parser's own token layer owns splitting; regex-class entries in the dict that name no concrete word form ship nothing.",
+    "Idiom / multiword heads (heads joining words with '_') \u2014 dropped with their count in droppedIdiomForms; the parser's lemmas are single words.",
+    "Disjuncts whose default-dialect cost exceeds the dictionary's max-disjunct-cost (10) \u2014 dead in the default dialect (the headline component), dropped with their count in disjunctsDroppedByCost.",
+    "Full disjunct sets \u2014 reduced per entry to the live-disjunct count, the maximum O+ (bare-object) capacity, and the minimum disjunct cost; the expansion was performed in full (disjunctsExpanded) and the reduction is the shipped record, on the VerbNet frame-shape precedent. The coverage slice additionally ships each entry's macro-expanded expression tree (trees-001.json), from which disjuncts are generated lazily per sentence at runtime; enumerated disjunct sets still do not ship."
+  ],
+  "parts": [
+    {
+      "file": "part-001.json",
+      "kind": "forms",
+      "count": 30064,
+      "bytes": 1078682
+    },
+    {
+      "file": "part-002.json",
+      "kind": "forms",
+      "count": 30069,
+      "bytes": 791886
+    },
+    {
+      "file": "part-003.json",
+      "kind": "forms",
+      "count": 21,
+      "bytes": 500
+    },
+    {
+      "file": "trees-001.json",
+      "kind": "trees",
+      "count": 1571,
+      "bytes": 3147538
+    }
+  ]
+}

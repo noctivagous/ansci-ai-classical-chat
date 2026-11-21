@@ -45,6 +45,21 @@ import {
   type LexEntry,
 } from "./sentence";
 import { registerDerivedEntry, wordnetAdjective, wordnetAdverb, wordnetNoun, wordnetVerb } from "./wordnet-lex";
+import { linkgrammarNounOnly } from "./linkgrammar-lex";
+import { solveLinkage, linkageRouting, setLinkageRouting } from "./linkage";
+
+export { setLinkageRouting } from "./linkage";
+
+/** The routing read: a solver failure is a routing silence,
+ *  never a parse failure. */
+function safeSolveLinkage(tokens: string[]) {
+  try {
+    const s = solveLinkage(tokens);
+    return s && s.status === "complete" ? s : undefined;
+  } catch {
+    return undefined;
+  }
+}
 import { resolveTokenList, type TokenClass } from "./token-resolve";
 import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
@@ -368,6 +383,29 @@ function enItems(tokens: string[]): EnItem[] {
             registerDerivedEntry(adj, lower);
           }
         }
+      }
+      // Link Grammar class evidence (linkgrammar-lex.ts, the
+      // dictionary slice 2026-11-21): the whole WordNet chain has
+      // left this form unclassified — it sits as a "proper" item
+      // with no entry, which no chunk can head. Where the Link
+      // Grammar dictionary files the form under noun classes
+      // ONLY (every entry agrees), that is dictionary evidence
+      // the form is a noun, and it settles the classification
+      // here: 'screenshot', which the WordNet extract files only
+      // as a verb, is a noun in the dictionary, and "I took a
+      // screenshot." previously lost its object to the chunker.
+      // The evidence is deliberately narrow: it fires only on a
+      // complete WordNet miss, only on unanimous noun evidence,
+      // and the entry is NOT registered — classification stays a
+      // function of the shipped tables, recomputed in this fixed
+      // precedence every parse, exactly as the WordNet-derived
+      // entries above are re-derived. Verb-only evidence is not
+      // applied here: a surface's verb reading is positional in
+      // this parser, and the verb slot is resolved in parseEn,
+      // after the subject chunk is known.
+      if (!item.entry && linkgrammarNounOnly(lower)) {
+        item.entry = { kind: "noun", lemma: lower, element: "Earth", source: "linkgrammar" };
+        item.kind = "noun";
       }
     }
     return item;
@@ -1228,6 +1266,19 @@ function parseEn(text: string): ParsedSentence {
   const attempt = (bodyTokens: string[], bodyInterrogative: boolean): ParsedSentence => {
     try {
       const result = parseEnBody(text, bodyTokens, bodyInterrogative);
+      /* Link Grammar shadow (coverage slice, shadow landing):
+       * the bounded solver runs beside the parse and its record
+       * rides the sentence. NOTHING in this stage reads the
+       * record — it is the measurement instrument for the
+       * family-routing gates, in the embeddedTask pattern. A
+       * solver failure must never sink a parse: the shadow is
+       * evidence, and its absence is silent. */
+      try {
+        const shadow = solveLinkage(bodyTokens);
+        if (shadow) result.linkageShadow = shadow;
+      } catch {
+        /* the shadow's silence, by design */
+      }
       if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
       /* A controlled infinitive after a recipient is an embedded task
        * candidate, not another matrix patient. Preserve it separately until
@@ -1274,6 +1325,12 @@ function parseEn(text: string): ParsedSentence {
         retryTokens[rec.tokenIndex] = next;
         try {
           const result = parseEnBody(text, retryTokens, bodyInterrogative);
+          try {
+            const shadow = solveLinkage(retryTokens);
+            if (shadow) result.linkageShadow = shadow;
+          } catch {
+            /* the shadow's silence, by design */
+          }
           rec.replacement = [next];
           rec.confidence = Math.round(rec.confidence * 0.8 * 100) / 100;
           rec.rule = "matcher:symspell+parse-retry";
@@ -2336,6 +2393,24 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     ...enAspectBundle(auxItem, beItem, verbItem, isPassive, !!items.find((i) => i.lower === "been" && auxItem && i.index > auxItem.index && i.index < verbItem.index)),
   };
 
+  /* F1 routing (coverage slice, stage 3): the Link Grammar
+   * shadow, computed here so the main branch can walk it.
+   * Routing reads the linkage ONLY when it is complete — a
+   * partial linkage (UNUSED > 0) never becomes a parse (the
+   * brief's hard rule; negation is the named hazard) — and
+   * only where the linkage's S/O evidence contradicts the
+   * positional assignment. The record the sentence carries is
+   * attached by parseEn's attempt() as before. */
+  const f1Shadow = linkageRouting("f1") ? safeSolveLinkage(tokens) : undefined;
+  const f1Link = (family: string, fromToken: number, toToken: number) =>
+    f1Shadow?.links.find(
+      (l) => l.family === family && f1Shadow.tokenIndices[l.left] === fromToken && f1Shadow.tokenIndices[l.right] === toToken,
+    );
+  const f1ObjectLink = (toToken: number) =>
+    f1Shadow?.links.find(
+      (l) => l.family === "O" && f1Shadow.tokenIndices[l.left] === verbItem.index && f1Shadow.tokenIndices[l.right] === toToken,
+    );
+
   // Topic fronting (R3): a chunk set off by a comma before the clause is
   // a displaced constituent — it fills a clause slot in the meaning
   // graph (below, after the clause is built) and is marked as topic in
@@ -2386,6 +2461,15 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       root.states.verbForm = "past";
     }
   }
+
+  /* F1 subject routing was attempted here and REFUSED on
+   * evidence: recovering a missing positional subject from a
+   * complete linkage's S-link misfires on locative inversion
+   * — "On the mat sat the cat." (positional: no agent, cat as
+   * theme) gained agent:mat from the linkage's S partner,
+   * which is the locative, not the subject. The S side of F1
+   * therefore does not route in this slice; the refusal and
+   * its case are recorded in the Linkage placeholder. */
 
   // Pre-verbal adverbs ("quickly chopped", "hadn't yet arrived") attach
   // to the verb by the same Water→Wood closure as post-verbal ones.
@@ -2514,6 +2598,54 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
         if (advToken > verbItem.index && advToken < resultToken) {
           e.to = resultNode.id;
           e.cycle = cycleOf("Water", "Fire");
+        }
+      }
+    }
+  }
+
+  /* --- F1 object classification (coverage slice, stage 3):
+   *     a ditransitive's two bare objects were assigned the
+   *     frame's slots positionally (first chunk = first slot).
+   *     Link Grammar's O-links classify them independently:
+   *     the indirect object carries the O*n connector, the
+   *     direct object a plain O. Where a complete linkage
+   *     classifies the two chunks opposite to the positional
+   *     assignment, the linkage's classification stands and
+   *     the two slots swap. Agreement, a single object, an
+   *     excess argument, or a partial linkage: positional
+   *     stands untouched. --- */
+  if (!isPassive && linkageRouting("f1") && f1Shadow && verb.slots.includes("recipient")) {
+    const objEdges = b.edges.filter(
+      (e) =>
+        e.from === root.id &&
+        (e.relation === "recipient" || e.relation === "theme" || e.relation === "patient") &&
+        !b.nodes.find((n) => n.id === e.to)?.prep &&
+        b.nodes.find((n) => n.id === e.to)?.role !== "excess",
+    );
+    if (objEdges.length === 2) {
+      const classify = (e: MeaningEdge): "indirect" | "direct" | undefined => {
+        const node = b.nodes.find((n) => n.id === e.to);
+        const toks = node ? (b.realizes[node.id] ?? []) : [];
+        for (const t of toks) {
+          const link = f1ObjectLink(t);
+          if (link) return link.connector.startsWith("O*n") || link.connector === "Oi" ? "indirect" : "direct";
+        }
+        return undefined;
+      };
+      const [e1, e2] = objEdges;
+      const c1 = classify(e1);
+      const c2 = classify(e2);
+      if (c1 && c2 && c1 !== c2) {
+        const indirectEdge = c1 === "indirect" ? e1 : e2;
+        const directEdge = c1 === "indirect" ? e2 : e1;
+        if (indirectEdge.relation !== "recipient" && directEdge.relation === "recipient") {
+          const directSlot = indirectEdge.relation;
+          indirectEdge.relation = "recipient";
+          directEdge.relation = directSlot;
+          const inNode = b.nodes.find((n) => n.id === indirectEdge.to);
+          const dirNode = b.nodes.find((n) => n.id === directEdge.to);
+          if (inNode) inNode.role = "recipient";
+          if (dirNode) dirNode.role = directSlot;
         }
       }
     }

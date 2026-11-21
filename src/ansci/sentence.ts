@@ -260,12 +260,49 @@ export interface TokenResolution {
   aoaPrior?: string;
 }
 
+/** One shadow linkage's record (see ParsedSentence.linkageShadow). */
+export interface LinkageShadow {
+  status: "complete" | "partial" | "declined";
+  tokens: string[];
+  tokenIndices: number[];
+  links: { left: number; right: number; connector: string; family: string }[];
+  unused: string[];
+  skipped: string[];
+  linkageCount: number;
+  countCapped: boolean;
+  disjunctCost: number;
+  linkLength: number;
+  /** Raw disjunct sequences the lazy generation actually
+   *  pulled from the expression trees (generation is on
+   *  demand; this is what the search consumed, not the
+   *  sentence's full expansion). */
+  disjunctsGenerated: number;
+  /** Per solver token: disjuncts delivered by its stream
+   *  after contextual filtering — the sets the search saw. */
+  prunedDisjuncts: number[];
+  searchNodes: number;
+  boundsHit: string[];
+  note?: string;
+}
+
 export interface ParsedSentence {
   meaning: MeaningGraph;
   connective: ConnectiveGraph;
   /** A conservatively identified embedded request, with token provenance.
    * This is a candidate interpretation, not a capability or execution claim. */
   embeddedTask?: { verb: string; object: string; verbToken: number; objectTokens: number[]; confidence: "candidate" };
+  /** The Link Grammar shadow record (coverage slice, shadow
+   *  landing): the bounded solver's result over the sentence's
+   *  content tokens, recorded beside the parse. In the shadow
+   *  stage NOTHING reads this record — no graph, check, or reply
+   *  may consult it; family routing slices promote individual
+   *  families only after their held-out gates pass. `tokens` are
+   *  the solver's content words (lowercase, punctuation
+   *  excluded); `tokenIndices` maps them back to the token list
+   *  the parse ran on. `unused` are words a partial linkage left
+   *  unlinked; `skipped` are words with no dictionary record
+   *  (not UNUSED — the dictionary simply does not file them). */
+  linkageShadow?: LinkageShadow;
   /** Token resolutions applied before item classification, when any
    *  token needed them (token-resolve.ts). The connective graph is
    *  built over the resolved tokens; this record is the provenance
@@ -348,9 +385,13 @@ export interface SimpleEntry {
   lemma: string;
   element: Element;
   semanticElement?: Element;
-  /** Provenance of this entry: set when the WordNet lexicon provider
-   *  (wordnet-lex.ts) derived it at runtime instead of the hand lexicon. */
-  source?: "wordnet";
+  /** Provenance of this entry: set when a lexicon provider derived
+   *  it at runtime instead of the hand lexicon — the WordNet
+   *  provider (wordnet-lex.ts), or the Link Grammar provider
+   *  (linkgrammar-lex.ts), whose noun reading of a form the
+   *  WordNet chain leaves unclassified is adopted in parse.ts
+   *  under the dictionary's noun-only class evidence. */
+  source?: "wordnet" | "linkgrammar";
   /** Question words （什么）: slot-fillers that carry interrogative force in situ. */
   question?: boolean;
   /** ZH: the classifier this noun generates (Earth→Metal), if it takes one. */

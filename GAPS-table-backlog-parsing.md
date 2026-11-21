@@ -39,7 +39,7 @@ failure status.
 
 | Tool | Recommended use here | Do not rely on it for | Integration cost / fit |
 |---|---|---|---|
-| **Link Grammar** | First runtime candidate for English structure. Continue the tested `S`/`O` adapter, then investigate clause, negation, coordination, and fragment links with held-out cases. Keep its linkages as sourced proposals that AnSci validates and interprets. | General conversation understanding, capability decisions, or correct replies by itself | Best fit. The local Link Grammar source includes an Emscripten `link-parser.wasm` build and copies dictionary data, but its JavaScript binding is a Node CLI wrapper. A small typed API and browser packaging would still be needed. LGPL-2.1-or-later applies. |
+| **Link Grammar** | First runtime candidate for English structure. Continue the tested `S`/`O` adapter, then investigate clause, negation, coordination, and fragment links with held-out cases. Keep its linkages as sourced proposals that AnSci validates and interprets. | General conversation understanding, capability decisions, or correct replies by itself | Best fit, with the owner's deployment ruling (2026-11-20): **no WASM binary**. The upstream JavaScript binding is an Emscripten CLI wrapper (v0.0.0, stdin/stdout, no typed linkage API), so the runtime route is a pure-TypeScript port — dictionary conversion first (see `docs/ansci/linkgrammar-dictionary-slice.md`), a solver port only if the dictionary slice's held-out results show it is needed. The native binary remains an offline evaluation oracle only. LGPL-2.1-or-later applies; converted dictionary data ships with attribution in `NOTICE`, on the VerbNet precedent. |
 | **OpenNLP** | Compare its sentence detector and tokenizer on AnSci's sentence-boundary and chat-register cases; keep it optional if it measurably reduces boundary errors. | Meaning graph, ontology reasoning, or open-domain conversational parsing | Java runtime and model files. Its released models use statistical methods, not necessarily neural networks; still learned behavior rather than explicit Wuxing rules. Apache project, model artifacts have their own terms. |
 | **Stanford CoreNLP / Stanford Parser** | Use as an offline reference for constituency/dependency outputs and carefully selected utilities or test cases. | A lightweight TypeScript parser or a symbolic Wuxing engine | Java, model jars, large downloads, and GPL licensing. Porting parser code/models would be a separate project; borrow behavior and test cases first. |
 | **BLLIP** | Optional offline benchmark for English constituency alternatives if Link Grammar leaves a specific structural question unanswered. | Browser runtime or unsupervised general conversation | C/Python runtime plus downloaded WSJ or domain model; model is trained and domain-limited. This gives an independent parser baseline, not a drop-in TypeScript module. |
@@ -54,9 +54,13 @@ failure status.
    alongside it on the English benchmark and adapt one linkage family at a
    time. Feed accepted proposals into AnSci only after role mapping and
    uncertainty behavior pass held-out tests.
-2. Probe the local WebAssembly build for browser loading, dictionary size,
-   cold-start time, and structured access to links. The current binding is a
-   Node CLI; do not assume it already provides a browser API.
+2. ~~Probe the local WebAssembly build for browser loading, dictionary size,
+   cold-start time, and structured access to links.~~ **Superseded by the
+   owner's ruling (2026-11-20): no WASM binary.** The binding is a Node CLI
+   wrapper with no typed API in any case. The browser/runtime route is the
+   pure-TypeScript dictionary port in
+   `docs/ansci/linkgrammar-dictionary-slice.md`; the native binary stays the
+   offline oracle for comparison runs.
 3. Use OpenNLP's sentence detector as a narrow comparison on multi-sentence
    and fragment inputs. Adopt it only if its model improves the measured
    baseline enough to justify a separate Java service or porting effort.

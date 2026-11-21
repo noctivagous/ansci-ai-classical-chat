@@ -132,6 +132,36 @@ The name of University of Colorado or CU may not be used in
 advertising or publicity pertaining to distribution of the software
 and/or database.
 
+Link Grammar dictionary layer (data/linkgrammar/, src/linkgrammar.ts, src/ansci/linkgrammar-lex.ts)
+-----------------------------------------------------------------
+The Link Grammar table in this repository is derived from
+
+  Link Grammar 5.13.2, English dictionary 5.12.4
+  https://github.com/opencog/link-grammar
+  (commit d937b69500839e94a55d1093875f8d4d1eb2fd96)
+
+converted by scripts/import-linkgrammar.py from the dictionary
+source files (data/en/4.0.dict and the data/en/words/ includes).
+The conversion expands every dictionary entry's macros to its
+full disjunct set and ships per-entry summaries of that
+expansion (live-disjunct count after default-dialect cost
+pruning, bare-object connector capacity, minimum cost, source
+line and macro chain), restricted to the word forms AnSci's
+parser can evaluate. The Link Grammar parser itself — the
+linkage solver, its post-processing knowledge files, and the
+affix and regex files — is not converted or included.
+
+Link Grammar is copyright its authors and contributors:
+Daniel Sleator and Davy Temperley (the original Link Grammar
+Parser, Computer Science Department, Carnegie Mellon
+University), Ben Swartz and Peter Szolovits (MIT), Linas
+Vepstas, Lian Ruiting, and the OpenCog project. It is
+distributed under the GNU Lesser General Public License,
+version 2.1 or later (LGPL-2.1-or-later); the full license
+text ships with the upstream project as LICENSE. The converted
+table in data/linkgrammar/ is a derivative work of the
+dictionary data and is distributed under the same terms.
+
 qualreas relation algebras (data/qualreas/, src/ansci/qualreas.ts)
 -----------------------------------------------------------------
 The relation-algebra data in this repository (RCC-8, Allen's

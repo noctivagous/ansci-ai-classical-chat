@@ -1,0 +1,928 @@
+{
+  "authoredNote": "Builder-authored for the Link Grammar coverage slice (docs/ansci/linkgrammar-coverage-slice.md, stage 2), sealed before any family routing work. NOT independently authored: the same builder wrote the cases, the solver, and the routing they gate. The set is disjoint from the 12 parser-comparison cases and from every GAPS/brief example used in design. Each case states the content a correct parse must preserve (nodes, relations, negation) and content it must not invent; scoring is on that content, never on linkage counts. The seal is the sha256 of the canonical stringify of {id, version, cases} (the sealed-set precedent, src/ansci/sealed.ts). VERSION 2 (still before any routing): v1 (seal 91180303adfa072a9284a831d85581480d85612649965fb8f752afa9568b74fb) authored object relations as 'patient' only and three verb nodes under dictionary lemmas; the stage-2 baseline showed the parser's own conventions differ — frame-less objects are 'theme', and 'cried'/'left'/'complained' do not lemmatise — so v2 expresses object targets as patient|theme alternatives, uses the parser's lemma forms for those three nodes, and admits 'goal' among the want-complement alternatives. No sentence, family, or content requirement changed; the fixes are vocabulary conventions of the graph being scored, made after scoring the CURRENT (unrouted) parser and before any routing existed.",
+  "cases": [
+    {
+      "family": "F1",
+      "id": "f1-nurse",
+      "sentence": "The nurse examined the patient.",
+      "shadowExpect": [
+        [
+          "nurse",
+          "S",
+          "examined"
+        ],
+        [
+          "examined",
+          "O",
+          "patient"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "examine",
+            "agent",
+            "nurse"
+          ],
+          [
+            "examine",
+            "patient",
+            "patient"
+          ]
+        ],
+        "requiredNodes": [
+          "nurse",
+          "examine",
+          "patient"
+        ]
+      }
+    },
+    {
+      "family": "F1",
+      "id": "f1-dogs",
+      "sentence": "Dogs chase cats.",
+      "shadowExpect": [
+        [
+          "dogs",
+          "S",
+          "chase"
+        ],
+        [
+          "chase",
+          "O",
+          "cats"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "chase",
+            "agent",
+            "dog"
+          ]
+        ],
+        "requiredNodes": [
+          "dog",
+          "chase",
+          "cat"
+        ],
+        "requiredEdgeAlternatives": [
+          [
+            [
+              "chase",
+              "patient",
+              "cat"
+            ],
+            [
+              "chase",
+              "theme",
+              "cat"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "family": "F1",
+      "id": "f1-pilot",
+      "sentence": "The pilot landed the plane safely.",
+      "shadowExpect": [
+        [
+          "pilot",
+          "S",
+          "landed"
+        ],
+        [
+          "landed",
+          "O",
+          "plane"
+        ],
+        [
+          "landed",
+          "MV",
+          "safely"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "land",
+            "agent",
+            "pilot"
+          ],
+          [
+            "land",
+            "patient",
+            "plane"
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "safely",
+            "land"
+          ]
+        ],
+        "requiredNodes": [
+          "pilot",
+          "land",
+          "plane",
+          "safely"
+        ]
+      }
+    },
+    {
+      "family": "F1",
+      "id": "f1-sells",
+      "sentence": "She sells shells.",
+      "shadowExpect": [
+        [
+          "she",
+          "S",
+          "sells"
+        ],
+        [
+          "sells",
+          "O",
+          "shells"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "sell",
+            "agent",
+            "she"
+          ]
+        ],
+        "requiredNodes": [
+          "she",
+          "sell",
+          "shell"
+        ],
+        "requiredEdgeAlternatives": [
+          [
+            [
+              "sell",
+              "patient",
+              "shell"
+            ],
+            [
+              "sell",
+              "theme",
+              "shell"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "family": "F1",
+      "id": "f1-negation",
+      "sentence": "The gardener did not water the plants.",
+      "shadowExpect": [
+        [
+          "gardener",
+          "S",
+          "did"
+        ],
+        [
+          "did",
+          "I",
+          "water"
+        ],
+        [
+          "water",
+          "O",
+          "plants"
+        ],
+        [
+          "*",
+          "touch",
+          "not"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": true,
+        "requiredEdges": [
+          [
+            "water",
+            "agent",
+            "gardener"
+          ],
+          [
+            "water",
+            "patient",
+            "plant"
+          ]
+        ],
+        "requiredNodes": [
+          "gardener",
+          "water",
+          "plant"
+        ]
+      }
+    },
+    {
+      "family": "F2",
+      "id": "f2-telescope",
+      "sentence": "The man with the telescope saw a bird.",
+      "shadowAttach": {
+        "attachTo": "man",
+        "prep": "with"
+      },
+      "shadowExpect": [
+        [
+          "with",
+          "J",
+          "telescope"
+        ]
+      ],
+      "target": {
+        "forbiddenEdges": [
+          [
+            "see",
+            "location",
+            "telescope"
+          ],
+          [
+            "see",
+            "goal",
+            "telescope"
+          ]
+        ],
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "see",
+            "agent",
+            "man"
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "man",
+            "telescope"
+          ]
+        ],
+        "requiredNodes": [
+          "man",
+          "telescope",
+          "see",
+          "bird"
+        ]
+      }
+    },
+    {
+      "family": "F2",
+      "id": "f2-drawer",
+      "sentence": "She put the letter in the drawer.",
+      "shadowAttach": {
+        "attachTo": "put",
+        "prep": "in"
+      },
+      "shadowExpect": [
+        [
+          "in",
+          "J",
+          "drawer"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdgeAlternatives": [
+          [
+            [
+              "put",
+              "location",
+              "drawer"
+            ],
+            [
+              "put",
+              "goal",
+              "drawer"
+            ]
+          ],
+          [
+            [
+              "put",
+              "patient",
+              "letter"
+            ],
+            [
+              "put",
+              "theme",
+              "letter"
+            ]
+          ]
+        ],
+        "requiredEdges": [],
+        "requiredNodes": [
+          "she",
+          "put",
+          "letter",
+          "drawer"
+        ]
+      }
+    },
+    {
+      "family": "F2",
+      "id": "f2-coat",
+      "sentence": "A tall woman in a red coat entered.",
+      "shadowAttach": {
+        "attachTo": "woman",
+        "prep": "in"
+      },
+      "shadowExpect": [
+        [
+          "in",
+          "J",
+          "coat"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "enter",
+            "agent",
+            "woman"
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "woman",
+            "tall"
+          ],
+          [
+            "woman",
+            "coat"
+          ]
+        ],
+        "requiredNodes": [
+          "woman",
+          "tall",
+          "coat",
+          "enter"
+        ]
+      }
+    },
+    {
+      "family": "F2",
+      "id": "f2-key",
+      "sentence": "The key to the cabinet is missing.",
+      "shadowAttach": {
+        "attachTo": "key",
+        "prep": "to"
+      },
+      "shadowExpect": [
+        [
+          "to",
+          "J",
+          "cabinet"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredLoose": [
+          [
+            "key",
+            "cabinet"
+          ]
+        ],
+        "requiredNodes": [
+          "key",
+          "cabinet",
+          "missing"
+        ]
+      }
+    },
+    {
+      "family": "F3",
+      "id": "f3-called",
+      "sentence": "The woman who called yesterday left a message.",
+      "shadowExpect": [
+        [
+          "who",
+          "S",
+          "called"
+        ],
+        [
+          "woman",
+          "*",
+          "who"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "leave",
+            "agent",
+            "woman"
+          ],
+          [
+            "leave",
+            "patient",
+            "message"
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "woman",
+            "call"
+          ]
+        ],
+        "requiredNodes": [
+          "woman",
+          "call",
+          "leave",
+          "message"
+        ]
+      }
+    },
+    {
+      "family": "F3",
+      "id": "f3-jack",
+      "sentence": "The house that Jack built is old.",
+      "shadowExpect": [
+        [
+          "that",
+          "B",
+          "built"
+        ],
+        [
+          "jack",
+          "S",
+          "built"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "build",
+            "agent",
+            "jack"
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "build",
+            "house"
+          ],
+          [
+            "house",
+            "old"
+          ]
+        ],
+        "requiredNodes": [
+          "house",
+          "jack",
+          "build",
+          "old"
+        ]
+      }
+    },
+    {
+      "family": "F3",
+      "id": "f3-whose",
+      "sentence": "The student whose book was stolen complained.",
+      "shadowExpect": [
+        [
+          "whose",
+          "*",
+          "book"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "complained",
+            "agent",
+            "student"
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "student",
+            "book"
+          ]
+        ],
+        "requiredNodes": [
+          "student",
+          "book",
+          "steal",
+          "complained"
+        ]
+      }
+    },
+    {
+      "family": "F3",
+      "id": "f3-horses",
+      "sentence": "I met a man who sells horses.",
+      "shadowExpect": [
+        [
+          "who",
+          "S",
+          "sells"
+        ],
+        [
+          "sells",
+          "O",
+          "horses"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredLoose": [
+          [
+            "meet",
+            "man"
+          ],
+          [
+            "man",
+            "sell"
+          ],
+          [
+            "sell",
+            "horse"
+          ]
+        ],
+        "requiredNodes": [
+          "i",
+          "meet",
+          "man",
+          "sell",
+          "horse"
+        ]
+      }
+    },
+    {
+      "family": "F4",
+      "id": "f4-cooked",
+      "sentence": "Tom cooked dinner and washed the dishes.",
+      "shadowExpect": [
+        [
+          "tom",
+          "S",
+          "cooked"
+        ],
+        [
+          "cooked",
+          "O",
+          "dinner"
+        ],
+        [
+          "washed",
+          "O",
+          "dishes"
+        ]
+      ],
+      "target": {
+        "forbiddenEdges": [
+          [
+            "wash",
+            "patient",
+            "dinner"
+          ],
+          [
+            "cook",
+            "patient",
+            "dish"
+          ]
+        ],
+        "forbiddenNodes": [
+          "and"
+        ],
+        "negation": false,
+        "requiredEdgeAlternatives": [
+          [
+            [
+              "wash",
+              "agent",
+              "tom"
+            ],
+            [
+              "cook",
+              "chains-to",
+              "wash"
+            ]
+          ]
+        ],
+        "requiredEdges": [
+          [
+            "cook",
+            "agent",
+            "tom"
+          ],
+          [
+            "cook",
+            "patient",
+            "dinner"
+          ],
+          [
+            "wash",
+            "patient",
+            "dish"
+          ]
+        ],
+        "requiredNodes": [
+          "tom",
+          "cook",
+          "dinner",
+          "wash",
+          "dish"
+        ]
+      }
+    },
+    {
+      "family": "F4",
+      "id": "f4-catdog",
+      "sentence": "The cat and the dog slept.",
+      "shadowExpect": [
+        [
+          "cat",
+          "*",
+          "and"
+        ],
+        [
+          "and",
+          "*",
+          "dog"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [
+          "and"
+        ],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "sleep",
+            "agent",
+            "cat"
+          ],
+          [
+            "sleep",
+            "agent",
+            "dog"
+          ]
+        ],
+        "requiredNodes": [
+          "cat",
+          "dog",
+          "sleep"
+        ]
+      }
+    },
+    {
+      "family": "F4",
+      "id": "f4-apples",
+      "sentence": "She bought apples, oranges, and pears.",
+      "shadowExpect": [
+        [
+          "bought",
+          "O",
+          "apples"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [
+          "and"
+        ],
+        "negation": false,
+        "requiredEdges": [
+          [
+            "buy",
+            "patient",
+            "apple"
+          ],
+          [
+            "buy",
+            "patient",
+            "orange"
+          ],
+          [
+            "buy",
+            "patient",
+            "pear"
+          ]
+        ],
+        "requiredNodes": [
+          "she",
+          "buy",
+          "apple",
+          "orange",
+          "pear"
+        ]
+      }
+    },
+    {
+      "family": "F4",
+      "id": "f4-but",
+      "sentence": "He laughed but cried.",
+      "shadowExpect": [
+        [
+          "he",
+          "S",
+          "laughed"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [
+          "but"
+        ],
+        "negation": false,
+        "requiredEdgeAlternatives": [
+          [
+            [
+              "cried",
+              "agent",
+              "he"
+            ],
+            [
+              "laugh",
+              "chains-to",
+              "cried"
+            ]
+          ]
+        ],
+        "requiredEdges": [
+          [
+            "laugh",
+            "agent",
+            "he"
+          ]
+        ],
+        "requiredNodes": [
+          "he",
+          "laugh",
+          "cried"
+        ]
+      }
+    },
+    {
+      "family": "F5",
+      "id": "f5-think",
+      "sentence": "I think that she is right.",
+      "shadowExpect": [
+        [
+          "think",
+          "CO",
+          "that"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [
+          "that"
+        ],
+        "negation": false,
+        "requiredLoose": [
+          [
+            "think",
+            "right"
+          ]
+        ],
+        "requiredNodes": [
+          "i",
+          "think",
+          "she",
+          "right"
+        ]
+      }
+    },
+    {
+      "family": "F5",
+      "id": "f5-whether",
+      "sentence": "He asked whether the train had left.",
+      "shadowExpect": [
+        [
+          "asked",
+          "*",
+          "whether"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [
+          "whether"
+        ],
+        "negation": false,
+        "requiredLoose": [
+          [
+            "ask",
+            "left"
+          ]
+        ],
+        "requiredNodes": [
+          "he",
+          "ask",
+          "train",
+          "left"
+        ]
+      }
+    },
+    {
+      "family": "F5",
+      "id": "f5-if",
+      "sentence": "If it rains tomorrow, we will stay home.",
+      "shadowExpect": [
+        [
+          "if",
+          "*",
+          "rains"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [
+          "if"
+        ],
+        "negation": false,
+        "requiredLoose": [
+          [
+            "rain",
+            "stay"
+          ]
+        ],
+        "requiredNodes": [
+          "it",
+          "rain",
+          "we",
+          "stay",
+          "home"
+        ]
+      }
+    },
+    {
+      "family": "F5",
+      "id": "f5-wants",
+      "sentence": "She wants to leave early.",
+      "shadowExpect": [
+        [
+          "wants",
+          "I",
+          "leave"
+        ]
+      ],
+      "target": {
+        "forbiddenNodes": [],
+        "negation": false,
+        "requiredEdgeAlternatives": [
+          [
+            [
+              "want",
+              "complement",
+              "leave"
+            ],
+            [
+              "want",
+              "patient",
+              "leave"
+            ],
+            [
+              "want",
+              "goal",
+              "leave"
+            ],
+            [
+              "want",
+              "theme",
+              "leave"
+            ]
+          ]
+        ],
+        "requiredLoose": [
+          [
+            "leave",
+            "she"
+          ]
+        ],
+        "requiredNodes": [
+          "she",
+          "want",
+          "leave"
+        ]
+      }
+    }
+  ],
+  "id": "linkage-heldout-v1",
+  "seal": "0219a292060ba171a0bb45bf3e698c0d42bbc51d063ecc1198be73ed5f2bf1ae",
+  "version": 2
+}

@@ -16,6 +16,7 @@
  */
 import { EN_LEXICON, ParsedSentence, VerbEntry, ZH_FUNCTION, ZH_LEXICON } from "./sentence";
 import { vendlerClass } from "./aspect";
+import { linkgrammarLookup } from "./linkgrammar-lex";
 
 export interface Violation {
   name: string;
@@ -85,6 +86,34 @@ export function checkSentence(parsed: ParsedSentence): Violation[] {
             `${maxNp} bare object(s)${vn.shapes.some((s) => s.pp) ? " and prepositional arguments" : " and no prepositional argument"}; ` +
             `this use realises ${bareCount} bare object(s)${hasPrep ? " and a prepositional argument" : ""}`,
         });
+      }
+    }
+
+    /* Wood→Earth, Link Grammar check (linkgrammar-lex, the
+     * dictionary slice 2026-11-21): a derived verb NO other
+     * provider reaches — no FrameNet signature, no VerbNet
+     * signature, the permissive frame evidence-free — checked
+     * against the dictionary's own valency shape for the verb
+     * form used: the largest bare-object (O+) capacity of any
+     * of its entries' live disjuncts. Only excess is judged,
+     * on the VerbNet rule: a capacity is a maximum, not an
+     * obligation, so fewer objects is never a failure. The
+     * record is the UNION of the form's entries, so the check
+     * fires only beyond every entry the dictionary files. */
+    if (!frame.frameSignature && !frame.verbnetSignature && frame.source === "wordnet") {
+      const lg = linkgrammarLookup(node.form.toLowerCase()) ?? linkgrammarLookup(node.lemma);
+      if (lg) {
+        const bareCount = args.filter((e) => ["patient", "theme", "recipient"].includes(e.relation)).length;
+        if (bareCount > lg.maxO) {
+          out.push({
+            name: "valency-linkgrammar-disallowed",
+            cycle: "Wood→Earth",
+            message:
+              `'${node.lemma}' is Link Grammar-covered (dictionary 5.12.4, ${lg.entries.length} ` +
+              `entr${lg.entries.length === 1 ? "y" : "ies"}): its disjuncts allow at most ` +
+              `${lg.maxO} bare object(s); this use realises ${bareCount} bare object(s)`,
+          });
+        }
       }
     }
 

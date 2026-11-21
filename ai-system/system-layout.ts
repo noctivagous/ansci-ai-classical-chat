@@ -109,6 +109,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "lpu/parser/aspect-and-forms": {
       "order": 4
     },
+    "lpu/parser/linkage": {
+      "order": 5
+    },
     "lpu/semantic-assessment": {
       "order": 2
     },

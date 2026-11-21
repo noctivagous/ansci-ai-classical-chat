@@ -427,6 +427,19 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "Aspect as feature bundles; irregular forms selected, both languages."
     },
     {
+      "id": "lpu/parser/linkage",
+      "title": "Linkage",
+      "type": "Unit",
+      "parent": "lpu/parser",
+      "state": "partial",
+      "percent": 40,
+      "path": "lpu/parser/linkage",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/linkgrammar-lex.ts, src/linkgrammar.ts, parse.ts, check.ts",
+      "summary": "The Link Grammar dictionary, converted (dictionary slice 2026-11-21): per-form class evidence, bare-object (O+) capacity and provenance computed from the full disjunct expansion of 4.0.dict, read by enItems classification (noun-only evidence settles forms the WordNet chain leaves unclassified) and by the checker's cross-check (valency-linkgrammar-disallowed, speaking only where FrameNet and VerbNet are silent). Dictionary evidence only — no solver, no linkage search."
+    },
+    {
       "id": "lpu/semantic-assessment",
       "title": "SemanticAssessment",
       "type": "Unit",
