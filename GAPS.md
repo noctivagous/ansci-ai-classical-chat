@@ -7,6 +7,97 @@ close it. A gap here is a located gap — a place to work — not a
 verdict on the project. Statuses are as of the date above; when a
 gap closes, strike it here in the same commit that closes it.
 
+## Diagnosis and design discipline (2026-11-20)
+
+The historical statuses and measurements below are dated records, not
+evidence that the present system has been fully audited. A surprising
+transcript is an observation to investigate, not by itself proof of a
+defect at the place where the response appeared. Record the input,
+session context, actual reply and trace, and the expected behaviour;
+then locate the earliest supported divergence. A failure can have more
+than one cause, and an apparent gap remains a hypothesis until checked.
+
+Distinguish at least these diagnoses:
+
+- **Missing capability or module:** the required operation has no
+  implementation or cannot be reached from this turn.
+- **Missing knowledge or resource:** the operation exists but lacks
+  relevant facts, lexical information, relationships or an available
+  source. Check acquisition and retrieval separately.
+- **Incorrect interpretation:** token resolution, parsing, sense, roles,
+  reference or situation construction misrepresents the input.
+- **Faulty reasoning or selection:** sound inputs are combined, priced,
+  routed or selected incorrectly; distinguish the rule from its data.
+- **Reply planning or generation:** the intended meaning is available
+  but the selected move, composition or realised wording misstates it,
+  repeats it, or fails to serve the conversation.
+- **Unsupported input:** the system cannot yet handle the form or task;
+  check whether it recognises that limit and asks or declines honestly.
+
+For each new finding record evidence and trace location, competing
+explanations, the smallest general mechanism or knowledge change that
+could address it, and a counterexample that would falsify the diagnosis.
+Verify the change with the original case, variations and negative controls,
+including multi-turn and unseen cases. Preserve provenance and distinguish
+an observed failure from a proposed fix or a demonstrated closure.
+
+The design objective is reusable mechanisms operating on knowledge and
+the evolving situation, with the ontology—including Wuxing and the
+trigrams and hexagrams—available as a generic basis for relations and
+operations. Their presence alone does not demonstrate useful emergent
+behaviour; evaluate that behaviour through traces and independent cases.
+The conversational surface should be natural and useful, while the
+underlying ontology remains beneath it unless requested. Track hand-worded
+fallbacks and position-dependent decisions as architectural debt, without
+assuming every template or repeated phrase is inherently defective.
+
+When evaluating a proposed capability, separate the general operation
+from data-specific rules and adapters. For example, Edit could offer insert,
+delete, replace, move, transform, compare and merge over structured data;
+text, documents and graphs each supply their own validity, identity and
+semantics. This is a design direction, not a claim that those operations
+are implemented or safe for every data type. Look for suitable existing
+libraries and research, assessing fit, licence and maintenance before
+adoption, while retaining AnSci's chosen architecture.
+
+Initial trace-led evidence (local audit, 2026-11-20): the opening
+acknowledgement is explicitly dependent on turn position, and receipt
+admission suppresses first-turn content. Experimentally removing that
+guard exposed malformed renderings as well as changes to existing tests;
+therefore the guard remains pending interpretation and realisation work.
+The behavioural audit (`npm run ansci:audit`) records this as a known gap.
+It is a small starting set, not a system-wide assessment or a measure of
+emergence. Repeated event receipts were deduplicated in commit `12afb5c`;
+matching recorded roles is only a heuristic and must not be taken as proof
+that two separately occurring events are identical.
+
+### Initial conversation baseline (2026-11-20)
+
+Exploratory runs through `processTurn`, each sequence in a fresh session;
+these observations need further controls before a cause or remedy is
+settled. The map check passes for 106 nodes, but checks registry/layout
+correspondence, not functional coverage.
+
+- “I am sad.” / “My dog died.” produced “Sad about what?” / “Ok.”
+  The response does not visibly take up the explanation of sadness.
+  Investigate pending questions, reference and emotional uptake together.
+- “Can you help me plan a trip?” produced “I can't help you.” The trace
+  attributes this to an ability answer about the verb `help`; investigate
+  whether the embedded task and available assistance were considered.
+- “What is photosynthesis?” returned a dictionary definition. This shows
+  one reachable lexical answer, not general scientific understanding.
+- A soup state, question, correction and follow-up were recorded and the
+  correction was expressed; the follow-up returned “You said so.” Test
+  whether that answer is useful and whether changing temporal contexts are
+  distinguished before generalising from the sequence.
+- The repeated-news case now produces one attributed receipt, but event
+  role equality does not establish event identity across different times.
+  Check repeated assertions against genuinely repeated occurrences.
+
+The three-case behavioural audit is not a broad baseline. Expand it with
+independent conversational cases, trace evidence, negative controls and
+human review of usefulness; reserve unseen cases for later evaluation.
+
 Findings applied 2026-11-18: the chatbot-era survey and the sealed
 probe harvest (§2, §7). The found-ahead candidates drafted in §2
 were ruled on the same day: the three drafted gaps are gaps of
