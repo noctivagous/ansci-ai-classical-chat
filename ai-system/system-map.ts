@@ -89,6 +89,19 @@ export const SYSTEM_MAP: SystemMap = {
       "summary": "Knows where it is, who it is, what is around it, and what is currently happening."
     },
     {
+      "id": "monitoring",
+      "title": "Monitoring Unit",
+      "type": "Unit",
+      "parent": "system",
+      "state": "partial",
+      "percent": 40,
+      "path": "monitoring",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/monitoring.ts (the register, the standing comparison, the endings) and src/ansci/monitoring-turn.ts (the wired layer: pricing, check execution, the refresh proposal)",
+      "summary": "Keeps standing watches: a subject and a source, checked at an interval under a change rule, for a registrar, until an expiry — raising a demand only when a check finds change, its no-change checks recorded in full and raising nothing."
+    },
+    {
       "id": "awareness/self",
       "title": "Self",
       "type": "Container",

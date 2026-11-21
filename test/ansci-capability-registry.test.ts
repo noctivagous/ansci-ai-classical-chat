@@ -53,6 +53,10 @@ test("the registry: exactly the verified holdings, each with holder and code poi
       // operations register as holdings, on the same pattern.
       "expectation-registration",
       "expectation-sweep",
+      "monitor-registration",
+      "monitor-check",
+      "monitor-consultation",
+      "monitor-expectation-mechanism",
       // Time programme C1 (2026-11-20): Calendar's two
       // operations register as holdings, on the same pattern.
       "calendar-conversion",

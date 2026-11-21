@@ -184,6 +184,50 @@ export const CAPABILITY_REGISTRY: CapabilityEntry[] = [
     },
   },
   {
+    id: "monitor-registration",
+    name: "Monitor registration — standing watches held as records, under the registrar-only rule (Monitoring Unit)",
+    takes: "a monitor spec: a subject and its source (a bank's holding in fact or class form, or a wired consultation), an interval (a period and a phase anchor, its standing named), a change rule (no rule, no monitor), the registering unit, and an expiry ('no expiry' only as a stated value with its reason)",
+    returns: "the registered monitor, its first check placed on the schedule — or a stated refusal, located: at the rule (empty, or unsatisfiable over the subject as stated), at the subject (no consultable source standing behind it), at the interval (below the waking floor, unrestated), at the expiry (omitted, or born ended), at the standing (driver-delivered, which nothing performs). Registration is not authorisation: every check is priced when it falls due",
+    heldBy: "monitoring",
+    code: {
+      module: "src/ansci/monitoring.ts",
+      functions: ["registerMonitor", "cancelMonitor", "supersedeMonitor", "closeExpiredMonitors"],
+    },
+  },
+  {
+    id: "monitor-check",
+    name: "Monitor check — the standing comparison, and the silence it keeps (Monitoring Unit)",
+    takes: "a monitor whose check fell due on the schedule, the turn's time standing, and the banks its subject reads — executed by the wired layer after the Planner prices the check",
+    returns: "the check's outcome for the trace and the monitor's history — change, no-change, not-comparable, unavailable, declined — complete whether it fired or not. A firing is a demand naming the monitor, its registrar, the rule clause, and both readings; a no-change check raises nothing. Past a stated run of declined checks, one heartbeat demand about the monitor itself, raised once",
+    heldBy: "monitoring",
+    code: {
+      module: "src/ansci/monitoring.ts",
+      functions: ["runStalenessCheck", "recordDeclinedCheck", "ensureNextCheck"],
+    },
+  },
+  {
+    id: "monitor-consultation",
+    name: "Monitor consultation — a weather watch over the situated place (Monitoring Unit)",
+    takes: "a monitor over the situated place's weather, registered by Awareness (GeographyAwareness), whose check fell due — executed through the weather wrapper's chain: the register resolves the place, the source reads the point, the reading is banked by the wrapper's own construction",
+    returns: "the comparison under the monitor's clauses (the condition word; precipitation beginning or ceasing; a reading arriving; a stated run of unavailability) for the trace and the history, and — on a firing — the demand carrying both readings, with the telling's own pricing recorded on it: told with its draft wording, or declined with its ground. A source's unavailability is recorded as a stated state and raises nothing, unless the rule names it",
+    heldBy: "monitoring",
+    code: {
+      module: "src/ansci/monitoring-turn.ts",
+      functions: ["runWeatherMonitorCheck", "registerSituatedWeatherMonitor"],
+    },
+  },
+  {
+    id: "monitor-expectation-mechanism",
+    name: "Monitor as an Expectation's mechanism — the standing watch that works a wait (Monitoring Unit)",
+    takes: "an open expectation and a what's-there subject: the monitor is registered under the expectation's own registrar, with its expiry set to the expectation's deadline exactly, cross-cited on the monitor's record",
+    returns: "the joint closing, whichever way the wait ends: a check's banked set offered through the satisfaction seam closes the expectation satisfied (the evidence filed into its problem record, which closes with it) and the monitor as closed-by-expectation; a timeout raises the expectation's demand while the monitor closes with it, its unavailable history raising nothing throughout. The two records never merge — the service is a cross-citation",
+    heldBy: "monitoring",
+    code: {
+      module: "src/ansci/monitoring-turn.ts",
+      functions: ["registerMonitorForExpectation", "runWhatsThereMonitorCheck"],
+    },
+  },
+  {
     id: "calendar-conversion",
     name: "Calendar conversion — dates between held systems, as computation (Calendar)",
     takes: "a date in a held calendar system and the system to convert to (the systems register holds the Gregorian, ISO and Julian in C1)",

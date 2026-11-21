@@ -126,8 +126,16 @@ export interface ScheduledItem {
   /** A wired consumer the Planner may execute the demand
    *  through (T2 builds exactly one: the weather bank's
    *  scheduled re-consultation, §5.2). Absent, the demand
-   *  rides the trace for the Planner alone. */
-  consumer?: { kind: "weather-reconsult"; placeName: string };
+   *  rides the trace for the Planner alone. The Monitoring
+   *  programme (M1, 2026-11-21) adds the second consumer on
+   *  the same pattern: a monitor's next check, executed by
+   *  the monitoring wrapper (monitoring-turn.ts) — a
+   *  monitor's checks ride Scheduling's due items (§3.3 of
+   *  the monitoring note), they do not keep a clock of
+   *  their own. */
+  consumer?:
+    | { kind: "weather-reconsult"; placeName: string }
+    | { kind: "monitor-check"; monitorId: string };
   status: "standing" | "due-raised" | "closed" | "lapsed" | "cancelled";
   /** When the item fell due (the trigger's instant) and
    *  the turn whose sweep took it up — the record says

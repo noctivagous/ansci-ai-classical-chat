@@ -564,6 +564,26 @@ export interface TurnTrace {
    *  banking during the turn are appended to the same
    *  annotation by the wrapper. */
   expectationSweep?: import("./expectation").ExpectationSweepOutcome[];
+  /** The Monitoring wrapper's check outcomes (Monitoring
+   *  programme M1, 2026-11-21; monitoring note §3.3, §5):
+   *  every monitor check the wrapper executed at this
+   *  turn, with its comparison outcome — change, no-change,
+   *  not-comparable, unavailable, declined. The no-change
+   *  entries are the silence discipline made visible: the
+   *  check ran, is recorded here and in the monitor's
+   *  history, and raised nothing. Present only when the
+   *  monitoring wrapper ran and a check fell due. */
+  monitorChecks?: import("./monitoring").MonitorCheckOutcome[];
+  /** The Monitoring wrapper's firings (monitoring note
+   *  §2.3, §5): the demands monitors raised at this turn —
+   *  each naming the monitor, its registrar, the change
+   *  rule that fired, and BOTH readings (the standing term
+   *  and the new one) — plus, at most once per monitor, the
+   *  one permitted heartbeat: a demand about a monitor
+   *  whose checks are repeatedly declined at pricing. The
+   *  Unit raises demands; it never speaks, and nothing here
+   *  is merged into the visitor's input. */
+  monitorFirings?: import("./monitoring").MonitorFiring[];
   /** The gibberish repair (Part 3e): the turn arrived with no
    *  resolvable content (the joint Normalcy+Coherence flag),
    *  and the reply is the repair question. */

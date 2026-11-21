@@ -129,7 +129,7 @@ export interface WeatherTurnOptions {
  * store the resolution reads and the fact's attestation is
  * the configuration itself.
  */
-function bankConfiguredCoordinates(register: PlaceRegister, place: string, now: Date): void {
+export function bankConfiguredCoordinates(register: PlaceRegister, place: string, now: Date): void {
   if (
     PLACE.place &&
     placeKeyOf(place) === placeKeyOf(PLACE.place) &&
@@ -153,7 +153,7 @@ function bankConfiguredCoordinates(register: PlaceRegister, place: string, now: 
  *  being resolved and the register already holds its point.
  *  Best-effort evidence — absent, the ranking runs on its
  *  other signals exactly as before. */
-function situatedEvidence(
+export function situatedEvidence(
   session: Session,
   targetPlace: string,
   register: PlaceRegister,
@@ -165,7 +165,14 @@ function situatedEvidence(
   return coords ? { name: stated.place, lat: coords.value.lat, lon: coords.value.lon } : undefined;
 }
 
-interface WeatherDeps {
+/** The wired weather chain, assembled from the turn
+ *  options. Exported (with readingFromObservation,
+ *  bankConfiguredCoordinates and situatedEvidence above)
+ *  for the Monitoring Unit's checks (Monitoring M2,
+ *  2026-11-21): a monitor's weather check consults through
+ *  this same chain and banks by this same construction —
+ *  one chain, one banking, two callers. */
+export interface WeatherDeps {
   source: WeatherSource;
   bank: WeatherBank;
   wikidataBank: WikidataBank;
@@ -177,9 +184,10 @@ interface WeatherDeps {
 }
 
 /** Build the banked reading from an observation, exactly as
- *  the lookup flow banks it — one construction for both the
- *  lookup's banking and the re-consultation's re-banking. */
-function readingFromObservation(
+ *  the lookup flow banks it — one construction for the
+ *  lookup's banking, the re-consultation's re-banking, and
+ *  (Monitoring M2) a monitor check's banking. */
+export function readingFromObservation(
   statedPlace: string,
   coordinates: { lat: number; lon: number },
   observation: { resolvedName: string; stationId: string; timeISO: string; temperatureC: number; conditionText: string; precipitationMm?: number },

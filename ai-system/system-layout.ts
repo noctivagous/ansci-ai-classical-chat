@@ -31,6 +31,9 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "awareness": {
       "order": 2
     },
+    "monitoring": {
+      "order": 19
+    },
     "awareness/self": {
       "order": 1
     },

@@ -579,6 +579,18 @@ export interface Session {
   expectations: import("./expectation").ExpectationRecord[];
   /** The expectation register's id sequence. */
   expectationSeq: number;
+  /** The Monitoring register (monitoring.ts, Monitoring
+   *  programme M1, 2026-11-21; design:
+   *  docs/ansci/monitoring-design-note.md §2): the session's
+   *  standing watches — each a monitor over a subject and a
+   *  source, at an interval, under a change rule, with its
+   *  registrar, its expiry, and its complete check history.
+   *  Session-scoped on the same pattern as the registers
+   *  above (persistence is the monitoring note's §10 open
+   *  question, as it was the time note's §7.2). */
+  monitors: import("./monitoring").MonitorRecord[];
+  /** The monitor register's id sequence. */
+  monitorSeq: number;
 }
 
 /**
@@ -696,6 +708,8 @@ export function newSession(
     scheduleSeq: 0,
     expectations: [],
     expectationSeq: 0,
+    monitors: [],
+    monitorSeq: 0,
   };
 }
 
