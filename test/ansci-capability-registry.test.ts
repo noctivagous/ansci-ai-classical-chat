@@ -40,6 +40,32 @@ test("the registry: exactly the verified holdings, each with holder and code poi
       "classification-lookup",
       "token-resolution",
       "sense-selection",
+      // Time programme T1 (2026-11-20): Timekeeping's two
+      // operations register as holdings — the seat is not a
+      // holding until the registry says so (design note §6).
+      "clock-consultation",
+      "staleness-query",
+      // Time programme T2 (2026-11-20): Scheduling's two
+      // operations register as holdings, on T1's pattern.
+      "schedule-registration",
+      "schedule-sweep",
+      // Time programme T3 (2026-11-20): Expectation's two
+      // operations register as holdings, on the same pattern.
+      "expectation-registration",
+      "expectation-sweep",
+      // Time programme C1 (2026-11-20): Calendar's two
+      // operations register as holdings, on the same pattern.
+      "calendar-conversion",
+      "calendar-grid-arithmetic",
+      // Time programme C2 (2026-11-20): the lunisolar's
+      // machinery and the solar terms register alongside.
+      "calendar-lunisolar-conversion",
+      "calendar-solar-terms",
+      // Time programme C3 (2026-11-20): Timeline's two
+      // holdings and Scheduling's placement register.
+      "timeline-relations",
+      "timeline-duration-read-off",
+      "schedule-placement",
       "wikidata-lookup",
     ],
   );
@@ -78,8 +104,24 @@ test("every holder named in the registry is a unit that stands on the map", () =
 });
 
 test("no placeholder seat is registered as a holding", () => {
+  // Supersession (Time programme T1, 2026-11-20): the blanket
+  // form of this rule — no entry held by any functions/* seat —
+  // stood while every Functions family was a placeholder. T1
+  // built Timekeeping, so its seat is a holding's home, not a
+  // placeholder: an entry may now be held by a BUILT Functions
+  // family, enumerated here as data. The rule's substance is
+  // unchanged: a placeholder seat is never registered as a
+  // holding (time design note §6: a seat is not a holding
+  // until the registry says so — and the registry may say so
+  // only once the seat is built).
+  const BUILT_FUNCTIONS_FAMILIES = ["functions/timekeeping", "functions/scheduling", "functions/expectation", "functions/calendar", "functions/timeline"];
   for (const entry of CAPABILITY_REGISTRY) {
-    assert.ok(!entry.heldBy.startsWith("functions/"), `${entry.id}: not held by a Functions placeholder seat`);
+    if (entry.heldBy.startsWith("functions/")) {
+      assert.ok(
+        BUILT_FUNCTIONS_FAMILIES.includes(entry.heldBy),
+        `${entry.id}: held by ${entry.heldBy}, a Functions placeholder seat`,
+      );
+    }
     assert.equal(unbuiltSeatFor(entry.id), undefined, `${entry.id}: not also listed as unbuilt`);
   }
   // The unbuilt seats are the Functions families plus Geometry —

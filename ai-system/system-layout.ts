@@ -307,6 +307,21 @@ export const SYSTEM_LAYOUT: SystemLayout = {
     "functions/file-system": {
       "order": 5
     },
+    "functions/timekeeping": {
+      "order": 6
+    },
+    "functions/scheduling": {
+      "order": 7
+    },
+    "functions/expectation": {
+      "order": 8
+    },
+    "functions/calendar": {
+      "order": 9
+    },
+    "functions/timeline": {
+      "order": 10
+    },
     "error-failure": {
       "order": 14
     },

@@ -1100,7 +1100,7 @@ export const SYSTEM_MAP: SystemMap = {
       "file": null,
       "external": false,
       "currentCode": null,
-      "summary": "The Functions Unit: a top-level unit holding families of generic functions, placed underneath the OntologyCore (owner's direction, 2026-11-19, as the Capabilities Unit; renamed 2026-11-20 when the owner separated two jobs the word capability was doing). This unit is the LIBRARY OF OPERATIONS: Ordering And Sorting, Search, Editing, ExternalQuery, and FileSystem — callable functions over abstract material (elements and an ordering, a space and a criterion, ranges over anything range-bearing, a query over anything on the web, a tree of named places holding content), never over a particular kind of data, called mid-step inside larger processes such as a problem-solving walk; it owns no data and knows nothing of what the material means. The other job — the INVENTORY of what the system can actually do (its built-ins: mathematics, quantification, geometry, the nets' knowledge, the session record, consultation) — is answered by a capability registry held as data, in which every built operation registers itself (name, what it takes, what it returns); a placeholder seat is explicitly NOT a holding. When a problem-solving step declares a requirement, the registry and the distributed holdings are what it is checked against, and a lack is declared only on that audit. Placeholder seats only: no function is built, the registry is designed, not built, and no caller is wired."
+      "summary": "The Functions Unit: a top-level unit holding families of generic functions, placed underneath the OntologyCore (owner's direction, 2026-11-19, as the Capabilities Unit; renamed 2026-11-20 when the owner separated two jobs the word capability was doing). This unit is the LIBRARY OF OPERATIONS: Ordering And Sorting, Search, Editing, ExternalQuery, and FileSystem — callable functions over abstract material (elements and an ordering, a space and a criterion, ranges over anything range-bearing, a query over anything on the web, a tree of named places holding content), never over a particular kind of data, called mid-step inside larger processes such as a problem-solving walk; it owns no data and knows nothing of what the material means. The other job — the INVENTORY of what the system can actually do (its built-ins: mathematics, quantification, geometry, the nets' knowledge, the session record, consultation) — is answered by a capability registry held as data, in which every built operation registers itself (name, what it takes, what it returns); a placeholder seat is explicitly NOT a holding. When a problem-solving step declares a requirement, the registry and the distributed holdings are what it is checked against, and a lack is declared only on that audit. The five original families stand as placeholder seats; the time programme (2026-11-20) adds further families beside them as they are designed and built — Timekeeping first (T1: clock consultation and the staleness operation, registered as holdings in the capability registry), then Scheduling (T2: the register, the opening sweep, and scheduled re-consultation as the one wired consumer), then Expectation (T3: the joint charter with the lack machinery, the two honest standings, timeout as information), then Calendar (C1–C2: the systems register, the arithmetical conversions, the lunisolar held) and Timeline (C3: the line, Allen's algebra, placement live)."
     },
     {
       "id": "functions/ordering-and-sorting",
@@ -1166,6 +1166,71 @@ export const SYSTEM_MAP: SystemMap = {
       "external": false,
       "currentCode": null,
       "summary": "FileSystem: the Functions Unit's function family for working with a file system — a tree of named places (directories) holding content (files), addressed by paths. The operations are the generic ones that go with such a tree, held once: name and resolve a path, list what a place holds, read and write content at a place, create and remove places and content, move and copy between places, and ask what stands at a path (whether it is there, what kind of thing it is, how large, when it changed). The unit knows nothing of what any file contains or means: a document, a data bundle and a program are all just content at a place, and what content may be read, written or trusted belongs to the units that own it. Not data-specific. Placeholder seat only (owner's direction, 2026-11-19): no operation is implemented over the system's existing file access, no caller is wired, nothing is built."
+    },
+    {
+      "id": "functions/timekeeping",
+      "title": "Timekeeping",
+      "type": "Unit",
+      "parent": "functions",
+      "state": "partial",
+      "percent": 40,
+      "path": "functions/timekeeping",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/timekeeping.ts (consultClock, askStaleness, staleByHorizon); the time/date shapes' clock route in src/ansci/turn.ts",
+      "summary": "Timekeeping: the Functions Unit's time resource (design: docs/ansci/time-scheduling-design-note.md §2; built T1, 2026-11-20). Two operations, held generically. THE CLOCK-CONSULTATION OPERATION: a clock is a source, read on demand — one source wired, the host's clock — and a reading is a RETRIEVED FACT: the instant read, the timezone it stands in (named, the host's own), and its source record under the retrieved provenance discipline; a reading's content and fetch stamp coincide, and it warrants the turn it was taken in — a later turn re-consults rather than inheriting a 'now'. The frame remains the conversation's stated time; where frame and clock disagree the disagreement is statable, never silently reconciled, and the time/date shapes answer from the frame where a frame reading stands and consult the clock only where none does. THE STALENESS OPERATION: fresh / stale / absent asked uniformly over the banks under the shelf life each bank states for its kind (weather TTL, the geography register's per-kind table), and 'no shelf life stated' — never 'fresh' — where a bank states none (the Wikidata bank). Timekeeping does no arithmetic (Quantification's Mathematics), no ordering (Ordering And Sorting over readings), and no testimony: what a time means stays with the frame's tables and Awareness. Registered holdings: clock-consultation, staleness-query (capability-registry.ts)."
+    },
+    {
+      "id": "functions/scheduling",
+      "title": "Scheduling",
+      "type": "Unit",
+      "parent": "functions",
+      "state": "partial",
+      "percent": 40,
+      "path": "functions/scheduling",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/scheduling.ts (registerSchedule, sweepSchedule, declineDueItem); the opening sweep wired in src/ansci/turn.ts; the weather re-consultation consumer in src/ansci/weather-turn.ts",
+      "summary": "Scheduling: the Functions Unit's commitment resource (design: docs/ansci/time-scheduling-design-note.md §3; built T2, 2026-11-20). Commitments held as records in a session-scoped register: what is owed, its trigger (a time, or a time and a condition — never a bare condition), its registrar (only the registering unit may cancel or amend its own items), its registration stamp on a named standing, and the registration's own shelf life ('no expiry' a stated value with a reason, never an omitted field). Registration is NOT authorisation: at each turn's opening sweep, under the turn's best time standing, due items raise the demands stated at registration and lapsed registrations close as lapsed; the Planner prices each demand at due time and a decline closes the item with the decline as its closing evidence. Scheduling never acts, never authors a reply, never originates a claim. The one wired consumer is scheduled re-consultation — a banked weather reading registers its own refresh, and the sweep's firing, the pricing and the re-bank all ride the trace. The waking limit stands as designed: nothing fires between turns, items are evaluated at turn boundaries, and no host driver is built (the driver contract's entity side stands as the pure queries whatIsDue / whatIsOpen). Registered holdings: schedule-registration, schedule-sweep (capability-registry.ts)."
+    },
+    {
+      "id": "functions/expectation",
+      "title": "Expectation",
+      "type": "Unit",
+      "parent": "functions",
+      "state": "partial",
+      "percent": 40,
+      "path": "functions/expectation",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/expectation.ts (registerExpectation, sweepExpectations, offerSatisfier, deliverArrival); the hand-off annotation on src/ansci/problem-records.ts; the weather chain in src/ansci/weather-turn.ts",
+      "summary": "Expectation: the Functions Unit's waiting resource (design: docs/ansci/time-scheduling-design-note.md §4; built T3, 2026-11-20), chartered JOINTLY with the lack machinery — the seat is a Function family's, but the account of the need lives in ProblemSolving's problem records, and neither side is complete without the other. An expectation is a watch over a problem record: its satisfier stated checkably (a fact, a reply, or an arrival — an expectation that cannot state its satisfier is not registered), the source it is expected from, a deadline (required; open-ended waiting is how registers fill with the dead), and the on-satisfaction and on-timeout demands stated at registration. Eligibility is §4.3's one test — could the world deliver the satisfier without the system changing? lack-of-information yes; an interlocutor-owed value yes; capability and how-to-proceed no, their audit verdicts untouched. Satisfaction is routing, not admission: a candidate faces the gates any content faces, a refusal is recorded on the expectation's record, and nothing enters knowledge because it was waited for. Two honest standings only: re-check at turn openings, and driver-delivered arrival (no driver is built; the entity-side contract stands). A timeout is information — what was waited for, from whom, until when, that it did not come — filed into the problem record, which stands with it as evidence; a satisfaction files its evidence and the record closes. The weather chain (§5.1) is the wired walk: a weather decline the world can close registers an expectation plus a scheduled re-check, and the visitor is told the gap and that the question is being kept open. Registered holdings: expectation-registration, expectation-sweep (capability-registry.ts)."
+    },
+    {
+      "id": "functions/calendar",
+      "title": "Calendar",
+      "type": "Unit",
+      "parent": "functions",
+      "state": "partial",
+      "percent": 40,
+      "path": "functions/calendar",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/calendar.ts (CalendarRegister, convertDate, addMonths) and src/ansci/calendar-chinese.ts (chineseFromFixed, fixedFromChinese, currentSolarTerms)",
+      "summary": "Calendar: the Functions Unit's grid resource (design: docs/ansci/time-scheduling-design-note.md §8.3–§8.5; built C1–C2, 2026-11-20). Date systems held as knowledge in a systems register — name, provenance, epoch, month structure, intercalation — with conversion and grid arithmetic as operations over the holdings. C1 holds three arithmetical systems (the Gregorian the frame's ISO input assumes, the ISO week calendar, the Julian for historical dates), each with its provenance stated: Dershowitz & Reingold, Calendrical Calculations (4th ed.), Part I, ported from the authors' public Lisp distribution — calendrics is not re-derived here. C2 holds the Chinese lunisolar: an astronomical system (Part II), its conversions computed from new moons and solar terms at the Chinese standard-time meridian, the modern post-1645 system only — pre-1645 conversions carry the qualification on their derivation — with the 24 solar terms held as its named points and term-level questions answered here (§8.6); 2033's leap month lands as the eleventh by the machinery. Conversion is computation: a converted date carries the derived provenance kind, citing the date as stated, the system converted to, and the machinery — never testimony. Grid arithmetic is not duration arithmetic: 'one month from now' is the grid's question and only the grid answers it, while '+ 30 days' stays Quantification's. A system not held declines at the holding (§8.11), unapproximated from its name; the frame's season convention does not move and does not start citing Calendar. Registered holdings: calendar-conversion, calendar-grid-arithmetic, calendar-lunisolar-conversion, calendar-solar-terms (capability-registry.ts)."
+    },
+    {
+      "id": "functions/timeline",
+      "title": "Timeline",
+      "type": "Unit",
+      "parent": "functions",
+      "state": "partial",
+      "percent": 40,
+      "path": "functions/timeline",
+      "file": null,
+      "external": false,
+      "currentCode": "src/ansci/timeline.ts (conversationTimeline, planTimeline, relateEntries, ALLEN_COMPOSITION_TABLE)",
+      "summary": "Timeline: the Functions Unit's line resource (design: docs/ansci/time-scheduling-design-note.md §8.7–§8.11; built C3, 2026-11-20) — the line to Calendar's grid. A Timeline is a held object: entries with extents (a point, or an interval) and their standings, under an owner whose kind fixes how entries enter — the conversation's own (built from the session's records: problems opened, expectations and schedule items registered and taken up, on the turn-order axis), a plan's (the schedule register viewed as a line, nothing new held), a knowledge timeline (entries through the testimony gates; none banked today, and the seat says so). Relations are Allen's interval algebra, ported: the thirteen basic relations from their endpoint definitions, the converse structure, and the composition table materialised as data by endpoint enumeration — checked against the paper's own example, not transcribed. A computed relation is a derivation, inheriting the weaker extent's standing. Durations are read off the line (§8.9), through a conversion where endpoints stand in different systems. The addendum's declines stand at their locations: the unplaceable entry, the relation across unconverted systems, the duration without both endpoints (§8.11). Scheduling's placement fields went live alongside (C3): patterns from Form's Repetition, dates from Calendar, relations re-computed at the sweep with a lapse recorded as an event. Registered holdings: timeline-relations, timeline-duration-read-off (capability-registry.ts); the placement holding is Scheduling's."
     },
     {
       "id": "error-failure",

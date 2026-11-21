@@ -1,5 +1,5 @@
 {
-  "description": "AnSci \u2014 a classical-AI system whose mind is an ontology graph of ontological priors (yin/yang, Wuxing, trigrams), not a neural network.",
+  "description": "AnSci — a classical-AI system whose mind is an ontology graph of ontological priors (yin/yang, Wuxing, trigrams), not a neural network.",
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.8.0"
@@ -45,5 +45,8 @@
     "ansci:triage": "npm run build --silent && node scripts/ansci-triage.mjs"
   },
   "type": "commonjs",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "dependencies": {
+    "planck": "^1.5.1"
+  }
 }

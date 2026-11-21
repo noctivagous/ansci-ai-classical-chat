@@ -314,7 +314,12 @@ test("the frame conventions map calendar to names at their boundaries", () => {
   const s = newSession(undefined, { dateISO: "2026-07-04", hour: 9 });
   assert.equal(s.frame?.season?.name, "summer", "the month rides the ISO date");
   assert.equal(s.frame?.daypart.name, "dawn");
-  assert.deepEqual(s.frame?.supplied, { month: 7, day: 4, hour: 9 });
+  // Amended by Time programme T1 (2026-11-20): the frame now
+  // RETAINS the ISO year it was supplied — before T1 the year was
+  // dropped at the frame boundary, and §2.2's frame standing
+  // could not honestly say whether a year was ever stated. The
+  // standing reads it; nothing else about the shape changed.
+  assert.deepEqual(s.frame?.supplied, { month: 7, day: 4, hour: 9, year: 2026 });
 });
 
 /* ---------------- the silence discipline ---------------- */

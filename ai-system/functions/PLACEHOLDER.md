@@ -36,6 +36,39 @@ those stay in the units that own them.
   operations over a tree of named places holding content: paths,
   listing, reading and writing, creating and removing, moving and
   copying, asking what stands at a path.
+- **Timekeeping** — `functions/timekeeping` — the time resource
+  (placed and first slice built 2026-11-20, Time programme T1):
+  clock readings as consultations (a reading is a retrieved fact
+  and warrants the turn it was taken in) and staleness asked
+  uniformly of every bank. Scheduling, Expectation, Calendar and
+  Timeline are proposed beside it in the time design note
+  (`docs/ansci/time-scheduling-design-note.md`) and take their
+  seats as their slices land.
+- **Scheduling** — `functions/scheduling` — commitments held as
+  records (built 2026-11-20, Time programme T2): a session-scoped
+  register of scheduled items, the turn-boundary opening sweep
+  that raises due demands for the Planner to price (registration
+  is not authorisation), and scheduled re-consultation as the
+  one wired consumer.
+- **Expectation** — `functions/expectation` — the waiting
+  resource (built 2026-11-20, Time programme T3), chartered
+  jointly with the lack machinery: a watch over a problem
+  record, its satisfier stated checkably, satisfaction routed
+  through the gates (never admitted by being waited for), and
+  timeout kept as information.
+- **Calendar** — `functions/calendar` — the grid (built
+  2026-11-20, Time programme C1): date systems held as
+  knowledge in a systems register (Gregorian, ISO, Julian in
+  C1), conversion between held systems as computation under
+  the derived provenance kind, and grid arithmetic distinct
+  from duration arithmetic — the Calendrical Calculations
+  port.
+- **Timeline** — `functions/timeline` — the line (built
+  2026-11-20, Time programme C3): Timeline objects for the
+  three owner kinds (the conversation's own first), Allen's
+  interval algebra ported (thirteen relations, composition
+  table as data), durations read off the line, and
+  Scheduling's placement fields made live alongside.
 
 ## What is deliberately not here yet
 

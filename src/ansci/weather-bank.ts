@@ -139,6 +139,14 @@ export class WeatherBank {
     return this.readings.get(placeKey);
   }
 
+  /** Every reading the bank holds, in banking order — the
+   *  read Timekeeping's staleness horizon (timekeeping.ts,
+   *  T1) enumerates: what goes stale by a stated moment is
+   *  a question over the whole bank, not over one key. */
+  entries(): WeatherReading[] {
+    return [...this.readings.values()];
+  }
+
   /** The reading for a place IF it is still inside its
    *  shelf life at `nowISO` — the only read an answer may
    *  rest on. A stale reading returns undefined, exactly as

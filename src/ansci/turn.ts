@@ -124,6 +124,9 @@ import { analyseInbound, analyseOutbound, analyseSenses, compareCompositions, is
 import { closePending, conversationPhase, dischargeDemand, matchPendingFill, noteClarificationAttempt, noteClarifiedSense, openClarification, openStanceRepair, persistInterlocutor, readSocial, recordDisagreement, recordLastReply, requestCapabilities, requestIdentity, requestPlace } from "./social";
 import { routeProblemSolving } from "./problem-solving";
 import { registerDecline } from "./problem-records";
+import { consultClock, turnTimeStanding, type ClockReading } from "./timekeeping";
+import { sweepSchedule } from "./scheduling";
+import { bankedWeatherReading, sweepExpectations } from "./expectation";
 import { assessNormalcy, normalcyFlagOf, FUNCTION_WORDS } from "./normalcy-assessment";
 import { assessMissingRoles } from "./check";
 import { applySceneUpdate } from "./senses-scening";
@@ -517,7 +520,50 @@ export interface TurnTrace {
    *  the missing clock/calendar reading as the located gap.
    *  `supplied` is the frame's own record, present when a
    *  frame stands in the session. */
-  timeAnswer?: { asked: "time" | "date"; ground: string; supplied?: { month?: number; day?: number; hour: number } };
+  timeAnswer?: {
+    asked: "time" | "date";
+    ground: string;
+    supplied?: { month?: number; day?: number; hour: number; year?: number };
+    /** Which route answered (Timekeeping T1): "frame" — the
+     *  Slice 5 route, from the situation frame's supplied
+     *  readings; "clock" — the consultation route, from a
+     *  clock reading taken for the turn, cited in
+     *  `clockReading`. Absent on the declines, whose grounds
+     *  stand as Slice 5 left them. */
+    route?: "frame" | "clock";
+    /** The clock reading the clock route answered from
+     *  (Timekeeping T1): the retrieved fact, cited — its
+     *  instant, its timezone, its source and its source
+     *  record. Present only on route "clock". */
+    clockReading?: { instantISO: string; timezone: string; source: string; baseVersion: string; retrievedFrom: string };
+    /** The clock consultation attempted on a decline
+     *  (Timekeeping T1): the wired source was consulted for
+     *  the turn and was unavailable, stated as a state — the
+     *  decline's ground is unchanged (the missing reading);
+     *  this is the consultation's record, not a new ground. */
+    clockAttempt?: { source: string; reason: string };
+  };
+  /** The opening sweep's outcomes (Scheduling T2, design
+   *  §3.5.1): the turn began by sweeping the schedule
+   *  register under the turn's best time standing — due
+   *  items raised their demands, lapsed registrations
+   *  closed as lapsed. The outcomes ride the trace as
+   *  annotations: visible to the Planner, accounted here,
+   *  never merged into the visitor's input. Present only
+   *  when the sweep had something to say; a wired consumer
+   *  (the weather wrapper) completes a due outcome with
+   *  its pricing and any re-bank. */
+  scheduleSweep?: import("./scheduling").SweepOutcome[];
+  /** The expectation half of the opening sweep
+   *  (Expectation T3, design §3.5.1, §4.5, §4.6):
+   *  expectations whose satisfaction the intervening turns
+   *  already banked close as satisfied, and expectations
+   *  past their deadline raise their timeouts — the
+   *  timeout is information, and its demand rides here.
+   *  Satisfactions the weather wrapper notices at a
+   *  banking during the turn are appended to the same
+   *  annotation by the wrapper. */
+  expectationSweep?: import("./expectation").ExpectationSweepOutcome[];
   /** The gibberish repair (Part 3e): the turn arrived with no
    *  resolvable content (the joint Normalcy+Coherence flag),
    *  and the reply is the repair question. */
@@ -630,6 +676,26 @@ export interface TurnTrace {
     categories?: string[];
     fetchedAt?: string;
     expiresAt?: string;
+    detail: string;
+    priorDecline?: string;
+  };
+  /**
+   * The physics record (Physics P1, physics-turn.ts;
+   * design note docs/ansci/physics-design-note.md §4):
+   * the Physics Unit's work on this turn — a simulation
+   * run and answered as a derived fact (its derivation —
+   * the scene as described, the held properties used,
+   * the engine and its stepping, the question — carried
+   * in the detail, because a computed answer's warrant is
+   * its working), or a decline located at the missing
+   * determination or at a scope border (§§5.2, 6). A
+   * simulated outcome is a derivation about a described
+   * scene, never testimony about the world, and the
+   * record keeps that standing visible.
+   */
+  physics?: {
+    action: "simulated" | "missing-determination" | "border-decline" | "answered-from-curve";
+    shape: string;
     detail: string;
     priorDecline?: string;
   };
@@ -7526,7 +7592,42 @@ function settleTurnEnvelopes(session: Session, trace: TurnTrace): void {
  * initiative scan over the formed reply (R6, §8.10).
  */
 export function processTurn(session: Session, text: string): TurnResult {
+  /* The opening sweep (Scheduling T2, design §3.5.1):
+   * before the new input is planned, the schedule register
+   * is swept under the turn's best time standing — due
+   * items raise their demands, lapsed registrations close
+   * as lapsed — and the outcomes ride the trace as
+   * annotations. The sweep runs here, at the one entry
+   * every conversational turn passes through, and only
+   * when the register holds anything open: an empty
+   * register consults no clock and changes nothing. A
+   * registration made during this turn is stamped within
+   * it and stands from the NEXT turn's sweep forward
+   * (§3.5.3) — this sweep has already run. */
+  const scheduleOpen = session.schedule.some((i) => i.status === "standing" || i.status === "due-raised");
+  const expectationsOpen = session.expectations.some((e) => e.status === "open");
+  // The turn's standing is taken only when a register
+  // holds anything open — an empty pair of registers
+  // consults no clock and changes nothing (T2's rule,
+  // kept for the pair).
+  const openingStanding = scheduleOpen || expectationsOpen ? turnTimeStanding(session)?.standing : undefined;
+  const sweepOutcomes = scheduleOpen ? sweepSchedule(session, openingStanding) : [];
+  /* The expectation half of the same sweep (§3.5.1):
+   * satisfactions the intervening turns banked close as
+   * satisfied — the weather-bank checker is the wired
+   * banked-fact check — and deadlines passed raise their
+   * timeouts. The standing is the one already taken for
+   * the schedule sweep: one turn, one standing. */
+  const expectationOutcomes = expectationsOpen
+    ? sweepExpectations(session, openingStanding, {
+        bankedFact: openingStanding?.instantISO
+          ? bankedWeatherReading(defaultWeatherBank, openingStanding.instantISO)
+          : undefined,
+      })
+    : [];
   const result = processTurnInner(session, text);
+  if (sweepOutcomes.length) result.trace.scheduleSweep = sweepOutcomes;
+  if (expectationOutcomes.length) result.trace.expectationSweep = expectationOutcomes;
   // Social Unit S5: a stance-repair pending from an earlier
   // turn that this turn neither repaired nor insisted on
   // lapses — the repair window is the turn that follows the
@@ -7680,14 +7781,105 @@ function timeDateAskOf(parsed: ParsedSentence): "time" | "date" | undefined {
  * follows. The reply wordings are hand-composed and
  * MINIMAL / DRAFT — the owner's to settle.
  */
+/**
+ * The clock route beside the frame route (Timekeeping T1,
+ * 2026-11-20; design note §2.2, §2.5): where no frame
+ * reading stands for the ask and a clock source is wired on
+ * the session, the shape CONSULTS the clock — the reading
+ * is a retrieved fact, cited in the trace with its source
+ * record, never a frame fact the session does not have.
+ * The frame route keeps its precedence wherever a frame
+ * reading stands: the frame is the conversation's stated
+ * time, and situated answers stand on it (§2.2). Where the
+ * wired clock is unavailable, the consultation returns its
+ * stated state and the caller declines exactly as Slice 5
+ * declined — the ground (the missing reading) unchanged.
+ * The reply wordings on this route are hand-composed and
+ * DRAFT — the owner's to settle.
+ */
+function consultClockForTimeDate(
+  session: Session,
+  asked: "time" | "date",
+): { reading: ClockReading } | { unavailable: { source: string; reason: string } } | undefined {
+  if (!session.clockSource) return undefined;
+  const got = consultClock(session.clockSource, {
+    retrievedFrom: session.clockRetrievedFrom ?? "live",
+    turn: session.turnCount,
+  });
+  if (got.status === "unavailable") return { unavailable: { source: got.source, reason: got.reason } };
+  void asked;
+  return { reading: got.reading };
+}
+
+function answerTimeDateFromClock(trace: TurnTrace, asked: "time" | "date", reading: ClockReading): TurnResult {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: reading.timezone,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(reading.instantISO));
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  const citation = {
+    instantISO: reading.instantISO,
+    timezone: reading.timezone,
+    source: reading.source,
+    baseVersion: reading.provenance.source.baseVersion,
+    retrievedFrom: reading.provenance.source.retrievedFrom,
+  };
+  if (asked === "time") {
+    const hour = Number(get("hour"));
+    const h12 = ((hour + 11) % 12) + 1;
+    const ampm = hour < 12 ? "AM" : "PM";
+    trace.timeAnswer = {
+      asked,
+      route: "clock",
+      clockReading: citation,
+      ground:
+        `no frame reading stands for this conversation; the wired clock source (${reading.source}) was consulted for the turn ` +
+        `and read ${reading.instantISO} in ${reading.timezone} — a retrieved fact (dataset "clock", baseVersion ` +
+        `${reading.provenance.source.baseVersion}, retrievedFrom ${reading.provenance.source.retrievedFrom}), cited, not a frame fact`,
+    };
+    trace.planNote =
+      "answered from a clock reading (Timekeeping T1): the frame holds no reading, so the shape consulted the wired " +
+      "clock source and states the reading it took for this turn, with its provenance";
+    trace.wordingNotDerived = true;
+    // DRAFT wording — the owner's to settle.
+    return { reply: `It is ${h12}:${get("minute")} ${ampm}.`, trace };
+  }
+  trace.timeAnswer = {
+    asked,
+    route: "clock",
+    clockReading: citation,
+    ground:
+      `no frame calendar reading stands for this conversation; the wired clock source (${reading.source}) was consulted for the ` +
+      `turn and read ${reading.instantISO} in ${reading.timezone} — a retrieved fact (dataset "clock", baseVersion ` +
+      `${reading.provenance.source.baseVersion}, retrievedFrom ${reading.provenance.source.retrievedFrom}), cited, not a frame fact`,
+  };
+  trace.planNote =
+    "answered from a clock reading (Timekeeping T1): the frame holds no calendar reading, so the shape consulted the " +
+    "wired clock source and states the date the reading carries, in the reading's own timezone";
+  trace.wordingNotDerived = true;
+  // DRAFT wording — the owner's to settle.
+  return { reply: `The date is ${MONTH_NAMES[Number(get("month")) - 1]} ${Number(get("day"))}, ${get("year")}.`, trace };
+}
+
 function answerTimeDateQuestion(session: Session, trace: TurnTrace, asked: "time" | "date"): TurnResult {
   const frame = session.frame;
   if (!frame) {
+    const consulted = consultClockForTimeDate(session, asked);
+    if (consulted && "reading" in consulted) return answerTimeDateFromClock(trace, asked, consulted.reading);
     trace.timeAnswer = {
       asked,
+      ...(consulted && "unavailable" in consulted ? { clockAttempt: consulted.unavailable } : {}),
       ground:
         "no frame stands in this session: the shell supplied no clock reading when the session opened, " +
-        "so the situation holds no time to read (Probe-2 Slice 5)",
+        "so the situation holds no time to read (Probe-2 Slice 5)" +
+        (consulted && "unavailable" in consulted
+          ? `; the wired clock source (${consulted.unavailable.source}) was consulted for the turn and was unavailable: ${consulted.unavailable.reason} (Timekeeping T1)`
+          : ""),
     };
     trace.declineReason =
       `the question asks for the ${asked}, and no clock reading stands in this conversation — the situation ` +
@@ -7707,6 +7899,7 @@ function answerTimeDateQuestion(session: Session, trace: TurnTrace, asked: "time
     const ampm = hour < 12 ? "AM" : "PM";
     trace.timeAnswer = {
       asked,
+      route: "frame",
       supplied: frame.supplied,
       ground:
         `the situation frame (§8.1) supplied hour ${hour} at the session's opening; its daypart under the ` +
@@ -7719,12 +7912,18 @@ function answerTimeDateQuestion(session: Session, trace: TurnTrace, asked: "time
     return { reply: `It is about ${h12} ${ampm}.`, trace };
   }
   if (month === undefined || day === undefined) {
+    const consulted = consultClockForTimeDate(session, asked);
+    if (consulted && "reading" in consulted) return answerTimeDateFromClock(trace, asked, consulted.reading);
     trace.timeAnswer = {
       asked,
       supplied: frame.supplied,
+      ...(consulted && "unavailable" in consulted ? { clockAttempt: consulted.unavailable } : {}),
       ground:
         "the frame supplied an hour but no month or day (directly or via an ISO date), so no calendar " +
-        "reading stands in the situation (Probe-2 Slice 5)",
+        "reading stands in the situation (Probe-2 Slice 5)" +
+        (consulted && "unavailable" in consulted
+          ? `; the wired clock source (${consulted.unavailable.source}) was consulted for the turn and was unavailable: ${consulted.unavailable.reason} (Timekeeping T1)`
+          : ""),
     };
     trace.declineReason =
       "the question asks for the date, and the situation frame for this conversation holds an hour but no " +
@@ -7742,6 +7941,7 @@ function answerTimeDateQuestion(session: Session, trace: TurnTrace, asked: "time
   }
   trace.timeAnswer = {
     asked,
+    route: "frame",
     supplied: frame.supplied,
     ground:
       `the situation frame (§8.1) supplied month ${month}, day ${day} at the session's opening` +

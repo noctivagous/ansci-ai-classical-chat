@@ -133,6 +133,16 @@ export interface ProblemRecord {
   status: ProblemStatus;
   /** What closed it, when it closes. */
   closingEvidence?: string;
+  /** The Expectation watching over this need, where one
+   *  is registered (expectation.ts, Time programme T3;
+   *  design §4.3): the hand-off's one reference — an
+   *  annotation of how the need is being carried, not a
+   *  status this record's lifecycle has to learn. The
+   *  expectation files its closing evidence back into
+   *  `closingEvidence` when it closes: satisfied, the
+   *  record closes with it; timed out, the record stands
+   *  with the timeout as its evidence. */
+  expectationId?: string;
 }
 
 /** The unit's typed outcomes (design §3) — shapes only in

@@ -79,6 +79,9 @@ import { defaultWikidataBank, type WikidataBank } from "./wikidata-bank";
 import { defaultPlaceRegister, resolvePlace, type PlaceRegister } from "./geography";
 import { HttpNominatimSource, type NominatimSource } from "./geography-client";
 import { interlocutorPlace } from "./geography-awareness";
+import { closeFiredItem, registerSchedule, standingInstantISO } from "./scheduling";
+import { turnTimeStanding } from "./timekeeping";
+import { noteWeatherReadingBanked, registerExpectation } from "./expectation";
 
 export interface WeatherTurnOptions {
   /** The lookup source (live HTTP by default; tests inject
@@ -162,24 +165,301 @@ function situatedEvidence(
   return coords ? { name: stated.place, lat: coords.value.lat, lon: coords.value.lon } : undefined;
 }
 
+interface WeatherDeps {
+  source: WeatherSource;
+  bank: WeatherBank;
+  wikidataBank: WikidataBank;
+  register: PlaceRegister;
+  geographySource: NominatimSource;
+  now: Date;
+  ttl: number;
+  retrievedFrom: string;
+}
+
+/** Build the banked reading from an observation, exactly as
+ *  the lookup flow banks it — one construction for both the
+ *  lookup's banking and the re-consultation's re-banking. */
+function readingFromObservation(
+  statedPlace: string,
+  coordinates: { lat: number; lon: number },
+  observation: { resolvedName: string; stationId: string; timeISO: string; temperatureC: number; conditionText: string; precipitationMm?: number },
+  deps: WeatherDeps,
+): WeatherReading {
+  const flags = weatherFlagsForNwsText(observation.conditionText, observation.precipitationMm);
+  return {
+    placeKey: placeKeyOf(statedPlace),
+    statedPlace,
+    resolvedName: observation.resolvedName,
+    latitude: coordinates.lat,
+    longitude: coordinates.lon,
+    temperatureC: observation.temperatureC,
+    condition: observation.conditionText.toLowerCase(),
+    raining: flags.raining,
+    snowing: flags.snowing,
+    ...(observation.precipitationMm !== undefined ? { precipitationMm: observation.precipitationMm } : {}),
+    observedAt: observation.timeISO,
+    fetchedAt: deps.now.toISOString(),
+    expiresAt: new Date(deps.now.getTime() + deps.ttl * 60_000).toISOString(),
+    source: "api.weather.gov",
+    retrievedFrom: deps.retrievedFrom,
+  };
+}
+
+/**
+ * Scheduled re-consultation (Scheduling T2, design §3.3,
+ * §5.2): a reading banked by a live lookup registers its
+ * own refresh — an item that falls due at the reading's
+ * expiry, owed by the weather wrapper, whose demand the
+ * Planner prices at the sweep. The registration's own
+ * expiry stands one further shelf life past the trigger:
+ * a refresh attempted within that window is still worth
+ * making; past it, the place's weather is a fresh
+ * question's business and the item lapses accounted
+ * (§5.3). One open re-check per place: a second banking
+ * while one stands does not stack another.
+ */
+function registerWeatherRecheck(session: Session, reading: WeatherReading, ttlMinutes: number): void {
+  const open = session.schedule.some(
+    (i) =>
+      (i.status === "standing" || i.status === "due-raised") &&
+      i.consumer?.kind === "weather-reconsult" &&
+      placeKeyOf(i.consumer.placeName) === reading.placeKey,
+  );
+  if (open) return;
+  registerSchedule(
+    session,
+    {
+      owed: `a fresh weather reading for ${reading.statedPlace}`,
+      trigger: { kind: "at", instantISO: reading.expiresAt },
+      registeredBy: "the weather wrapper",
+      registrationExpiresISO: new Date(Date.parse(reading.expiresAt) + ttlMinutes * 60_000).toISOString(),
+      onDue: `re-consult the weather source for ${reading.statedPlace} and re-bank the reading`,
+      consumer: { kind: "weather-reconsult", placeName: reading.statedPlace },
+    },
+    turnTimeStanding(session)?.standing,
+  );
+}
+
+/** The expectation's deadline horizon for a weather wait:
+ *  one weather shelf life past the registration instant —
+ *  the wait is for the next reading the source can give,
+ *  and a wait longer than the fact's own freshness would
+ *  be waiting on a different question. A stated choice,
+ *  flagged in the T3 report for ratification. */
+const WEATHER_EXPECTATION_HORIZON_MS = 30 * 60_000;
+
+/**
+ * §5.1's hand-off, weather side (Expectation T3): a
+ * weather decline whose gap the world can close — the
+ * lookup unavailable, the coordinates missing, the only
+ * holding stale — registers an Expectation over the
+ * problem record the decline filed, plus the scheduled
+ * re-check (§5.1 step 3) that will re-run the resolution
+ * at the next turn boundary, its registration expiring no
+ * later than the expectation's deadline. The visitor is
+ * told the located gap AND that the question is being
+ * kept open (§5.1 step 2) — the second clause states a
+ * fact about a registration that exists.
+ *
+ * Not every weather decline qualifies, and the exclusions
+ * are §4.3's test applied: the coverage decline names a
+ * place this source cannot serve — no arrival from the
+ * named chain can satisfy it; the ambiguity decline waits
+ * on the interlocutor's disambiguation, a different
+ * satisfier than this chain delivers (eligible in design,
+ * not wired here — flagged in the T3 report). Where no
+ * standing instant can be stated, no deadline can be
+ * stated either, and §4.2's rule governs: not registered.
+ * Returns whether an expectation now stands.
+ */
+function registerWeatherExpectation(session: Session, statedPlace: string): boolean {
+  const standing = turnTimeStanding(session)?.standing;
+  const nowISO = standingInstantISO(standing);
+  if (!standing || !nowISO) return false;
+  const problem = [...session.problems]
+    .reverse()
+    .find(
+      (p) =>
+        p.openedTurn === session.turnCount &&
+        p.need === "lack-of-information" &&
+        p.status !== "closed" &&
+        !p.expectationId,
+    );
+  if (!problem) return false;
+  const deadlineISO = new Date(Date.parse(nowISO) + WEATHER_EXPECTATION_HORIZON_MS).toISOString();
+  const registered = registerExpectation(
+    session,
+    {
+      problemId: problem.id,
+      satisfier: { kind: "fact", fact: "weather-reading", placeName: statedPlace },
+      satisfierStatement: `a current weather reading for ${statedPlace}`,
+      expectedFrom: "the geography consultation chain (the place register, then the geocoding consultation) and the weather source",
+      deadlineISO,
+      onSatisfaction: `answer the waiting weather question for ${statedPlace} from the banked reading, as a self-turn`,
+      onTimeout: `raise the timeout: the weather reading for ${statedPlace} did not arrive by ${deadlineISO}`,
+      registeredBy: "the weather wrapper",
+    },
+    standing,
+  );
+  if (!registered.ok) return false;
+  registerSchedule(
+    session,
+    {
+      owed: `re-run the weather resolution for ${statedPlace}`,
+      trigger: { kind: "at", instantISO: nowISO },
+      registeredBy: "the weather wrapper",
+      registrationExpiresISO: deadlineISO,
+      onDue: `re-consult the weather source for ${statedPlace} and re-bank the reading`,
+      consumer: { kind: "weather-reconsult", placeName: statedPlace },
+    },
+    standing,
+  );
+  return true;
+}
+
+/**
+ * The wired consumer (§5.2's chain, priced and executed):
+ * the opening sweep raised the demands of any due items;
+ * for the weather re-consultations among them, this
+ * wrapper is the machinery the owed action names — it
+ * prices the demand (the place's reading is stale or
+ * staling and the source is the one the registration
+ * named, so the price carries) and executes: resolve the
+ * place through the geography pair's protocol, fetch,
+ * re-bank, and close the item fired-and-done, with the
+ * firing, the pricing and the re-bank all recorded on the
+ * sweep outcome the trace already carries. A re-check that
+ * meets an unavailable source (or an unresolvable place,
+ * or the coverage limit) is a stated state recorded on
+ * the item (§5.3): the item stands due, the wait continues
+ * to its registration expiry, and no stale reading is
+ * served in its place.
+ */
+async function runDueWeatherRechecks(session: Session, result: TurnResult, deps: WeatherDeps): Promise<void> {
+  const outcomes = result.trace.scheduleSweep;
+  if (!outcomes?.length) return;
+  for (const outcome of outcomes) {
+    if (outcome.outcome !== "due") continue;
+    const item = session.schedule.find((i) => i.id === outcome.itemId);
+    if (!item?.consumer || item.consumer.kind !== "weather-reconsult") continue;
+    const placeName = item.consumer.placeName;
+    const fail = (stateDetail: string): void => {
+      outcome.outcome = "reconsult-unavailable";
+      outcome.pricing =
+        "priced by the Planner and executed: the re-consultation was attempted at this sweep — " +
+        "registration was not authorisation, and the pricing happened here, at due time (§3.1)";
+      outcome.detail +=
+        `; the re-consultation met ${stateDetail} — a stated state, recorded on the item; the wait ` +
+        `continues to the registration's expiry and the stale reading is not served (§5.3)`;
+      item.events.push({
+        atISO: deps.now.toISOString(),
+        detail: `re-consultation attempted at a due sweep and met ${stateDetail}`,
+      });
+    };
+    bankConfiguredCoordinates(deps.register, placeName, deps.now);
+    const resolution = await resolvePlace(placeName, {
+      register: deps.register,
+      wikidataBank: deps.wikidataBank,
+      nominatim: deps.geographySource,
+      situatedPlace: situatedEvidence(session, placeName, deps.register, deps.now),
+      now: deps.now,
+      retrievedFrom: deps.retrievedFrom,
+    });
+    if (resolution.kind !== "resolved" || !resolution.place.coordinates) {
+      fail(`a geography resolution of '${resolution.kind}' for ${placeName}`);
+      continue;
+    }
+    const coordinates = resolution.place.coordinates.value;
+    const conditions = await deps.source.currentConditions(coordinates.lat, coordinates.lon);
+    if (conditions.status === "out-of-coverage") {
+      fail(`the weather source's coverage limit — ${placeName} is outside the United States`);
+      continue;
+    }
+    if (conditions.status === "unavailable") {
+      fail(`an unavailable weather source (${conditions.reason})`);
+      continue;
+    }
+    const reading = readingFromObservation(placeName, coordinates, conditions.data, deps);
+    deps.bank.put(reading);
+    closeFiredItem(
+      session,
+      item.id,
+      `fired and done: the scheduled re-consultation re-banked a fresh reading for ${placeName} ` +
+        `(fetched ${reading.fetchedAt})`,
+      turnTimeStanding(session)?.standing,
+    );
+    outcome.outcome = "reconsulted";
+    outcome.pricing =
+      "priced by the Planner and executed: the re-consultation the item owed was carried out at " +
+      "this sweep — registration was not authorisation, and the pricing happened here, at due time (§3.1)";
+    outcome.rebanked = { placeName, fetchedAt: reading.fetchedAt };
+    outcome.detail +=
+      `; the re-consultation re-banked a fresh reading for ${placeName} (fetched ${reading.fetchedAt}, ` +
+      `shelf life ${deps.ttl} minutes)`;
+    // The refreshed reading registers its own refresh, as
+    // every live banking does — the chain continues.
+    registerWeatherRecheck(session, reading, deps.ttl);
+    // And the banking is noticed by any expectation
+    // waiting on it (§5.1 step 6): satisfactions append
+    // to the turn's expectation annotation.
+    const satisfied = noteWeatherReadingBanked(session, reading, turnTimeStanding(session)?.standing);
+    if (satisfied.length) {
+      result.trace.expectationSweep = [...(result.trace.expectationSweep ?? []), ...satisfied];
+    }
+  }
+}
+
 export async function processTurnWithWeather(
   session: Session,
   text: string,
   opts: WeatherTurnOptions = {},
 ): Promise<TurnResult> {
   const result = processTurn(session, text);
+  const deps: WeatherDeps = {
+    source: opts.source ?? new HttpWeatherSource(),
+    bank: opts.bank ?? defaultWeatherBank,
+    wikidataBank: opts.wikidataBank ?? defaultWikidataBank,
+    register: opts.placeRegister ?? defaultPlaceRegister,
+    geographySource: opts.geographySource ?? new HttpNominatimSource(),
+    now: (opts.now ?? (() => new Date()))(),
+    ttl: opts.ttlMinutes ?? weatherTtlMinutes(),
+    retrievedFrom: opts.retrievedFrom ?? "live",
+  };
+  const { source, bank, wikidataBank, register, geographySource, now, ttl } = deps;
+  // The opening sweep ran inside processTurn; the due
+  // weather re-consultations it raised are priced and
+  // executed here, before this turn's own lookup business.
+  await runDueWeatherRechecks(session, result, deps);
   const record = result.trace.weather;
   if (!record || record.action !== "lookup-needed" || !record.place) {
     return result;
   }
-  const source = opts.source ?? new HttpWeatherSource();
-  const bank = opts.bank ?? defaultWeatherBank;
-  const wikidataBank = opts.wikidataBank ?? defaultWikidataBank;
-  const register = opts.placeRegister ?? defaultPlaceRegister;
-  const geographySource = opts.geographySource ?? new HttpNominatimSource();
-  const now = (opts.now ?? (() => new Date()))();
-  const ttl = opts.ttlMinutes ?? weatherTtlMinutes();
   const statedPlace = record.place;
+  // The sweep's re-bank may already hold a fresh reading
+  // for this turn's place: answer from it rather than
+  // fetching a second time (§5.2 — the next asking finds a
+  // fresh reading where the stale-only decline would have
+  // stood).
+  const rebanked = bank.fresh(placeKeyOf(statedPlace), now.toISOString());
+  if (rebanked) {
+    result.trace.weather = {
+      ...record,
+      action: "looked-up-and-banked",
+      fetchedAt: rebanked.fetchedAt,
+      expiresAt: rebanked.expiresAt,
+      detail:
+        `the opening sweep's scheduled re-consultation re-banked a fresh reading for "${statedPlace}" ` +
+        `(fetched ${rebanked.fetchedAt}, shelf life to ${rebanked.expiresAt}) before this turn's lookup ` +
+        `ran; the answer rests on that reading (Scheduling T2, §5.2)`,
+      priorDecline: result.reply,
+    };
+    result.trace.declineReason = undefined;
+    result.trace.planNote =
+      "answered from the scheduled re-consultation's re-banked reading (Scheduling T2): the stale-only " +
+      "decline the synchronous turn reached was pre-empted by the refresh the earlier banking registered";
+    result.trace.wordingNotDerived = true;
+    return { reply: composeWeatherReply(rebanked, record.shape), trace: result.trace };
+  }
 
   const decline = (
     action: "lookup-unavailable" | "coordinates-missing" | "source-coverage" | "place-ambiguous" | "stale-only",
@@ -187,6 +467,20 @@ export async function processTurnWithWeather(
     detail: string,
     declineReason: string,
   ): TurnResult => {
+    // §5.1's hand-off (Expectation T3): the declines whose
+    // gap the world can close register an expectation over
+    // the decline's problem record, and the reply gains
+    // the keeping-open clause — a statement about a
+    // registration that exists. DRAFT wording for the
+    // clause — the owner's to settle, as all wording here.
+    if (action === "lookup-unavailable" || action === "coordinates-missing" || action === "stale-only") {
+      if (registerWeatherExpectation(session, statedPlace)) {
+        reply = `${reply} I am keeping this question open and will check again.`;
+        detail +=
+          `; an expectation was registered over the decline's problem record, with a scheduled ` +
+          `re-check at the next turn boundary (Expectation T3, §5.1)`;
+      }
+    }
     result.trace.weather = {
       ...record,
       action,
@@ -293,25 +587,20 @@ export async function processTurnWithWeather(
     );
   }
   const observation = conditions.data;
-  const flags = weatherFlagsForNwsText(observation.conditionText, observation.precipitationMm);
-  const reading: WeatherReading = {
-    placeKey: placeKeyOf(statedPlace),
-    statedPlace,
-    resolvedName: observation.resolvedName,
-    latitude: coordinates.lat,
-    longitude: coordinates.lon,
-    temperatureC: observation.temperatureC,
-    condition: observation.conditionText.toLowerCase(),
-    raining: flags.raining,
-    snowing: flags.snowing,
-    ...(observation.precipitationMm !== undefined ? { precipitationMm: observation.precipitationMm } : {}),
-    observedAt: observation.timeISO,
-    fetchedAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + ttl * 60_000).toISOString(),
-    source: "api.weather.gov",
-    retrievedFrom: opts.retrievedFrom ?? "live",
-  };
+  const reading = readingFromObservation(statedPlace, coordinates, observation, deps);
   bank.put(reading);
+  // The banking registers its own refresh (Scheduling T2,
+  // §3.3): before this reading stales, a scheduled item
+  // will ask for its re-consultation.
+  registerWeatherRecheck(session, reading, ttl);
+  // The banking is also noticed by any expectation
+  // waiting on this place's reading (§5.1: a satisfier
+  // banked by an intervening turn satisfies without the
+  // expectation's own re-check firing).
+  const satisfied = noteWeatherReadingBanked(session, reading, turnTimeStanding(session)?.standing);
+  if (satisfied.length) {
+    result.trace.expectationSweep = [...(result.trace.expectationSweep ?? []), ...satisfied];
+  }
   result.trace.weather = {
     ...record,
     action: "looked-up-and-banked",

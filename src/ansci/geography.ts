@@ -396,6 +396,15 @@ export class PlaceRegister {
     return record && now.getTime() < new Date(record.expiresAt).getTime() ? record : undefined;
   }
 
+  /** The banked route between two places, whatever its
+   *  freshness — the read Timekeeping's staleness operation
+   *  (timekeeping.ts, T1) asks: fresh-or-stale is a verdict
+   *  over the record, and routeFor's fresh-only read cannot
+   *  state the stale half of it. Answers nothing itself. */
+  peekRoute(fromName: string, toName: string): RouteRecord | undefined {
+    return this.routesByPair.get(PlaceRegister.routeKey(fromName, toName));
+  }
+
   /**
    * Import on read (§8's recommended P625 custody, the
    * owner's default for this build): when resolution needs a

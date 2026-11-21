@@ -1,6 +1,6 @@
 # Results — the Wuxing sentence layer, scored (generated)
 
-Generated 2026-11-20 by `npm run ansci:demo`. **29/29 expectations met · 29 parsed · 27 exact round-trips.**
+Generated 2026-11-21 by `npm run ansci:demo`. **29/29 expectations met · 29 parsed · 27 exact round-trips.**
 
 Scored against the expectations in `sentences.tsv`: a sentence
 passes when the parser does what the corpus says it should —

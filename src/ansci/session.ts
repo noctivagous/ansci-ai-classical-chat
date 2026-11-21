@@ -53,6 +53,7 @@ import {
   type InterlocutorRegister,
 } from "./social";
 import { initialGeographyAwareness } from "./geography-awareness";
+import type { ClockSource } from "./timekeeping";
 
 export interface EntityRecord {
   lemma: string;
@@ -197,7 +198,11 @@ export function daypartForHour(hour: number): string {
  * with the reason recorded; nothing is invented to fill it.
  */
 export interface FrameRecord {
-  supplied: { month?: number; day?: number; hour: number };
+  /** The supplied date/time. The year stands only where an
+   *  ISO date supplied one (Timekeeping, T1: a frame
+   *  standing's instant is statable only to what the frame
+   *  holds — timekeeping.ts's frameStanding reads this). */
+  supplied: { month?: number; day?: number; hour: number; year?: number };
   season?: { name: string; element: Element; origin: StateOrigin };
   seasonAbsentReason?: string;
   daypart: {
@@ -222,9 +227,11 @@ export interface FrameRecord {
 export function buildFrame(graph: Graph, input: FrameInput): FrameRecord {
   let month = input.month;
   let day = input.day;
-  if ((month === undefined || day === undefined) && input.dateISO) {
+  let year: number | undefined;
+  if (input.dateISO) {
     const parts = input.dateISO.split("-").map((p) => Number.parseInt(p, 10));
     if (parts.length === 3 && parts.every((n) => Number.isFinite(n))) {
+      year = parts[0];
       if (month === undefined) month = parts[1];
       if (day === undefined) day = parts[2];
     }
@@ -234,6 +241,7 @@ export function buildFrame(graph: Graph, input: FrameInput): FrameRecord {
       ...(month !== undefined ? { month } : {}),
       ...(day !== undefined ? { day } : {}),
       hour: input.hour,
+      ...(year !== undefined ? { year } : {}),
     },
     daypart: { name: daypartForHour(input.hour) },
   };
@@ -474,6 +482,19 @@ export interface Session {
   /** The awareness frame (§8.1), when the shell supplied one
    *  at session opening. Absent otherwise. */
   frame?: FrameRecord;
+  /** The session's wired clock source (Timekeeping, T1;
+   *  time-scheduling-design-note §2): a named clock the
+   *  consultation operation reads on demand — the host's
+   *  clock in a shell that wires one, a fixture in tests.
+   *  Wiring is the shell's act, supplied at session opening;
+   *  absent, no clock route stands and the frame's standing
+   *  is the only one (the pre-T1 behaviour exactly). */
+  clockSource?: ClockSource;
+  /** How readings from the wired clock are labelled in
+   *  their provenance ("live" by default; "fixture" in
+   *  tests), mirroring the weather/Wikidata retrievedFrom
+   *  discipline. */
+  clockRetrievedFrom?: string;
   entities: EntityRecord[];
   events: EventRecord[];
   states: StateRecord[];
@@ -536,6 +557,28 @@ export interface Session {
    *  the records ride the session in memory and nothing
    *  survives a new session. */
   problems: import("./problem-records").ProblemRecord[];
+  /** The Scheduling register (scheduling.ts, Time
+   *  programme T2, 2026-11-20; design §3.1): the session's
+   *  scheduled items — commitments held as records, swept
+   *  at each turn's opening. Session-scoped, on the pattern
+   *  of the problem register above: initialised empty,
+   *  nothing survives a new session (persistence is the
+   *  design note's open question §7.2 — the conservative
+   *  default, flagged in the T2 report). */
+  schedule: import("./scheduling").ScheduledItem[];
+  /** The schedule register's id sequence. */
+  scheduleSeq: number;
+  /** The Expectation register (expectation.ts, Time
+   *  programme T3, 2026-11-20; design §4): the session's
+   *  open and closed waits — each a watch over a problem
+   *  record (the joint charter, §4.3), with its satisfier,
+   *  its expected-from, its deadline, and its two stated
+   *  demands. Session-scoped on the same pattern as the
+   *  registers above (persistence is §7.2's open question;
+   *  the conservative default, flagged in the T3 report). */
+  expectations: import("./expectation").ExpectationRecord[];
+  /** The expectation register's id sequence. */
+  expectationSeq: number;
 }
 
 /**
@@ -618,7 +661,11 @@ export function listSurvivingNeeds(session: Session): (Need & { objectId: string
 export function newSession(
   disposition: Composition = NEUTRAL_COMPOSITION,
   frameInput?: FrameInput,
-  opts?: { interlocutorStore?: import("./interlocutor-store").InterlocutorStore },
+  opts?: {
+    interlocutorStore?: import("./interlocutor-store").InterlocutorStore;
+    clockSource?: ClockSource;
+    clockRetrievedFrom?: string;
+  },
 ): Session {
   const graph = buildForkGraph();
   return {
@@ -628,6 +675,8 @@ export function newSession(
     role: NEUTRAL_COMPOSITION,
     ...(frameInput ? { frame: buildFrame(graph, frameInput) } : {}),
     ...(opts?.interlocutorStore ? { interlocutorStore: opts.interlocutorStore } : {}),
+    ...(opts?.clockSource ? { clockSource: opts.clockSource } : {}),
+    ...(opts?.clockRetrievedFrom ? { clockRetrievedFrom: opts.clockRetrievedFrom } : {}),
     entities: [],
     events: [],
     states: [],
@@ -643,6 +692,10 @@ export function newSession(
     initiatives: [],
     uptakes: [],
     problems: [],
+    schedule: [],
+    scheduleSeq: 0,
+    expectations: [],
+    expectationSeq: 0,
   };
 }
 
