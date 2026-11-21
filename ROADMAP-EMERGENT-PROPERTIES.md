@@ -4,6 +4,26 @@ Status: design roadmap, recorded 2026-11-19. Nothing in this document is built.
 Phase 1 is the work in progress; Phase 2 is a later change of regime, not a
 current programme.
 
+## Near-term viability roadmap — 2026-11-21
+
+The immediate goal is a dependable chatbot within a measured range of use,
+not open-domain fluency or emergence. We do not yet know what percentage of
+ordinary sentences or chat turns it handles correctly: the existing cases
+target specific grammar patterns and are not a random sample.
+
+| Gap | What the evidence says |
+|---|---|
+| Some capabilities are built but the normal chat path does not call them. | The system-map audit lists modules without a processTurn consumer. This is an integration gap, not proof that sentence parsing fails. |
+| Some tested sentence patterns lose important structure. | The 21-case sealed parser set passes graph checks at F1 5/5, F2 3/4, F3 1/4, F4 0/4, F5 1/4. The F2 coat sentence still chooses the wrong root. These targeted cases do not estimate everyday accuracy. |
+| Overall chat reliability is unknown. | There is no representative end-to-end evaluation showing how often ordinary dialogue survives parsing, meaning construction, and reply generation without losing or inventing meaning. |
+| Some planned reasoning and ontology effects are not implemented or connected. | The system-map audit locates unbuilt Awareness composition and no traceable Hexagram effect. These gaps limit those capabilities; they do not mean the parser cannot handle most sentences. |
+
+**Next decision:** author a small, independent sample of ordinary chat turns and
+measure how often the live chat path preserves their meaning through to its
+reply. Use the traces to decide whether the first fix should connect an existing
+module or improve parsing. Keep this sample separate from development controls
+and the sealed parser set.
+
 ## The phasing claim
 
 Emergent behaviour is not programmed first. The order is:
