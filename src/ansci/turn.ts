@@ -139,6 +139,7 @@ import { canonicalNameFor, uncategorisedEmotionWord } from "./ledu";
 import { mixFor, type EmotionMixEntry } from "./emotion-mix";
 import { composeWeatherReply, detectWeatherQuestion, displayPlace, resolveWeatherPlace, statedWeather, type WeatherQuestion } from "./weather";
 import { defaultWeatherBank, placeKeyOf } from "./weather-bank";
+import { winkSentences } from "./wink";
 
 export interface TurnTrace {
   turn: number;
@@ -3908,6 +3909,127 @@ function nameableQuestionSubject(parsed: ParsedSentence): string | undefined {
   return matter?.head;
 }
 
+/** One rejoined boundary of the Wink SBD veto (below): the
+ *  abbreviation-shaped segment-final token whose full stop the
+ *  regex had read as a sentence boundary, and the rejoined
+ *  segment as it now stands. */
+interface SbdVeto {
+  token: string;
+  rejoined: string;
+}
+
+/* The title/honorific abbreviations the veto recognises at a
+ * segment end. The set is the one Wink's own model treats as
+ * non-terminal, as evidenced by direct measurement against
+ * wink-eng-lite-web-model 1.8.1 (2026-11-22): "We saw X. Smith
+ * at noon. He left." stays two sentences for every member —
+ * and splits into three for Rev, Fig and Vol, which are
+ * therefore NOT in the set, and for ordinary nouns (Jones,
+ * Table), which are the control. */
+const SBD_TITLE_ABBREVIATIONS = new Set([
+  "dr", "mr", "mrs", "ms", "st", "prof", "sr", "jr", "vs", "etc", "hon",
+]);
+
+/**
+ * The abbreviation shape of a segment's final token, or
+ * undefined when the segment does not end abbreviation-shaped.
+ * Three shapes, all conservative — each is a form whose final
+ * full stop is the abbreviation's own, not a sentence's:
+ *   - a single capital letter + stop: an initialism fragment
+ *     ("U.", "S." — the pieces "U.S." falls into under the
+ *     marks pass);
+ *   - a dotted chain of single letters: the whole initialism
+ *     or dotted abbreviation standing at a segment end
+ *     ("U.S.", "U.S.A.", "e.g.", "i.e.", "a.m.", "p.m.");
+ *   - a title/honorific abbreviation from the measured set
+ *     above ("Dr.", "Mrs.", "Prof.", "etc.").
+ * Trailing closers (quotes, brackets) are stripped before the
+ * token is read, as the marks pass attaches them to the
+ * segment they close.
+ */
+function sbdAbbreviationToken(segment: string): string | undefined {
+  const tail = segment.replace(/["')\]]+$/, "");
+  const token = tail.split(/\s+/).pop() ?? "";
+  if (/^[A-Z]\.$/.test(token)) return token;
+  if (/^([A-Za-z]\.){2,}$/.test(token)) return token;
+  if (token.endsWith(".") && SBD_TITLE_ABBREVIATIONS.has(token.slice(0, -1).toLowerCase())) return token;
+  return undefined;
+}
+
+/** The span of each part inside text, located in order, or
+ *  undefined when any part cannot be located (the caller then
+ *  makes no change: an unlocatable span is no evidence). */
+function spansOf(text: string, parts: string[]): { start: number; end: number }[] | undefined {
+  const spans: { start: number; end: number }[] = [];
+  let cursor = 0;
+  for (const part of parts) {
+    const at = text.indexOf(part, cursor);
+    if (at < 0) return undefined;
+    spans.push({ start: at, end: at + part.length });
+    cursor = at + part.length;
+  }
+  return spans;
+}
+
+/**
+ * The Wink SBD veto (2026-11-22): the marks pass is the
+ * primary splitter and stands wherever it stands, with ONE
+ * exception. The agreement audit (scripts/ansci-wink-sbd-
+ * agreement.mjs, 149 texts) showed the two splitters agree on
+ * 134 texts and each is demonstrably right where they differ:
+ * Wink on abbreviations (the marks pass cuts "Dr." / "U.S."
+ * mid-name), the marks pass on a fragment followed by a
+ * lowercase interrogative (Wink absorbs the question into the
+ * fragment and the enquiry is never taken up — the class that
+ * stopped Wink-primary routing). The veto takes the first win
+ * without the second loss: Wink is consulted only to VETO a
+ * marks-pass boundary, and a boundary is vetoed — the two
+ * segments rejoined over their exact original span — only
+ * when BOTH hold:
+ *   (i)  Wink places no sentence boundary at that point (the
+ *        boundary position lies strictly inside one Wink
+ *        sentence's span in the text), and
+ *   (ii) the left segment ends abbreviation-shaped (above).
+ * Wink never creates a boundary here, and a Wink boundary
+ * inside a marks-pass segment changes nothing. Where Wink
+ * cannot load (the provider returns undefined), or any span
+ * cannot be located in the text, the marks-pass segmentation
+ * stands unchanged, byte for byte.
+ */
+function applySbdVeto(
+  trimmed: string,
+  segments: string[],
+): { segments: string[]; vetoes: SbdVeto[] } {
+  const noChange = { segments, vetoes: [] as SbdVeto[] };
+  const wink = winkSentences(trimmed);
+  if (!wink) return noChange;
+  const winkParts = wink.map((s) => s.trim()).filter((s) => s.length > 0);
+  if (winkParts.length === 0) return noChange;
+  const winkSpans = spansOf(trimmed, winkParts);
+  const segSpans = spansOf(trimmed, segments);
+  if (!winkSpans || !segSpans) return noChange;
+  const vetoes: SbdVeto[] = [];
+  const out: string[] = [segments[0]];
+  const outSpans: { start: number; end: number }[] = [segSpans[0]];
+  for (let i = 1; i < segments.length; i++) {
+    const leftSpan = outSpans[outSpans.length - 1];
+    const at = leftSpan.end;
+    const token = sbdAbbreviationToken(out[out.length - 1]);
+    const insideWinkSentence =
+      token !== undefined && winkSpans.some((w) => w.start < at && at < w.end);
+    if (token !== undefined && insideWinkSentence) {
+      const rejoined = trimmed.slice(leftSpan.start, segSpans[i].end);
+      out[out.length - 1] = rejoined;
+      outSpans[outSpans.length - 1] = { start: leftSpan.start, end: segSpans[i].end };
+      vetoes.push({ token, rejoined });
+    } else {
+      out.push(segments[i]);
+      outSpans.push(segSpans[i]);
+    }
+  }
+  return { segments: out, vetoes };
+}
+
 /**
  * Split a turn's surface into its sentence segments (terminal
  * punctuation retained), with one peel: a leading greeting
@@ -3916,7 +4038,11 @@ function nameableQuestionSubject(parsed: ParsedSentence): string | undefined {
  * recognises nothing; each segment is parsed and assessed by
  * the ordinary machinery, which does the recognising.
  */
-function splitTurnSegments(text: string): string[] {
+export function splitTurnSegments(text: string): string[] {
+  return splitTurnSegmentsDetailed(text).segments;
+}
+
+function splitTurnSegmentsDetailed(text: string): { segments: string[]; sbdVetoes: SbdVeto[] } {
   const trimmed = text.trim();
   /* Segmentation by sentence marks, kept where the marks are
    * (IMP-1, the implementation programme, 2026-11-19): the
@@ -3968,6 +4094,17 @@ function splitTurnSegments(text: string): string[] {
     const tail = trimmed.slice(cursor).trim();
     if (tail) segments.push(tail);
     if (segments.length === 0) segments = [trimmed];
+  }
+  /* The Wink SBD veto (2026-11-22, above): applied to the
+   * marks pass's base segments, before the clause-level
+   * post-passes — a rejoined segment is one segment for the
+   * interrogative comma split and the greeting peel, exactly
+   * as a segment the marks pass drew whole would be. */
+  let sbdVetoes: SbdVeto[] = [];
+  if (segments.length > 1) {
+    const vetoed = applySbdVeto(trimmed, segments);
+    segments = vetoed.segments;
+    sbdVetoes = vetoed.vetoes;
   }
   /* IMP-4(b) (the implementation programme, 2026-11-19): a
    * comma-joined telling + question is two acts in one
@@ -4024,7 +4161,7 @@ function splitTurnSegments(text: string): string[] {
     const p = peel(segments[0]);
     if (p) segments = [...p, ...segments.slice(1)];
   }
-  return segments;
+  return { segments, sbdVetoes };
 }
 
 /**
@@ -4039,7 +4176,7 @@ function splitTurnSegments(text: string): string[] {
  * rephrase): the caller then gives the turn's own answer.
  */
 function composeSegmentTurns(session: Session, text: string, ground: string): TurnResult | null {
-  const segments = splitTurnSegments(text);
+  const { segments, sbdVetoes } = splitTurnSegmentsDetailed(text);
   if (segments.length <= 1) return null;
   const parts: { segment: string; result: TurnResult }[] = [];
   const skipped: string[] = [];
@@ -4218,6 +4355,9 @@ function composeSegmentTurns(session: Session, text: string, ground: string): Tu
   trace.planNote =
     `${ground}: ${parts.length} of ${segments.length} sentence segments were taken as their own acts and the replies composed` +
     (skipped.length ? `; not taken up (unparseable as single sentences): ${skipped.map((s) => `"${s}"`).join(", ")}` : "") +
+    (sbdVetoes.length
+      ? `; the Wink SBD veto rejoined ${sbdVetoes.length} segmentation ${sbdVetoes.length === 1 ? "boundary" : "boundaries"} at abbreviation-shaped segment ends (${sbdVetoes.map((v) => `"${v.token}"`).join(", ")}): Wink's sentence model keeps the rejoined segment whole and the boundary was an abbreviation's full stop, not a sentence's — the marks-pass segmentation stands at every other boundary`
+      : "") +
     (steeringStoodDown
       ? `; steering stood down on ${steeringStoodDown} segment(s) (recognition programme R3: steering does not ride on a receipt, decline, correction or closing, and does not steer from a verb-carried state inside a composition; X3: a boundary anywhere in the composition stands steering down, at most one steering move stands per composed reply, and a stood-down segment keeps its own content — its echo or predication — losing only the move)`
       : "") +

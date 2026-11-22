@@ -52,6 +52,9 @@
   "type": "commonjs",
   "version": "0.1.0",
   "dependencies": {
-    "planck": "^1.5.1"
+    "planck": "^1.5.1",
+    "wink-bm25-text-search": "^3.1.2",
+    "wink-eng-lite-web-model": "^1.8.1",
+    "wink-nlp": "^2.4.0"
   }
 }

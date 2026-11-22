@@ -100,6 +100,14 @@ usable as one system; the archive's README is the guide to what each holds.
   `archive-reference/`); plus the user's own reference writings in `docs/user-ref/`.
 - `test/` — the suite; transcripts and gates are the acceptance discipline.
 
+## Third-party libraries and data
+
+AnSci builds on external libraries, ported algorithms, converted datasets and
+runtime services, in several different forms (npm dependencies, a vendored
+WASM build, in-tree ports, derived data tables). The index by form is
+[`EXTERNAL-LIBRARIES.md`](EXTERNAL-LIBRARIES.md); the legal attribution record
+— full licence texts and copyright holders — is [`NOTICE`](NOTICE).
+
 ## Run it
 
 ```sh
