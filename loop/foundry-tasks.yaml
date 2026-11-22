@@ -89,7 +89,7 @@ tasks:
     title: Investigate place names and reference in the game dialogue
     model_tier: high
     model_tier_reason: 'Diagnosis crosses parsing, reference and session scene representation.'
-    status: todo
+    status: in_progress
     parent: null
     depends_on: []
     related: [FND-101]
@@ -98,6 +98,9 @@ tasks:
       - date: '2026-11-21'
         note: 'Second turn has york as root and it resolves to ball; the effect on the scene is unconfirmed.'
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
+      - date: '2026-11-22'
+        note: 'Confirmed: parse and resolution are correct but events and states stay empty (verb-root and predicate-edge gates); follow-ups cannot answer where. Missing recording path for existential/copular-locative predications, not a mis-parse.'
+        evidence: loop/foundry-results/eng-102-diagnosis-2026-11-22.md
   - id: FND-200
     title: Improve Foundry runtime reproducibility and parity
     model_tier: high
