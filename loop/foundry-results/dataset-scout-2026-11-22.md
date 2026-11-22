@@ -11,3 +11,11 @@
 `loop/foundry-cases/english-ewt-scout-v1.json` selects three EWT test-split sentences, with their exact source sentence IDs and original casing. The source is pinned to release r2.18. Root lemma and past tense come from its annotations; interrogative mood is a Foundry-facing interpretation of the question, not the UD verb's Mood=Ind field. These checks test only a small overlap with UD and are not semantic role gold or grammar-acceptability judgments. Sentences were selected after inspection, so the set is development data, not a sealed held-out benchmark. The EWT annotations are attributed above and licensed CC BY-SA 4.0; original text rights are noted separately in the upstream README. Before broader redistribution, review the terms for the particular underlying texts and retain the source license and attribution.
 
 No results are claimed here. Run `npm run foundry --silent -- evaluate --suite loop/foundry-cases/english-ewt-scout-v1.json --json` to obtain them; a failure needs trace and expectation review before changing the parser.
+
+## First run
+
+The normal Foundry evaluation ran on clean revision `8efd3ca` and exited 0: all three case verdicts passed, with seven explicit root/tense/mood checks passed. Raw report: `english-ewt-scout-v1-2026-11-22.json`. The cases are selected and too few to measure general accuracy; these checks do not test semantic roles or answer quality.
+
+## Semantic role source to investigate next
+
+MASC offers an 88K-word PropBank annotation download, including original Penn Treebank annotations, and separately provides its texts: https://anc.org/data/masc/downloads/data-download/ . Its corpus page describes PropBank annotation on a subset of OANC text: https://anc.org/data/masc/corpus/ . It is a promising place to align text and role annotations, but the exact package's text and annotation licenses, version, and alignment have not yet been verified. Do not treat the download's availability as proof of redistribution rights or map ARG labels to generic roles without its frames. Investigate those details before importing cases.
