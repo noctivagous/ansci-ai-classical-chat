@@ -79,9 +79,16 @@ chat app warm the module at startup without gating readiness
 (chat stays usable on the positional parser when warming
 fails). The full dashboard build (engine + dashboard + chat)
 passes with the new imports, including the build control.
-Not verified here: serving `dist/` over HTTP end-to-end in
-a browser (the sandbox blocks local servers) and the actual
-Cloudflare deployment, which needs owner credentials.
+Production verification 2026-11-22 (post-push, real Chrome
+via DevTools against the live workers.dev site): both assets
+serve 200 from `dist/ansci-data/linkgrammar/`; the network log
+shows the page fetching `linkgrammar-esm.js` and then
+`linkgrammar.wasm` at startup (warmup runs, chat not gated on
+it); engine reports ready; `say("She gave him a book.")`
+replies "Ok. Noted." unstopped with a full parser trace path
+in ~439 ms first turn. Correct production hostname is
+`...noctivagoussoft.workers.dev` (the bare-`noctivagous`
+variant does not resolve).
 
 ## Non-goals and limits
 
