@@ -35,7 +35,7 @@ tasks:
     title: Implement Foundry evaluation of explicit expectations
     model_tier: medium
     model_tier_reason: 'Localized implementation needs graph matching and meaningful failure reporting.'
-    status: todo
+    status: done
     parent: FND-100
     depends_on: [FND-101]
     related: [FND-103]
@@ -44,6 +44,9 @@ tasks:
       - date: '2026-11-21'
         note: 'Evaluate is specified as a design target; run is implemented.'
         evidence: loop/FOUNDRY.md
+      - date: '2026-11-22'
+        note: 'evaluate subcommand implemented with pure matcher, 6 unit tests, first suite evaluation (11 pass, 1 known-failure holds) and run regression.'
+        evidence: loop/foundry-results/fnd-102-evaluation-2026-11-22.md
   - id: FND-103
     title: Implement comparable before and after reports
     model_tier: medium

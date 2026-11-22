@@ -1,7 +1,7 @@
 # AnSci Foundry: CLI and data contract
 
-Status: first `run` implementation, 2026-11-21. Evaluation and comparison
-remain design targets. Foundry is the
+Status: `run` and `evaluate` implemented, 2026-11-22. Comparison
+remains a design target. Foundry is the
 trace-led development testbed for AnSci's English conversation system.
 For the user-facing improvement and resume commands, see root `cmd.md`.
 `loop/LOOP.md` describes an existing CSKG executor and its different CLI;
@@ -33,7 +33,7 @@ npm run foundry --silent -- evaluate --suite cases/english-development.json --js
 npm run foundry --silent -- compare --before results/before.json --after results/after.json --json
 ```
 
-`run` is implemented; the other two commands are proposed. `run` processes each conversation in a fresh session and preserves turn order.
+`run` and `evaluate` are implemented; `compare` is proposed. `run` processes each conversation in a fresh session and preserves turn order. `evaluate` runs each suite case in a fresh session (turns in order), grades every turn against its `expect` block with `src/ansci/foundry-evaluate.ts`, and exits 1 when a must-pass check fails, a graph is unobservable, or a known-failure unexpectedly passes (stale known-failure record).
 `evaluate` runs a declared suite and scores only its explicit assertions.
 `compare` reports changes, improvements, regressions, and incomparable cases;
 it never silently compares different case versions or runtime configurations.

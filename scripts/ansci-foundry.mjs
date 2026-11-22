@@ -6,6 +6,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { newSession } from '../dist/src/ansci/session.js';
 import { processTurn } from '../dist/src/ansci/turn.js';
+import { evaluateTurn, verdictOf } from '../dist/src/ansci/foundry-evaluate.js';
 import { wordnetAvailable } from '../dist/src/ansci/wordnet-lex.js';
 import { frameNetAvailable } from '../dist/src/ansci/framenet-lex.js';
 import { getDefaultExtract } from '../dist/src/wordnet.js';
@@ -15,7 +16,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(root);
 const fail = (message) => { console.error(`Foundry: ${message}`); process.exit(2); };
 const args = process.argv.slice(2);
-if (args.length !== 4 || args[0] !== 'run' || args[1] !== '--input' || args[3] !== '--json') fail('usage: npm run foundry -- run --input <file> --json');
+const usage = 'usage: npm run foundry -- (run --input <file> | evaluate --suite <file>) --json';
+if (args.length !== 4 || args[3] !== '--json' || (args[0] !== 'run' && args[0] !== 'evaluate')) fail(usage);
+if (args[0] === 'run' && args[1] !== '--input') fail(usage);
+if (args[0] === 'evaluate' && args[1] !== '--suite') fail(usage);
+const command = args[0];
 let bytes, input;
 try { bytes = readFileSync(resolve(args[2])); input = JSON.parse(bytes.toString('utf8')); }
 catch (error) { fail(`cannot read input: ${error.message}`); }
@@ -24,10 +29,12 @@ const caseIds = new Set();
 for (const c of input.cases) {
   if (typeof c.id !== 'string' || !c.id || caseIds.has(c.id) || !Array.isArray(c.turns) || !c.turns.length) fail('cases require unique nonempty IDs and turns');
   caseIds.add(c.id);
+  if (command === 'evaluate' && c.status !== 'must-pass' && c.status !== 'known-failure') fail(`case ${c.id}: evaluate requires status must-pass or known-failure`);
   const ids = new Set();
   for (const t of c.turns) {
     if (typeof t.id !== 'string' || !t.id || ids.has(t.id) || typeof t.input !== 'string' || !t.input.trim()) fail(`case ${c.id}: turns require unique IDs and nonempty input`);
-    if ('expect' in t) fail('run does not evaluate expectations; evaluation is not implemented');
+    if (command === 'run' && 'expect' in t) fail('run does not evaluate expectations; use evaluate');
+    if (command === 'evaluate' && (typeof t.expect !== 'object' || t.expect === null)) fail(`case ${c.id} turn ${t.id}: evaluate requires an expect block`);
     ids.add(t.id);
   }
 }
@@ -63,19 +70,54 @@ function git(...args) { try { return execFileSync('git', args, { cwd: root, enco
 const revision = git('rev-parse', 'HEAD');
 const status = git('status', '--porcelain');
 const report = { schemaVersion: 1, runId: randomUUID(), timestamp: new Date().toISOString(), source: { revision, dirty: status === null ? null : status.length > 0 }, fixture: { path: args[2], sha256: createHash('sha256').update(bytes).digest('hex') }, configuration: { profile: 'chat', entry: 'newSession + processTurn', clock: 'default session behavior; not pinned', persistence: 'in-memory session; no interlocutor store', browserParity: 'not verified', resources }, cases: [] };
+function takeTurn(session, text) {
+  const previousIds = new Set(session.objects.map((o) => o.id));
+  const output = processTurn(session, text);
+  const objects = session.objects.filter((o) => o.producer === 'person' && !previousIds.has(o.id));
+  const object = objects.length === 1 ? objects[0] : undefined;
+  const meaning = object?.content?.meaning;
+  return { output, object, meaning, graphUnavailableReason: meaning ? null : objects.length > 1 ? `multiple visitor objects created (${objects.length}); inspect trace` : object ? 'visitor object has no meaning graph' : 'no visitor semantic object created for this turn' };
+}
+const replyProvenanceOf = (output) => output.trace.wordingNotDerived ? 'hand-worded or mixed' : output.trace.replyGraph || output.trace.replyObject ? 'reply graph or object present' : 'not established by trace';
 try {
+  let failedRequired = false;
+  let needsReview = false;
   for (const c of input.cases) {
     const session = newSession();
-    const result = { id: c.id, status: c.status ?? 'unclassified', turns: [] };
+    if (command === 'run') {
+      const result = { id: c.id, status: c.status ?? 'unclassified', turns: [] };
+      for (const turn of c.turns) {
+        const { output, object, meaning, graphUnavailableReason } = takeTurn(session, turn.input);
+        result.turns.push({ id: turn.id, input: turn.input, reply: output.reply, replyProvenance: replyProvenanceOf(output), mapPath: output.trace.mapPath ?? null, trace: output.trace, semanticObject: object ?? null, meaningGraph: meaning ?? null, graphUnavailableReason });
+      }
+      report.cases.push(result);
+      continue;
+    }
+    const result = { id: c.id, status: c.status, turns: [], checks: { pass: 0, fail: 0, abstained: 0, notObservable: 0 } };
     for (const turn of c.turns) {
-      const previousIds = new Set(session.objects.map((o) => o.id));
-      const output = processTurn(session, turn.input);
-      const objects = session.objects.filter((o) => o.producer === 'person' && !previousIds.has(o.id));
-      const object = objects.length === 1 ? objects[0] : undefined;
-      const meaning = object?.content?.meaning;
-      result.turns.push({ id: turn.id, input: turn.input, reply: output.reply, replyProvenance: output.trace.wordingNotDerived ? 'hand-worded or mixed' : output.trace.replyGraph || output.trace.replyObject ? 'reply graph or object present' : 'not established by trace', mapPath: output.trace.mapPath ?? null, trace: output.trace, semanticObject: object ?? null, meaningGraph: meaning ?? null, graphUnavailableReason: meaning ? null : objects.length > 1 ? `multiple visitor objects created (${objects.length}); inspect trace` : object ? 'visitor object has no meaning graph' : 'no visitor semantic object created for this turn' });
+      const { output, meaning } = takeTurn(session, turn.input);
+      const checks = evaluateTurn(meaning ?? null, output.trace ?? null, output.reply, turn.expect);
+      for (const check of checks) {
+        if (check.outcome === 'pass') result.checks.pass += 1;
+        else if (check.outcome === 'fail') result.checks.fail += 1;
+        else if (check.outcome === 'abstained') result.checks.abstained += 1;
+        else result.checks.notObservable += 1;
+      }
+      result.turns.push({ id: turn.id, input: turn.input, reply: output.reply, replyProvenance: replyProvenanceOf(output), verdict: verdictOf(checks), checks });
+    }
+    const verdict = verdictOf(result.turns.flatMap((turn) => turn.checks));
+    if (c.status === 'must-pass') {
+      result.verdict = verdict === 'pass' ? 'pass' : 'fail';
+      if (result.verdict === 'fail') failedRequired = true;
+    } else {
+      result.verdict = verdict === 'pass' ? 'unexpected-pass' : 'known-failure';
+      if (result.verdict === 'unexpected-pass') needsReview = true;
     }
     report.cases.push(result);
   }
+  report.summary = command === 'evaluate'
+    ? { cases: report.cases.length, failedRequired, needsReview }
+    : undefined;
   console.log(JSON.stringify(report, null, 2));
+  if (command === 'evaluate' && (failedRequired || needsReview)) process.exit(1);
 } catch (error) { fail(`execution failed: ${error.stack ?? error}`); }

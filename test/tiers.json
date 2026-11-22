@@ -80,7 +80,8 @@
     "ansci-lesk.test.ts",
     "ansci-emotion-mix.test.ts",
     "ansci-paramorphic-concepts.test.ts",
-    "ansci-problem-records.test.ts"
+    "ansci-problem-records.test.ts",
+    "ansci-foundry-evaluate.test.ts"
   ],
   "t4": [
     "ansci-imp-programme.test.ts",
