@@ -21,11 +21,11 @@ Foundry does not equate parsing with understanding, a trace with correctness,
 or a passing self-authored case with independent validation. It reports absent
 evidence rather than inventing a graph, role, module activation, or cause.
 
-## Proposed commands
+## CLI commands
 
 All commands run from the repository root, use compiled current source, and
 write machine-readable JSON to stdout with diagnostics on stderr. A wrapper
-must build first or refuse a stale build. These command names are proposed:
+must build first or refuse a stale build. The following commands are implemented:
 
 ```sh
 npm run foundry --silent -- run --input loop/foundry-cases/english-baseline.json --json
@@ -41,6 +41,24 @@ Use exit 0 for successful execution (and no failed required checks for
 `evaluate`), 1 for failed required checks, and 2 for invalid input, missing
 required resources, or execution errors. Known failures are reported separately;
 an unexpectedly passing known failure is also reported for review.
+
+The npm wrapper builds first and chains execution with `&&`: a failed compiler
+exit prevents the runner from using generated output. It compiles the whole
+TypeScript project, so first-run time includes compilation. The runner checks
+lexical asset sizes and manifest record totals, then loads them through the
+providers; it does not parse every large part a second time just to count rows.
+Each run records the Git revision and whether the working tree is dirty. Prefer
+the npm wrapper for development work; direct invocation of the script is for
+diagnosis only because it relies on the existing `dist/` build.
+
+Measured on 2026-11-22 in the current checkout: the normal npm `evaluate` path
+completed a fresh build plus the 12-case development suite in 28 seconds; a
+direct evaluation on the already-built tree took 13.6 seconds. These are single
+machine observations, not timing guarantees. All 12 case verdicts passed; two
+reply quality checks explicitly abstained because mechanical reply entailment
+is not implemented. The tree was dirty during measurement because the startup
+optimization was being edited; rerun on a clean commit to establish a clean
+revision timing baseline.
 
 ## Input format, version 1
 

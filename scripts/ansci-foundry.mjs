@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -57,10 +57,9 @@ function verifyParts(relative, kinds) {
   const totals = {};
   for (const part of manifest.parts) {
     if (!kinds.includes(part.kind) || typeof part.file !== 'string' || !/^part-\d+\.json$/.test(part.file)) throw Error(`${relative}: invalid part entry`);
-    const data = readFileSync(join(directory, part.file));
-    const rows = JSON.parse(data.toString('utf8'));
-    if (!Array.isArray(rows) || rows.length !== part.count || data.length !== part.bytes) throw Error(`${relative}/${part.file}: size or record count mismatch`);
-    totals[part.kind] = (totals[part.kind] ?? 0) + rows.length;
+    const actualBytes = statSync(join(directory, part.file)).size;
+    if (actualBytes !== part.bytes) throw Error(`${relative}/${part.file}: expected ${part.bytes} bytes, received ${actualBytes}`);
+    totals[part.kind] = (totals[part.kind] ?? 0) + part.count;
   }
   for (const kind of kinds) if (!totals[kind]) throw Error(`${relative}: missing ${kind}`);
   for (const kind of kinds) {
