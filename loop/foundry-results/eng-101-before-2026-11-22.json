@@ -1,0 +1,879 @@
+{
+  "schemaVersion": 1,
+  "runId": "9ffced01-26f9-4d0b-873a-539553cdcf53",
+  "timestamp": "2026-11-22T06:54:15.571Z",
+  "source": {
+    "revision": "0ac45de0bf13e9eb5cf8c85894349d57a4441a4c",
+    "dirty": true
+  },
+  "fixture": {
+    "path": "loop/foundry-cases/english-development.json",
+    "sha256": "656be47ea7f13663adde24962fb215bbfce59a245c5a42454f283752daef4700"
+  },
+  "configuration": {
+    "profile": "chat",
+    "entry": "newSession + processTurn",
+    "clock": "default session behavior; not pinned",
+    "persistence": "in-memory session; no interlocutor store",
+    "browserParity": "not verified",
+    "resources": {
+      "wordnet": {
+        "edition": "2024",
+        "source": "Open English WordNet 2024 (WNDB format)",
+        "totals": {
+          "synsets": 120630,
+          "relations": 154470,
+          "forms": 129800
+        },
+        "ready": true
+      },
+      "framenet": {
+        "edition": "1.5",
+        "source": "FrameNet (framenet_v15 via the NLTK nltk_data mirror)",
+        "totals": {
+          "frames": 1019,
+          "relations": 1676
+        },
+        "ready": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "roles-active-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog bit the man.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> dog : agent",
+              "observed": "bite -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge bite -> man : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge bite -> dog : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 9,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "roles-reversed-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The man bit the dog.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> man : agent",
+              "observed": "bite -> man : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> dog : patient",
+              "observed": "bite -> dog : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge bite -> dog : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge bite -> man : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 9,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "roles-passive-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The man was bitten by the dog.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> dog : agent",
+              "observed": "bite -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge bite -> man : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge bite -> dog : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "passive",
+              "observed": "passive",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "tense-passive-01",
+      "status": "known-failure",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The man was bitten by the dog.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "present",
+              "outcome": "fail"
+            },
+            {
+              "id": "voice",
+              "expected": "passive",
+              "observed": "passive",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 2,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "known-failure"
+    },
+    {
+      "id": "negation-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog did not bite the man.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> dog : agent",
+              "observed": "bite -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": true,
+              "observed": true,
+              "outcome": "pass"
+            },
+            {
+              "id": "negation-carrier",
+              "expected": "did",
+              "observed": "did",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "negation-variant-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The cat did not chase the mouse.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "chase",
+              "observed": "chase",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "chase -> cat : agent",
+              "observed": "chase -> cat : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge chase -> mouse : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-0",
+              "expected": "edge chase -> mouse (any relation)",
+              "observed": "chase -> mouse : theme",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": true,
+              "observed": true,
+              "outcome": "pass"
+            },
+            {
+              "id": "negation-carrier",
+              "expected": "did",
+              "observed": "did",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 9,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "question-polar-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Did the dog bite the man?",
+          "reply": "I can't answer that from what I know: I answer questions about what things are like, and that one asks something else.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> dog : agent",
+              "observed": "bite -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "interrogative",
+              "observed": "interrogative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            },
+            {
+              "id": "reply",
+              "expected": {
+                "abstentionPermitted": true,
+                "constraints": [
+                  "no-event-outcome"
+                ]
+              },
+              "observed": {
+                "reply": "I can't answer that from what I know: I answer questions about what things are like, and that one asks something else."
+              },
+              "outcome": "abstained",
+              "evidence": "reply constraints are not mechanically graded yet"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 7,
+        "fail": 0,
+        "abstained": 1,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "question-wh-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Who bit the man?",
+          "reply": "I can't answer that from what I know: nothing you have told me says what the agent of 'bite' was.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> who : agent",
+              "observed": "bite -> who : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "interrogative",
+              "observed": "interrogative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "question-target",
+              "expected": "interrogative fills bite/agent",
+              "observed": "who : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "reply",
+              "expected": {
+                "abstentionPermitted": true,
+                "constraints": [
+                  "no-agent-identity"
+                ]
+              },
+              "observed": {
+                "reply": "I can't answer that from what I know: nothing you have told me says what the agent of 'bite' was."
+              },
+              "outcome": "abstained",
+              "evidence": "reply constraints are not mechanically graded yet"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 7,
+        "fail": 0,
+        "abstained": 1,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "question-passive-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Was the man bitten by the dog?",
+          "reply": "I can't answer that from what I know: I answer questions about what things are like, and that one asks something else.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> dog : agent",
+              "observed": "bite -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "interrogative",
+              "observed": "interrogative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "passive",
+              "observed": "passive",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 5,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "tense-present-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog bites the man.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "bite",
+              "observed": "bite",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "bite -> dog : agent",
+              "observed": "bite -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "bite -> man : patient",
+              "observed": "bite -> man : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge bite -> man : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge bite -> dog : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "present",
+              "observed": "present",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 9,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "reference-places-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "There was a ball game.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "game",
+              "observed": "game",
+              "outcome": "pass"
+            },
+            {
+              "id": "construction",
+              "expected": "existential",
+              "observed": "existential",
+              "outcome": "pass"
+            },
+            {
+              "id": "qualifier-0",
+              "expected": "ball -> game : qualifies",
+              "observed": "ball -> game : qualifies",
+              "outcome": "pass"
+            }
+          ]
+        },
+        {
+          "id": "t2",
+          "input": "It was in New York.",
+          "reply": "Ok.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "role-0",
+              "expected": "ball -> york : location",
+              "observed": "ball -> york : location",
+              "outcome": "pass"
+            },
+            {
+              "id": "qualifier-0",
+              "expected": "new -> york : qualifies",
+              "observed": "new -> york : qualifies",
+              "outcome": "pass"
+            },
+            {
+              "id": "resolution",
+              "expected": "it -> ball in trace.resolutions",
+              "observed": "it -> ball",
+              "outcome": "pass",
+              "evidence": "trace.resolutions"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 6,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "ambiguity-instrument-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog saw the man with the telescope.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "see",
+              "observed": "see",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "see -> dog : agent",
+              "observed": "see -> dog : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-0",
+              "expected": "edge see -> man (any relation)",
+              "observed": "see -> man : theme",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-1",
+              "expected": "edge see -> telescope (any relation)",
+              "observed": "see -> telescope : location",
+              "outcome": "pass"
+            },
+            {
+              "id": "open-0",
+              "expected": "see -> telescope attached with role deliberately unasserted",
+              "observed": "see -> telescope : location",
+              "outcome": "pass",
+              "evidence": "attachment is asserted; the observed relation is reported, not graded"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "indicative",
+              "observed": "indicative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    }
+  ],
+  "summary": {
+    "cases": 12,
+    "failedRequired": false,
+    "needsReview": false
+  }
+}
