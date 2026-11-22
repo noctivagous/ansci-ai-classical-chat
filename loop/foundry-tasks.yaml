@@ -6,7 +6,7 @@ tasks:
     title: Establish an English meaning and role evaluation
     model_tier: high
     model_tier_reason: 'Evaluation design and interpretation span multiple semantic layers.'
-    status: todo
+    status: done
     parent: null
     depends_on: []
     related: [FND-200]
@@ -15,6 +15,9 @@ tasks:
       - date: '2026-11-21'
         note: 'Exploratory seven-turn baseline exists; it has no independent expectations or accuracy score.'
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
+      - date: '2026-11-22'
+        note: 'Completion met: FND-101 expectations, FND-102 evaluation and FND-103 comparison are done; baseline, vocabulary mapping and limits recorded.'
+        evidence: loop/foundry-results/fnd-103-compare-2026-11-22.md
   - id: FND-101
     title: Specify independent graph expectations and controls
     model_tier: high
