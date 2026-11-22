@@ -1,6 +1,7 @@
 # AnSci chat conventions for the AI agent
 
 Read this file when working with the user through a conversational AI client.
+When instructed by the user, follow this file.
 It defines how the agent should interpret short follow-ups and how it should
 leave each exchange ready for continued work. Repository commands and longer
 work procedures live in `cmd.md`; Foundry's testbed contract lives in
