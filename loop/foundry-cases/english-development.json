@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "configuration": { "profile": "chat", "resources": "required" },
+  "metadata": {
+    "author": "Foundry agent, 2026-11-22, from English semantics against the observed graph vocabulary of english-baseline-2026-11-21",
+    "provenance": "builder-authored development partition; held-out partition is future work for the evaluate/compare slice",
+    "partition": "development",
+    "version": 1,
+    "purpose": "independent expectations for English meaning and role families: predicate, participant roles, tense, negation, question form and reference, with negative controls"
+  },
+  "cases": [
+    {
+      "id": "roles-active-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog bit the man.",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "dog", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "forbiddenRoles": [
+              { "predicate": "bite", "participant": "man", "role": "agent" },
+              { "predicate": "bite", "participant": "dog", "role": "patient" }
+            ],
+            "tense": "past",
+            "mood": "indicative",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "roles-reversed-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The man bit the dog.",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "man", "role": "agent" },
+              { "predicate": "bite", "participant": "dog", "role": "patient" }
+            ],
+            "forbiddenRoles": [
+              { "predicate": "bite", "participant": "dog", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "tense": "past",
+            "mood": "indicative",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "roles-passive-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The man was bitten by the dog.",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "dog", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "forbiddenRoles": [
+              { "predicate": "bite", "participant": "man", "role": "agent" },
+              { "predicate": "bite", "participant": "dog", "role": "patient" }
+            ],
+            "mood": "indicative",
+            "voice": "passive",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "tense-passive-01",
+      "status": "known-failure",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The man was bitten by the dog.",
+          "expect": {
+            "root": "bite",
+            "voice": "passive",
+            "tense": "past"
+          }
+        }
+      ]
+    },
+    {
+      "id": "negation-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog did not bite the man.",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "dog", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "tense": "past",
+            "mood": "indicative",
+            "voice": "active",
+            "negated": true,
+            "negationCarrier": "did"
+          }
+        }
+      ]
+    },
+    {
+      "id": "negation-variant-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The cat did not chase the mouse.",
+          "expect": {
+            "root": "chase",
+            "roles": [
+              { "predicate": "chase", "participant": "cat", "role": "agent" }
+            ],
+            "attached": [
+              { "predicate": "chase", "participant": "mouse" }
+            ],
+            "forbiddenRoles": [
+              { "predicate": "chase", "participant": "mouse", "role": "agent" }
+            ],
+            "tense": "past",
+            "mood": "indicative",
+            "voice": "active",
+            "negated": true,
+            "negationCarrier": "did"
+          }
+        }
+      ]
+    },
+    {
+      "id": "question-polar-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Did the dog bite the man?",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "dog", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "tense": "past",
+            "mood": "interrogative",
+            "voice": "active",
+            "negated": false,
+            "reply": {
+              "abstentionPermitted": true,
+              "constraints": ["no-event-outcome"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "question-wh-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Who bit the man?",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "who", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "questionTarget": { "predicate": "bite", "role": "agent" },
+            "tense": "past",
+            "mood": "interrogative",
+            "voice": "active",
+            "reply": {
+              "abstentionPermitted": true,
+              "constraints": ["no-agent-identity"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "question-passive-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Was the man bitten by the dog?",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "man", "role": "patient" },
+              { "predicate": "bite", "participant": "dog", "role": "agent" }
+            ],
+            "mood": "interrogative",
+            "voice": "passive"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tense-present-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog bites the man.",
+          "expect": {
+            "root": "bite",
+            "roles": [
+              { "predicate": "bite", "participant": "dog", "role": "agent" },
+              { "predicate": "bite", "participant": "man", "role": "patient" }
+            ],
+            "forbiddenRoles": [
+              { "predicate": "bite", "participant": "man", "role": "agent" },
+              { "predicate": "bite", "participant": "dog", "role": "patient" }
+            ],
+            "tense": "present",
+            "mood": "indicative",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "reference-places-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "There was a ball game.",
+          "expect": {
+            "root": "game",
+            "construction": "existential",
+            "qualifier": [
+              { "head": "game", "modifier": "ball", "relation": "qualifies" }
+            ]
+          }
+        },
+        {
+          "id": "t2",
+          "input": "It was in New York.",
+          "expect": {
+            "roles": [
+              { "predicate": "ball", "participant": "york", "role": "location" }
+            ],
+            "qualifier": [
+              { "head": "york", "modifier": "new", "relation": "qualifies" }
+            ],
+            "resolution": {
+              "pronoun": "it",
+              "target": "ball",
+              "evidence": "trace.resolutions"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "ambiguity-instrument-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog saw the man with the telescope.",
+          "expect": {
+            "root": "see",
+            "roles": [
+              { "predicate": "see", "participant": "dog", "role": "agent" }
+            ],
+            "attached": [
+              { "predicate": "see", "participant": "man" },
+              { "predicate": "see", "participant": "telescope" }
+            ],
+            "roleOpen": [
+              { "predicate": "see", "participant": "telescope" }
+            ],
+            "tense": "past",
+            "mood": "indicative",
+            "voice": "active"
+          }
+        }
+      ]
+    }
+  ]
+}

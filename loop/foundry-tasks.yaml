@@ -19,7 +19,7 @@ tasks:
     title: Specify independent graph expectations and controls
     model_tier: high
     model_tier_reason: 'Independent evaluation design requires careful semantic judgments and controls.'
-    status: todo
+    status: done
     parent: FND-100
     depends_on: []
     related: [ENG-101, ENG-102]
@@ -28,6 +28,9 @@ tasks:
       - date: '2026-11-21'
         note: 'Baseline identifies passive tense and place-name interpretation as questions for focused controls.'
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
+      - date: '2026-11-22'
+        note: 'Delivered english-development.json v1 (12 cases, 13 turns) with expectation vocabulary, negative controls and one known-failure (passive tense); all inputs observability-checked.'
+        evidence: loop/foundry-results/fnd-101-expectations-2026-11-22.md
   - id: FND-102
     title: Implement Foundry evaluation of explicit expectations
     model_tier: medium
