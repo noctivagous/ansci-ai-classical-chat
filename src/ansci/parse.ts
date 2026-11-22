@@ -1113,6 +1113,51 @@ function enChunkCore(items: EnItem[], i: number): { chunk: EnChunk; next: number
   return { chunk, next: j + 1 };
 }
 
+/** A sentence-initial adjunct PP (an introductory prepositional
+ *  phrase): "In the morning, the dog bit the man.", "On the mat
+ *  sat the cat.", "In New York the dog bit the man." The phrase
+ *  is clause-level adjunct material, not the subject — but the
+ *  subject chunker fails on the leading preposition, so the
+ *  clause parsed subjectless and dropped both the agent and the
+ *  adjunct. The strip claims one or more prep + chunk phrases at
+ *  the content start, each followed by an optional comma, and
+ *  returns them with their prepositions plus the index where the
+ *  clause proper begins. Only EN_PREP prepositions are claimed:
+ *  an adverb-led opener ("After dinner, …" — 'after' classifies
+ *  as an adverb) keeps its old reading. A bare "to" before a
+ *  non-nominal ("To see …") fails the chunk and is not claimed. */
+function enLeadingPPs(
+  items: EnItem[],
+  start: number,
+): { adjuncts: { prep: string; prepIndex: number; chunk: EnChunk }[]; start: number } {
+  const adjuncts: { prep: string; prepIndex: number; chunk: EnChunk }[] = [];
+  let pos = start;
+  for (;;) {
+    const prep = items[pos];
+    if (!prep || prep.kind !== "prep") break;
+    const c = enChunk(items, pos + 1);
+    if (!c) break;
+    adjuncts.push({ prep: prep.lower, prepIndex: pos, chunk: c.chunk });
+    pos = c.next;
+    if (items[pos]?.kind === "comma") pos++;
+  }
+  return { adjuncts, start: pos };
+}
+
+/** The clause slot for a leading adjunct PP's preposition: the
+ *  verb's prep slot, "to" as goal, else location — with the
+ *  temporal resolution the post-verbal PP rule uses (a head the
+ *  ontology classes as season/time attaches as time, so "in
+ *  winter" is not a place called winter). */
+function enLeadingPPSlot(verb: VerbEntry | undefined, prep: string, headLower: string, headLemma: string | undefined): string {
+  let slot = verb?.prepSlot && verb.prepSlot.preps.includes(prep) ? verb.prepSlot.slot : prep === "to" ? "goal" : "location";
+  if (slot === "location") {
+    const cls = lookupClassification(headLemma ?? headLower);
+    if (cls && (cls.aspect === "season" || cls.aspect === "time")) slot = "time";
+  }
+  return slot;
+}
+
 function enNodeFromChunk(b: Builder, chunk: EnChunk, role?: string): MeaningNode {
   const entry = chunk.head.entry;
   const node = b.node(
@@ -1815,11 +1860,24 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
   /* --- Existential (R4): 'there' is connective scaffolding realising no
    *     meaning node; the meaning graph holds the presented Earth and
    *     its location, entered at Earth under the existential template. --- */
-  if (first?.lower === "there" && beItem) {
+  // A leading adjunct PP before an existential ("In the morning,
+  //   there was a ball game.") is clause-level material, as in the
+  //   main verbal path: 'there' is read where the clause proper
+  //   begins, and the adjunct attaches to the presented theme.
+  const exLead = enLeadingPPs(items, contentStart);
+  const exFirst = items[exLead.start];
+  if (exFirst?.lower === "there" && beItem) {
+    const firstEx = exFirst;
     const c = enChunk(items, beItem.index + 1);
     if (!c) throw new Error(`cannot parse existential subject of: ${text}`);
     const root = enNodeFromChunk(b, c.chunk, "theme");
     root.states = { construction: "existential", copulaTense: EN_BE[beItem.lower], mood: interrogative ? "interrogative" : "indicative" };
+    for (const adj of exLead.adjuncts) {
+      const slot = enLeadingPPSlot(undefined, adj.prep, adj.chunk.head.lower, adj.chunk.head.entry?.lemma ?? adj.chunk.head.lower);
+      const aNode = enNodeFromChunk(b, adj.chunk, slot);
+      aNode.prep = adj.prep;
+      b.edge(root, aNode, slot as Relation);
+    }
     let i = c.next;
     if (items[i]?.kind === "prep") {
       const loc = enChunk(items, i + 1);
@@ -1830,7 +1888,7 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       }
     }
     const scaffolding = [
-      { index: first.index, kind: "expletive-there" },
+      { index: firstEx.index, kind: "expletive-there" },
       { index: beItem.index, kind: "copula" },
     ];
     return { meaning: b.graph(root), connective: connective("en", tokens, spans, undefined, scaffolding), realizes: b.realizes, scopeAttachments: scope };
@@ -2279,13 +2337,24 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
 
   /* --- Predicate clause: copula + NP/adjective complement (R1 entry at Earth/Fire). --- */
   if (beItem && !verbItem) {
+    // A leading adjunct PP ("In the morning, the ball is red.")
+    // is clause-level material, as in the main verbal path: the
+    // subject and copula below are read from where the clause
+    // proper begins, and the adjunct is preserved as a modifier
+    // of the subject (the amendment-A3 tail-PP idiom).
+    const { adjuncts: leadingAdjuncts, start: clauseStart } = enLeadingPPs(items, contentStart);
     // Inverted order (questions: "Is summer hot?", "Why is winter cold?")
     // puts the copula first; the subject chunk follows it.
-    const inverted = beItem.index === contentStart;
-    const subj = enChunk(items, inverted ? beItem.index + 1 : contentStart, !inverted);
+    const inverted = beItem.index === clauseStart;
+    const subj = enChunk(items, inverted ? beItem.index + 1 : clauseStart, !inverted);
     if (!subj) throw new Error(`cannot parse subject of: ${text}`);
     const subject = enNodeFromChunk(b, subj.chunk, "subject");
     spans.push({ start: subj.chunk.start, end: subj.chunk.end + 1, label: "subject" });
+    for (const adj of leadingAdjuncts) {
+      const tNode = enNodeFromChunk(b, adj.chunk, "modifier");
+      tNode.prep = adj.prep;
+      b.edge(subject, tNode, "modifier");
+    }
     const compStart = inverted ? subj.chunk.end + 1 : beItem.index + 1;
     const rest = items.slice(compStart);
     let root: MeaningNode;
@@ -2491,15 +2560,23 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
       (l) => l.family === "O" && f1Shadow.tokenIndices[l.left] === verbItem.index && f1Shadow.tokenIndices[l.right] === toToken,
     );
 
+  // Leading adjunct PPs (introductory prepositional phrases): a
+  // sentence-initial "In the morning, …" / "On the mat …" is
+  // clause-level adjunct material, and the subject chunker fails
+  // on its preposition — the clause below is built from where
+  // the clause proper begins, and the adjuncts attach to the
+  // root once it exists. Only genuine PPs are claimed, so a
+  // sentence without one starts exactly where it did before.
+  const { adjuncts: leadingAdjuncts, start: clauseStart } = enLeadingPPs(items, contentStart);
   // Topic fronting (R3): a chunk set off by a comma before the clause is
   // a displaced constituent — it fills a clause slot in the meaning
   // graph (below, after the clause is built) and is marked as topic in
   // the connective graph only.
-  const commaItem = items.find((i) => i.kind === "comma");
+  const commaItem = items.find((i) => i.kind === "comma" && i.index >= clauseStart);
   let frontedChunk: EnChunk | undefined;
-  let subjStart = contentStart;
-  if (commaItem && commaItem.index > contentStart) {
-    const fc = enChunk(items, contentStart);
+  let subjStart = clauseStart;
+  if (commaItem && commaItem.index > clauseStart) {
+    const fc = enChunk(items, clauseStart);
     if (fc && fc.chunk.end === commaItem.index - 1) {
       frontedChunk = fc.chunk;
       subjStart = commaItem.index + 1;
@@ -2553,11 +2630,28 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
 
   // Pre-verbal adverbs ("quickly chopped", "hadn't yet arrived") attach
   // to the verb by the same Water→Wood closure as post-verbal ones.
+  // Tokens inside a stripped leading adjunct are clause material
+  // already ("the very early morning" keeps its 'very'), so the
+  // scan skips exactly those ranges and is otherwise unchanged.
+  const inLeadingAdjunct = (index: number): boolean =>
+    leadingAdjuncts.some((a) => index > a.prepIndex && index <= a.chunk.end);
   for (const item of items) {
-    if (item.kind === "adverb" && item.index < verbItem.index) {
+    if (item.kind === "adverb" && item.index < verbItem.index && !inLeadingAdjunct(item.index)) {
       const aNode = b.node({ lemma: item.entry ? item.entry.lemma : item.lower, form: item.text, syntacticElement: "Water" }, [item.index]);
       b.edge(aNode, root, "modulates");
     }
+  }
+
+  // Leading adjunct PPs attach to the root with the post-verbal
+  // slot rule (prep slot, "to" as goal, location with the temporal
+  // resolution) — the same meaning-graph shape as the unfronted
+  // sentence, which is also what the R3 fronting rule promises.
+  for (const adj of leadingAdjuncts) {
+    const slot = enLeadingPPSlot(verb, adj.prep, adj.chunk.head.lower, adj.chunk.head.entry?.lemma ?? adj.chunk.head.lower);
+    const node = enNodeFromChunk(b, adj.chunk, slot);
+    node.prep = adj.prep;
+    b.edge(root, node, slot as Relation);
+    spans.push({ start: adj.prepIndex, end: adj.chunk.end + 1, label: "pp" });
   }
 
   // Post-verbal region: adverbs, bare NP chunks (frame slots in order), PPs.

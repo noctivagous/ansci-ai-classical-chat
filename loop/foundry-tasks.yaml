@@ -104,6 +104,22 @@ tasks:
       - date: '2026-11-22'
         note: 'Fixed: copular-locatives record be-events; answerWhereQuestion consults told locations before grounding. Suite v2 gains t3-t6; compare shows 1 gain, 0 regressions; core green.'
         evidence: loop/foundry-results/eng-102-fix-2026-11-22.md
+  - id: ENG-103
+    title: Handle introductory prepositional phrases
+    model_tier: medium
+    model_tier_reason: 'Localized parser change across three declarative branches with suite and tier verification.'
+    status: in_progress
+    parent: null
+    depends_on: []
+    related: [FND-101]
+    completion: 'Leading adjunct PPs attach with post-verbal slot semantics while the subject and agent survive; suite and tier gates green.'
+    history:
+      - date: '2026-11-22'
+        note: 'Reproduced via turn path: leading PPs swallow the subject (agent dropped, adjunct dropped); root/tense/patient correct. Structural cause in subject chunking, not lexicon.'
+        evidence: loop/foundry-results/eng-103-leading-pp-2026-11-22.md
+      - date: '2026-11-22'
+        note: 'Implemented enLeadingPPs strip in verbal, copular and existential branches. Same-fixture compare: 0 gains, 0 regressions; v3 suite (3 new pp-leading cases) 20/20; t0 71/71, core 249/249. Full npm test pending.'
+        evidence: loop/foundry-results/eng-103-v3-2026-11-22.json
   - id: FND-200
     title: Improve Foundry runtime reproducibility and parity
     model_tier: high
