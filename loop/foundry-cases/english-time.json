@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "profile": "chat",
+    "resources": "required",
+    "clock": {
+      "fixture": {
+        "instant": "2026-11-22T15:04:00Z",
+        "timezone": "UTC",
+        "name": "english-time pin"
+      }
+    }
+  },
+  "metadata": {
+    "author": "Foundry agent, 2026-11-22, to prove pinned-clock reproducibility end to end",
+    "provenance": "builder-authored development partition; the pin is the point — unpinned runs of these cases decline",
+    "partition": "development",
+    "version": 1,
+    "purpose": "time and date answers under a pinned fixture clock; determinism proof for FND-200"
+  },
+  "cases": [
+    {
+      "id": "clock-time-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "What is the time?",
+          "expect": {
+            "root": "what",
+            "mood": "interrogative",
+            "reply": {
+              "contains": ["It is 3:04 PM."]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "clock-date-01",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "What is the date?",
+          "expect": {
+            "root": "what",
+            "mood": "interrogative",
+            "reply": {
+              "contains": ["November 22, 2026"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

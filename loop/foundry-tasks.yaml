@@ -108,7 +108,7 @@ tasks:
     title: Improve Foundry runtime reproducibility and parity
     model_tier: high
     model_tier_reason: 'Cross-runtime parity requires decisions about configuration and evidence.'
-    status: in_progress
+    status: done
     parent: null
     depends_on: []
     related: [FND-100]
@@ -120,6 +120,9 @@ tasks:
       - date: '2026-11-22'
         note: 'Entry-point matrix measured (no live path wires a clock; frame only in App.tsx; store terminal-only). Fixture clock deterministic. Remaining: bank wall-clock reads and default clock wiring.'
         evidence: loop/foundry-results/fnd-201-parity-2026-11-22.md
+      - date: '2026-11-22'
+        note: 'Pinned: suite fixture-clock support, session-aware weather-bank freshness, english-time proof suite (2/2 deterministic); live defaults unchanged by design.'
+        evidence: loop/foundry-results/fnd-200-clock-2026-11-22.md
   - id: FND-201
     title: Verify clock and live chat configuration parity
     model_tier: medium

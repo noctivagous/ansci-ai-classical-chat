@@ -8,6 +8,7 @@ import { newSession } from '../dist/src/ansci/session.js';
 import { processTurn } from '../dist/src/ansci/turn.js';
 import { evaluateTurn, verdictOf } from '../dist/src/ansci/foundry-evaluate.js';
 import { compareReports } from '../dist/src/ansci/foundry-compare.js';
+import { clockFromConfig } from '../dist/src/ansci/foundry-clock.js';
 import { wordnetAvailable } from '../dist/src/ansci/wordnet-lex.js';
 import { frameNetAvailable } from '../dist/src/ansci/framenet-lex.js';
 import { getDefaultExtract } from '../dist/src/wordnet.js';
@@ -100,7 +101,15 @@ try {
 function git(...args) { try { return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return null; } }
 const revision = git('rev-parse', 'HEAD');
 const status = git('status', '--porcelain');
-const report = { schemaVersion: 1, runId: randomUUID(), timestamp: new Date().toISOString(), source: { revision, dirty: status === null ? null : status.length > 0 }, fixture: { path: args[2], sha256: createHash('sha256').update(bytes).digest('hex') }, configuration: { profile: 'chat', entry: 'newSession + processTurn', clock: 'default session behavior; not pinned', persistence: 'in-memory session; no interlocutor store', browserParity: 'not verified', resources }, cases: [] };
+let foundryClock = null;
+if (command !== 'compare') {
+  try { foundryClock = clockFromConfig(input.configuration ?? {}); }
+  catch (error) { fail(`invalid clock configuration: ${error.message}`); }
+}
+const newFoundrySession = () => foundryClock
+  ? newSession(undefined, undefined, { clockSource: foundryClock.source, clockRetrievedFrom: foundryClock.retrievedFrom })
+  : newSession();
+const report = { schemaVersion: 1, runId: randomUUID(), timestamp: new Date().toISOString(), source: { revision, dirty: status === null ? null : status.length > 0 }, fixture: { path: args[2], sha256: createHash('sha256').update(bytes).digest('hex') }, configuration: { profile: 'chat', entry: 'newSession + processTurn', clock: foundryClock ? foundryClock.description : 'default session behavior; not pinned', persistence: 'in-memory session; no interlocutor store', browserParity: 'not verified', resources }, cases: [] };
 function takeTurn(session, text) {
   const previousIds = new Set(session.objects.map((o) => o.id));
   const output = processTurn(session, text);
@@ -114,7 +123,7 @@ try {
   let failedRequired = false;
   let needsReview = false;
   for (const c of input.cases) {
-    const session = newSession();
+    const session = newFoundrySession();
     if (command === 'run') {
       const result = { id: c.id, status: c.status ?? 'unclassified', turns: [] };
       for (const turn of c.turns) {

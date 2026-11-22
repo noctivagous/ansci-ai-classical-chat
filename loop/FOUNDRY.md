@@ -98,13 +98,16 @@ matching. `TurnResult` currently exposes reply and trace; it does not itself
 promise a complete input graph. Where data is unavailable, report that gap.
 
 The current `chat` profile uses `newSession` and synchronous `processTurn` with
-an in-memory session, no interlocutor store, and the default clock behavior.
-It does not yet prove parity with the browser chat or the file-backed CLI chat.
-The `chat` profile must document its actual entry point, session initialization,
-providers, and clock. Required resources must be loaded and verified before
-processing, with a clear error if unavailable. Pin or record clock and other
-settings for reproducibility; don't claim parity with browser deployment until
-the two configurations and entry paths have been compared. Optional alternate
+an in-memory session, no interlocutor store, and the default clock behavior
+unless the suite pins one. A suite may pin time with
+`configuration.clock: { "fixture": { "instant": "<ISO>", "timezone": "<tz>" } }`;
+the runner wires a `FixtureClockSource` into every session, the weather-bank
+freshness read follows the wired clock, and the report records the pinning.
+Any other `clock` value is rejected (exit 2) so an unpinned run can never
+pass as pinned. Browser live runs remain unverified; see
+`loop/foundry-results/fnd-201-parity-2026-11-22.md` for the entry-point
+comparison. Required resources must be loaded and verified before
+processing, with a clear error if unavailable. Optional alternate
 profiles must be named and never silently substituted.
 
 ## Scoring and safeguards

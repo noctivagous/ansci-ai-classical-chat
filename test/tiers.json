@@ -84,7 +84,8 @@
     "ansci-problem-records.test.ts",
     "ansci-foundry-evaluate.test.ts",
     "ansci-foundry-compare.test.ts",
-    "ansci-told-location.test.ts"
+    "ansci-told-location.test.ts",
+    "ansci-foundry-clock.test.ts"
   ],
   "t4": [
     "ansci-imp-programme.test.ts",

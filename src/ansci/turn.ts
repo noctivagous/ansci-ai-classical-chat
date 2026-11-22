@@ -8023,6 +8023,20 @@ function timeDateAskOf(parsed: ParsedSentence): "time" | "date" | undefined {
  * The reply wordings on this route are hand-composed and
  * DRAFT — the owner's to settle.
  */
+/* The turn path's wall-clock read (FND-200): weather-bank freshness
+ * is stamped against now. When the session wires a clock source, now
+ * is its reading — pinned runs stay pinned; otherwise the host clock,
+ * as before. */
+function sessionNowISO(session: Session): string {
+  if (session.clockSource) {
+    const got = consultClock(session.clockSource, {
+      retrievedFrom: session.clockRetrievedFrom ?? "live",
+      turn: session.turnCount,
+    });
+    if (got.status === "ok") return got.reading.instantISO;
+  }
+  return new Date().toISOString();
+}
 function consultClockForTimeDate(
   session: Session,
   asked: "time" | "date",
@@ -8272,7 +8286,7 @@ function answerWeatherQuestion(session: Session, trace: TurnTrace, question: Wea
         : `stated in the conversation (${resolved.via === "record" ? "the record's location graph for the visitor" : `the visitor's '${resolved.via}' event`})`;
 
   // 3. The bank.
-  const nowISO = new Date().toISOString();
+  const nowISO = sessionNowISO(session);
   const fresh = defaultWeatherBank.fresh(placeKeyOf(resolved.place), nowISO);
   if (fresh) {
     trace.weather = {
