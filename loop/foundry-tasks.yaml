@@ -108,7 +108,7 @@ tasks:
     title: Improve Foundry runtime reproducibility and parity
     model_tier: high
     model_tier_reason: 'Cross-runtime parity requires decisions about configuration and evidence.'
-    status: todo
+    status: in_progress
     parent: null
     depends_on: []
     related: [FND-100]
@@ -117,11 +117,14 @@ tasks:
       - date: '2026-11-21'
         note: 'Runner uses default clock and in-memory session; browser parity is unverified.'
         evidence: loop/FOUNDRY.md
+      - date: '2026-11-22'
+        note: 'Entry-point matrix measured (no live path wires a clock; frame only in App.tsx; store terminal-only). Fixture clock deterministic. Remaining: bank wall-clock reads and default clock wiring.'
+        evidence: loop/foundry-results/fnd-201-parity-2026-11-22.md
   - id: FND-201
     title: Verify clock and live chat configuration parity
     model_tier: medium
     model_tier_reason: 'A scoped comparison can inspect clock and provider paths with explicit evidence.'
-    status: todo
+    status: done
     parent: FND-200
     depends_on: []
     related: [FND-103]
@@ -130,3 +133,6 @@ tasks:
       - date: '2026-11-21'
         note: 'Existing runtime profile explicitly records unpinned clock and unverified browser parity.'
         evidence: loop/FOUNDRY.md
+      - date: '2026-11-22'
+        note: 'Four entry points enumerated and probed (time/date/store); fixture clock deterministic; browser config code-read, live run unverified.'
+        evidence: loop/foundry-results/fnd-201-parity-2026-11-22.md
