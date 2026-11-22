@@ -34,6 +34,8 @@ export interface LinkGrammarWasmSuccess {
   ok: true;
   /** Number of linkages the parser found (only the first is returned). */
   linkages: number;
+  /** Null-link count of the returned linkage (0 for a complete linkage). */
+  nullCount: number;
   /** Words of the first linkage, boundary walls included. */
   words: string[];
   /** Labelled links of the first linkage. */

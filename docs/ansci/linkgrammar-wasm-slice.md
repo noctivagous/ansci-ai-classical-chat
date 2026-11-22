@@ -35,9 +35,32 @@ here writes a meaning graph.
 - `vendor/linkgrammar-wasm/README.md` — provenance; NOTICE carries
   the LGPL attribution (extended 2026-11-22 to cover the solver).
 
+## Parse-option parity with the native CLI (2026-11-22)
+
+The first Foundry comparison (53 turns) showed WASM reporting zero
+linkages where the CLI reported null-count linkages ("No complete
+linkages found" + panic-mode parses). Root cause: the wrapper used
+bare library defaults while the CLI escalates (null links),
+runs linkage_limit 1000 (not 100), spell-guess 7 (not off), and a
+30s cap. The wrapper now mirrors the CLI exactly: parse at
+max_null 0, escalate to min_null 1 / max_null sentence-length on
+zero, reset resources per call (the options object is reused),
+and report `nullCount` alongside `linkages`. The three Foundry
+no-linkage cases now match native counts and endpoints exactly.
+
+Token-form parity: `linkage_get_word` returns full guess reasons
+(`York[!<capitalized-words>]`); the wrapper shortens them to the
+CLI display form (`York[!]`), matching what the native `(m)`-line
+reader sees. Re-running the 53-turn Foundry comparison: 53/53 parse,
+53/53 linkage counts, 52/53 endpoint multisets. The one remainder
+(`Was the man bitten by the dog?`) is a native-reader artifact —
+the reader takes word/connector fields from `(m) (e)` empty-word
+lines as `(e)>connector` — while the WASM linkage agrees with the
+CLI's Linkage 1 diagram link for link.
+
 ## Non-goals and limits
 
-- First linkage only; no linkage ranking, no timeout tuning, no
+- First linkage only; no linkage ranking, no
   Java/Python bindings in the module (native ones live in /usr/local).
 - Single-threaded by design (runs without SharedArrayBuffer).
 - `linkgrammar.wasm` must sit next to `linkgrammar.js` (non-single-file
