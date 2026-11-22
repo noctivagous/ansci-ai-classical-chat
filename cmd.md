@@ -20,13 +20,14 @@ proceed without displaying the menu first.
 
 1. **improve system** — choose an improvement and work on it for a timeframe.
 2. **resume improvement** — continue a recorded improvement run.
-3. **investigate transcript** — locate and explain conversation failures.
-4. **check system** — run relevant existing controls and report their results.
-5. **audit module** — assess a module's implementation and reachability.
-6. **inspect understanding** — show how AnSci interpreted an English input.
-7. **review progress** — summarize recent work and evidence.
-8. **evaluate proposal** — assess a library, dataset, or design for AnSci.
-9. **analyze next** — assess the tracker and evidence; recommend what to improve next.
+3. **commission work** — give a goal and timeframe; let the agent plan and proceed.
+4. **investigate transcript** — locate and explain conversation failures.
+5. **check system** — run relevant existing controls and report their results.
+6. **audit module** — assess a module's implementation and reachability.
+7. **inspect understanding** — show how AnSci interpreted an English input.
+8. **review progress** — summarize recent work and evidence.
+9. **evaluate proposal** — assess a library, dataset, or design for AnSci.
+10. **analyze next** — assess the tracker and evidence; recommend what to improve next.
 
 Commands are instructions to the agent, not shell commands. Follow the user's
 scope and current permissions; suggest a concrete next step when reporting.
@@ -41,6 +42,7 @@ one or two alternatives. Use this tree to select relevant follow-up work:
 menu
 ├── analyze next ── choose the highest-value ready task from the tracker
 │   └── improve system ── select work, set a timeframe, then execute
+├── commission work ── set a goal and timeframe; plan briefly and execute continuously
 ├── inspect understanding ── inspect a sentence's actual graph and trace
 │   ├── investigate transcript ── diagnose a supplied conversation failure
 │   └── improve system ── fix a supported, in-scope cause
@@ -148,6 +150,46 @@ progress record, repository status, and current instructions. Summarize the
 previous objective and next step, then ask for a new timeframe if one was not
 provided. Continue within the previously selected scope unless the user changes
 it. Recheck any baseline that may have become stale.
+
+## commission work
+
+Use this mode when the user gives a goal and a time budget and wants the agent
+to keep progressing through the best next steps. Example:
+
+> Read `cmd.md`. Commission work to improve English question understanding
+> for one hour. Follow the Foundry tracker, update progress, and commit verified
+> slices, but do not push.
+
+Before acting, confirm from the request the goal, scope, timeframe, and commit
+or push boundary. Ask only for information that is missing and materially
+changes the work. If the goal and timeframe are explicit, do not insert the
+`improve system` options round; give a brief proposed sequence and begin. A
+plan is a status update, not a request for approval. If the user gives a goal
+but no timeframe, ask for the timeframe while doing useful read-only scoping.
+If the goal is too broad for the budget, choose and state a valuable first
+bounded slice, preserving the broader goal in the progress record.
+
+Create a progress entry under `loop/foundry-results/` with objective, included
+and excluded scope, actual start and deadline, planned slices, model tier,
+baseline or starting evidence, status, and next action. Mark relevant tracker
+tasks `in_progress` when work starts; add tasks with stable IDs if needed.
+Then work continuously through implementation, controls, and evidence updates
+until the stated outcome is met, time expires, or an escalation condition in
+`improve system` applies. At each slice boundary, update the progress entry and
+tracker, identify the best in-scope next step, and proceed without waiting for
+another prompt. Reorder or replace slices when results invalidate the plan;
+record why. Keep enough time for verification and a clear handoff. Do not
+promise background work after the active session ends; the progress entry must
+allow a later `resume improvement` command to continue it.
+
+The user authorizes work inside the stated goal and time budget. Treat commit,
+push, deployment, external messages, purchases, and other external effects
+according to the user's explicit boundary and the repository's current
+instructions; a request for continuous implementation does not itself imply
+permission to push. Never broaden the task merely because time remains. If the
+user says “up to” a duration or gives a stopping condition, stop when it is
+met. Report actual elapsed work, completed and incomplete slices, checks and
+their results, commits, tracker changes, and the next recommendation.
 
 ## investigate transcript
 
