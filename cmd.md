@@ -11,6 +11,25 @@ that a CLI will load it automatically: the agent must be asked to read it, or
 its CLI must be configured to include it. Direct user instructions and the
 agent's operating permissions take precedence over this guide.
 
+## menu
+
+When the user says `cmd.md: menu`, show this top-level menu with one-line
+descriptions and ask which command they want. Accept names or numbers and
+ordinary language. If the requested command and its input are already clear,
+proceed without displaying the menu first.
+
+1. **improve system** — choose an improvement and work on it for a timeframe.
+2. **resume improvement** — continue a recorded improvement run.
+3. **investigate transcript** — locate and explain conversation failures.
+4. **check system** — run relevant existing controls and report their results.
+5. **audit module** — assess a module's implementation and reachability.
+6. **inspect understanding** — show how AnSci interpreted an English input.
+7. **review progress** — summarize recent work and evidence.
+8. **evaluate proposal** — assess a library, dataset, or design for AnSci.
+
+Commands are instructions to the agent, not shell commands. Follow the user's
+scope and current permissions; suggest a concrete next step when reporting.
+
 ## improve system
 
 Use AnSci Foundry to identify and implement an evidence-backed improvement to
@@ -94,3 +113,73 @@ progress record, repository status, and current instructions. Summarize the
 previous objective and next step, then ask for a new timeframe if one was not
 provided. Continue within the previously selected scope unless the user changes
 it. Recheck any baseline that may have become stale.
+
+## investigate transcript
+
+Example: `cmd.md: investigate transcript`, followed by a conversation and its
+traces. Obtain the transcript if it was not supplied. Preserve turn order and
+any supplied environment information; reproduce with Foundry when possible,
+and identify configuration differences and any behavior that cannot be
+reproduced. Inspect the first point where the observed meaning or behavior
+diverges from a supported expectation, along with later consequences. Classify
+likely causes using the categories in `improve system`, distinguish evidence
+from hypotheses, and identify the relevant code and trace fields. Explain the
+findings in plain language and suggest a general fix and controls. An
+investigation alone does not authorize modifying the system; implement a fix
+when the user's request also calls for one.
+
+## check system
+
+Example: `cmd.md: check system — parser`. Identify the requested scope; if none
+is supplied, choose a practical headless overview and say what it covers. Read
+current scripts and test-tier instructions before selecting commands. Existing
+starting points include `npm run ansci:audit`, `npm run ansci:parser-compare`,
+`npm run ansci:root-copula-controls`, `npm run ansci:baseball-dialogue-controls`,
+and the relevant `test:t0` or `test:core` tiers. Choose controls appropriate
+to the question, report commands and configuration, and distinguish failures,
+known gaps, skipped checks, and checks not run. Do not call a limited check a
+full system audit. Foundry `evaluate` and `compare` are design targets until
+implemented; inspect their current status instead of assuming they exist.
+
+## audit module
+
+Example: `cmd.md: audit module — ErrorFailure`. Find the relevant map node,
+implementation, callers, tests, inputs and outputs. Trace its route from the
+live chat entry point and distinguish built and reachable, built but unwired,
+partial, unbuilt, and not yet verified. Use existing controls or a suitable
+headless probe to support claims when practical; describe evidence limits.
+Report gaps, likely dependencies, and a small next step. Update an existing
+audit record if the user requests it or an ongoing audit authorizes that work.
+
+## inspect understanding
+
+Example: `cmd.md: inspect understanding — The dog bit the man.` Use the
+provided sentence or conversation; ask for input if absent. Create a temporary
+Foundry v1 input and run `npm run foundry --silent -- run --input <file> --json`.
+Explain the observed predicate, participants, roles, negation, tense, question
+form, reference, and path where present; show the reply and note unavailable
+or ambiguous information. Compare the graph with the sentence without assuming
+the graph is correct. Report the resource and session configuration and any
+differences from the user's chat environment. A multi-turn input runs in one
+session. Do not claim that the current `run` command automatically grades it.
+
+## review progress
+
+Example: `cmd.md: review progress`. Read recent relevant Foundry progress and
+results, the applicable gap or audit records, and repository status and recent
+commits. Summarize what was implemented, what the recorded checks actually
+show, unresolved issues, and the next recommended action. Note stale or
+conflicting evidence and distinguish local commits from confirmed remote state.
+This is a review; do not edit the records unless the user requests an update.
+
+## evaluate proposal
+
+Example: `cmd.md: evaluate proposal — a semantic role labeling library`.
+Identify the problem, then inspect AnSci's corresponding code and existing
+evidence. Research current primary documentation and licensing when external
+software or data is involved. Compare expected benefit, integration and
+runtime costs, non-neural requirements, data rights, provenance, and whether
+the result can reach the real turn path. Propose a small baseline and a
+held-out or independent comparison with clear success and regression criteria.
+Separate observed results from vendor claims and recommendations. A proposal
+evaluation does not itself authorize installing or redistributing a resource.
