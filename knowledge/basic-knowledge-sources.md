@@ -144,3 +144,96 @@ never disk; it is the classification pass over their endpoints.
 3. Standing of any model-authored entries: own provenance tier,
    cross-checked before banking — or bank only what a converted source
    confirms.
+
+---
+
+# Design note — the compounding graph
+
+*Recorded 2026-11-22, same discussion. A design direction raised by the
+owner, not a settled architecture and not a build commission.*
+
+## The two observations it rests on
+
+1. **Knowledge is big databases no matter what.** Every route to basic
+   knowledge ships bulk (this repo's `data/` is already 30 MB and grows);
+   the choice is where the bulk lives and in what form, not whether it
+   exists. Vector tables compress one slice of it — which things resemble
+   which — at roughly 300 MB for ~1M concepts × 300 dims at int8. But
+   vectors compress the *index into* knowledge, not the knowledge: no
+   relation names, no negation, no provenance, no point correction.
+   Vectors compress search, not storage.
+2. **A local graph lookup costs microseconds**, so the engine can afford
+   hundreds of steps per sentence. Read the other way round: if a step
+   costs almost nothing, conclusions do not need to be stored — they can
+   be *recomputed*, along paths nobody pre-built. Compute can be allowed
+   to compound because, at graph prices, it does not matter in the end.
+
+## The design
+
+The graph stops being an inventory and becomes a generator:
+
+```
+TIER 1 — ATTESTED CORE (small, shipped)
+  seed facts, correspondences, the classification table,
+  cycle structure, rules — the generators
+
+TIER 2 — DERIVATION (free, at query time)
+  walks chain: classification → correspondence → cycle →
+  relation → classification … hundreds of steps per question,
+  each priced, confidence decaying per hop (the PLN arithmetic)
+
+TIER 3 — MATERIALISED CACHE (grows by use)
+  every derivation that gets used banks its result as a
+  derived entry; the second asking is a lookup, not a walk
+```
+
+The effective knowledge is the *closure* of tier 1 under tier 2 — far
+larger than anything shipped — and tier 3 crystallises that closure
+exactly where real conversations go, rather than uniformly everywhere.
+The Wuxing machinery is this pattern in embryo: AnSci does not store
+"malachite is cold and stills"; it stores axes and correspondences and
+derives the behaviour. The note generalises that from the specialised
+ontology to basic knowledge itself.
+
+## The brake (the one real danger)
+
+Compounding compute compounds errors too: branching walks explode
+combinatorially, and derivation-from-derivation drifts. The pricing
+discipline is the brake:
+
+- confidence **decays multiplicatively** per hop, so long chains price
+  themselves out of testimony range on their own;
+- a **depth/loop budget** per question — the walk stops, and what
+  remains is a located decline, not a hang;
+- derived entries **cannot promote themselves**, and cannot serve as the
+  sole support for a further derivation past a set depth — attested or
+  retrieved support must re-enter the chain.
+
+Candidate generation is where vectors plug in: at each node, which of
+~200 edges are worth following is a similarity question a static vector
+table answers in microseconds; the graph then verifies what similarity
+proposed. **Vectors propose, structure disposes.** Both halves stand
+within the current rulings: static vector tables are permitted, and no
+neural net runs anywhere in this design.
+
+## What it does to the earlier questions
+
+| Earlier framing | Under a compounding graph |
+| :--- | :--- |
+| Basic knowledge = an inventory to import | Basic knowledge = **generators + a seed core**, with inventory as cache |
+| Hosted vs local | Matters less: what ships is small (generators); the big graphs demote to **oracles** — consulted rarely, to verify a derivation or seed a new generator (the Wikidata pattern) |
+| The trim ceiling | Mostly dissolves: the trim was a storage limit; derivation has no storage limit, only a pricing limit |
+| COMET / small nets | One possible *generator-author* at build time — proposing seed entries and rules; nothing neural at runtime |
+
+## Standing caveat
+
+This is a design, not a result. Nobody — including OpenCog, whose URE
+chaining is the closest built relative — has shown a derivation-closure
+graph answering everyday questions at conversational quality, and the
+GAPS audit's finding that AnSci's existing derived walks often have no
+turn-path consumer is the local warning. What supports it: the compute
+really is cheap enough to compound, and the pricing machinery to keep it
+honest is the PLN piece already surveyed in this discussion. The cheap
+experiment: pick one basic-knowledge domain, seed it as generators
+instead of facts, and measure what the closure covers against the
+syllabus.
