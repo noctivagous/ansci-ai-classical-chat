@@ -21,6 +21,16 @@ import { join } from "node:path";
 import { newSession } from "../dist/src/ansci/session.js";
 import { processTurn } from "../dist/src/ansci/turn.js";
 import { FileInterlocutorStore } from "../dist/src/ansci/interlocutor-store.js";
+import { ensureLinkGrammarLoaded } from "../dist/src/ansci/linkgrammar-wasm.js";
+
+// Step 4 routing: warm the WASM parser so parse() consults it
+// as the primary O-link source. Failure falls back silently to
+// the positional parser plus shadow solver — chat works offline.
+try {
+  await ensureLinkGrammarLoaded();
+} catch (err) {
+  console.warn(`link-grammar wasm unavailable, positional parser only: ${err?.message ?? err}`);
+}
 
 // Social Unit S6: the demonstrator carries the file-backed
 // Interlocutor store, so an identity stated in one run is

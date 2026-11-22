@@ -84,6 +84,11 @@ async function main() {
     process.exit(1);
   }
   const g = await loadCskg(dataPath);
+  try {
+    await require(path.join(root, "dist", "src", "ansci", "linkgrammar-wasm.js")).ensureLinkGrammarLoaded();
+  } catch (err) {
+    console.warn(`link-grammar wasm unavailable, positional parser only: ${err?.message ?? err}`);
+  }
   const session = createSession();
   replayTurns(g, session, loadHistory(historyPath), process.env, new Date());
   const res = runTurn(g, session, turn, process.env, new Date());

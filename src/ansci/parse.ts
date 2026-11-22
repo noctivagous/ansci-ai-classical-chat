@@ -47,6 +47,7 @@ import {
 import { registerDerivedEntry, wordnetAdjective, wordnetAdverb, wordnetNoun, wordnetVerb } from "./wordnet-lex";
 import { linkgrammarNounOnly } from "./linkgrammar-lex";
 import { solveLinkage, linkageRouting, setLinkageRouting } from "./linkage";
+import { adaptLinkGrammarSyntaxSync } from "./linkgrammar-adapter";
 
 export { setLinkageRouting } from "./linkage";
 
@@ -56,6 +57,19 @@ function safeSolveLinkage(tokens: string[]) {
   try {
     const s = solveLinkage(tokens);
     return s && s.status === "complete" ? s : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** WASM adapter evidence for object classification: the real
+ *  parser's O-family candidates, or undefined when the module
+ *  is cold, the linkage is recovered, or adaptation fails —
+ *  in which case the shadow solver below stays the source. */
+function safeAdaptSyntax(text: string, tokens: string[]) {
+  try {
+    const r = adaptLinkGrammarSyntaxSync(text, tokens);
+    return r.status === "complete" ? r : undefined;
   } catch {
     return undefined;
   }
@@ -2554,14 +2568,25 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
    * positional assignment. The record the sentence carries is
    * attached by parseEn's attempt() as before. */
   const f1Shadow = linkageRouting("f1") ? safeSolveLinkage(tokens) : undefined;
+  /* Step 4 routing: the WASM adapter is the primary O-link
+   * source where it speaks (complete linkage, warmed module);
+   * the shadow solver stays the source everywhere else. Both
+   * carry raw connectors, so the classification below reads
+   * either unchanged. */
+  const f1Wasm = linkageRouting("f1") ? safeAdaptSyntax(text, tokens) : undefined;
   const f1Link = (family: string, fromToken: number, toToken: number) =>
     f1Shadow?.links.find(
       (l) => l.family === family && f1Shadow.tokenIndices[l.left] === fromToken && f1Shadow.tokenIndices[l.right] === toToken,
     );
-  const f1ObjectLink = (toToken: number) =>
-    f1Shadow?.links.find(
+  const f1ObjectLink = (toToken: number) => {
+    const w = f1Wasm?.candidates.find(
+      (c) => c.kind === "patient" && c.verbToken === verbItem.index && c.argToken === toToken,
+    );
+    if (w) return { connector: w.connector };
+    return f1Shadow?.links.find(
       (l) => l.family === "O" && f1Shadow.tokenIndices[l.left] === verbItem.index && f1Shadow.tokenIndices[l.right] === toToken,
     );
+  };
 
   // Leading adjunct PPs (introductory prepositional phrases): a
   // sentence-initial "In the morning, …" / "On the mat …" is

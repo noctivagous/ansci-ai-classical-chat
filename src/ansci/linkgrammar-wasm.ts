@@ -70,6 +70,7 @@ const GLUE_PATH = path.join(
 );
 
 let modulePromise: Promise<LinkGrammarWasmModule> | undefined;
+let loadedModule: LinkGrammarWasmModule | undefined;
 
 function loadModule(): Promise<LinkGrammarWasmModule> {
   if (!modulePromise) {
@@ -80,10 +81,48 @@ function loadModule(): Promise<LinkGrammarWasmModule> {
         modulePromise = undefined;
         throw new Error(`linkgrammar-wasm init failed: ${err}`);
       }
+      loadedModule = mod;
       return mod;
     });
   }
   return modulePromise;
+}
+
+/**
+ * Warm the module (load + dictionary init). Chat entry points
+ * await this at startup; the synchronous parse path below
+ * falls back when it was never warmed (or warming failed),
+ * so callers that cannot await stay correct.
+ */
+export async function ensureLinkGrammarLoaded(): Promise<void> {
+  await loadModule();
+}
+
+/** True once ensureLinkGrammarLoaded() has resolved successfully. */
+export function isLinkGrammarLoaded(): boolean {
+  return loadedModule !== undefined;
+}
+
+/**
+ * Synchronous parse for use inside the synchronous parse loop.
+ * Never throws: when the module is cold it resolves to
+ * { ok: false } and the caller falls back to the positional
+ * parser, exactly as if the adapter had abstained.
+ */
+export function parseSentenceWasmSync(
+  sentence: string,
+): LinkGrammarWasmResult {
+  try {
+    if (!loadedModule) {
+      return { ok: false, error: "link-grammar module not loaded" };
+    }
+    return JSON.parse(loadedModule.parse(sentence)) as LinkGrammarWasmResult;
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 /**

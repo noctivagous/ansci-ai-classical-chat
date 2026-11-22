@@ -49,12 +49,30 @@ keeps its A0 agent); verb-unmapped vs argument-unmapped split
 into UNMAPPED vs NOVEL ("Who opened the door" surfaces a
 patient the parser never noded).
 
-## Non-goals (routing comes next)
+## Routing into chat (step 4)
 
-- The adapter is not wired into `parse.ts`: the positional
-  parser, the shadow solver, and F1 routing are untouched.
-  Routing the proven slice into chat is step 4 of the goal and
-  waits on this gate, which it now has.
+`parse.ts` consults the adapter as the primary O-link source
+for the existing F1 object classification: `f1ObjectLink`
+prefers adapter patient candidates (same connector strings
+the shadow solver reports), falling back to the shadow
+linkage when the module is cold, the linkage is recovered,
+or adaptation fails — the fallback is byte-identical to the
+pre-routing behavior, verified by running the full suite
+with the module cold. The adapter is synchronous inside
+`parseEnBody` (`adaptLinkGrammarSyntaxSync`); chat entry
+points (`scripts/ansci-chat.mjs`, `scripts/chat-once.mjs`)
+warm it at startup with a silent positional fallback when
+warming fails, so chat works offline. Agent candidates have
+no consumer yet: the positional agent stands, and a future
+slice can challenge it where the two disagree (the gate
+found zero such cases). Pinned by
+`test/ansci-linkgrammar-routed.test.ts` (warmed ditransitive,
+inversion, passive).
+
+Full suite 2026-11-22: 1629 pass / 19 fail; all 19 fail
+identically on the pristine pre-work tree (identity,
+ledger/apples, R1/R3/R4, probes, infinitival subjects, F1
+— active development areas, none touched by this slice).
 - Intransitive subjects abstain (no O-link on the verb), as do
   copular S-subjects and all recovered parses. Widening any of
   these needs a measured gate, not optimism.

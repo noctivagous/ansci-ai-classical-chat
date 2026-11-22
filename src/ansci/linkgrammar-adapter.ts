@@ -30,7 +30,9 @@ import { connectorFamily } from "./linkage";
 import { kindOfSubscript } from "./linkgrammar-lex";
 import {
   parseSentenceWasm,
+  parseSentenceWasmSync,
   type LinkGrammarWasmLink,
+  type LinkGrammarWasmResult,
 } from "./linkgrammar-wasm";
 
 export interface AlignedLink {
@@ -197,7 +199,7 @@ export async function adaptLinkGrammarSyntax(
   text: string,
   tokens: string[],
 ): Promise<AdapterResult> {
-  let parsed;
+  let parsed: LinkGrammarWasmResult;
   try {
     parsed = await parseSentenceWasm(text);
   } catch (err) {
@@ -210,6 +212,27 @@ export async function adaptLinkGrammarSyntax(
       error: err instanceof Error ? err.message : String(err),
     };
   }
+  return buildAdapterResult(parsed, tokens);
+}
+
+/**
+ * Synchronous adaptation for use inside the synchronous parse
+ * loop. Never throws: when the module is cold (chat entry
+ * points warm it at startup; nothing else does) it resolves
+ * to status failed and the caller falls back to the positional
+ * parser, exactly as if the adapter had abstained.
+ */
+export function adaptLinkGrammarSyntaxSync(
+  text: string,
+  tokens: string[],
+): AdapterResult {
+  return buildAdapterResult(parseSentenceWasmSync(text), tokens);
+}
+
+function buildAdapterResult(
+  parsed: LinkGrammarWasmResult,
+  tokens: string[],
+): AdapterResult {
   if (!parsed.ok) {
     return {
       status: "failed",
