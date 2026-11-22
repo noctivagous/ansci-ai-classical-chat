@@ -31,6 +31,40 @@ proceed without displaying the menu first.
 Commands are instructions to the agent, not shell commands. Follow the user's
 scope and current permissions; suggest a concrete next step when reporting.
 
+## Next commands (required after every command)
+
+After completing any command in this file, end the response with a short
+**Next commands** section. Recommend one best next command and, when useful,
+one or two alternatives. Use this tree to select relevant follow-up work:
+
+```text
+menu
+├── analyze next ── choose the highest-value ready task from the tracker
+│   └── improve system ── select work, set a timeframe, then execute
+├── inspect understanding ── inspect a sentence's actual graph and trace
+│   ├── investigate transcript ── diagnose a supplied conversation failure
+│   └── improve system ── fix a supported, in-scope cause
+├── audit module ── check implementation and live-path reachability
+│   └── improve system ── connect or complete a supported gap
+├── check system ── run focused headless controls
+│   └── review progress ── summarize evidence and remaining work
+├── evaluate proposal ── assess a tool, dataset, or architecture
+│   └── analyze next ── prioritize it against current system gaps
+└── resume improvement ── continue the saved task and progress record
+```
+
+Name commands exactly as listed in this file and give a brief reason for each
+recommendation. Only recommend a command that exists here. If a command
+requires user input or a timeframe, say so. If the best next step is outside
+this command set, state it plainly as a recommendation and offer the closest
+available command; do not invent a command name. Keep this section to a few
+lines so it remains useful after short and long tasks alike.
+
+This applies after successful work, an investigation, a blocked result, or an
+error report. For `menu`, show the menu and then identify the most relevant
+starting command from the user's context. If the user explicitly asks for no
+suggestions, follow that instruction for that response.
+
 ## improve system
 
 Use AnSci Foundry to identify and implement an evidence-backed improvement to
