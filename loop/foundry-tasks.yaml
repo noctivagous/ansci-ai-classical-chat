@@ -1,5 +1,5 @@
 schema_version: 1
-updated: '2026-11-21'
+updated: '2026-11-22'
 description: 'Foundry improvement index; details and evidence remain in the referenced records.'
 tasks:
   - id: FND-100
