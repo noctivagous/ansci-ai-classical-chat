@@ -230,8 +230,13 @@ export async function adaptLinkGrammarSyntax(
   const complete = parsed.nullCount === 0;
   const candidates: SyntaxCandidate[] = [];
   if (complete) {
-    const hasPassiveBy = parsed.links.some((l) =>
-      l.label.startsWith("MVp"),
+    // A passive "by"-phrase (MVp into "by") marks the S-subject
+    // as patient. Other MVp attachments ("prepares people for
+    // ...") are not passives and do not suppress.
+    const hasPassiveBy = parsed.links.some(
+      (l) =>
+        l.label.startsWith("MVp") &&
+        normalizeLinkageWord(parsed.words[l.right] ?? "") === "by",
     );
     const verbsWithObjects = new Set<number>();
     for (const l of parsed.links) {

@@ -108,6 +108,20 @@ test("adapter: passive proposes no agent candidate", async () => {
   );
 });
 
+test("adapter: MVp without by does not suppress the agent", async () => {
+  // "prepares people for ..." attaches the for-phrase with MVp but
+  // is active voice: Goodwill is the agent (MASC A0 ground truth).
+  const r = await adaptLinkGrammarSyntax(
+    "Goodwill prepares people for life-long employment.",
+    ["Goodwill", "prepares", "people", "for", "life-long", "employment"],
+  );
+  assert.equal(r.status, "complete");
+  const agents = r.candidates.filter((c) => c.kind === "agent");
+  assert.equal(agents.length, 1);
+  assert.deepEqual([agents[0].verbToken, agents[0].argToken], [1, 0]);
+  assert.equal(agents[0].connector, "Ss");
+});
+
 test("adapter: recovered parse contributes links, not roles", async () => {
   const r = await adaptLinkGrammarSyntax("i got her number though.", [
     "i",

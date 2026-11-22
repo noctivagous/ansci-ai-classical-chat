@@ -26,13 +26,35 @@ Pinned by `test/ansci-linkgrammar-adapter.test.ts` (6 tests).
   all, module error) resolves to `{ status: "failed", error }`
   and never throws.
 
-## Non-goals (gate work comes next)
+## Gate (step 3): `scripts/ansci-linkgrammar-adapter-gate.mjs`
+
+Measures all 56 turns of the 8 English Foundry fixtures against
+`roles`/`forbiddenRoles` ground truth, the MASC role mapping
+(A0→agent, A1→patient-family), and AnSci's own graph. Verdicts:
+CORRECT (ground truth), AGREE (parser-compatible edge),
+DIVERGE (parser gave the family elsewhere), NOVEL (both
+silent), ABSTAIN (no candidate), UNMAPPED (no predicate node
+to anchor to: existentials, copular-question restructuring).
+Gate rule: PASS iff errors == 0; abstentions tolerated.
+
+Measured 2026-11-22: PASS — 63 candidates, 37 CORRECT,
+17 AGREE, 0 ERROR, 0 DIVERGE, 3 NOVEL, 6 UNMAPPED,
+20 abstentions (3 recovered, 0 failed). Coverage: 13
+interrogatives, 5 passives (all abstain by the MVp/by guard),
+17 actives, inversion ("On the mat sat the cat" abstains, as
+the F1 brief requires), introductory phrases, 3 MASC cases.
+Refinements driven by the gate: passive suppression narrowed
+from any-MVp to MVp-into-"by" (active "prepares people for"
+keeps its A0 agent); verb-unmapped vs argument-unmapped split
+into UNMAPPED vs NOVEL ("Who opened the door" surfaces a
+patient the parser never noded).
+
+## Non-goals (routing comes next)
 
 - The adapter is not wired into `parse.ts`: the positional
-  parser, the shadow solver, and F1 routing are untouched. The
-  Foundry comparison harness (step 3 of the goal) measures
-  correct assignments, errors, and abstentions before any
-  routing into chat.
+  parser, the shadow solver, and F1 routing are untouched.
+  Routing the proven slice into chat is step 4 of the goal and
+  waits on this gate, which it now has.
 - Intransitive subjects abstain (no O-link on the verb), as do
   copular S-subjects and all recovered parses. Widening any of
   these needs a measured gate, not optimism.

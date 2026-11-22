@@ -225,7 +225,10 @@ export function structuralQuestionOnset(tokens: string[]): boolean {
   return false;
 }
 
-function enTokenize(text: string): { tokens: string[]; interrogative: boolean } {
+export function enTokenize(text: string): {
+  tokens: string[];
+  interrogative: boolean;
+} {
   const interrogative = /\?\s*$/.test(text);
   // The glued-comma transcription (IMP-1, the implementation
   // programme, 2026-11-19): the harvested corpora spell a comma
