@@ -26,6 +26,7 @@ proceed without displaying the menu first.
 6. **inspect understanding** — show how AnSci interpreted an English input.
 7. **review progress** — summarize recent work and evidence.
 8. **evaluate proposal** — assess a library, dataset, or design for AnSci.
+9. **analyze next** — assess the tracker and evidence; recommend what to improve next.
 
 Commands are instructions to the agent, not shell commands. Follow the user's
 scope and current permissions; suggest a concrete next step when reporting.
@@ -39,7 +40,7 @@ Generic mechanisms and ontology may help, but their effects must be measured.
 
 ### Choose work and a timeframe
 
-1. Read `loop/FOUNDRY.md`, the latest relevant Foundry results, `GAPS.md`, and
+1. Read `loop/FOUNDRY.md`, `loop/foundry-tasks.yaml`, the latest relevant Foundry results, `GAPS.md`, and
    the relevant code and controls. Check the repository's current branch and
    working tree before editing; preserve other work. Inspect only the portions
    needed to propose the options.
@@ -82,7 +83,7 @@ For each bounded slice:
    and after, including regressions and cases where the system abstains. A
    parse or round trip alone does not prove correct understanding. Do not tune
    repeatedly against sealed or independently held-out cases.
-5. Update the progress entry with commands, results, changes, limitations,
+5. Update the relevant task and subtasks in `loop/foundry-tasks.yaml`, and the progress entry with commands, results, changes, limitations,
    and a concrete next step. If time remains and that step is within the
    selected scope and user authorization, proceed without waiting for another
    prompt. Select a different approach if evidence rules out the prior one.
@@ -108,7 +109,7 @@ useful. Do not portray an unfinished run or unverified result as complete.
 
 ## resume improvement
 
-When the user says `cmd.md: resume improvement`, inspect the latest Foundry
+When the user says `cmd.md: resume improvement`, inspect the task tracker and latest Foundry
 progress record, repository status, and current instructions. Summarize the
 previous objective and next step, then ask for a new timeframe if one was not
 provided. Continue within the previously selected scope unless the user changes
@@ -171,6 +172,39 @@ commits. Summarize what was implemented, what the recorded checks actually
 show, unresolved issues, and the next recommended action. Note stale or
 conflicting evidence and distinguish local commits from confirmed remote state.
 This is a review; do not edit the records unless the user requests an update.
+
+## analyze next
+
+Example: `cmd.md: analyze next` or `cmd.md: analyze what should be improved next`.
+Read `loop/foundry-tasks.yaml`, relevant progress and results, `GAPS.md`, and
+the code or controls needed to evaluate candidate work. Check dependencies,
+current status and evidence against the repository; do not assume an old task
+or observation remains accurate. Prioritize English understanding, actual
+turn-path reachability, expected impact, risk, and the ability to measure a
+general improvement. Recommend one ready task and explain why, its evidence,
+dependencies, uncertainty, and a concrete first step; mention alternatives
+and blocked work when useful. Analysis alone does not start implementation.
+Update the tracker when the analysis finds supported changes to status,
+dependencies or evidence, and explain those updates. If no updates are
+justified, leave it unchanged. Use the tracker rules below.
+
+## Task tracker rules
+
+`loop/foundry-tasks.yaml` is the shared, human-readable task index. Tasks and
+subtasks have stable IDs; `parent` expresses hierarchy, `depends_on` identifies
+prerequisites, and `related` provides non-blocking links. References name IDs
+in the same file. Keep IDs unique, dependencies acyclic, and references valid.
+Statuses are `todo`, `in_progress`, `blocked`, `done`, and `cancelled`;
+only `done` satisfies a dependency. A blocked task needs a concrete blocker;
+do not infer completion from its children's status alone. Give every change a
+dated evidence or progress entry with a repository path or other verifiable
+reference, and preserve prior entries. Update status as work actually begins,
+blocks, or meets its stated completion criteria. Keep uncertainties explicit.
+If concurrent changes are present, reconcile them rather than overwriting them.
+The tracker is an index, not a replacement for detailed traces, `GAPS.md`, or
+the progress records. No automated YAML tracker or validation command exists
+yet; the agent reads and edits the file directly, and checks its structure and
+references when changing it. Never claim a task was verified without evidence.
 
 ## evaluate proposal
 

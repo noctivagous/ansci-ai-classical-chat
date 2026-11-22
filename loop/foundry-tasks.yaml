@@ -1,0 +1,92 @@
+schema_version: 1
+updated: '2026-11-21'
+description: 'Foundry improvement index; details and evidence remain in the referenced records.'
+tasks:
+  - id: FND-100
+    title: Establish an English meaning and role evaluation
+    status: todo
+    parent: null
+    depends_on: []
+    related: [FND-200]
+    completion: 'Independent expectations and a documented baseline cover selected English meaning and role families, with limitations recorded.'
+    history:
+      - date: '2026-11-21'
+        note: 'Exploratory seven-turn baseline exists; it has no independent expectations or accuracy score.'
+        evidence: loop/foundry-results/english-baseline-2026-11-21.md
+  - id: FND-101
+    title: Specify independent graph expectations and controls
+    status: todo
+    parent: FND-100
+    depends_on: []
+    related: [ENG-101, ENG-102]
+    completion: 'Independently authored expectations cover predicate, participant roles, tense, negation, questions and reference, including negative controls.'
+    history:
+      - date: '2026-11-21'
+        note: 'Baseline identifies passive tense and place-name interpretation as questions for focused controls.'
+        evidence: loop/foundry-results/english-baseline-2026-11-21.md
+  - id: FND-102
+    title: Implement Foundry evaluation of explicit expectations
+    status: todo
+    parent: FND-100
+    depends_on: [FND-101]
+    related: [FND-103]
+    completion: 'Evaluation reports meaningful graph assertions, abstentions and unobservable results, with regression controls.'
+    history:
+      - date: '2026-11-21'
+        note: 'Evaluate is specified as a design target; run is implemented.'
+        evidence: loop/FOUNDRY.md
+  - id: FND-103
+    title: Implement comparable before and after reports
+    status: todo
+    parent: FND-100
+    depends_on: [FND-102]
+    related: [FND-201]
+    completion: 'Compare reports gains, regressions and incompatibilities using case and configuration identity.'
+    history:
+      - date: '2026-11-21'
+        note: 'Compare is a design target.'
+        evidence: loop/FOUNDRY.md
+  - id: ENG-101
+    title: Investigate passive-tense representation
+    status: todo
+    parent: null
+    depends_on: []
+    related: [FND-101]
+    completion: 'Determine whether the observed tense is a representation or interpretation defect and document evidence and next action.'
+    history:
+      - date: '2026-11-21'
+        note: 'Passive example reports present tense with auxiliary was; cause is unconfirmed.'
+        evidence: loop/foundry-results/english-baseline-2026-11-21.md
+  - id: ENG-102
+    title: Investigate place names and reference in the game dialogue
+    status: todo
+    parent: null
+    depends_on: []
+    related: [FND-101]
+    completion: 'Trace the event, reference and New York representation through the session and document supported diagnosis and next action.'
+    history:
+      - date: '2026-11-21'
+        note: 'Second turn has york as root and it resolves to ball; the effect on the scene is unconfirmed.'
+        evidence: loop/foundry-results/english-baseline-2026-11-21.md
+  - id: FND-200
+    title: Improve Foundry runtime reproducibility and parity
+    status: todo
+    parent: null
+    depends_on: []
+    related: [FND-100]
+    completion: 'Clock and runtime settings are reproducible and documented differences from live chat are measured.'
+    history:
+      - date: '2026-11-21'
+        note: 'Runner uses default clock and in-memory session; browser parity is unverified.'
+        evidence: loop/FOUNDRY.md
+  - id: FND-201
+    title: Verify clock and live chat configuration parity
+    status: todo
+    parent: FND-200
+    depends_on: []
+    related: [FND-103]
+    completion: 'Document and control clock and provider differences; compare the real browser and Foundry paths.'
+    history:
+      - date: '2026-11-21'
+        note: 'Existing runtime profile explicitly records unpinned clock and unverified browser parity.'
+        evidence: loop/FOUNDRY.md
