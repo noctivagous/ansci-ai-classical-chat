@@ -3,6 +3,7 @@
 Status: first `run` implementation, 2026-11-21. Evaluation and comparison
 remain design targets. Foundry is the
 trace-led development testbed for AnSci's English conversation system.
+For the user-facing improvement and resume commands, see root `cmd.md`.
 `loop/LOOP.md` describes an existing CSKG executor and its different CLI;
 Foundry should reuse useful mechanisms without treating that CLI as the AnSci
 turn path.
