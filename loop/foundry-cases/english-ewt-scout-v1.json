@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "configuration": { "profile": "chat", "resources": "required" },
+  "metadata": {
+    "author": "UD English EWT contributors; Foundry expectations selected by Codex",
+    "provenance": "UD English EWT r2.18 test split; syntactic expectations mapped manually to Foundry, not semantic role annotations",
+    "source": "https://github.com/UniversalDependencies/UD_English-EWT/blob/r2.18/en_ewt-ud-test.conllu",
+    "rights": "UD EWT annotations: CC BY-SA 4.0; underlying texts have separate original rights, see source README",
+    "partition": "development",
+    "version": 1,
+    "purpose": "small exploratory checks selected after source inspection; not a sealed benchmark"
+  },
+  "cases": [
+    { "id": "ewt-email-enronsent23_07-0002", "status": "must-pass", "turns": [{ "id": "t1", "input": "i got her number though.", "expect": { "root": "get", "tense": "past" } }] },
+    { "id": "ewt-email-enronsent23_07-0004", "status": "must-pass", "turns": [{ "id": "t1", "input": "what happened to you?", "expect": { "root": "happen", "tense": "past", "mood": "interrogative" } }] },
+    { "id": "ewt-email-enronsent23_07-0008", "status": "must-pass", "turns": [{ "id": "t1", "input": "i flew here last night.", "expect": { "root": "fly", "tense": "past" } }] }
+  ]
+}
