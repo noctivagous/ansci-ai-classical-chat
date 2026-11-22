@@ -3132,6 +3132,38 @@ function answerWhereQuestion(
   // return before this reader in the turn); standing down
   // here too keeps the reader world-only by construction.
   if (subjectLemma === "you" || subjectLemma === "i") return undefined;
+  /* Told-location reading (ENG-102): a copular-locative telling
+   * recorded as a be-event answers before any entity grounding —
+   * the conversation's own record is the source (Transcript Slice
+   * 4), as the visitor-location reader already holds. Latest
+   * telling wins, as told; the wording is minimal and marked
+   * hand-composed like the live-in answer's. */
+  const told = [...session.events]
+    .reverse()
+    .find(
+      (e) =>
+        e.location !== undefined &&
+        (e.agent === subjectLemma || e.patient === subjectLemma || e.theme === subjectLemma),
+    );
+  if (told && told.location) {
+    trace.recordAnswer = {
+      source: "event",
+      ground:
+        `the question asks where '${subjectLemma}' is, and the conversation's own record holds it ` +
+        `as told: the event '${told.verb}' recorded at turn ${told.turn} carries location ` +
+        `'${told.location}' — the record answers`,
+      event: { verb: told.verb, role: "location", filler: told.location, turn: told.turn },
+    };
+    trace.planNote =
+      "answered from the conversation record (Transcript Slice 4): the location as the visitor " +
+      "themselves established it in this conversation — the record is the source; nothing is " +
+      "perceived, sensed or inferred";
+    trace.wordingNotDerived = true;
+    return {
+      reply: `You told me the ${subject.form} is in ${told.locationText ?? cap(told.location)}.`,
+      trace,
+    };
+  }
   const entity = !lookupClassification(subjectLemma) ? lookupEntity(subjectLemma) : undefined;
   // Union composition: under a wired Wikidata consultation
   // for this subject, the gloss stand-in stands down (see
@@ -5668,6 +5700,44 @@ function processTurnInnerBody(
       };
       newStateAspect = c.aspect;
       newStateSubject = subjectMaterialFor(ev.agent, agent, root);
+    }
+  } else if (!isVerbRoot && !predEdge && (root.states?.mood ?? "indicative") === "indicative") {
+    /* Told-location recording (ENG-102): a copular-locative telling
+     * ("It was in New York") graphs its location as an edge INTO a
+     * non-verb root, so neither the verb-root ledger above nor the
+     * predicate-edge state below fires, and the telling is
+     * acknowledged but never recorded — a later "Where was it?"
+     * answers from unrelated knowledge instead. Record the telling
+     * as a be-event, the ledger's own shape for what was told,
+     * with the subject as theme (as told, unresolved pronouns
+     * excepted) and the location resolved as the verb branch does.
+     * Questions never reach here (mood gate); first/second-person
+     * subjects stay out — the visitor's own location has separate
+     * machinery that this must not feed. Bare existentials
+     * ("There was a ball game") carry no location and record
+     * nothing here. Predicate-edge turns keep their own branch
+     * (!predEdge above), whatever edges they carry. */
+    const locatedEdge = parsed.meaning.edges.find(
+      (e) => e.relation === "location" && e.to === root.id && e.from !== root.id,
+    );
+    const locatedSubject = locatedEdge ? nodeById(parsed, locatedEdge.from) : undefined;
+    const subjectLemma = locatedSubject?.lemma.toLowerCase();
+    if (
+      locatedSubject &&
+      subjectLemma !== undefined &&
+      !["it", "them", "i", "you", "we", "they"].includes(subjectLemma)
+    ) {
+      const placeModifier = parsed.meaning.edges
+        .filter((e) => e.relation === "qualifies" && e.to === root.id)
+        .map((e) => nodeById(parsed, e.from))[0];
+      session.events.push({
+        verb: "be",
+        theme: locatedSubject.lemma,
+        location: resolve(root.lemma),
+        locationText: [placeModifier?.form, root.form].filter(Boolean).join(" ") || undefined,
+        turn,
+        text,
+      });
     }
   } else if (predEdge) {
     const subject = nodeById(parsed, predEdge.from);

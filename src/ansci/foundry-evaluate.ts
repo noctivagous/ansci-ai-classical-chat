@@ -54,7 +54,12 @@ export interface TurnExpect {
   qualifier?: QualifierAssertion[];
   resolution?: ResolutionAssertion;
   questionTarget?: { predicate: string; role: string };
-  reply?: { abstentionPermitted?: boolean; constraints?: string[] };
+  reply?: {
+    abstentionPermitted?: boolean;
+    constraints?: string[];
+    contains?: string[];
+    excludes?: string[];
+  };
 }
 
 // Minimal structural view of the observed graph and trace. Deliberately
@@ -276,16 +281,37 @@ export function evaluateTurn(
     // No mechanical reply-entailment check exists: a word match cannot show
     // the reply does or does not assert an outcome. Report abstained so a
     // limitation is visible instead of a passing self-authored heuristic.
-    checks.push({
-      id: "reply",
-      expected: {
-        abstentionPermitted: expect.reply.abstentionPermitted ?? false,
-        constraints: expect.reply.constraints ?? [],
-      },
-      observed: { reply },
-      outcome: "abstained",
-      evidence: "reply constraints are not mechanically graded yet",
-    });
+    // The narrow exception is contains/excludes: a told-echo contract
+    // names the exact record wording that must (or must not) surface, and
+    // the check grades only that surfacing, not the wording's quality.
+    if (!expect.reply.contains?.length && !expect.reply.excludes?.length) {
+      checks.push({
+        id: "reply",
+        expected: {
+          abstentionPermitted: expect.reply.abstentionPermitted ?? false,
+          constraints: expect.reply.constraints ?? [],
+        },
+        observed: { reply },
+        outcome: "abstained",
+        evidence: "reply constraints are not mechanically graded yet",
+      });
+    }
+    for (const [index, snippet] of (expect.reply.contains ?? []).entries()) {
+      checks.push({
+        id: `reply-contains-${index}`,
+        expected: `reply contains ${JSON.stringify(snippet)}`,
+        observed: { reply },
+        outcome: reply.includes(snippet) ? "pass" : "fail",
+      });
+    }
+    for (const [index, snippet] of (expect.reply.excludes ?? []).entries()) {
+      checks.push({
+        id: `reply-excludes-${index}`,
+        expected: `reply excludes ${JSON.stringify(snippet)}`,
+        observed: { reply },
+        outcome: reply.includes(snippet) ? "fail" : "pass",
+      });
+    }
   }
 
   return checks;

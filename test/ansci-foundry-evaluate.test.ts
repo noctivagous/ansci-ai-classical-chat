@@ -145,6 +145,22 @@ test("resolution, qualifier and question target match trace and edges", () => {
   assert.equal(verdictOf(whChecks), "pass");
 });
 
+test("reply contains and excludes grade only surfacing", () => {
+  const passer = evaluateTurn(biteActive, { resolutions: [] }, "You told me the ball is in New York.", {
+    root: "bite",
+    reply: { contains: ["New York"], excludes: ["Boston"] },
+  });
+  assert.equal(verdictOf(passer), "pass");
+
+  const failer = evaluateTurn(biteActive, { resolutions: [] }, "You told me the ball is in Boston.", {
+    root: "bite",
+    reply: { contains: ["New York"], excludes: ["Boston"] },
+  });
+  assert.equal(verdictOf(failer), "fail");
+  assert.equal(failer.find((check) => check.id === "reply-contains-0")?.outcome, "fail");
+  assert.equal(failer.find((check) => check.id === "reply-excludes-0")?.outcome, "fail");
+});
+
 test("negation carrier and attached-but-ungraded roles", () => {
   const graph: EvalGraph = {
     nodes: [

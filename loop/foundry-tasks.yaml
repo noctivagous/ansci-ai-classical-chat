@@ -89,7 +89,7 @@ tasks:
     title: Investigate place names and reference in the game dialogue
     model_tier: high
     model_tier_reason: 'Diagnosis crosses parsing, reference and session scene representation.'
-    status: in_progress
+    status: done
     parent: null
     depends_on: []
     related: [FND-101]
@@ -101,6 +101,9 @@ tasks:
       - date: '2026-11-22'
         note: 'Confirmed: parse and resolution are correct but events and states stay empty (verb-root and predicate-edge gates); follow-ups cannot answer where. Missing recording path for existential/copular-locative predications, not a mis-parse.'
         evidence: loop/foundry-results/eng-102-diagnosis-2026-11-22.md
+      - date: '2026-11-22'
+        note: 'Fixed: copular-locatives record be-events; answerWhereQuestion consults told locations before grounding. Suite v2 gains t3-t6; compare shows 1 gain, 0 regressions; core green.'
+        evidence: loop/foundry-results/eng-102-fix-2026-11-22.md
   - id: FND-200
     title: Improve Foundry runtime reproducibility and parity
     model_tier: high

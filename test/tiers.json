@@ -83,7 +83,8 @@
     "ansci-paramorphic-concepts.test.ts",
     "ansci-problem-records.test.ts",
     "ansci-foundry-evaluate.test.ts",
-    "ansci-foundry-compare.test.ts"
+    "ansci-foundry-compare.test.ts",
+    "ansci-told-location.test.ts"
   ],
   "t4": [
     "ansci-imp-programme.test.ts",

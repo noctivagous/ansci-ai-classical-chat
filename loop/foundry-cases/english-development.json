@@ -5,7 +5,7 @@
     "author": "Foundry agent, 2026-11-22, from English semantics against the observed graph vocabulary of english-baseline-2026-11-21",
     "provenance": "builder-authored development partition; held-out partition is future work for the evaluate/compare slice",
     "partition": "development",
-    "version": 1,
+    "version": 2,
     "purpose": "independent expectations for English meaning and role families: predicate, participant roles, tense, negation, question form and reference, with negative controls"
   },
   "cases": [
@@ -270,6 +270,47 @@
               "pronoun": "it",
               "target": "ball",
               "evidence": "trace.resolutions"
+            }
+          }
+        },
+        {
+          "id": "t3",
+          "input": "Where was the ball?",
+          "expect": {
+            "root": "where",
+            "mood": "interrogative",
+            "reply": {
+              "contains": ["You told me the ball is in New York."]
+            }
+          }
+        },
+        {
+          "id": "t4",
+          "input": "Where was the ball game?",
+          "expect": {
+            "root": "where",
+            "mood": "interrogative",
+            "reply": {
+              "contains": ["nothing in what I know says where"]
+            }
+          }
+        },
+        {
+          "id": "t5",
+          "input": "Was the ball in Boston?",
+          "expect": {
+            "mood": "interrogative"
+          }
+        },
+        {
+          "id": "t6",
+          "input": "Where was the ball?",
+          "expect": {
+            "root": "where",
+            "mood": "interrogative",
+            "reply": {
+              "contains": ["You told me the ball is in New York."],
+              "excludes": ["Boston"]
             }
           }
         }
