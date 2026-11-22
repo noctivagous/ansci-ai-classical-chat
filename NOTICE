@@ -169,6 +169,28 @@ text ships with the upstream project as LICENSE. The converted
 table in data/linkgrammar/ is a derivative work of the
 dictionary data and is distributed under the same terms.
 
+RelEx Stanford rules (vendor/relex/, src/ansci/linkgrammar-stanford.ts)
+-----------------------------------------------------------------
+The Stanford-compatibility rule set in this repository
+(vendor/relex/relex-stanford.algs, generated into
+src/ansci/linkgrammar-stanford-rules.ts by
+scripts/import-relex-stanford-algs.mjs) is taken verbatim from
+
+  RelEx — https://github.com/opencog/relex
+  Copyright (c) 2007–2020, OpenCog contributors
+
+distributed under the Apache License 2.0:
+http://www.apache.org/licenses/. The rule engine in
+src/ansci/linkgrammar-stanford.ts is AnSci's own TypeScript
+port of the RelEx feature/template/action algorithms
+(relex.feature.* and relex.algs.TemplateActionAlg, same
+license), written from the Java sources; no RelEx code,
+WordNet data, or OpenNLP models are bundled. The port runs
+the stanford rule file standalone (no tagging or semantic
+passes), so semantic-pass relations (nsubj, dobj, prep_*,
+neg, …) are absent by design — see
+docs/ansci/linkgrammar-stanford-slice.md.
+
 qualreas relation algebras (data/qualreas/, src/ansci/qualreas.ts)
 -----------------------------------------------------------------
 The relation-algebra data in this repository (RCC-8, Allen's
