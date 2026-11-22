@@ -1,7 +1,7 @@
 # AnSci Foundry: CLI and data contract
 
-Status: design proposal, 2026-11-21. Commands and fields below are a first
-implementation target, not claims that Foundry already exists. Foundry is the
+Status: first `run` implementation, 2026-11-21. Evaluation and comparison
+remain design targets. Foundry is the
 trace-led development testbed for AnSci's English conversation system.
 `loop/LOOP.md` describes an existing CSKG executor and its different CLI;
 Foundry should reuse useful mechanisms without treating that CLI as the AnSci
@@ -27,12 +27,12 @@ write machine-readable JSON to stdout with diagnostics on stderr. A wrapper
 must build first or refuse a stale build. These command names are proposed:
 
 ```sh
-npm run foundry -- run --input cases/example.json --json
-npm run foundry -- evaluate --suite cases/english-development.json --json
-npm run foundry -- compare --before results/before.json --after results/after.json --json
+npm run foundry --silent -- run --input loop/foundry-cases/english-baseline.json --json
+npm run foundry --silent -- evaluate --suite cases/english-development.json --json
+npm run foundry --silent -- compare --before results/before.json --after results/after.json --json
 ```
 
-`run` processes each conversation in a fresh session and preserves turn order.
+`run` is implemented; the other two commands are proposed. `run` processes each conversation in a fresh session and preserves turn order.
 `evaluate` runs a declared suite and scores only its explicit assertions.
 `compare` reports changes, improvements, regressions, and incomparable cases;
 it never silently compares different case versions or runtime configurations.
@@ -96,6 +96,9 @@ reliably for repeated inputs and failed turns before relying on surface-text
 matching. `TurnResult` currently exposes reply and trace; it does not itself
 promise a complete input graph. Where data is unavailable, report that gap.
 
+The current `chat` profile uses `newSession` and synchronous `processTurn` with
+an in-memory session, no interlocutor store, and the default clock behavior.
+It does not yet prove parity with the browser chat or the file-backed CLI chat.
 The `chat` profile must document its actual entry point, session initialization,
 providers, and clock. Required resources must be loaded and verified before
 processing, with a clear error if unavailable. Pin or record clock and other

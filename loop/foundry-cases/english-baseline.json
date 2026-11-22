@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "configuration": { "profile": "chat", "resources": "required" },
+  "metadata": { "author": "Foundry implementation agent", "partition": "development", "version": 1, "purpose": "exploratory baseline; no correctness expectations or accuracy claims" },
+  "cases": [
+    { "id": "active", "turns": [{ "id": "t1", "input": "The dog bit the man." }] },
+    { "id": "reversed", "turns": [{ "id": "t1", "input": "The man bit the dog." }] },
+    { "id": "passive", "turns": [{ "id": "t1", "input": "The man was bitten by the dog." }] },
+    { "id": "negation", "turns": [{ "id": "t1", "input": "The dog did not bite the man." }] },
+    { "id": "question", "turns": [{ "id": "t1", "input": "Did the dog bite the man?" }] },
+    { "id": "reference", "turns": [{ "id": "t1", "input": "There was a ball game." }, { "id": "t2", "input": "It was in New York." }] }
+  ]
+}

@@ -46,7 +46,8 @@
     "ansci:parser-compare": "npm run build --silent && node scripts/ansci-parser-compare.mjs",
     "ansci:root-copula-controls": "npm run build --silent && node scripts/ansci-root-copula-controls.mjs",
     "ansci:baseball-dialogue-controls": "npm run build --silent && node scripts/ansci-baseball-dialogue-controls.mjs",
-    "ansci:audit": "npm run build --silent && node scripts/ansci-behaviour-audit.mjs"
+    "ansci:audit": "npm run build --silent && node scripts/ansci-behaviour-audit.mjs",
+    "foundry": "npm run build --silent && node scripts/ansci-foundry.mjs"
   },
   "type": "commonjs",
   "version": "0.1.0",
