@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { newSession } from '../dist/src/ansci/session.js';
 import { processTurn } from '../dist/src/ansci/turn.js';
 import { evaluateTurn, verdictOf } from '../dist/src/ansci/foundry-evaluate.js';
+import { compareReports } from '../dist/src/ansci/foundry-compare.js';
 import { wordnetAvailable } from '../dist/src/ansci/wordnet-lex.js';
 import { frameNetAvailable } from '../dist/src/ansci/framenet-lex.js';
 import { getDefaultExtract } from '../dist/src/wordnet.js';
@@ -16,17 +17,27 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(root);
 const fail = (message) => { console.error(`Foundry: ${message}`); process.exit(2); };
 const args = process.argv.slice(2);
-const usage = 'usage: npm run foundry -- (run --input <file> | evaluate --suite <file>) --json';
-if (args.length !== 4 || args[3] !== '--json' || (args[0] !== 'run' && args[0] !== 'evaluate')) fail(usage);
-if (args[0] === 'run' && args[1] !== '--input') fail(usage);
-if (args[0] === 'evaluate' && args[1] !== '--suite') fail(usage);
+const usage = 'usage: npm run foundry -- (run --input <file> | evaluate --suite <file>) --json | compare --before <file> --after <file> --json';
 const command = args[0];
+if (!['run', 'evaluate', 'compare'].includes(command)) fail(usage);
+if (command === 'compare') {
+  if (args.length !== 6 || args[1] !== '--before' || args[3] !== '--after' || args[5] !== '--json') fail(usage);
+} else {
+  if (args.length !== 4 || args[3] !== '--json') fail(usage);
+  if (args[0] === 'run' && args[1] !== '--input') fail(usage);
+  if (args[0] === 'evaluate' && args[1] !== '--suite') fail(usage);
+}
+const readJson = (path, label) => {
+  try { const bytes = readFileSync(resolve(path)); return { bytes, json: JSON.parse(bytes.toString('utf8')) }; }
+  catch (error) { fail(`cannot read ${label}: ${error.message}`); return null; }
+};
 let bytes, input;
-try { bytes = readFileSync(resolve(args[2])); input = JSON.parse(bytes.toString('utf8')); }
-catch (error) { fail(`cannot read input: ${error.message}`); }
-if (input?.schemaVersion !== 1 || input.configuration?.profile !== 'chat' || input.configuration?.resources !== 'required' || !Array.isArray(input.cases) || !input.cases.length) fail('expected schemaVersion 1, chat profile, required resources and nonempty cases');
+if (command !== 'compare') {
+  ({ bytes, json: input } = readJson(args[2], 'input'));
+}
+if (input && (input?.schemaVersion !== 1 || input.configuration?.profile !== 'chat' || input.configuration?.resources !== 'required' || !Array.isArray(input.cases) || !input.cases.length)) fail('expected schemaVersion 1, chat profile, required resources and nonempty cases');
 const caseIds = new Set();
-for (const c of input.cases) {
+for (const c of input?.cases ?? []) {
   if (typeof c.id !== 'string' || !c.id || caseIds.has(c.id) || !Array.isArray(c.turns) || !c.turns.length) fail('cases require unique nonempty IDs and turns');
   caseIds.add(c.id);
   if (command === 'evaluate' && c.status !== 'must-pass' && c.status !== 'known-failure') fail(`case ${c.id}: evaluate requires status must-pass or known-failure`);
@@ -58,6 +69,26 @@ function verifyParts(relative, kinds) {
   return { edition: manifest.edition, source: manifest.source, totals };
 }
 let resources;
+if (command === 'compare') {
+  const before = readJson(args[2], 'before report');
+  const after = readJson(args[4], 'after report');
+  for (const [report, label] of [[before.json, 'before'], [after.json, 'after']]) {
+    if (report?.schemaVersion !== 1 || !Array.isArray(report?.cases)) fail(`${label} report must be a schemaVersion 1 evaluate report with cases`);
+  }
+  const comparison = compareReports(before.json, after.json);
+  const output = {
+    schemaVersion: 1,
+    compareId: randomUUID(),
+    timestamp: new Date().toISOString(),
+    before: { file: args[2], sha256: createHash('sha256').update(before.bytes).digest('hex'), source: before.json.source ?? null, fixture: before.json.fixture ?? null, configuration: before.json.configuration ?? null },
+    after: { file: args[4], sha256: createHash('sha256').update(after.bytes).digest('hex'), source: after.json.source ?? null, fixture: after.json.fixture ?? null, configuration: after.json.configuration ?? null },
+    ...comparison,
+  };
+  console.log(JSON.stringify(output, null, 2));
+  if (comparison.summary.comparable === 0) fail('no comparable cases: check that both reports grade the same suite');
+  if (comparison.summary.regressions > 0 || comparison.summary.unexpectedPasses > 0) process.exit(1);
+  process.exit(0);
+}
 try {
   const wn = verifyParts('wordnet/extract', ['synsets', 'relations', 'forms']);
   const fn = verifyParts('framenet', ['frames', 'relations']);

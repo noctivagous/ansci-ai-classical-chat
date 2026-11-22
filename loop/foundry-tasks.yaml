@@ -51,7 +51,7 @@ tasks:
     title: Implement comparable before and after reports
     model_tier: medium
     model_tier_reason: 'Comparison must correctly handle configuration and fixture compatibility.'
-    status: todo
+    status: done
     parent: FND-100
     depends_on: [FND-102]
     related: [FND-201]
@@ -60,6 +60,9 @@ tasks:
       - date: '2026-11-21'
         note: 'Compare is a design target.'
         evidence: loop/FOUNDRY.md
+      - date: '2026-11-22'
+        note: 'compare subcommand implemented with pure comparator, 6 unit tests, identical-rerun and synthetic regression/gain verification.'
+        evidence: loop/foundry-results/fnd-103-compare-2026-11-22.md
   - id: ENG-101
     title: Investigate passive-tense representation
     model_tier: medium
