@@ -85,7 +85,7 @@
     },
     {
       "id": "tense-passive-01",
-      "status": "known-failure",
+      "status": "must-pass",
       "turns": [
         {
           "id": "t1",

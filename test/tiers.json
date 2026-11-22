@@ -9,7 +9,8 @@
     "ansci-ingest.test.ts",
     "ansci-lexicon-state.test.ts",
     "ansci-join.test.ts",
-    "ansci-sense.test.ts"
+    "ansci-sense.test.ts",
+    "ansci-passive-tense.test.ts"
   ],
   "t1": [
     "ansci.test.ts",

@@ -70,7 +70,7 @@ tasks:
     title: Investigate passive-tense representation
     model_tier: medium
     model_tier_reason: 'Focused diagnosis spans parse output and downstream interpretation.'
-    status: in_progress
+    status: done
     parent: null
     depends_on: []
     related: [FND-101]
@@ -82,6 +82,9 @@ tasks:
       - date: '2026-11-22'
         note: 'Before-report saved (only tense-passive-01 fails). Traced: bitten tags participle so parse.ts:2453 falls to present; the was carrier is kept as aux label only and never read for tense. Roles, voice and aux are correct — representation defect in the passive-branch tense derivation, not a mis-parse.'
         evidence: loop/foundry-results/eng-101-before-2026-11-22.json
+      - date: '2026-11-22'
+        note: 'Fixed: passive tense rides the be-carrier (was past, is present). Suite status of tense-passive-01 flipped to must-pass; compare shows 1 gain, 0 regressions; t0/t1 green.'
+        evidence: loop/foundry-results/eng-101-fix-2026-11-22.md
   - id: ENG-102
     title: Investigate place names and reference in the game dialogue
     model_tier: high

@@ -2444,13 +2444,20 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     { lemma: verb.lemma, form: verbItem.text, syntacticElement: "Wood", role: "verb" },
     [verbItem.index, ...(auxItem ? [auxItem.index] : []), ...(negItem ? [negItem.index] : [])],
   );
+  // Tense rides the carrier when there is one (F.2): 'did' is past
+  // though the verb it carries stays in base form — reading tense
+  // off the verb's form alone reported a did-question as present
+  // (sealed-run mechanism 6). In the passive the carrier is the
+  // be-auxiliary, whose participle verb never carries tense itself:
+  // 'is bitten' is present, 'was bitten' is past.
+  const clauseTense =
+    auxItem?.lower === "did" ? "past"
+    : isPassive && beItem ? beItem.lower === "was" ? "past" : "present"
+    : verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past"
+    : "present";
   root.states = {
     voice: isPassive ? "passive" : "active",
-    // Tense rides the carrier when there is one (F.2): 'did'
-    // is past though the verb it carries stays in base form —
-    // reading tense off the verb's form alone reported a
-    // did-question as present (sealed-run mechanism 6).
-    tense: auxItem?.lower === "did" || verbItem.formTag === "past" || verbItem.formTag === "past/participle" ? "past" : "present",
+    tense: clauseTense,
     verbForm: verbItem.formTag,
     mood: interrogative ? "interrogative" : "indicative",
     ...(negItem ? { negated: true } : {}),
