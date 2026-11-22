@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "profile": "chat",
+    "resources": "required"
+  },
+  "cases": [
+    {
+      "id": "0",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Finally, Michael called Goodwill.",
+          "expect": {
+            "root": "call",
+            "roles": [
+              {
+                "predicate": "call",
+                "participant": "michael",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ],
+      "status": "must-pass"
+    },
+    {
+      "id": "1",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Michael called Goodwill.",
+          "expect": {
+            "root": "call",
+            "roles": [
+              {
+                "predicate": "call",
+                "participant": "michael",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ],
+      "status": "must-pass"
+    },
+    {
+      "id": "2",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Yesterday, the teacher opened the door.",
+          "expect": {
+            "root": "open",
+            "roles": [
+              {
+                "predicate": "open",
+                "participant": "teacher",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ],
+      "status": "must-pass"
+    },
+    {
+      "id": "3",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The teacher opened the door.",
+          "expect": {
+            "root": "open",
+            "roles": [
+              {
+                "predicate": "open",
+                "participant": "teacher",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ],
+      "status": "must-pass"
+    },
+    {
+      "id": "4",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Quickly, the dog chased the cat.",
+          "expect": {
+            "root": "chase",
+            "roles": [
+              {
+                "predicate": "chase",
+                "participant": "dog",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ],
+      "status": "must-pass"
+    }
+  ],
+  "metadata": {
+    "partition": "development",
+    "author": "Codex",
+    "purpose": "Initial adverb subject retention and paired controls"
+  }
+}

@@ -2503,6 +2503,11 @@ function parseEnBody(text: string, tokens: string[], interrogative: boolean): Pa
     if (fc && fc.chunk.end === commaItem.index - 1) {
       frontedChunk = fc.chunk;
       subjStart = commaItem.index + 1;
+    } else if (items.slice(contentStart, commaItem.index).length > 0 &&
+      items.slice(contentStart, commaItem.index).every((item) => item.kind === "adverb")) {
+      // A sentence adverb is not the subject; retain its existing modifier
+      // handling and begin the subject chunk after the introductory comma.
+      subjStart = commaItem.index + 1;
     }
   }
 
