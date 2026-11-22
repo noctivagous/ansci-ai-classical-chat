@@ -206,6 +206,16 @@ the progress records. No automated YAML tracker or validation command exists
 yet; the agent reads and edits the file directly, and checks its structure and
 references when changing it. Never claim a task was verified without evidence.
 
+Each task also carries a `model_tier` recommendation: `low` for bounded,
+mechanical work with clear checks, `medium` for localized implementation or
+diagnosis, and `high` for complex architecture, evaluation design, or review.
+The `model_tier_reason` explains the recommendation. These are guidance, not
+proof that a particular model can perform the work or that the active CLI can
+switch models. Reassess the tier when scope or evidence changes; escalate when
+results are ambiguous or checks fail, and record the reason in task history.
+Delegate or switch models only when the user's instructions and CLI allow it.
+When recommending next work, include the suggested tier and rationale.
+
 ## evaluate proposal
 
 Example: `cmd.md: evaluate proposal — a semantic role labeling library`.

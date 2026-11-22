@@ -4,6 +4,8 @@ description: 'Foundry improvement index; details and evidence remain in the refe
 tasks:
   - id: FND-100
     title: Establish an English meaning and role evaluation
+    model_tier: high
+    model_tier_reason: 'Evaluation design and interpretation span multiple semantic layers.'
     status: todo
     parent: null
     depends_on: []
@@ -15,6 +17,8 @@ tasks:
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
   - id: FND-101
     title: Specify independent graph expectations and controls
+    model_tier: high
+    model_tier_reason: 'Independent evaluation design requires careful semantic judgments and controls.'
     status: todo
     parent: FND-100
     depends_on: []
@@ -26,6 +30,8 @@ tasks:
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
   - id: FND-102
     title: Implement Foundry evaluation of explicit expectations
+    model_tier: medium
+    model_tier_reason: 'Localized implementation needs graph matching and meaningful failure reporting.'
     status: todo
     parent: FND-100
     depends_on: [FND-101]
@@ -37,6 +43,8 @@ tasks:
         evidence: loop/FOUNDRY.md
   - id: FND-103
     title: Implement comparable before and after reports
+    model_tier: medium
+    model_tier_reason: 'Comparison must correctly handle configuration and fixture compatibility.'
     status: todo
     parent: FND-100
     depends_on: [FND-102]
@@ -48,6 +56,8 @@ tasks:
         evidence: loop/FOUNDRY.md
   - id: ENG-101
     title: Investigate passive-tense representation
+    model_tier: medium
+    model_tier_reason: 'Focused diagnosis spans parse output and downstream interpretation.'
     status: todo
     parent: null
     depends_on: []
@@ -59,6 +69,8 @@ tasks:
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
   - id: ENG-102
     title: Investigate place names and reference in the game dialogue
+    model_tier: high
+    model_tier_reason: 'Diagnosis crosses parsing, reference and session scene representation.'
     status: todo
     parent: null
     depends_on: []
@@ -70,6 +82,8 @@ tasks:
         evidence: loop/foundry-results/english-baseline-2026-11-21.md
   - id: FND-200
     title: Improve Foundry runtime reproducibility and parity
+    model_tier: high
+    model_tier_reason: 'Cross-runtime parity requires decisions about configuration and evidence.'
     status: todo
     parent: null
     depends_on: []
@@ -81,6 +95,8 @@ tasks:
         evidence: loop/FOUNDRY.md
   - id: FND-201
     title: Verify clock and live chat configuration parity
+    model_tier: medium
+    model_tier_reason: 'A scoped comparison can inspect clock and provider paths with explicit evidence.'
     status: todo
     parent: FND-200
     depends_on: []
