@@ -72,3 +72,24 @@ Recruit an independent author and a separate custodian, and agree how they will
 privately exchange the material. In parallel, assess and implement the sealed
 Foundry adapter using synthetic data. Do not label a set independently authored
 or sealed until the roles, provenance and custody can be verified.
+
+## Foundry case contract
+
+Use the expectation vocabulary documented in
+`loop/foundry-results/fnd-101-expectations-2026-11-22.md`: root, roles,
+forbidden roles, attached and role-open, tense, mood, voice, negation,
+construction, qualifiers, reference, question target and supported reply
+constraints. Record representation uncertainties and use a weaker assertion
+only when it reflects the author's independent judgment. Include negative
+controls and at least one family outside the development suite. The author must
+not have authored, tuned or read the development suite or its authoring sessions.
+The owner commissions the author. Record the suite version, provenance, hash and
+commissioning note; any change after sealing requires a new recorded hash.
+A failing case can reflect an incorrect expectation or a system problem; the
+independent author adjudicates its intended meaning.
+
+Check `src/ansci/sealed.ts` for available custody mechanisms. Ordinary Foundry
+reports expose cases and expectations, so an integrity hash alone is not a
+blind workflow. Foundry's `compare` compares compatible executions of the same
+suite; it does not establish case-by-case comparability between different
+held-out and development suites. Compare their family-level summaries instead.
