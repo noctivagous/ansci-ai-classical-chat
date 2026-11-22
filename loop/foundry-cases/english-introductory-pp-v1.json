@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "profile": "chat",
+    "resources": "required"
+  },
+  "metadata": {
+    "author": "Codex",
+    "partition": "development",
+    "purpose": "Introductory phrase subject, root, attachment and inversion controls; expected time/locations require review."
+  },
+  "cases": [
+    {
+      "id": "temporal",
+      "status": "known-failure",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "In the morning, the teacher opened the door.",
+          "expect": {
+            "root": "open",
+            "roles": [
+              {
+                "predicate": "open",
+                "participant": "teacher",
+                "role": "agent"
+              },
+              {
+                "predicate": "open",
+                "participant": "morning",
+                "role": "time"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "spatial",
+      "status": "known-failure",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "In New York, Michael called Goodwill.",
+          "expect": {
+            "root": "call",
+            "roles": [
+              {
+                "predicate": "call",
+                "participant": "michael",
+                "role": "agent"
+              },
+              {
+                "predicate": "call",
+                "participant": "new york",
+                "role": "location"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "after",
+      "status": "known-failure",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "After lunch, the dog chased the cat.",
+          "expect": {
+            "root": "chase",
+            "roles": [
+              {
+                "predicate": "chase",
+                "participant": "dog",
+                "role": "agent"
+              },
+              {
+                "predicate": "chase",
+                "participant": "lunch",
+                "role": "time"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "plain",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The teacher opened the door.",
+          "expect": {
+            "root": "open",
+            "roles": [
+              {
+                "predicate": "open",
+                "participant": "teacher",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "inversion",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "On the mat sat the cat.",
+          "expect": {
+            "root": "sit",
+            "forbiddenRoles": [
+              {
+                "predicate": "sit",
+                "participant": "mat",
+                "role": "agent"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

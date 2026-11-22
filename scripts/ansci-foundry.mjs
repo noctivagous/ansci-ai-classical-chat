@@ -108,7 +108,42 @@ if (command !== 'compare') {
 const newFoundrySession = () => foundryClock
   ? newSession(undefined, undefined, { clockSource: foundryClock.source, clockRetrievedFrom: foundryClock.retrievedFrom })
   : newSession();
+let roleMapping;
+if (command === 'evaluate' && input.metadata?.roleMapping) {
+  const loaded = readJson(input.metadata.roleMapping, 'role mapping');
+  roleMapping = loaded.json;
+  if (roleMapping.schemaVersion !== 1 || !Array.isArray(roleMapping.mappings)) fail('invalid role mapping');
+}
 const report = { schemaVersion: 1, runId: randomUUID(), timestamp: new Date().toISOString(), source: { revision, dirty: status === null ? null : status.length > 0 }, fixture: { path: args[2], sha256: createHash('sha256').update(bytes).digest('hex') }, configuration: { profile: 'chat', entry: 'newSession + processTurn', clock: foundryClock ? foundryClock.description : 'default session behavior; not pinned', persistence: 'in-memory session; no interlocutor store', browserParity: 'not verified', resources }, cases: [] };
+if (roleMapping) report.roleMapping = { path: input.metadata.roleMapping, id: roleMapping.id, sha256: createHash('sha256').update(readFileSync(resolve(input.metadata.roleMapping))).digest('hex') };
+function mappedChecks(c, graph) {
+  if (!roleMapping) return [];
+  const source = c.sourceAnnotation;
+  const matches = roleMapping.mappings.filter(m => m.sourceRoleset === source?.predicate && m.caseIds.includes(c.id));
+  if (matches.length !== 1) throw Error(`case ${c.id}: expected one mapping`);
+  const mapping = matches[0];
+  return Object.entries(mapping.arguments).map(([label, spec]) => {
+    const participant = (source[`${label}_lemma`] ?? source[`${label}_head`])?.toLowerCase();
+    if (!participant) throw Error(`case ${c.id}: missing ${label} head`);
+    const expected = { roleset: source.predicate, argument: label, head: participant, paths: spec.acceptedPaths };
+    if (mapping.status !== 'reviewed-for-this-example') return { id: `masc-${label}`, expected, observed: null, outcome: 'abstained', evidence: `unresolved mapping: ${mapping.status}` };
+    if (!graph) return { id: `masc-${label}`, expected, observed: null, outcome: 'not-observable' };
+    const predicate = source.predicate.split('.')[0].toLowerCase();
+    const starts = graph.nodes.filter(n => n.lemma.toLowerCase() === predicate);
+    const ends = graph.nodes.filter(n => n.lemma.toLowerCase() === participant);
+    if (starts.length > 1 || ends.length > 1) return { id: `masc-${label}`, expected, observed: null, outcome: 'abstained', evidence: 'repeated lemma requires token identity' };
+    let found;
+    for (const path of spec.acceptedPaths) {
+      let ids = starts.map(n => n.id);
+      for (const step of path) {
+        if (!/^[<>][a-z-]+$/.test(step)) throw Error(`invalid mapping step ${step}`);
+        ids = graph.edges.filter(e => e.relation === step.slice(1) && ids.includes(step[0] === '>' ? e.from : e.to)).map(e => step[0] === '>' ? e.to : e.from);
+      }
+      if (ends.some(n => ids.includes(n.id))) { found = path; break; }
+    }
+    return { id: `masc-${label}`, expected, observed: found ? { path: found, kind: found.length === 1 ? 'direct' : 'indirect' } : null, outcome: found ? 'pass' : 'fail' };
+  });
+}
 function takeTurn(session, text) {
   const previousIds = new Set(session.objects.map((o) => o.id));
   const output = processTurn(session, text);
@@ -135,7 +170,7 @@ try {
     const result = { id: c.id, status: c.status, turns: [], checks: { pass: 0, fail: 0, abstained: 0, notObservable: 0 } };
     for (const turn of c.turns) {
       const { output, meaning } = takeTurn(session, turn.input);
-      const checks = evaluateTurn(meaning ?? null, output.trace ?? null, output.reply, turn.expect);
+      const checks = [...evaluateTurn(meaning ?? null, output.trace ?? null, output.reply, turn.expect), ...mappedChecks(c, meaning)];
       for (const check of checks) {
         if (check.outcome === 'pass') result.checks.pass += 1;
         else if (check.outcome === 'fail') result.checks.fail += 1;

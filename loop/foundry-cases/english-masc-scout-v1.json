@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "profile": "chat",
+    "resources": "required"
+  },
+  "metadata": {
+    "author": "MASC / PropBank contributors; Foundry mapping by Codex",
+    "source": "https://github.com/nancyide/anc-website/releases/download/datasets-2026-09-25/masc-conll.zip",
+    "source_sha256": "e688db4e825edb0438f50d3c00b07ccf5b16e72065650cb9f13bb26c1decf5cd",
+    "license": "MASC CC BY 3.0 US, https://anc.org/data/masc/; original contributor attribution and package-specific terms should be checked before broader reuse",
+    "partition": "development",
+    "version": 1,
+    "purpose": "exploratory predicate-argument comparison; source A0/A1 retain their PropBank meaning and use a narrow, versioned AnSci mapping",
+    "roleMapping": "loop/foundry-cases/masc-ansci-role-mapping-v1.json"
+  },
+  "cases": [
+    {
+      "id": "masc-110CYL068-s17",
+      "status": "must-pass",
+      "sourceAnnotation": {
+        "predicate": "prepare.01",
+        "A0_head": "Goodwill",
+        "A1_head": "people",
+        "A1_lemma": "people"
+      },
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Goodwill prepares people for life-long employment.",
+          "expect": {
+            "root": "prepare"
+          }
+        }
+      ]
+    },
+    {
+      "id": "masc-110CYL071-s12",
+      "status": "must-pass",
+      "sourceAnnotation": {
+        "predicate": "call.01",
+        "A0_head": "Michael",
+        "A1_head": "Goodwill",
+        "A1_lemma": "goodwill"
+      },
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Finally, Michael called Goodwill.",
+          "expect": {
+            "root": "call"
+          }
+        }
+      ]
+    },
+    {
+      "id": "masc-ch5-s177",
+      "status": "must-pass",
+      "sourceAnnotation": {
+        "predicate": "find.01",
+        "A0_span": "We scientists",
+        "A0_head": "We",
+        "A0_phrase_head": "scientists",
+        "A1_span": "the facts",
+        "A1_head": "facts",
+        "A1_lemma": "fact"
+      },
+      "turns": [
+        {
+          "id": "t1",
+          "input": "We scientists find the facts.",
+          "expect": {
+            "root": "find"
+          }
+        }
+      ]
+    }
+  ]
+}

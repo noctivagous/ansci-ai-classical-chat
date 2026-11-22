@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "runId": "922fa4df-585f-4141-8764-9199262c5e83",
+  "timestamp": "2026-11-22T08:59:57.312Z",
+  "source": {
+    "revision": "8efd3ca3b626af342782444aa69d4998bb3a677d",
+    "dirty": false
+  },
+  "fixture": {
+    "path": "loop/foundry-cases/english-ewt-scout-v1.json",
+    "sha256": "e5476c925466c2161ef2aba3428cfb2af1d2a657cc8c88cde4f7cfcf204cfffd"
+  },
+  "configuration": {
+    "profile": "chat",
+    "entry": "newSession + processTurn",
+    "clock": "default session behavior; not pinned",
+    "persistence": "in-memory session; no interlocutor store",
+    "browserParity": "not verified",
+    "resources": {
+      "wordnet": {
+        "edition": "2024",
+        "source": "Open English WordNet 2024 (WNDB format)",
+        "totals": {
+          "synsets": 120630,
+          "relations": 154470,
+          "forms": 129800
+        },
+        "ready": true
+      },
+      "framenet": {
+        "edition": "1.5",
+        "source": "FrameNet (framenet_v15 via the NLTK nltk_data mirror)",
+        "totals": {
+          "frames": 1019,
+          "relations": 1676
+        },
+        "ready": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "ewt-email-enronsent23_07-0002",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "i got her number though.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "get",
+              "observed": "get",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 2,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "ewt-email-enronsent23_07-0004",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "what happened to you?",
+          "reply": "I can't answer that from what I know: nothing you have told me says what the agent of 'happen' was.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "happen",
+              "observed": "happen",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "interrogative",
+              "observed": "interrogative",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 3,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "ewt-email-enronsent23_07-0008",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "i flew here last night.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "fly",
+              "observed": "fly",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 2,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    }
+  ],
+  "summary": {
+    "cases": 3,
+    "failedRequired": false,
+    "needsReview": false
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "masc-ansci-role-mapping-v1",
+  "status": "development",
+  "purpose": "Versioned, deliberately narrow mapping from the selected MASC/PropBank annotations to AnSci meaning-graph relations. This is not a universal PropBank-to-AnSci conversion.",
+  "source": {
+    "dataset": "MASC CoNLL",
+    "packageSha256": "e688db4e825edb0438f50d3c00b07ccf5b16e72065650cb9f13bb26c1decf5cd",
+    "annotationDescription": "The source marks a predicate roleset and numbered arguments such as A0 and A1. These labels are retained as source labels and are not themselves AnSci relations."
+  },
+  "target": {
+    "graph": "AnSci MeaningGraph",
+    "relations": [
+      "agent",
+      "patient",
+      "theme",
+      "qualifies"
+    ],
+    "pathSyntax": "Steps are relations prefixed with > (outgoing) or < (incoming), traversed from predicate to source argument head."
+  },
+  "mappings": [
+    {
+      "sourceRoleset": "prepare.01",
+      "caseIds": [
+        "masc-110CYL068-s17"
+      ],
+      "status": "reviewed-for-this-example",
+      "arguments": {
+        "A0": {
+          "targetMeaning": "initiator of the preparing event",
+          "acceptedPaths": [
+            [
+              ">agent"
+            ]
+          ],
+          "preferredRelation": "agent",
+          "rationale": "The source example identifies Goodwill as preparing the people; AnSci's observed graph gives it the agent relation."
+        },
+        "A1": {
+          "targetMeaning": "entity prepared or affected by preparing",
+          "acceptedPaths": [
+            [
+              ">theme"
+            ],
+            [
+              ">patient"
+            ]
+          ],
+          "preferredRelation": "theme",
+          "rationale": "The source example identifies people as what is prepared. AnSci uses theme here; patient is allowed as a close graph-vocabulary realization, but should be reported separately rather than silently normalized."
+        }
+      }
+    },
+    {
+      "sourceRoleset": "find.01",
+      "caseIds": [
+        "masc-ch5-s177"
+      ],
+      "status": "reviewed-for-this-example",
+      "arguments": {
+        "A0": {
+          "targetMeaning": "experiencer or finder of the facts",
+          "acceptedPaths": [
+            [
+              ">agent"
+            ],
+            [
+              ">agent",
+              "<qualifies"
+            ]
+          ],
+          "preferredRelation": "agent",
+          "rationale": "The source A0 span is 'We scientists'; its annotated head is 'We' and its phrase head is 'scientists'. The observed AnSci graph connects find to scientists as agent and we to scientists as qualifies. Accept either a direct predicate-to-head agent edge or this explicit two-edge phrase path. Do not claim that find directly takes we as its agent."
+        },
+        "A1": {
+          "targetMeaning": "entity found",
+          "acceptedPaths": [
+            [
+              ">theme"
+            ],
+            [
+              ">patient"
+            ]
+          ],
+          "preferredRelation": "theme",
+          "rationale": "The source identifies facts as the object of find; AnSci represents facts as its theme."
+        }
+      }
+    },
+    {
+      "sourceRoleset": "call.01",
+      "caseIds": [
+        "masc-110CYL071-s12"
+      ],
+      "status": "unresolved-source-sense",
+      "arguments": {
+        "A0": {
+          "targetMeaning": null,
+          "acceptedPaths": [],
+          "preferredRelation": null,
+          "rationale": "Keep the source label and expected participant identity, but do not assign an AnSci semantic role until the historical PropBank frameset/version used by this 2010 annotation is confirmed. Current frameset numbering may differ."
+        },
+        "A1": {
+          "targetMeaning": null,
+          "acceptedPaths": [],
+          "preferredRelation": null,
+          "rationale": "Keep the source label and expected participant identity, but do not assign an AnSci semantic role until the historical PropBank frameset/version used by this 2010 annotation is confirmed."
+        }
+      }
+    }
+  ],
+  "scoringPolicy": {
+    "preserveSourceLabels": true,
+    "preserveArgumentSpanAndHead": true,
+    "directAndIndirectPathsAreDistinct": true,
+    "unresolvedMappingsAreNotScoredAsRoleErrors": true,
+    "allowedPathsMustBeReportedIndividually": true,
+    "doNotInferGlobalA0OrA1Rules": true
+  }
+}

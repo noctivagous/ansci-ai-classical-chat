@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 1,
+  "configuration": {
+    "profile": "chat",
+    "resources": "required"
+  },
+  "metadata": {
+    "author": "Codex, collaborator on AnSci, 2026-11-22",
+    "provenance": "fresh AI-authored cases and expectations written before running; author has seen code and prior cases",
+    "partition": "development",
+    "version": 1,
+    "purpose": "rapid assessment of new English examples; not an independent or sealed benchmark"
+  },
+  "cases": [
+    {
+      "id": "fresh-active",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The chef opened the door.",
+          "expect": {
+            "root": "open",
+            "roles": [
+              {
+                "predicate": "open",
+                "participant": "chef",
+                "role": "agent"
+              },
+              {
+                "predicate": "open",
+                "participant": "door",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "open",
+                "participant": "door",
+                "role": "agent"
+              },
+              {
+                "predicate": "open",
+                "participant": "chef",
+                "role": "patient"
+              }
+            ],
+            "tense": "past",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-reversed",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The child chased the dog.",
+          "expect": {
+            "root": "chase",
+            "roles": [
+              {
+                "predicate": "chase",
+                "participant": "child",
+                "role": "agent"
+              },
+              {
+                "predicate": "chase",
+                "participant": "dog",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "chase",
+                "participant": "dog",
+                "role": "agent"
+              },
+              {
+                "predicate": "chase",
+                "participant": "child",
+                "role": "patient"
+              }
+            ],
+            "tense": "past",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-passive",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The window was broken by the boy.",
+          "expect": {
+            "root": "break",
+            "roles": [
+              {
+                "predicate": "break",
+                "participant": "boy",
+                "role": "agent"
+              },
+              {
+                "predicate": "break",
+                "participant": "window",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "break",
+                "participant": "window",
+                "role": "agent"
+              },
+              {
+                "predicate": "break",
+                "participant": "boy",
+                "role": "patient"
+              }
+            ],
+            "tense": "past",
+            "voice": "passive",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-present",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The teacher pushes the cart.",
+          "expect": {
+            "root": "push",
+            "roles": [
+              {
+                "predicate": "push",
+                "participant": "teacher",
+                "role": "agent"
+              },
+              {
+                "predicate": "push",
+                "participant": "cart",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "push",
+                "participant": "cart",
+                "role": "agent"
+              },
+              {
+                "predicate": "push",
+                "participant": "teacher",
+                "role": "patient"
+              }
+            ],
+            "tense": "present",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-negation",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The girl did not close the gate.",
+          "expect": {
+            "root": "close",
+            "roles": [
+              {
+                "predicate": "close",
+                "participant": "girl",
+                "role": "agent"
+              },
+              {
+                "predicate": "close",
+                "participant": "gate",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "close",
+                "participant": "gate",
+                "role": "agent"
+              },
+              {
+                "predicate": "close",
+                "participant": "girl",
+                "role": "patient"
+              }
+            ],
+            "tense": "past",
+            "voice": "active",
+            "negated": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-polar",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Did the farmer feed the horse?",
+          "expect": {
+            "root": "feed",
+            "roles": [
+              {
+                "predicate": "feed",
+                "participant": "farmer",
+                "role": "agent"
+              },
+              {
+                "predicate": "feed",
+                "participant": "horse",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "feed",
+                "participant": "horse",
+                "role": "agent"
+              },
+              {
+                "predicate": "feed",
+                "participant": "farmer",
+                "role": "patient"
+              }
+            ],
+            "tense": "past",
+            "voice": "active",
+            "negated": false,
+            "mood": "interrogative"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-passive-present",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The cake is eaten by the child.",
+          "expect": {
+            "root": "eat",
+            "roles": [
+              {
+                "predicate": "eat",
+                "participant": "child",
+                "role": "agent"
+              },
+              {
+                "predicate": "eat",
+                "participant": "cake",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "eat",
+                "participant": "cake",
+                "role": "agent"
+              },
+              {
+                "predicate": "eat",
+                "participant": "child",
+                "role": "patient"
+              }
+            ],
+            "tense": "present",
+            "voice": "passive",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-roles",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The cat scratched the woman.",
+          "expect": {
+            "root": "scratch",
+            "roles": [
+              {
+                "predicate": "scratch",
+                "participant": "cat",
+                "role": "agent"
+              },
+              {
+                "predicate": "scratch",
+                "participant": "woman",
+                "role": "patient"
+              }
+            ],
+            "forbiddenRoles": [
+              {
+                "predicate": "scratch",
+                "participant": "woman",
+                "role": "agent"
+              },
+              {
+                "predicate": "scratch",
+                "participant": "cat",
+                "role": "patient"
+              }
+            ],
+            "tense": "past",
+            "voice": "active",
+            "negated": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-wh",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Who opened the door?",
+          "expect": {
+            "root": "open",
+            "mood": "interrogative",
+            "questionTarget": {
+              "predicate": "open",
+              "role": "agent"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "fresh-reference",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog slept in the garden.",
+          "expect": {
+            "root": "sleep"
+          }
+        },
+        {
+          "id": "t2",
+          "input": "It was in the garden.",
+          "expect": {
+            "resolution": {
+              "pronoun": "it",
+              "target": "dog",
+              "evidence": "prior subject"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,71 +1,95 @@
-# Held-out authoring brief (Foundry)
+# Foundry English held-out set: author brief
 
-Standing instructions for producing a Foundry held-out suite. This brief
-governs authoring only: scoring runs through the unchanged `evaluate` and
-`compare` commands, which grade any suite carrying `expect` blocks.
+Status: preparation, 2026-11-22. No independent held-out set has been
+created or run. This brief asks an author independent of AnSci's builders to
+create one; a separate custodian protects it. See `docs/ansci/wp2-tooling.md`
+and `docs/ansci/repair-programme.md` Part C.5 for the existing protocol.
 
-## Why held-out cases exist
+## Roles and separation
 
-The development suite (`loop/foundry-cases/english-development.json`) is
-builder-authored: its cases were written alongside the system they grade,
-and some expectations were corrected against observed output during
-authoring (documented in `loop/foundry-results/fnd-101-expectations-2026-11-22.md`).
-A second suite by the same hand would share its blind spots. Held-out
-cases earn their name from independent authorship plus sealing, not from
-a partition label alone.
+- **Author:** someone independent of the people and agents implementing the
+  system and its fixes. Write the sentences and meaning expectations without
+  running AnSci or reading its outputs. Disclose any relevant involvement or
+  prior exposure. A new AI session is not automatically independent; record
+  who controls it, its context and its access if one assists.
+- **Custodian:** a different party who receives the private set, checks it,
+  seals and records its version and hash, and controls access. Do not commit
+  hidden examples or expected answers to the public repository before the
+  evaluation. A hash establishes integrity, not independence or secrecy.
+- **Operator:** runs the agreed evaluation without tuning on its cases. Agree
+  with the custodian how the runner receives the input and how detailed outputs
+  are protected; Foundry's current JSON reports can expose case text and
+  expectations, so do not treat its ordinary report as a blind protocol.
 
-## The independence rule
+## Authoring task
 
-The held-out author must not have authored, tuned, or read the
-development suite or the sessions that produced it. Concretely: the
-agent that wrote `english-development.json` — including the author of
-this brief — is excluded from authoring held-out cases. The owner
-commissions and approves the author (precedent: the GAPS sealed probe
-set, run only on the owner's commission). The brief may be drafted by
-anyone; it cites only public rules, so drafting it leaks nothing.
+Write ordinary English examples covering active and passive roles, reversed
+participants, past and present tense, negation, yes/no and wh questions,
+multi-turn reference and location, and unfamiliar combinations. Include
+unambiguous cases with independently stated meanings and negative controls;
+mark ambiguous cases and acceptable interpretations. Avoid using the existing
+development sentences as a source of wording. Document sample size, selection
+method, case families, and any exclusions before the first run. The initial
+scope is English understanding, not response style or general intelligence.
 
-## Case contract
+For each item provide a stable ID, input turns, and a plain-English answer key:
+predicate/event, participants and their roles, tense, negation, question
+target, and reference when applicable. State which properties are intended to
+be judged and which are uncertain. For conversations, specify what later turns
+refer to and what has actually been established. Do not force a single answer
+for a genuinely ambiguous sentence. Include examples where abstention is the
+appropriate outcome if a role or reference cannot be determined.
 
-- Same expectation vocabulary as the development suite: root, roles,
-  forbidden roles, attached/role-open, tense/mood/voice, negated and
-  negation carrier, construction, qualifier, resolution with
-  `trace.resolutions` evidence, question target, and reply
-  `contains`/`excludes` for told-echo surfacing only. See
-  `loop/foundry-results/fnd-101-expectations-2026-11-22.md` for the
-  graph mapping `evaluate` implements; do not extend the vocabulary
-  without extending the matcher first.
-- Family coverage mirrors the development families (active, reversed,
-  passive, negation plus a cross-verb variant, polar/wh/passive
-  questions, present/past tense, multi-turn reference with pronoun
-  resolution, ambiguity with permitted-open roles) plus at least one
-  novel family the development suite does not cover.
-- Negative controls are required: forbidden roles, an honestly
-  declining case, and a question-records-nothing control.
-- Every expectation is authored from English semantics, never copied
-  from system output. Where the author is unsure (representation
-  choices such as copular roots, patient/theme granularity), assert
-  the weaker form (`attached`, omitted root) and record why.
+The custodian and operator must map those answers to Foundry's supported
+expectations before the run, flag unsupported or ambiguous mappings for human
+review, and retain the original answer key. Foundry currently matches nodes by
+lemma, which can be ambiguous for repeated words; avoid claiming those cases
+are reliably scored until the matcher supports identity. Reply entailment
+checks currently abstain, so do not count them as passed. The agent that wrote
+the code must not silently alter the answer key to make results pass.
 
-## Metadata and sealing
+## Before running
 
-- Suite metadata must identify the author, provenance, partition
-  `held-out`, and version (`loop/FOUNDRY.md`, input format v1).
-- Seal before any measured change: record the sha256 of the suite
-  file in the progress record that commissions the measured work.
-  Any later edit breaks the seal and must be re-recorded, never
-  silently absorbed. For the mechanised variant (author/operator/
-  custodian separation, blind operator views, content hashes), see
-  `src/ansci/sealed.ts`; Foundry's minimum is the recorded hash plus
-  the no-tuning rule below.
-- Never tune the system against held-out cases, and never weaken a
-  held-out expectation to make a change pass. A failing held-out
-  case is either a system defect or a wrong expectation — the author,
-  not the implementer, adjudicates which.
+1. Agree on the question, sample selection, primary metric, denominators,
+   abstention and missing-graph treatment, and regression rule. Set thresholds
+   before seeing outputs. Report case-family counts and uncertainty as well as
+   any aggregate; a small sample cannot establish broad language competence.
+2. Pin the system revision, fixture clock, resources and session configuration;
+   record known differences from the deployed browser chat. Preserve a clean
+   baseline and keep the set hidden during development.
+3. Use the existing sealed-set tooling only after checking its schema and
+   compatibility with the Foundry suite and output. The current repository
+   does not establish an integrated blind Foundry workflow. If needed, build
+   that adapter and check it with synthetic public cases first.
+4. Custodian records the frozen set hash and participants' roles. Run once
+   under the agreed protocol, preserve the raw report privately, and publish
+   only agreed summaries. Further fixes require a fresh held-out set or a
+   clearly disclosed reuse; the original becomes development data if exposed.
 
-## Acceptance for a future suite
+## Next action
 
-The suite is ready when it runs clean through `evaluate` structurally
-(exit 0 on a system that satisfies it, or documented failures),
-`compare` shows it comparable case-by-case with the development suite
-where families overlap, and its record names the author, the seal,
-the commissioning note, and the limits carried over from authoring.
+Recruit an independent author and a separate custodian, and agree how they will
+privately exchange the material. In parallel, assess and implement the sealed
+Foundry adapter using synthetic data. Do not label a set independently authored
+or sealed until the roles, provenance and custody can be verified.
+
+## Foundry case contract
+
+Use the expectation vocabulary documented in
+`loop/foundry-results/fnd-101-expectations-2026-11-22.md`: root, roles,
+forbidden roles, attached and role-open, tense, mood, voice, negation,
+construction, qualifiers, reference, question target and supported reply
+constraints. Record representation uncertainties and use a weaker assertion
+only when it reflects the author's independent judgment. Include negative
+controls and at least one family outside the development suite. The author must
+not have authored, tuned or read the development suite or its authoring sessions.
+The owner commissions the author. Record the suite version, provenance, hash and
+commissioning note; any change after sealing requires a new recorded hash.
+A failing case can reflect an incorrect expectation or a system problem; the
+independent author adjudicates its intended meaning.
+
+Check `src/ansci/sealed.ts` for available custody mechanisms. Ordinary Foundry
+reports expose cases and expectations, so an integrity hash alone is not a
+blind workflow. Foundry's `compare` compares compatible executions of the same
+suite; it does not establish case-by-case comparability between different
+held-out and development suites. Compare their family-level summaries instead.

@@ -2,6 +2,33 @@ schema_version: 1
 updated: '2026-11-22'
 description: 'Foundry improvement index; details and evidence remain in the referenced records.'
 tasks:
+  - id: FND-300
+    title: Establish an independently authored held-out English evaluation
+    model_tier: high
+    model_tier_reason: 'Independent evaluation design, provenance and custody require judgment.'
+    status: blocked
+    parent: null
+    depends_on: []
+    related: [FND-100, FND-301]
+    blocker: 'Requires an author independent of the builders and a separate custodian; neither is identified.'
+    completion: 'A separately authored and sealed set is evaluated once under a preregistered protocol with provenance and limitations recorded.'
+    history:
+      - date: '2026-11-22'
+        note: 'Author and custodian brief prepared; the existing development suite is builder-authored.'
+        evidence: loop/heldout-author-brief.md
+  - id: FND-301
+    title: Assess blind sealed-set integration with Foundry
+    model_tier: medium
+    model_tier_reason: 'Scoped integration assessment needs careful handling of private answers and reports.'
+    status: todo
+    parent: FND-300
+    depends_on: []
+    related: [FND-100]
+    completion: 'Document the existing sealed tooling and Foundry compatibility; implement and verify any necessary blind adapter with synthetic public cases.'
+    history:
+      - date: '2026-11-22'
+        note: 'Ordinary Foundry reports may expose case text and expectations; blind integration is not established.'
+        evidence: loop/heldout-author-brief.md
   - id: FND-100
     title: Establish an English meaning and role evaluation
     model_tier: high

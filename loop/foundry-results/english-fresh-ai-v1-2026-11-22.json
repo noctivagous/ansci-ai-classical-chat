@@ -1,0 +1,698 @@
+{
+  "schemaVersion": 1,
+  "runId": "d1315779-7ff1-4ce7-b7fa-aa5b5f5243ff",
+  "timestamp": "2026-11-22T08:56:23.787Z",
+  "source": {
+    "revision": "b14b1f9447407af9a9f58862d2be5076fb07cd3d",
+    "dirty": false
+  },
+  "fixture": {
+    "path": "loop/foundry-cases/english-fresh-ai-v1.json",
+    "sha256": "852dfffde8f29dce160687b68beae064b4489b1fe19a17f064bacdc3259604b3"
+  },
+  "configuration": {
+    "profile": "chat",
+    "entry": "newSession + processTurn",
+    "clock": "default session behavior; not pinned",
+    "persistence": "in-memory session; no interlocutor store",
+    "browserParity": "not verified",
+    "resources": {
+      "wordnet": {
+        "edition": "2024",
+        "source": "Open English WordNet 2024 (WNDB format)",
+        "totals": {
+          "synsets": 120630,
+          "relations": 154470,
+          "forms": 129800
+        },
+        "ready": true
+      },
+      "framenet": {
+        "edition": "1.5",
+        "source": "FrameNet (framenet_v15 via the NLTK nltk_data mirror)",
+        "totals": {
+          "frames": 1019,
+          "relations": 1676
+        },
+        "ready": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "fresh-active",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The chef opened the door.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "open",
+              "observed": "open",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "open -> chef : agent",
+              "observed": "open -> chef : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "open -> door : patient",
+              "observed": "open -> door : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge open -> door : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge open -> chef : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "fresh-reversed",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The child chased the dog.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "chase",
+              "observed": "chase",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "chase -> child : agent",
+              "observed": "chase -> child : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "chase -> dog : patient",
+              "observed": null,
+              "outcome": "fail"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge chase -> dog : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge chase -> child : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 7,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    },
+    {
+      "id": "fresh-passive",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The window was broken by the boy.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "break",
+              "observed": "break",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "break -> boy : agent",
+              "observed": "break -> boy : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "break -> window : patient",
+              "observed": "break -> window : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge break -> window : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge break -> boy : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "passive",
+              "observed": "passive",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "fresh-present",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The teacher pushes the cart.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "push",
+              "observed": "push",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "push -> teacher : agent",
+              "observed": "push -> teacher : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "push -> cart : patient",
+              "observed": null,
+              "outcome": "fail"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge push -> cart : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge push -> teacher : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "present",
+              "observed": "present",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 7,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    },
+    {
+      "id": "fresh-negation",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The girl did not close the gate.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "close",
+              "observed": "close",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "close -> girl : agent",
+              "observed": "close -> girl : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "close -> gate : patient",
+              "observed": "close -> gate : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge close -> gate : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge close -> girl : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": true,
+              "observed": true,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "fresh-polar",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Did the farmer feed the horse?",
+          "reply": "I can't answer that from what I know: I have farmer as an expert on cooking whose cookbook has undergone many editions (1857-1915), but nothing in what I know answers that.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "feed",
+              "observed": "feed",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "feed -> farmer : agent",
+              "observed": "feed -> farmer : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "feed -> horse : patient",
+              "observed": null,
+              "outcome": "fail"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge feed -> horse : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge feed -> farmer : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "past",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "interrogative",
+              "observed": "interrogative",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 8,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    },
+    {
+      "id": "fresh-passive-present",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The cake is eaten by the child.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "eat",
+              "observed": "eat",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "eat -> child : agent",
+              "observed": "eat -> child : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "eat -> cake : patient",
+              "observed": null,
+              "outcome": "fail"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge eat -> cake : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge eat -> child : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "present",
+              "observed": "present",
+              "outcome": "pass"
+            },
+            {
+              "id": "voice",
+              "expected": "passive",
+              "observed": "passive",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 7,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    },
+    {
+      "id": "fresh-roles",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The cat scratched the woman.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "scratch",
+              "observed": "scratch",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-0",
+              "expected": "scratch -> cat : agent",
+              "observed": "scratch -> cat : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "role-1",
+              "expected": "scratch -> woman : patient",
+              "observed": "scratch -> woman : patient",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-0",
+              "expected": "no edge scratch -> woman : agent",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "forbidden-1",
+              "expected": "no edge scratch -> cat : patient",
+              "observed": "absent",
+              "outcome": "pass"
+            },
+            {
+              "id": "tense",
+              "expected": "past",
+              "observed": "present",
+              "outcome": "fail"
+            },
+            {
+              "id": "voice",
+              "expected": "active",
+              "observed": "active",
+              "outcome": "pass"
+            },
+            {
+              "id": "negated",
+              "expected": false,
+              "observed": false,
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 7,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    },
+    {
+      "id": "fresh-wh",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Who opened the door?",
+          "reply": "I can't answer that from what I know: nothing you have told me says what the agent of 'open' was.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "open",
+              "observed": "open",
+              "outcome": "pass"
+            },
+            {
+              "id": "mood",
+              "expected": "interrogative",
+              "observed": "interrogative",
+              "outcome": "pass"
+            },
+            {
+              "id": "question-target",
+              "expected": "interrogative fills open/agent",
+              "observed": "who : agent",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 3,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "fresh-reference",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "The dog slept in the garden.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "sleep",
+              "observed": "sleep",
+              "outcome": "pass"
+            }
+          ]
+        },
+        {
+          "id": "t2",
+          "input": "It was in the garden.",
+          "reply": "Ok.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "resolution",
+              "expected": "it -> dog in prior subject",
+              "observed": null,
+              "outcome": "fail",
+              "evidence": "prior subject"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 1,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    }
+  ],
+  "summary": {
+    "cases": 10,
+    "failedRequired": true,
+    "needsReview": false
+  }
+}

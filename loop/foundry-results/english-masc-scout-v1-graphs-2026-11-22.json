@@ -1,0 +1,1019 @@
+{
+  "schemaVersion": 1,
+  "runId": "8dd4138c-137b-48af-b354-c7050f519e25",
+  "timestamp": "2026-11-22T09:03:07.302Z",
+  "source": {
+    "revision": "e1e234efdf9d6ea29643133f1ec53b87c6e19d1e",
+    "dirty": false
+  },
+  "fixture": {
+    "path": "/tmp/masc-run.json",
+    "sha256": "2ea024b288ab25361a737b0356bf7f130d4518420375429dee87fad59dabd4f5"
+  },
+  "configuration": {
+    "profile": "chat",
+    "entry": "newSession + processTurn",
+    "clock": "default session behavior; not pinned",
+    "persistence": "in-memory session; no interlocutor store",
+    "browserParity": "not verified",
+    "resources": {
+      "wordnet": {
+        "edition": "2024",
+        "source": "Open English WordNet 2024 (WNDB format)",
+        "totals": {
+          "synsets": 120630,
+          "relations": 154470,
+          "forms": 129800
+        },
+        "ready": true
+      },
+      "framenet": {
+        "edition": "1.5",
+        "source": "FrameNet (framenet_v15 via the NLTK nltk_data mirror)",
+        "totals": {
+          "frames": 1019,
+          "relations": 1676
+        },
+        "ready": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "masc-110CYL068-s17",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Goodwill prepares people for life-long employment.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "mapPath": [
+            "person",
+            "lpu/parser/token",
+            "lpu/parser/sense",
+            "lpu/parser/valency",
+            "lpu/parser/aspect-and-forms",
+            "lpu/parser",
+            "lpu/semantic-assessment",
+            "session-and-situation",
+            "verbalizer"
+          ],
+          "trace": {
+            "turn": 1,
+            "input": "Goodwill prepares people for life-long employment.",
+            "disposition": "predominant Earth",
+            "role": "predominant Earth",
+            "parseSummary": "root 'prepare' (Wood, verb); nodes: prepare, goodwill, people, for, lifelong, employment; mood: indicative",
+            "classifications": [],
+            "recognitions": [],
+            "resolutions": [],
+            "tokenResolutions": [
+              {
+                "surface": "prepares",
+                "tokenIndex": 1,
+                "outcome": "unresolved",
+                "replacement": [
+                  "prepares"
+                ],
+                "confidence": 0.3,
+                "rule": "none",
+                "candidates": [
+                  {
+                    "term": "prepares",
+                    "distance": 0,
+                    "count": 3365530
+                  }
+                ]
+              },
+              {
+                "surface": "for",
+                "tokenIndex": 3,
+                "outcome": "unresolved",
+                "replacement": [
+                  "for"
+                ],
+                "confidence": 0.3,
+                "rule": "none",
+                "candidates": [
+                  {
+                    "term": "for",
+                    "distance": 0,
+                    "count": 5933821709
+                  }
+                ]
+              },
+              {
+                "surface": "life-long",
+                "tokenIndex": 4,
+                "outcome": "corrected",
+                "replacement": [
+                  "lifelong"
+                ],
+                "confidence": 0.85,
+                "rule": "matcher:symspell",
+                "candidates": [
+                  {
+                    "term": "lifelong",
+                    "distance": 1,
+                    "count": 3418717
+                  }
+                ]
+              }
+            ],
+            "wordingNotDerived": true,
+            "semanticObjects": [
+              {
+                "id": "obj-1-1",
+                "kind": "statement"
+              }
+            ],
+            "steeringNote": "statement acknowledged (the acknowledgement move): the event stands recorded, no need or gap stands open, and no steering relation claims the turn — the steering machinery stands down",
+            "mapPath": [
+              "person",
+              "lpu/parser/token",
+              "lpu/parser/sense",
+              "lpu/parser/valency",
+              "lpu/parser/aspect-and-forms",
+              "lpu/parser",
+              "lpu/semantic-assessment",
+              "session-and-situation",
+              "verbalizer"
+            ]
+          },
+          "semanticObject": {
+            "id": "obj-1-1",
+            "turn": 1,
+            "producer": "person",
+            "surface": "Goodwill prepares people for life-long employment.",
+            "tokenResolutions": [
+              {
+                "surface": "prepares",
+                "tokenIndex": 1,
+                "outcome": "unresolved",
+                "replacement": [
+                  "prepares"
+                ],
+                "confidence": 0.3,
+                "rule": "none",
+                "candidates": [
+                  {
+                    "term": "prepares",
+                    "distance": 0,
+                    "count": 3365530
+                  }
+                ]
+              },
+              {
+                "surface": "for",
+                "tokenIndex": 3,
+                "outcome": "unresolved",
+                "replacement": [
+                  "for"
+                ],
+                "confidence": 0.3,
+                "rule": "none",
+                "candidates": [
+                  {
+                    "term": "for",
+                    "distance": 0,
+                    "count": 5933821709
+                  }
+                ]
+              },
+              {
+                "surface": "life-long",
+                "tokenIndex": 4,
+                "outcome": "corrected",
+                "replacement": [
+                  "lifelong"
+                ],
+                "confidence": 0.85,
+                "rule": "matcher:symspell",
+                "candidates": [
+                  {
+                    "term": "lifelong",
+                    "distance": 1,
+                    "count": 3418717
+                  }
+                ]
+              }
+            ],
+            "act": {
+              "kind": "statement",
+              "form": "indicative",
+              "force": "statement",
+              "ritual": false,
+              "streamRole": "opens"
+            },
+            "content": {
+              "meaning": {
+                "nodes": [
+                  {
+                    "id": "n1",
+                    "lemma": "prepare",
+                    "form": "prepares",
+                    "syntacticElement": "Wood",
+                    "role": "verb",
+                    "states": {
+                      "voice": "active",
+                      "tense": "present",
+                      "verbForm": "third",
+                      "mood": "indicative",
+                      "subjectPerson": "3sg"
+                    }
+                  },
+                  {
+                    "id": "n2",
+                    "lemma": "goodwill",
+                    "form": "Goodwill",
+                    "syntacticElement": "Earth",
+                    "role": "agent"
+                  },
+                  {
+                    "id": "n3",
+                    "lemma": "people",
+                    "form": "people",
+                    "syntacticElement": "Earth",
+                    "role": "theme"
+                  },
+                  {
+                    "id": "n4",
+                    "lemma": "for",
+                    "form": "for",
+                    "syntacticElement": "Earth",
+                    "role": "excess"
+                  },
+                  {
+                    "id": "n5",
+                    "lemma": "lifelong",
+                    "form": "lifelong",
+                    "syntacticElement": "Fire",
+                    "role": "result"
+                  },
+                  {
+                    "id": "n6",
+                    "lemma": "employment",
+                    "form": "employment",
+                    "syntacticElement": "Earth",
+                    "role": "excess"
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "n1",
+                    "to": "n2",
+                    "relation": "agent",
+                    "cycle": "controlling"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n3",
+                    "relation": "theme",
+                    "cycle": "controlling"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n4",
+                    "relation": "patient",
+                    "cycle": "controlling"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n5",
+                    "relation": "result",
+                    "cycle": "generating"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n6",
+                    "relation": "patient",
+                    "cycle": "controlling"
+                  }
+                ],
+                "rootId": "n1",
+                "entryElement": "Wood"
+              },
+              "connective": {
+                "language": "en",
+                "tokens": [
+                  "Goodwill",
+                  "prepares",
+                  "people",
+                  "for",
+                  "lifelong",
+                  "employment"
+                ],
+                "next": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  -1
+                ],
+                "spans": [
+                  {
+                    "start": 0,
+                    "end": 1,
+                    "label": "subject"
+                  },
+                  {
+                    "start": 2,
+                    "end": 3,
+                    "label": "object"
+                  },
+                  {
+                    "start": 3,
+                    "end": 4,
+                    "label": "object"
+                  },
+                  {
+                    "start": 5,
+                    "end": 6,
+                    "label": "object"
+                  }
+                ]
+              },
+              "holes": [],
+              "grounding": [
+                {
+                  "nodeId": "n2",
+                  "lemma": "goodwill",
+                  "status": "new"
+                },
+                {
+                  "nodeId": "n3",
+                  "lemma": "people",
+                  "status": "new"
+                },
+                {
+                  "nodeId": "n4",
+                  "lemma": "for",
+                  "status": "new"
+                },
+                {
+                  "nodeId": "n6",
+                  "lemma": "employment",
+                  "status": "new"
+                }
+              ]
+            },
+            "aspects": [],
+            "senses": {
+              "channels": {
+                "sight": null,
+                "hearing": null,
+                "smell": null,
+                "taste": null,
+                "touch": null,
+                "mind": null
+              }
+            },
+            "confidence": 0.85,
+            "links": {},
+            "trail": [
+              {
+                "unit": "lpu/semantic-assessment",
+                "note": "assessed as statement"
+              }
+            ],
+            "envelope": {
+              "act": "statement",
+              "provenance": "a person's utterance, assessed by SemanticAssessment (lpu/semantic-assessment)",
+              "confidence": 0.85,
+              "route": [
+                "lpu/semantic-assessment",
+                "session-and-situation",
+                "coherence/coherence-analysis"
+              ],
+              "needs": []
+            }
+          },
+          "meaningGraph": {
+            "nodes": [
+              {
+                "id": "n1",
+                "lemma": "prepare",
+                "form": "prepares",
+                "syntacticElement": "Wood",
+                "role": "verb",
+                "states": {
+                  "voice": "active",
+                  "tense": "present",
+                  "verbForm": "third",
+                  "mood": "indicative",
+                  "subjectPerson": "3sg"
+                }
+              },
+              {
+                "id": "n2",
+                "lemma": "goodwill",
+                "form": "Goodwill",
+                "syntacticElement": "Earth",
+                "role": "agent"
+              },
+              {
+                "id": "n3",
+                "lemma": "people",
+                "form": "people",
+                "syntacticElement": "Earth",
+                "role": "theme"
+              },
+              {
+                "id": "n4",
+                "lemma": "for",
+                "form": "for",
+                "syntacticElement": "Earth",
+                "role": "excess"
+              },
+              {
+                "id": "n5",
+                "lemma": "lifelong",
+                "form": "lifelong",
+                "syntacticElement": "Fire",
+                "role": "result"
+              },
+              {
+                "id": "n6",
+                "lemma": "employment",
+                "form": "employment",
+                "syntacticElement": "Earth",
+                "role": "excess"
+              }
+            ],
+            "edges": [
+              {
+                "from": "n1",
+                "to": "n2",
+                "relation": "agent",
+                "cycle": "controlling"
+              },
+              {
+                "from": "n1",
+                "to": "n3",
+                "relation": "theme",
+                "cycle": "controlling"
+              },
+              {
+                "from": "n1",
+                "to": "n4",
+                "relation": "patient",
+                "cycle": "controlling"
+              },
+              {
+                "from": "n1",
+                "to": "n5",
+                "relation": "result",
+                "cycle": "generating"
+              },
+              {
+                "from": "n1",
+                "to": "n6",
+                "relation": "patient",
+                "cycle": "controlling"
+              }
+            ],
+            "rootId": "n1",
+            "entryElement": "Wood"
+          },
+          "graphUnavailableReason": null
+        }
+      ]
+    },
+    {
+      "id": "masc-110CYL071-s12",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Finally, Michael called Goodwill.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "mapPath": [
+            "person",
+            "lpu/parser/token",
+            "lpu/parser/sense",
+            "lpu/parser/valency",
+            "lpu/parser/aspect-and-forms",
+            "lpu/parser",
+            "lpu/semantic-assessment",
+            "session-and-situation",
+            "verbalizer"
+          ],
+          "trace": {
+            "turn": 1,
+            "input": "Finally, Michael called Goodwill.",
+            "disposition": "predominant Earth",
+            "role": "predominant Earth",
+            "parseSummary": "root 'call' (Wood, verb); nodes: call, finally, goodwill; mood: indicative",
+            "classifications": [],
+            "recognitions": [],
+            "resolutions": [],
+            "tokenResolutions": [
+              {
+                "surface": "called",
+                "tokenIndex": 3,
+                "outcome": "unresolved",
+                "replacement": [
+                  "called"
+                ],
+                "confidence": 0.3,
+                "rule": "none",
+                "candidates": [
+                  {
+                    "term": "called",
+                    "distance": 0,
+                    "count": 106978150
+                  }
+                ]
+              }
+            ],
+            "wordingNotDerived": true,
+            "semanticObjects": [
+              {
+                "id": "obj-1-1",
+                "kind": "statement"
+              }
+            ],
+            "steeringNote": "statement acknowledged (the acknowledgement move): the event stands recorded, no need or gap stands open, and no steering relation claims the turn — the steering machinery stands down",
+            "mapPath": [
+              "person",
+              "lpu/parser/token",
+              "lpu/parser/sense",
+              "lpu/parser/valency",
+              "lpu/parser/aspect-and-forms",
+              "lpu/parser",
+              "lpu/semantic-assessment",
+              "session-and-situation",
+              "verbalizer"
+            ]
+          },
+          "semanticObject": {
+            "id": "obj-1-1",
+            "turn": 1,
+            "producer": "person",
+            "surface": "Finally, Michael called Goodwill.",
+            "tokenResolutions": [
+              {
+                "surface": "called",
+                "tokenIndex": 3,
+                "outcome": "unresolved",
+                "replacement": [
+                  "called"
+                ],
+                "confidence": 0.3,
+                "rule": "none",
+                "candidates": [
+                  {
+                    "term": "called",
+                    "distance": 0,
+                    "count": 106978150
+                  }
+                ]
+              }
+            ],
+            "act": {
+              "kind": "statement",
+              "form": "indicative",
+              "force": "statement",
+              "ritual": false,
+              "streamRole": "opens"
+            },
+            "content": {
+              "meaning": {
+                "nodes": [
+                  {
+                    "id": "n1",
+                    "lemma": "call",
+                    "form": "called",
+                    "syntacticElement": "Wood",
+                    "role": "verb",
+                    "states": {
+                      "voice": "active",
+                      "tense": "past",
+                      "verbForm": "past/participle",
+                      "mood": "indicative",
+                      "aspect": {
+                        "bounded": true
+                      }
+                    }
+                  },
+                  {
+                    "id": "n2",
+                    "lemma": "finally",
+                    "form": "Finally",
+                    "syntacticElement": "Water"
+                  },
+                  {
+                    "id": "n3",
+                    "lemma": "goodwill",
+                    "form": "Goodwill",
+                    "syntacticElement": "Earth",
+                    "role": "theme"
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "n2",
+                    "to": "n1",
+                    "relation": "modulates",
+                    "cycle": "generating"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n3",
+                    "relation": "theme",
+                    "cycle": "controlling"
+                  }
+                ],
+                "rootId": "n1",
+                "entryElement": "Wood"
+              },
+              "connective": {
+                "language": "en",
+                "tokens": [
+                  "Finally",
+                  ",",
+                  "Michael",
+                  "called",
+                  "Goodwill"
+                ],
+                "next": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  -1
+                ],
+                "spans": [
+                  {
+                    "start": 4,
+                    "end": 5,
+                    "label": "object"
+                  }
+                ]
+              },
+              "holes": [],
+              "grounding": [
+                {
+                  "nodeId": "n3",
+                  "lemma": "goodwill",
+                  "status": "new"
+                }
+              ]
+            },
+            "aspects": [],
+            "senses": {
+              "channels": {
+                "sight": null,
+                "hearing": null,
+                "smell": null,
+                "taste": null,
+                "touch": null,
+                "mind": null
+              }
+            },
+            "confidence": 0.85,
+            "links": {},
+            "trail": [
+              {
+                "unit": "lpu/semantic-assessment",
+                "note": "assessed as statement"
+              }
+            ],
+            "envelope": {
+              "act": "statement",
+              "provenance": "a person's utterance, assessed by SemanticAssessment (lpu/semantic-assessment)",
+              "confidence": 0.85,
+              "route": [
+                "lpu/semantic-assessment",
+                "session-and-situation",
+                "coherence/coherence-analysis"
+              ],
+              "needs": []
+            }
+          },
+          "meaningGraph": {
+            "nodes": [
+              {
+                "id": "n1",
+                "lemma": "call",
+                "form": "called",
+                "syntacticElement": "Wood",
+                "role": "verb",
+                "states": {
+                  "voice": "active",
+                  "tense": "past",
+                  "verbForm": "past/participle",
+                  "mood": "indicative",
+                  "aspect": {
+                    "bounded": true
+                  }
+                }
+              },
+              {
+                "id": "n2",
+                "lemma": "finally",
+                "form": "Finally",
+                "syntacticElement": "Water"
+              },
+              {
+                "id": "n3",
+                "lemma": "goodwill",
+                "form": "Goodwill",
+                "syntacticElement": "Earth",
+                "role": "theme"
+              }
+            ],
+            "edges": [
+              {
+                "from": "n2",
+                "to": "n1",
+                "relation": "modulates",
+                "cycle": "generating"
+              },
+              {
+                "from": "n1",
+                "to": "n3",
+                "relation": "theme",
+                "cycle": "controlling"
+              }
+            ],
+            "rootId": "n1",
+            "entryElement": "Wood"
+          },
+          "graphUnavailableReason": null
+        }
+      ]
+    },
+    {
+      "id": "masc-ch5-s177",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "We scientists find the facts.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "mapPath": [
+            "person",
+            "lpu/parser/token",
+            "lpu/parser/sense",
+            "lpu/parser/valency",
+            "lpu/parser/aspect-and-forms",
+            "lpu/parser",
+            "lpu/semantic-assessment",
+            "session-and-situation",
+            "verbalizer"
+          ],
+          "trace": {
+            "turn": 1,
+            "input": "We scientists find the facts.",
+            "disposition": "predominant Earth",
+            "role": "predominant Earth",
+            "parseSummary": "root 'find' (Wood, verb); nodes: find, scientist, we, fact; mood: indicative",
+            "classifications": [],
+            "recognitions": [],
+            "resolutions": [],
+            "tokenResolutions": [],
+            "wordingNotDerived": true,
+            "semanticObjects": [
+              {
+                "id": "obj-1-1",
+                "kind": "statement"
+              }
+            ],
+            "steeringNote": "statement acknowledged (the acknowledgement move): the event stands recorded, no need or gap stands open, and no steering relation claims the turn — the steering machinery stands down",
+            "mapPath": [
+              "person",
+              "lpu/parser/token",
+              "lpu/parser/sense",
+              "lpu/parser/valency",
+              "lpu/parser/aspect-and-forms",
+              "lpu/parser",
+              "lpu/semantic-assessment",
+              "session-and-situation",
+              "verbalizer"
+            ]
+          },
+          "semanticObject": {
+            "id": "obj-1-1",
+            "turn": 1,
+            "producer": "person",
+            "surface": "We scientists find the facts.",
+            "act": {
+              "kind": "statement",
+              "form": "indicative",
+              "force": "statement",
+              "ritual": false,
+              "streamRole": "opens"
+            },
+            "content": {
+              "meaning": {
+                "nodes": [
+                  {
+                    "id": "n1",
+                    "lemma": "find",
+                    "form": "find",
+                    "syntacticElement": "Wood",
+                    "role": "verb",
+                    "states": {
+                      "voice": "active",
+                      "tense": "present",
+                      "verbForm": "base",
+                      "mood": "indicative",
+                      "subjectPerson": "3pl"
+                    }
+                  },
+                  {
+                    "id": "n2",
+                    "lemma": "scientist",
+                    "form": "scientists",
+                    "syntacticElement": "Earth",
+                    "role": "agent"
+                  },
+                  {
+                    "id": "n3",
+                    "lemma": "we",
+                    "form": "We",
+                    "syntacticElement": "Earth"
+                  },
+                  {
+                    "id": "n4",
+                    "lemma": "fact",
+                    "form": "facts",
+                    "syntacticElement": "Earth",
+                    "role": "theme",
+                    "det": "the"
+                  }
+                ],
+                "edges": [
+                  {
+                    "from": "n3",
+                    "to": "n2",
+                    "relation": "qualifies",
+                    "cycle": "other"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n2",
+                    "relation": "agent",
+                    "cycle": "controlling"
+                  },
+                  {
+                    "from": "n1",
+                    "to": "n4",
+                    "relation": "theme",
+                    "cycle": "controlling"
+                  }
+                ],
+                "rootId": "n1",
+                "entryElement": "Wood"
+              },
+              "connective": {
+                "language": "en",
+                "tokens": [
+                  "We",
+                  "scientists",
+                  "find",
+                  "the",
+                  "facts"
+                ],
+                "next": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  -1
+                ],
+                "spans": [
+                  {
+                    "start": 0,
+                    "end": 2,
+                    "label": "subject"
+                  },
+                  {
+                    "start": 3,
+                    "end": 5,
+                    "label": "object"
+                  }
+                ]
+              },
+              "holes": [],
+              "grounding": [
+                {
+                  "nodeId": "n2",
+                  "lemma": "scientist",
+                  "status": "new"
+                },
+                {
+                  "nodeId": "n3",
+                  "lemma": "we",
+                  "status": "new"
+                },
+                {
+                  "nodeId": "n4",
+                  "lemma": "fact",
+                  "status": "new"
+                }
+              ]
+            },
+            "aspects": [],
+            "senses": {
+              "channels": {
+                "sight": null,
+                "hearing": null,
+                "smell": null,
+                "taste": null,
+                "touch": null,
+                "mind": null
+              }
+            },
+            "confidence": 0.85,
+            "links": {},
+            "trail": [
+              {
+                "unit": "lpu/semantic-assessment",
+                "note": "assessed as statement"
+              }
+            ],
+            "envelope": {
+              "act": "statement",
+              "provenance": "a person's utterance, assessed by SemanticAssessment (lpu/semantic-assessment)",
+              "confidence": 0.85,
+              "route": [
+                "lpu/semantic-assessment",
+                "session-and-situation",
+                "coherence/coherence-analysis"
+              ],
+              "needs": []
+            }
+          },
+          "meaningGraph": {
+            "nodes": [
+              {
+                "id": "n1",
+                "lemma": "find",
+                "form": "find",
+                "syntacticElement": "Wood",
+                "role": "verb",
+                "states": {
+                  "voice": "active",
+                  "tense": "present",
+                  "verbForm": "base",
+                  "mood": "indicative",
+                  "subjectPerson": "3pl"
+                }
+              },
+              {
+                "id": "n2",
+                "lemma": "scientist",
+                "form": "scientists",
+                "syntacticElement": "Earth",
+                "role": "agent"
+              },
+              {
+                "id": "n3",
+                "lemma": "we",
+                "form": "We",
+                "syntacticElement": "Earth"
+              },
+              {
+                "id": "n4",
+                "lemma": "fact",
+                "form": "facts",
+                "syntacticElement": "Earth",
+                "role": "theme",
+                "det": "the"
+              }
+            ],
+            "edges": [
+              {
+                "from": "n3",
+                "to": "n2",
+                "relation": "qualifies",
+                "cycle": "other"
+              },
+              {
+                "from": "n1",
+                "to": "n2",
+                "relation": "agent",
+                "cycle": "controlling"
+              },
+              {
+                "from": "n1",
+                "to": "n4",
+                "relation": "theme",
+                "cycle": "controlling"
+              }
+            ],
+            "rootId": "n1",
+            "entryElement": "Wood"
+          },
+          "graphUnavailableReason": null
+        }
+      ]
+    }
+  ]
+}
