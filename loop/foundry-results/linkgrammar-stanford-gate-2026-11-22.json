@@ -1,0 +1,1296 @@
+{
+  "schemaVersion": 1,
+  "gate": "stanford standalone port; PASS iff rule errors == 0 and semantic-family leaks == 0",
+  "verdict": "PASS",
+  "summary": {
+    "inputs": 98,
+    "complete": 95,
+    "recovered": 3,
+    "failed": 0,
+    "totalRelations": 156,
+    "ruleErrors": 0,
+    "semanticLeaks": 0,
+    "familyTotals": {
+      "det": 114,
+      "aux": 17,
+      "auxpass": 6,
+      "cop": 10,
+      "attr": 3,
+      "prt": 1,
+      "rcmod": 1,
+      "nn": 4
+    }
+  },
+  "rows": [
+    {
+      "source": "teststanford",
+      "text": "Who invented sliced bread?",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Jim runs quickly.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "The bird, a robin, sang sweetly.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "There is a place we can go.",
+      "status": "complete",
+      "linkages": 80,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "The linebacker gave the quarterback a push.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 3
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "He stood at the goal line.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "She looks very beautiful.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "The accident happened as the night was falling.",
+      "status": "complete",
+      "linkages": 38,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "If you know who did it, you should tell the teacher.",
+      "status": "complete",
+      "linkages": 568,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "aux": 1,
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "The man has been killed by the police.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "auxpass": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Effects caused by the protein are important.",
+      "status": "complete",
+      "linkages": 16,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Sam, my brother, has arrived.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "What is that?",
+      "status": "complete",
+      "linkages": 10,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "attr": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Reagan has died.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "He should leave.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Kennedy has been killed.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Kennedy was killed.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Kennedy got killed.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Bill is big.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Bill is an honest man.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "What she said makes sense.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "What she said is not true.",
+      "status": "complete",
+      "linkages": 5,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Which book do you prefer?",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "There is a ghost in the room.",
+      "status": "complete",
+      "linkages": 56,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "She gave me a raise.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "The director is 65 years old.",
+      "status": "complete",
+      "linkages": 16,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Sam eats 3 sheep.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "I lost $ 3.2 billion.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Truffles picked during the spring are tasty.",
+      "status": "complete",
+      "linkages": 16,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "We went to their offices to get Bill's clothes.",
+      "status": "complete",
+      "linkages": 21,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "All the boys are here.",
+      "status": "complete",
+      "linkages": 10,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "I saw a cat in a hat.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "I saw a cat with a telescope.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "He is responsible for meals.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "They shut down the station.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "prt": 1,
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "About 200 people came to the party.",
+      "status": "complete",
+      "linkages": 18,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "I saw the man who you love.",
+      "status": "complete",
+      "linkages": 10,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "rcmod": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "I saw the man whose wife you love.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "I am ready to leave.",
+      "status": "complete",
+      "linkages": 11,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "cop": 1,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "Tom likes to eat fish.",
+      "status": "complete",
+      "linkages": 28,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "He says that you like to swim.",
+      "status": "complete",
+      "linkages": 10,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "teststanford",
+      "text": "The garage is next to the house.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "The dog bit the man.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "The man bit the dog.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "The man was bitten by the dog.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "auxpass": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "The dog did not bite the man.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "Did the dog bite the man?",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "There was a ball game.",
+      "status": "complete",
+      "linkages": 62,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-baseline.json",
+      "text": "It was in New York.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "nn": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The dog bit the man.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The man bit the dog.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The man was bitten by the dog.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "auxpass": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The man was bitten by the dog.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "auxpass": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The dog did not bite the man.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The cat did not chase the mouse.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Did the dog bite the man?",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Who bit the man?",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Was the man bitten by the dog?",
+      "status": "complete",
+      "linkages": 7,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The dog bites the man.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "There was a ball game.",
+      "status": "complete",
+      "linkages": 62,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "It was in New York.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "nn": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Where was the ball?",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Where was the ball game?",
+      "status": "complete",
+      "linkages": 32,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 1,
+        "cop": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Was the ball in Boston?",
+      "status": "complete",
+      "linkages": 8,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "Where was the ball?",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "The dog saw the man with the telescope.",
+      "status": "complete",
+      "linkages": 8,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 3
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "In the morning, the dog bit the man.",
+      "status": "complete",
+      "linkages": 48,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 3
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "On the mat sat the cat.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-development.json",
+      "text": "In New York the dog bit the man.",
+      "status": "complete",
+      "linkages": 32,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "nn": 1,
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-ewt-scout-v1.json",
+      "text": "i got her number though.",
+      "status": "recovered",
+      "linkages": 2,
+      "nullCount": 2,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-ewt-scout-v1.json",
+      "text": "what happened to you?",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-ewt-scout-v1.json",
+      "text": "i flew here last night.",
+      "status": "recovered",
+      "linkages": 4,
+      "nullCount": 1,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The chef opened the door.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The child chased the dog.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The window was broken by the boy.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "auxpass": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The teacher pushes the cart.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The girl did not close the gate.",
+      "status": "complete",
+      "linkages": 6,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "Did the farmer feed the horse?",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "aux": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The cake is eaten by the child.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 2,
+        "auxpass": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The cat scratched the woman.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "Who opened the door?",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "The dog slept in the garden.",
+      "status": "complete",
+      "linkages": 3,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-fresh-ai-v1.json",
+      "text": "It was in the garden.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-initial-adverbs-v1.json",
+      "text": "Finally, Michael called Goodwill.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-initial-adverbs-v1.json",
+      "text": "Michael called Goodwill.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-initial-adverbs-v1.json",
+      "text": "Yesterday, the teacher opened the door.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-initial-adverbs-v1.json",
+      "text": "The teacher opened the door.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-initial-adverbs-v1.json",
+      "text": "Quickly, the dog chased the cat.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-introductory-pp-v1.json",
+      "text": "In the morning, the teacher opened the door.",
+      "status": "complete",
+      "linkages": 36,
+      "nullCount": 0,
+      "relations": 3,
+      "families": {
+        "det": 3
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-introductory-pp-v1.json",
+      "text": "In New York, Michael called Goodwill.",
+      "status": "complete",
+      "linkages": 24,
+      "nullCount": 0,
+      "relations": 1,
+      "families": {
+        "nn": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-introductory-pp-v1.json",
+      "text": "After lunch, the dog chased the cat.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-introductory-pp-v1.json",
+      "text": "The teacher opened the door.",
+      "status": "complete",
+      "linkages": 2,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-introductory-pp-v1.json",
+      "text": "On the mat sat the cat.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "det": 2
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-masc-scout-v1.json",
+      "text": "Goodwill prepares people for life-long employment.",
+      "status": "complete",
+      "linkages": 12,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-masc-scout-v1.json",
+      "text": "Finally, Michael called Goodwill.",
+      "status": "complete",
+      "linkages": 4,
+      "nullCount": 0,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-masc-scout-v1.json",
+      "text": "We scientists find the facts.",
+      "status": "recovered",
+      "linkages": 4,
+      "nullCount": 1,
+      "relations": 0,
+      "families": {},
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-time.json",
+      "text": "What is the time?",
+      "status": "complete",
+      "linkages": 20,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "attr": 1,
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    },
+    {
+      "source": "english-time.json",
+      "text": "What is the date?",
+      "status": "complete",
+      "linkages": 10,
+      "nullCount": 0,
+      "relations": 2,
+      "families": {
+        "attr": 1,
+        "det": 1
+      },
+      "leaks": [],
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,1691 @@
+{
+  "schemaVersion": 1,
+  "gate": "adapter propose-only; PASS iff errors == 0",
+  "verdict": "PASS",
+  "summary": {
+    "turns": 56,
+    "candidates": 63,
+    "CORRECT": 37,
+    "ERROR": 0,
+    "AGREE": 17,
+    "DIVERGE": 0,
+    "NOVEL": 3,
+    "UNMAPPED": 6,
+    "abstains": 20,
+    "recovered": 3,
+    "failed": 0
+  },
+  "byFixture": {
+    "english-baseline.json": {
+      "turns": 7,
+      "correct": 6,
+      "error": 0,
+      "abstain": 2
+    },
+    "english-development.json": {
+      "turns": 20,
+      "correct": 17,
+      "error": 0,
+      "abstain": 9
+    },
+    "english-ewt-scout-v1.json": {
+      "turns": 3,
+      "correct": 0,
+      "error": 0,
+      "abstain": 3
+    },
+    "english-fresh-ai-v1.json": {
+      "turns": 11,
+      "correct": 11,
+      "error": 0,
+      "abstain": 4
+    },
+    "english-initial-adverbs-v1.json": {
+      "turns": 5,
+      "correct": 10,
+      "error": 0,
+      "abstain": 0
+    },
+    "english-introductory-pp-v1.json": {
+      "turns": 5,
+      "correct": 6,
+      "error": 0,
+      "abstain": 1
+    },
+    "english-masc-scout-v1.json": {
+      "turns": 3,
+      "correct": 4,
+      "error": 0,
+      "abstain": 1
+    },
+    "english-time.json": {
+      "turns": 2,
+      "correct": 0,
+      "error": 0,
+      "abstain": 0
+    }
+  },
+  "errors": [],
+  "rows": [
+    {
+      "fixture": "english-baseline.json",
+      "id": "active",
+      "turn": "t1",
+      "text": "The dog bit the man.",
+      "status": null,
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "AGREE"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-baseline.json",
+      "id": "reversed",
+      "turn": "t1",
+      "text": "The man bit the dog.",
+      "status": null,
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "AGREE"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-baseline.json",
+      "id": "passive",
+      "turn": "t1",
+      "text": "The man was bitten by the dog.",
+      "status": null,
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-baseline.json",
+      "id": "negation",
+      "turn": "t1",
+      "text": "The dog did not bite the man.",
+      "status": null,
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 12,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 4,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-baseline.json",
+      "id": "question",
+      "turn": "t1",
+      "text": "Did the dog bite the man?",
+      "status": null,
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 3,
+            "argToken": 5,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-baseline.json",
+      "id": "reference",
+      "turn": "t1",
+      "text": "There was a ball game.",
+      "status": null,
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 62,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 4,
+            "connector": "Ost",
+            "family": "O"
+          },
+          "verdict": "UNMAPPED"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-baseline.json",
+      "id": "reference",
+      "turn": "t2",
+      "text": "It was in New York.",
+      "status": null,
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "roles-active-01",
+      "turn": "t1",
+      "text": "The dog bit the man.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "roles-reversed-01",
+      "turn": "t1",
+      "text": "The man bit the dog.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "roles-passive-01",
+      "turn": "t1",
+      "text": "The man was bitten by the dog.",
+      "status": "must-pass",
+      "voice": "passive",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "tense-passive-01",
+      "turn": "t1",
+      "text": "The man was bitten by the dog.",
+      "status": "must-pass",
+      "voice": "passive",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "negation-01",
+      "turn": "t1",
+      "text": "The dog did not bite the man.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 12,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 4,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "negation-variant-01",
+      "turn": "t1",
+      "text": "The cat did not chase the mouse.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 6,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 4,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "chase",
+            "argLemma": "mouse"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "question-polar-01",
+      "turn": "t1",
+      "text": "Did the dog bite the man?",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 3,
+            "argToken": 5,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "question-wh-01",
+      "turn": "t1",
+      "text": "Who bit the man?",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 1,
+            "argToken": 0,
+            "connector": "S**w",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "who"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 3,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "question-passive-01",
+      "turn": "t1",
+      "text": "Was the man bitten by the dog?",
+      "status": "must-pass",
+      "voice": "passive",
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 7,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "tense-present-01",
+      "turn": "t1",
+      "text": "The dog bites the man.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "reference-places-01",
+      "turn": "t1",
+      "text": "There was a ball game.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 62,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 4,
+            "connector": "Ost",
+            "family": "O"
+          },
+          "verdict": "UNMAPPED"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "reference-places-01",
+      "turn": "t2",
+      "text": "It was in New York.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "reference-places-01",
+      "turn": "t3",
+      "text": "Where was the ball?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "reference-places-01",
+      "turn": "t4",
+      "text": "Where was the ball game?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 32,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "reference-places-01",
+      "turn": "t5",
+      "text": "Was the ball in Boston?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 8,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "reference-places-01",
+      "turn": "t6",
+      "text": "Where was the ball?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "ambiguity-instrument-01",
+      "turn": "t1",
+      "text": "The dog saw the man with the telescope.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 8,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "see",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "see",
+            "argLemma": "man"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "pp-leading-time-01",
+      "turn": "t1",
+      "text": "In the morning, the dog bit the man.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 48,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 6,
+            "argToken": 5,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 6,
+            "argToken": 8,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "pp-leading-locative-01",
+      "turn": "t1",
+      "text": "On the mat sat the cat.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-development.json",
+      "id": "pp-leading-nocomma-01",
+      "turn": "t1",
+      "text": "In New York the dog bit the man.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 32,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 5,
+            "argToken": 4,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "bite",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 5,
+            "argToken": 7,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "bite",
+            "argLemma": "man"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-ewt-scout-v1.json",
+      "id": "ewt-email-enronsent23_07-0002",
+      "turn": "t1",
+      "text": "i got her number though.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "recovered",
+      "nullCount": 2,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-ewt-scout-v1.json",
+      "id": "ewt-email-enronsent23_07-0004",
+      "turn": "t1",
+      "text": "what happened to you?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-ewt-scout-v1.json",
+      "id": "ewt-email-enronsent23_07-0008",
+      "turn": "t1",
+      "text": "i flew here last night.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "recovered",
+      "nullCount": 1,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-active",
+      "turn": "t1",
+      "text": "The chef opened the door.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "open",
+            "argLemma": "chef"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "open",
+            "argLemma": "door"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-reversed",
+      "turn": "t1",
+      "text": "The child chased the dog.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 6,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "chase",
+            "argLemma": "child"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "chase",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-passive",
+      "turn": "t1",
+      "text": "The window was broken by the boy.",
+      "status": "must-pass",
+      "voice": "passive",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-present",
+      "turn": "t1",
+      "text": "The teacher pushes the cart.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "push",
+            "argLemma": "teacher"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "push",
+            "argLemma": "cart"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-negation",
+      "turn": "t1",
+      "text": "The girl did not close the gate.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 6,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 4,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "close",
+            "argLemma": "gate"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-polar",
+      "turn": "t1",
+      "text": "Did the farmer feed the horse?",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 3,
+            "argToken": 5,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "feed",
+            "argLemma": "horse"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-passive-present",
+      "turn": "t1",
+      "text": "The cake is eaten by the child.",
+      "status": "must-pass",
+      "voice": "passive",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 12,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-roles",
+      "turn": "t1",
+      "text": "The cat scratched the woman.",
+      "status": "must-pass",
+      "voice": "active",
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "scratch",
+            "argLemma": "cat"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "scratch",
+            "argLemma": "woman"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-wh",
+      "turn": "t1",
+      "text": "Who opened the door?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 1,
+            "argToken": 0,
+            "connector": "S**w",
+            "family": "S",
+            "verbLemma": "open",
+            "argLemma": "who"
+          },
+          "verdict": "AGREE"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 3,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "open",
+            "argLemma": null
+          },
+          "verdict": "NOVEL"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-reference",
+      "turn": "t1",
+      "text": "The dog slept in the garden.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 3,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-fresh-ai-v1.json",
+      "id": "fresh-reference",
+      "turn": "t2",
+      "text": "It was in the garden.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-initial-adverbs-v1.json",
+      "id": "0",
+      "turn": "t1",
+      "text": "Finally, Michael called Goodwill.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 3,
+            "argToken": 2,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "call",
+            "argLemma": "michael"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 3,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "call",
+            "argLemma": "goodwill"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-initial-adverbs-v1.json",
+      "id": "1",
+      "turn": "t1",
+      "text": "Michael called Goodwill.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 1,
+            "argToken": 0,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "call",
+            "argLemma": "michael"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 2,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "call",
+            "argLemma": "goodwill"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-initial-adverbs-v1.json",
+      "id": "2",
+      "turn": "t1",
+      "text": "Yesterday, the teacher opened the door.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 4,
+            "argToken": 3,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "open",
+            "argLemma": "teacher"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 4,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "open",
+            "argLemma": "door"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-initial-adverbs-v1.json",
+      "id": "3",
+      "turn": "t1",
+      "text": "The teacher opened the door.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "open",
+            "argLemma": "teacher"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "open",
+            "argLemma": "door"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-initial-adverbs-v1.json",
+      "id": "4",
+      "turn": "t1",
+      "text": "Quickly, the dog chased the cat.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 4,
+            "argToken": 3,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "chase",
+            "argLemma": "dog"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 4,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "chase",
+            "argLemma": "cat"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-introductory-pp-v1.json",
+      "id": "temporal",
+      "turn": "t1",
+      "text": "In the morning, the teacher opened the door.",
+      "status": "known-failure",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 36,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 6,
+            "argToken": 5,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "open",
+            "argLemma": "teacher"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 6,
+            "argToken": 8,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "open",
+            "argLemma": "door"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-introductory-pp-v1.json",
+      "id": "spatial",
+      "turn": "t1",
+      "text": "In New York, Michael called Goodwill.",
+      "status": "known-failure",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 24,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 5,
+            "argToken": 4,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "call",
+            "argLemma": "michael"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 5,
+            "argToken": 6,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "call",
+            "argLemma": "goodwill"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-introductory-pp-v1.json",
+      "id": "after",
+      "turn": "t1",
+      "text": "After lunch, the dog chased the cat.",
+      "status": "known-failure",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 12,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 5,
+            "argToken": 4,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "chased",
+            "argLemma": "dog"
+          },
+          "verdict": "NOVEL"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 5,
+            "argToken": 7,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "chased",
+            "argLemma": "cat"
+          },
+          "verdict": "NOVEL"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-introductory-pp-v1.json",
+      "id": "plain",
+      "turn": "t1",
+      "text": "The teacher opened the door.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 2,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 2,
+            "argToken": 1,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "open",
+            "argLemma": "teacher"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 2,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "open",
+            "argLemma": "door"
+          },
+          "verdict": "AGREE"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-introductory-pp-v1.json",
+      "id": "inversion",
+      "turn": "t1",
+      "text": "On the mat sat the cat.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-masc-scout-v1.json",
+      "id": "masc-110CYL068-s17",
+      "turn": "t1",
+      "text": "Goodwill prepares people for life-long employment.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 12,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 1,
+            "argToken": 0,
+            "connector": "Ss",
+            "family": "S",
+            "verbLemma": "prepare",
+            "argLemma": "goodwill"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 2,
+            "connector": "Op",
+            "family": "O",
+            "verbLemma": "prepare",
+            "argLemma": "people"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-masc-scout-v1.json",
+      "id": "masc-110CYL071-s12",
+      "turn": "t1",
+      "text": "Finally, Michael called Goodwill.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 3,
+            "argToken": 2,
+            "connector": "Ss*s",
+            "family": "S",
+            "verbLemma": "call",
+            "argLemma": "michael"
+          },
+          "verdict": "CORRECT"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 3,
+            "argToken": 4,
+            "connector": "Os",
+            "family": "O",
+            "verbLemma": "call",
+            "argLemma": "goodwill"
+          },
+          "verdict": "CORRECT"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-masc-scout-v1.json",
+      "id": "masc-ch5-s177",
+      "turn": "t1",
+      "text": "We scientists find the facts.",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": false,
+      "adapterStatus": "recovered",
+      "nullCount": 1,
+      "linkages": 4,
+      "error": null,
+      "verdicts": [],
+      "abstained": true
+    },
+    {
+      "fixture": "english-time.json",
+      "id": "clock-time-01",
+      "turn": "t1",
+      "text": "What is the time?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 20,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 1,
+            "argToken": 0,
+            "connector": "Ss*w",
+            "family": "S"
+          },
+          "verdict": "UNMAPPED"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 3,
+            "connector": "Osm",
+            "family": "O"
+          },
+          "verdict": "UNMAPPED"
+        }
+      ],
+      "abstained": false
+    },
+    {
+      "fixture": "english-time.json",
+      "id": "clock-date-01",
+      "turn": "t1",
+      "text": "What is the date?",
+      "status": "must-pass",
+      "voice": null,
+      "interrogative": true,
+      "adapterStatus": "complete",
+      "nullCount": 0,
+      "linkages": 10,
+      "error": null,
+      "verdicts": [
+        {
+          "candidate": {
+            "kind": "agent",
+            "verbToken": 1,
+            "argToken": 0,
+            "connector": "Ss*w",
+            "family": "S"
+          },
+          "verdict": "UNMAPPED"
+        },
+        {
+          "candidate": {
+            "kind": "patient",
+            "verbToken": 1,
+            "argToken": 3,
+            "connector": "Osm",
+            "family": "O"
+          },
+          "verdict": "UNMAPPED"
+        }
+      ],
+      "abstained": false
+    }
+  ]
+}
