@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "runId": "a651d759-a4ad-4871-a13c-893ada7d9025",
+  "timestamp": "2026-11-22T09:02:55.937Z",
+  "source": {
+    "revision": "e1e234efdf9d6ea29643133f1ec53b87c6e19d1e",
+    "dirty": false
+  },
+  "fixture": {
+    "path": "loop/foundry-cases/english-masc-scout-v1.json",
+    "sha256": "71815fbcbd3ea9101792652ff28f3bcd35b431374b32bc1ee2ac6fd649c6d222"
+  },
+  "configuration": {
+    "profile": "chat",
+    "entry": "newSession + processTurn",
+    "clock": "default session behavior; not pinned",
+    "persistence": "in-memory session; no interlocutor store",
+    "browserParity": "not verified",
+    "resources": {
+      "wordnet": {
+        "edition": "2024",
+        "source": "Open English WordNet 2024 (WNDB format)",
+        "totals": {
+          "synsets": 120630,
+          "relations": 154470,
+          "forms": 129800
+        },
+        "ready": true
+      },
+      "framenet": {
+        "edition": "1.5",
+        "source": "FrameNet (framenet_v15 via the NLTK nltk_data mirror)",
+        "totals": {
+          "frames": 1019,
+          "relations": 1676
+        },
+        "ready": true
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "masc-110CYL068-s17",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Goodwill prepares people for life-long employment.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "pass",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "prepare",
+              "observed": "prepare",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-0",
+              "expected": "edge prepare -> goodwill (any relation)",
+              "observed": "prepare -> goodwill : agent",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-1",
+              "expected": "edge prepare -> people (any relation)",
+              "observed": "prepare -> people : theme",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 3,
+        "fail": 0,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "pass"
+    },
+    {
+      "id": "masc-110CYL071-s12",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "Finally, Michael called Goodwill.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "call",
+              "observed": "call",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-0",
+              "expected": "edge call -> michael (any relation)",
+              "observed": null,
+              "outcome": "fail"
+            },
+            {
+              "id": "attached-1",
+              "expected": "edge call -> goodwill (any relation)",
+              "observed": "call -> goodwill : theme",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 2,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    },
+    {
+      "id": "masc-ch5-s177",
+      "status": "must-pass",
+      "turns": [
+        {
+          "id": "t1",
+          "input": "We scientists find the facts.",
+          "reply": "Ok. Noted.",
+          "replyProvenance": "hand-worded or mixed",
+          "verdict": "fail",
+          "checks": [
+            {
+              "id": "root",
+              "expected": "find",
+              "observed": "find",
+              "outcome": "pass"
+            },
+            {
+              "id": "attached-0",
+              "expected": "edge find -> we (any relation)",
+              "observed": null,
+              "outcome": "fail"
+            },
+            {
+              "id": "attached-1",
+              "expected": "edge find -> fact (any relation)",
+              "observed": "find -> fact : theme",
+              "outcome": "pass"
+            }
+          ]
+        }
+      ],
+      "checks": {
+        "pass": 2,
+        "fail": 1,
+        "abstained": 0,
+        "notObservable": 0
+      },
+      "verdict": "fail"
+    }
+  ],
+  "summary": {
+    "cases": 3,
+    "failedRequired": true,
+    "needsReview": false
+  }
+}
