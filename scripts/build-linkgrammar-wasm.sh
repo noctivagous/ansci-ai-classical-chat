@@ -70,8 +70,21 @@ em++ -O2 -std=c++17 \
   -sMODULARIZE=1 -sEXPORT_NAME=createLinkGrammar \
   -sENVIRONMENT=node,web -sALLOW_MEMORY_GROWTH=1 \
   -o "$WORK/out/linkgrammar.js"
+# ESM glue for the browser bundle (loaded by URL + locateFile;
+# same bytes, same embedded dictionary).
+em++ -O2 -std=c++17 \
+  -I"$WORK/src" \
+  "$ROOT/scripts/lg-wasm-wrapper/wrapper.cpp" \
+  "$WORK/src/link-grammar/.libs/liblink-grammar.a" \
+  --bind \
+  --embed-file "$WORK/stage/lgdict@/lgdict" \
+  -sMODULARIZE=1 -sEXPORT_NAME=createLinkGrammar \
+  -sENVIRONMENT=web,node -sALLOW_MEMORY_GROWTH=1 \
+  -sEXPORT_ES6=1 \
+  -o "$WORK/out/linkgrammar-esm.js"
 
 mkdir -p "$ROOT/vendor/linkgrammar-wasm"
 cp "$WORK/out/linkgrammar.js" "$ROOT/vendor/linkgrammar-wasm/linkgrammar.js"
 cp "$WORK/out/linkgrammar.wasm" "$ROOT/vendor/linkgrammar-wasm/linkgrammar.wasm"
+cp "$WORK/out/linkgrammar-esm.js" "$ROOT/vendor/linkgrammar-wasm/linkgrammar-esm.js"
 ls -la "$ROOT/vendor/linkgrammar-wasm"

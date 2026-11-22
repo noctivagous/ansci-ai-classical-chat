@@ -83,6 +83,7 @@ function validateBundle(name, sourceDir, requiredKinds, countKeys) {
   return valid;
 }
 
+let linkgrammarOk = true;
 const wordnetDir = resolve(repo, "data/wordnet/extract");
 const framenetDir = resolve(repo, "data/framenet");
 const wordnetOk = validateBundle("WordNet", wordnetDir, ["synsets", "relations", "forms"], {
@@ -92,7 +93,7 @@ const framenetOk = validateBundle("FrameNet", framenetDir, ["frames", "relations
   frames: "frames", relations: "frameRelations",
 });
 
-if (!wordnetOk || !framenetOk) {
+if (!wordnetOk || !framenetOk || !linkgrammarOk) {
   console.error("Required browser lexical data is unavailable. The web build is stopped; the chat must not ship in a degraded configuration.");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
@@ -103,4 +104,27 @@ mkdirSync(dirname(out), { recursive: true });
 cpSync(wordnetDir, resolve(out, "wordnet/extract"), { recursive: true });
 cpSync(framenetDir, resolve(out, "framenet"), { recursive: true });
 cpSync(resolve(repo, "NOTICE"), resolve(here, "../dist/NOTICE"));
+// Link Grammar WASM (vendor/linkgrammar-wasm/): the ESM glue the
+// browser loader imports plus the compiled module it
+// instantiates via locateFile. Same 25MB per-asset ceiling as
+// the lexical bundles (Cloudflare static-asset limit).
+const linkgrammarDir = resolve(repo, "vendor/linkgrammar-wasm");
+linkgrammarOk = true;
+for (const file of ["linkgrammar-esm.js", "linkgrammar.wasm"]) {
+  const src = resolve(linkgrammarDir, file);
+  if (!existsSync(src)) {
+    failures.push(`linkgrammar: missing ${src} (run scripts/build-linkgrammar-wasm.sh)`);
+    linkgrammarOk = false;
+    continue;
+  }
+  const size = statSync(src).size;
+  if (size > maxAssetBytes) {
+    failures.push(`linkgrammar: ${file} is ${size} bytes; Cloudflare's per-static-asset limit is ${maxAssetBytes} bytes`);
+    linkgrammarOk = false;
+    continue;
+  }
+  mkdirSync(resolve(out, "linkgrammar"), { recursive: true });
+  cpSync(src, resolve(out, "linkgrammar", file));
+}
+if (linkgrammarOk) console.log(`linkgrammar: staged ESM glue + wasm module`);
 console.log(`Required WordNet and FrameNet browser assets copied to ${out}`);

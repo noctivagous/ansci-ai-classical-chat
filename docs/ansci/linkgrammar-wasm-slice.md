@@ -58,6 +58,31 @@ the reader takes word/connector fields from `(m) (e)` empty-word
 lines as `(e)>connector` — while the WASM linkage agrees with the
 CLI's Linkage 1 diagram link for link.
 
+## Browser verification (step 5)
+
+Measured 2026-11-22 in real Chrome via DevTools, loading the
+shipped bytes (ESM glue + `linkgrammar.wasm`, dictionary
+embedded): module load 57.5 ms, dictionary init 209.7 ms, first
+parse 10.4 ms, subsequent parses 0.9–1.9 ms; JS heap steady at
+~12.7 MB across load/init/parse (wasm linear memory is
+separate; module file is 2.3 MB). All three probe sentences
+parse with the expected linkages (2, recovered null-count 2,
+7), labels matching the native CLI exactly.
+
+Packaging: `scripts/build-linkgrammar-wasm.sh` emits the ESM
+glue alongside the Node glue; `demo/dashboard/scripts/
+prepare-browser-assets.mjs` stages both files to
+`dist/ansci-data/linkgrammar/` under the same 25 MB
+per-asset ceiling as the lexical bundles (a missing or
+oversize file stops the web build); `engine-entry.ts` and the
+chat app warm the module at startup without gating readiness
+(chat stays usable on the positional parser when warming
+fails). The full dashboard build (engine + dashboard + chat)
+passes with the new imports, including the build control.
+Not verified here: serving `dist/` over HTTP end-to-end in
+a browser (the sandbox blocks local servers) and the actual
+Cloudflare deployment, which needs owner credentials.
+
 ## Non-goals and limits
 
 - First linkage only; no linkage ranking, no

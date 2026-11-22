@@ -4,6 +4,7 @@ import { processTurn, type TurnResult } from "../../../../src/ansci/turn";
 import { NEUTRAL_COMPOSITION } from "../../../../src/ansci/composition";
 import type { PricingRecord } from "../../../../src/ansci/pricing";
 import { initializeBrowserLexicalData, type BrowserLexicalReadiness } from "../../src/browser-lexical-data";
+import { ensureLinkGrammarLoadedFromUrls } from "../../../../src/ansci/linkgrammar-wasm";
 
 /**
  * AnSci — Full Chat (/chat/).
@@ -338,6 +339,13 @@ export default function App() {
 
   useEffect(() => {
     let mounted = true;
+    // WASM syntax evidence warms in the background; chat never
+    // waits on it (parse falls back while cold) and never fails
+    // for it.
+    ensureLinkGrammarLoadedFromUrls(
+      "/ansci-data/linkgrammar/linkgrammar-esm.js",
+      "/ansci-data/linkgrammar/linkgrammar.wasm",
+    ).catch(() => {});
     initializeBrowserLexicalData().then(
       (data) => { if (mounted) setLexicalState({ status: "ready", data }); },
       (error: unknown) => {

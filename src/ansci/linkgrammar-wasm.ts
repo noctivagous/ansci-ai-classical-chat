@@ -98,6 +98,39 @@ export async function ensureLinkGrammarLoaded(): Promise<void> {
   await loadModule();
 }
 
+type EmbindFactory = (overrides?: {
+  locateFile?: (path: string) => string;
+}) => Promise<LinkGrammarWasmModule>;
+
+/**
+ * Browser warmup from explicit same-origin URLs (the Vite
+ * browser bundle cannot use the Node require() path above).
+ * `glueUrl` is the ESM glue build
+ * (vendor/linkgrammar-wasm/linkgrammar-esm.js);
+ * `wasmUrl` is the compiled module it instantiates
+ * (vendor/linkgrammar-wasm/linkgrammar.wasm), passed through
+ * locateFile so the two files only need to be served
+ * side-by-side. Callers catch failure and continue without
+ * the module (chat stays usable on the positional parser);
+ * loadedModule stays unset and the sync path abstains.
+ */
+export async function ensureLinkGrammarLoadedFromUrls(
+  glueUrl: string,
+  wasmUrl: string,
+): Promise<void> {
+  if (loadedModule) return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const factory = (await import(/* @vite-ignore */ glueUrl)) as unknown as {
+    default: EmbindFactory;
+  };
+  const mod = await factory.default({
+    locateFile: (p: string) => (p.endsWith(".wasm") ? wasmUrl : p),
+  });
+  const err = mod.init();
+  if (err) throw new Error(`linkgrammar-wasm init failed: ${err}`);
+  loadedModule = mod;
+}
+
 /** True once ensureLinkGrammarLoaded() has resolved successfully. */
 export function isLinkGrammarLoaded(): boolean {
   return loadedModule !== undefined;

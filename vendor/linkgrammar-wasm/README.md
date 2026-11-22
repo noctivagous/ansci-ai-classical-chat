@@ -11,6 +11,9 @@ English dictionary (5.12.4) embedded. Loaded by
 - `linkgrammar.wasm` — the compiled parser (~2.3 MB, dictionary
   embedded at `/lgdict`, single-threaded: no SharedArrayBuffer /
   COOP-COEP requirement).
+- `linkgrammar-esm.js` — the same glue as an ES module
+  (EXPORT_ES6, environments web+node) for the browser bundle;
+  instantiated with locateFile pointing at `linkgrammar.wasm`.
 
 License: compiled from LGPL-2.1-or-later sources
 (https://github.com/opencog/link-grammar); same terms apply.

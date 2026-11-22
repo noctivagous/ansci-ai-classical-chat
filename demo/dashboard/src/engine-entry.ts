@@ -13,6 +13,7 @@
  */
 import { newSession, type Session } from "../../../src/ansci/session";
 import { processTurn } from "../../../src/ansci/turn";
+import { ensureLinkGrammarLoadedFromUrls } from "../../../src/ansci/linkgrammar-wasm";
 import { initializeBrowserLexicalData, type BrowserLexicalReadiness } from "./browser-lexical-data";
 
 export interface LiveTurn {
@@ -59,6 +60,13 @@ function reset(): void {
 };
 
 const live = (window as unknown as { AnSciLive: AnSciLiveApi }).AnSciLive;
+// WASM syntax evidence warms alongside the lexical data but never
+// gates readiness: without it parse() falls back to the positional
+// parser, so chat stays usable (e.g. offline or asset-blocked).
+ensureLinkGrammarLoadedFromUrls(
+  "/ansci-data/linkgrammar/linkgrammar-esm.js",
+  "/ansci-data/linkgrammar/linkgrammar.wasm",
+).catch(() => {});
 initializeBrowserLexicalData().then(
   (resources) => {
     session = newSession();
