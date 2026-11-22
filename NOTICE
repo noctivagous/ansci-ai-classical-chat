@@ -150,6 +150,14 @@ parser can evaluate. The Link Grammar parser itself — the
 linkage solver, its post-processing knowledge files, and the
 affix and regex files — is not converted or included.
 
+The compiled parser IS shipped separately as WebAssembly in
+vendor/linkgrammar-wasm/ (linkgrammar.js + linkgrammar.wasm,
+built 2026-11-22 from the same 5.13.2 sources with Emscripten
+3.1.56 and the English dictionary embedded; embind wrapper in
+scripts/lg-wasm-wrapper/wrapper.cpp, recipe in
+scripts/build-linkgrammar-wasm.sh). That build is likewise a
+derivative work distributed under LGPL-2.1-or-later.
+
 Link Grammar is copyright its authors and contributors:
 Daniel Sleator and Davy Temperley (the original Link Grammar
 Parser, Computer Science Department, Carnegie Mellon
