@@ -32,3 +32,7 @@ data/people/
 # dev-loop toolset state (docs/devloop.md): baselines, pending
 # declarations, last diagnosis — working state, never source
 .devloop/
+# generated gate-harness reports (regenerate with the committed
+# scripts/ansci-linkgrammar-*-gate.mjs after a build; verdicts
+# live in docs/ansci/linkgrammar-*-slice.md): working state
+loop/foundry-results/linkgrammar-*-gate-*.json
