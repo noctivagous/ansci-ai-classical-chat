@@ -284,7 +284,13 @@ function matchCond(
   }
   if (cond.targetPath) {
     const gTarget = node.pathTarget(cond.targetPath);
-    if (gTarget == null) throw new Error("path pair target missing");
+    // Java (FeatureTemplate.match): a missing pair target is a
+    // non-match, not an error — fTarget2 is null and equiv(null)
+    // is false. (The stanford file never exercises this; the
+    // semantic file's optional-feature conditions do, e.g.
+    // `<F_L ref links _amod> += <F_L conj-member0>` appends,
+    // whose conditions compare against possibly-absent paths.)
+    if (gTarget == null) return false;
     if (fTarget.isValued && gTarget.isValued) {
       return fTarget.value === gTarget.value;
     }
@@ -466,6 +472,12 @@ function doActionAppend(
   rightValStr: string | null,
   _targetPath: string[] | null,
 ): void {
+  // Appending a missing source is a no-op in Java
+  // (FeatureAction.appendToSelf returns immediately when other
+  // is null) — the semantic file relies on this for its
+  // optional conj-member appends (`+= <F_L conj-member0>` on a
+  // word with no conjunction group).
+  if (right == null && rightValStr == null && _targetPath != null) return;
   if (left == null || left.isEmpty()) {
     doActionEquals(f, path, left, right, rightValStr, _targetPath);
     return;
@@ -547,6 +559,22 @@ export interface LgRule {
   actions: LgAction[];
 }
 
+/** A named (non-template) algorithm block: the .algs files
+ *  interleave a handful of Java classes (MorphyAlg,
+ *  WordSequenceCombineAlg, TwoWordCombineToLeft/Right,
+ *  TenseConjoinAlg, PrepositionLinkAlg) whose init text is a
+ *  template with NO actions (the code does the work). They keep
+ *  their file position: the passes are order-sensitive. */
+export interface LgNamedAlg {
+  kind: string;
+  signature: string;
+  conds: LgTemplateCond[];
+}
+
+export type LgAlgStep =
+  | { type: "rule"; rule: LgRule }
+  | { type: "named"; alg: LgNamedAlg };
+
 function splitRuleBlocks(text: string): { kind: string; body: string }[] {
   const out: { kind: string; body: string }[] = [];
   let curKind: string | null = null;
@@ -601,6 +629,36 @@ export function parseRuleFile(text: string): LgRuleSet {
   return { rules, skippedKinds: [...skipped] };
 }
 
+/** Parse a full .algs file into its ordered step list, keeping
+ *  named-algorithm blocks (with their templates) in file
+ *  position. Mirrors AlgorithmApplier.read: every `#Kind` block
+ *  becomes one algorithm; TemplateActionAlg blocks become
+ *  rules, the rest become named steps for the caller to
+ *  interpret. */
+export function parseAlgFile(text: string): LgAlgStep[] {
+  const steps: LgAlgStep[] = [];
+  const skipped = new Set<string>();
+  for (const b of splitRuleBlocks(text)) {
+    if (b.kind === "TemplateActionAlg") {
+      const r = parseRuleBlock(b.kind, b.body, skipped);
+      if (r) steps.push({ type: "rule", rule: r });
+    } else if (b.kind === "MorphyAlg") {
+      steps.push({ type: "named", alg: { kind: b.kind, signature: "MORPHY_ALG", conds: [] } });
+    } else {
+      const lines = b.body.split("\n");
+      const signature = lines[0].trim();
+      const rest = lines.slice(1);
+      const eq = rest.findIndex((l) => l.trim() === "=");
+      const condLines = eq < 0 ? rest : rest.slice(0, eq);
+      steps.push({
+        type: "named",
+        alg: { kind: b.kind, signature, conds: condLines.map(parseCondLine) },
+      });
+    }
+  }
+  return steps;
+}
+
 function walkAll(root: LgFeatureNode): LgFeatureNode[] {
   const seen = new Set<LgFeatureNode>();
   const out: LgFeatureNode[] = [];
@@ -644,6 +702,24 @@ export function applyRules(
       }
     }
   }
+}
+
+/** Match a template against one node, returning the bound vars
+ *  or null (TemplateMatchingAlg.canApplyTo). Exposed for the
+ *  named algorithms, which are template-matching algorithms
+ *  whose action is code rather than action lines. */
+export function matchTemplateVars(
+  node: LgFeatureNode,
+  conds: LgTemplateCond[],
+): Map<string, LgFeatureNode> | null {
+  const vars = new Map<string, LgFeatureNode>();
+  return matchTemplate(node, conds, vars) ? vars : null;
+}
+
+/** Sweep every node reachable from root in walk order
+ *  (SentenceAlgorithm.apply's iteration), for named algs. */
+export function walkGraphNodes(root: LgFeatureNode): LgFeatureNode[] {
+  return walkAll(root);
 }
 
 /* ------------------------------------------------------------------ */
@@ -758,9 +834,14 @@ export function buildStanfordGraph(
     fn.set("wall", leftWall as LgFeatureNode);
     const bare = stripGuessMarks(words[i]);
     if (bare.length === 0) continue;
-    const [base, _sub] = splitSubscript(bare);
-    void _sub;
+    const [base, sub] = splitSubscript(bare);
     fn.set("orig_str", new LgFeatureNode(base));
+    // stripSubscripts (RelationExtractor) also records the
+    // subscript and the placeholder POS the tagging pass refines;
+    // the stanford file never reads either, but the tagging and
+    // semantic passes do, so the full-pipeline graph carries them.
+    if (sub != null) fn.set("subscript", new LgFeatureNode(sub));
+    fn.set("POS", new LgFeatureNode("WORD"));
     fn.set("index_in_sentence", new LgFeatureNode(String(i)));
     if (/^[A-Z]/.test(base)) fn.set("ENTITY-FLAG", new LgFeatureNode("T"));
     if (prev) {
@@ -892,7 +973,7 @@ export function formatStanfordRelations(rels: StanfordRelation[]): string {
 
 let cachedRules: LgRule[] | null = null;
 
-function stanfordRules(): LgRule[] {
+export function stanfordRules(): LgRule[] {
   if (!cachedRules) {
     const parsed = parseRuleFile(RELEX_STANFORD_ALGS);
     if (parsed.rules.length === 0) throw new Error("no stanford rules loaded");
@@ -933,6 +1014,53 @@ export async function stanfordRelations(text: string): Promise<StanfordParseResu
   }
   const graph = buildStanfordGraph(parsed.words, parsed.links);
   const errors: string[] = [];
+  applyRules(graph.root, stanfordRules(), (e) => errors.push(e));
+  return {
+    status: "complete",
+    linkages: parsed.linkages,
+    nullCount: 0,
+    relations: collectStanfordRelations(graph.root),
+    error: errors.length > 0 ? errors.join("; ") : undefined,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Full pipeline: tagging -> semantic -> stanford, the upstream        */
+/* order (SentenceAlgorithmApplier.applyAlgs then extractStanford).    */
+/* With the semantic features in place (subj/obj/head-word/            */
+/* NEGATIVE-FLAG/HYP), the stanford rules that were dead standalone    */
+/* fire: nsubj, dobj, nsubjpass, neg, agent, advcl, ccomp, xsubj,      */
+/* csubj, partmod, infmod, prep_*. The passes are loaded lazily to     */
+/* keep this module's import graph (and the cold stanford-only path)   */
+/* unchanged.                                                          */
+/* ------------------------------------------------------------------ */
+
+export async function stanfordRelationsFull(text: string): Promise<StanfordParseResult> {
+  let parsed;
+  try {
+    parsed = await parseSentenceWasm(text);
+  } catch (err) {
+    return {
+      status: "failed",
+      linkages: 0,
+      nullCount: 0,
+      relations: [],
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+  if (!parsed.ok || parsed.nullCount !== 0) {
+    return {
+      status: parsed.ok ? "recovered" : "failed",
+      linkages: parsed.ok ? parsed.linkages : 0,
+      nullCount: parsed.ok ? parsed.nullCount : 0,
+      relations: [],
+      error: parsed.ok ? undefined : parsed.error,
+    };
+  }
+  const { applyTaggingAndSemantic } = await import("./linkgrammar-semantic");
+  const graph = buildStanfordGraph(parsed.words, parsed.links);
+  const errors: string[] = [];
+  applyTaggingAndSemantic(graph, (e) => errors.push(e));
   applyRules(graph.root, stanfordRules(), (e) => errors.push(e));
   return {
     status: "complete",

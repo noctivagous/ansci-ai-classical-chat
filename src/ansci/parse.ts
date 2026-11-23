@@ -47,6 +47,7 @@ import {
 import { registerDerivedEntry, wordnetAdjective, wordnetAdverb, wordnetNoun, wordnetVerb } from "./wordnet-lex";
 import { linkgrammarNounOnly } from "./linkgrammar-lex";
 import { solveLinkage, linkageRouting, setLinkageRouting } from "./linkage";
+import { relexEvidenceSync } from "./linkgrammar-relex-evidence";
 import { adaptLinkGrammarSyntaxSync } from "./linkgrammar-adapter";
 
 export { setLinkageRouting } from "./linkage";
@@ -1345,6 +1346,22 @@ function parseEn(text: string): ParsedSentence {
       } catch {
         /* the shadow's silence, by design */
       }
+      /* RelEx evidence (RelEx completion, routing stage): the
+       * full RelEx pipeline's Stanford relations over the WASM
+       * linkage ride the sentence beside the shadow, as a peer
+       * of linkgrammar-adapter.ts's proposals. EVIDENCE ONLY:
+       * nothing in this slice reads the record to decide
+       * anything — it proposes relations for the arbitration
+       * slices (valency, check.ts) that follow, and never
+       * writes a meaning-graph edge. When the WASM module is
+       * cold the record is absent and the parse is unchanged;
+       * a failure must never sink a parse. */
+      try {
+        const evidence = relexEvidenceSync(text, bodyTokens);
+        if (evidence) result.relexEvidence = evidence;
+      } catch {
+        /* the evidence's silence, by design */
+      }
       if (resolved.resolutions.length > 0) result.tokenResolutions = resolved.resolutions;
       /* A controlled infinitive after a recipient is an embedded task
        * candidate, not another matrix patient. Preserve it separately until
@@ -1396,6 +1413,12 @@ function parseEn(text: string): ParsedSentence {
             if (shadow) result.linkageShadow = shadow;
           } catch {
             /* the shadow's silence, by design */
+          }
+          try {
+            const evidence = relexEvidenceSync(text, retryTokens);
+            if (evidence) result.relexEvidence = evidence;
+          } catch {
+            /* the evidence's silence, by design */
           }
           rec.replacement = [next];
           rec.confidence = Math.round(rec.confidence * 0.8 * 100) / 100;

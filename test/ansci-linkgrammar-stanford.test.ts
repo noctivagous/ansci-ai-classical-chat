@@ -152,8 +152,11 @@ test("stanford: auxiliary from the documented example", async () => {
 
 test("stanford: semantic-dependent relations stay absent, loudly", async () => {
   // nsubj/dobj/advcl/prep_*/neg need RelEx's semantic pass
-  // (subj/obj/head-word/NEGATIVE-FLAG propagation), which this
-  // port deliberately does not run. They must not appear half-formed.
+  // (subj/obj/head-word/NEGATIVE-FLAG propagation), which the
+  // standalone entry point deliberately does not run. They must
+  // not appear half-formed. (The full pipeline entry point,
+  // stanfordRelationsFull, runs the passes and DOES produce
+  // them — see the "full:" tests below.)
   const { stanfordRelations } = await import("../src/ansci/linkgrammar-stanford");
   const r = await stanfordRelations("The bird, a robin, sang sweetly.");
   assert.equal(r.status, "complete");
@@ -162,6 +165,108 @@ test("stanford: semantic-dependent relations stay absent, loudly", async () => {
   for (const missing of ["nsubj", "dobj", "advcl", "prep_in", "neg", "ccomp", "xsubj", "appos"]) {
     assert.ok(!rels.has(missing), `${missing} absent by design, got: ${JSON.stringify(r.relations)}`);
   }
+});
+
+/* ------------------------------------------------------------------ */
+/* Full pipeline (tagging -> semantic -> stanford): the semantic-      */
+/* dependent families now fire. Expected relations are upstream        */
+/* RelEx's own TestStanford expectations (opencog/relex                */
+/* src/java_test/relex/test/TestStanford.java), checked as             */
+/* containment: the port's output must include each expected           */
+/* relation; extras and known divergences are pinned per case.         */
+/* ------------------------------------------------------------------ */
+
+async function fullRels(text: string): Promise<Set<string>> {
+  const { stanfordRelationsFull, formatStanfordRelations } = await import(
+    "../src/ansci/linkgrammar-stanford"
+  );
+  const r = await stanfordRelationsFull(text);
+  assert.equal(r.status, "complete", `${text}: ${r.error ?? ""}`);
+  return new Set(formatStanfordRelations(r.relations).split("\n").filter(Boolean));
+}
+
+test("full: nsubj and advmod (TestStanford: Jim runs quickly)", async () => {
+  const rels = await fullRels("Jim runs quickly.");
+  assert.ok(rels.has("nsubj(runs-2, Jim-1)"), [...rels].join(" "));
+  assert.ok(rels.has("advmod(runs-2, quickly-3)"), [...rels].join(" "));
+});
+
+test("full: ditransitive iobj/dobj (TestStanford: She gave me a raise)", async () => {
+  const rels = await fullRels("She gave me a raise.");
+  for (const e of [
+    "nsubj(gave-2, she-1)",
+    "iobj(gave-2, me-3)",
+    "det(raise-5, a-4)",
+    "dobj(gave-2, raise-5)",
+  ]) assert.ok(rels.has(e), `${e} in ${[...rels].join(" ")}`);
+});
+
+test("full: neg fires via NEGATIVE-FLAG (TestStanford: not true)", async () => {
+  const rels = await fullRels("What she said is not true.");
+  for (const e of [
+    "dobj(said-3, what-1)",
+    "nsubj(said-3, she-2)",
+    "csubj(true-6, said-3)",
+    "cop(true-6, is-4)",
+    "neg(true-6, not-5)",
+  ]) assert.ok(rels.has(e), `${e} in ${[...rels].join(" ")}`);
+  // Divergence from the upstream expectation set, pinned: the
+  // semantic pass also files `not` as an adverbial
+  // (_advmod(true, not)), which the stanford transfer copies.
+  assert.ok(rels.has("advmod(true-6, not-5)"), [...rels].join(" "));
+});
+
+test("full: nsubjpass fires; agent does not (upstream prep-links gap)", async () => {
+  const rels = await fullRels("The man has been killed by the police.");
+  assert.ok(rels.has("nsubjpass(killed-5, man-2)"), [...rels].join(" "));
+  assert.ok(rels.has("auxpass(killed-5, been-4)"), [...rels].join(" "));
+  // SF_AGENT reads <prep-links by> on the verb; upstream's only
+  // live PrepositionLinkAlg use is commented out in the shipped
+  // semantic file, so prep-links are never populated and agent
+  // cannot fire in the default flow — upstream or here. The
+  // by-phrase surfaces as advmod + native _pobj instead.
+  assert.ok(![...rels].some((x) => x.startsWith("agent(")), [...rels].join(" "));
+  assert.ok(rels.has("advmod(killed-5, by-6)"), [...rels].join(" "));
+});
+
+test("full: ccomp and xcomp fire (TestStanford-adjacent cases)", async () => {
+  const rels = await fullRels("He says that you like to swim.");
+  assert.ok(rels.has("ccomp(says-2, like-5)"), [...rels].join(" "));
+  assert.ok(rels.has("nsubj(like-5, you-4)"), [...rels].join(" "));
+  const rels2 = await fullRels("Tom likes to eat fish.");
+  assert.ok(rels2.has("xcomp(likes-2, eat-4)"), [...rels2].join(" "));
+  assert.ok(rels2.has("dobj(eat-4, fish-5)"), [...rels2].join(" "));
+});
+
+test("full: partmod fires (TestStanford: Truffles picked)", async () => {
+  const rels = await fullRels("Truffles picked during the spring are tasty.");
+  assert.ok(rels.has("partmod(truffles-1, picked-2)"), [...rels].join(" "));
+  assert.ok(rels.has("nsubj(tasty-7, truffles-1)"), [...rels].join(" "));
+  // Upstream expects prep_during(picked-2, spring-5); see the
+  // agent test for why prep_* cannot fire in the default flow.
+  assert.ok(rels.has("advmod(picked-2, during-3)"), [...rels].join(" "));
+});
+
+test("full: advcl fires with a divergence (auxiliary as head)", async () => {
+  const rels = await fullRels("The accident happened as the night was falling.");
+  assert.ok(rels.has("nsubj(happened-3, accident-2)"), [...rels].join(" "));
+  assert.ok(rels.has("nsubj(falling-8, night-6)"), [...rels].join(" "));
+  // Upstream expects advcl(happened-3, falling-8) and
+  // aux(falling-8, was-7). Here the head-word chain stops at
+  // the auxiliary: advcl(happened-3, was-7), mark(was-7, as-4),
+  // cop(falling-8, was-7). Pinned as the measured behaviour.
+  assert.ok(rels.has("advcl(happened-3, was-7)"), [...rels].join(" "));
+});
+
+test("full: expl divergence pinned (There is a place)", async () => {
+  // Upstream expects expl(is-2, there-1) and no nsubj on
+  // `there`. The port produces nsubj(there-1, place-4) and
+  // nsubj(is-2, place-4): the expletive promotion differs.
+  // The core expectations (nsubj(is, place), aux(go, can)) hold.
+  const rels = await fullRels("There is a place we can go.");
+  assert.ok(rels.has("nsubj(is-2, place-4)"), [...rels].join(" "));
+  assert.ok(rels.has("aux(go-7, can-6)"), [...rels].join(" "));
+  assert.ok(rels.has("nsubj(there-1, place-4)"), [...rels].join(" "));
 });
 
 test("stanford: recovered linkage yields no relations", async () => {

@@ -1,0 +1,10 @@
+{
+ "gate": "relex2logic-shadow",
+ "date": "2026-11-23",
+ "verdict": "PASS",
+ "summary": {
+  "cases": 12,
+  "passed": 12
+ },
+ "failures": []
+}

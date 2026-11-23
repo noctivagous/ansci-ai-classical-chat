@@ -260,6 +260,30 @@ export interface TokenResolution {
   aoaPrior?: string;
 }
 
+/** The RelEx evidence record (see ParsedSentence.relexEvidence).
+ *  One Stanford-style dependency relation as the full RelEx
+ *  pipeline (tagging → semantic → stanford) produced it over the
+ *  WASM Link Grammar linkage: governor/dependent are WORD
+ *  INDICES INTO THE PARSE'S OWN TOKEN LIST (the routing maps
+ *  the linkage's sentence positions onto the parse tokens; a
+ *  relation whose words cannot be mapped is dropped, never
+ *  guessed). `family` is the Stanford relation name (nsubj,
+ *  dobj, neg, prep_at, …). */
+export interface RelexEvidenceRelation {
+  family: string;
+  gov: number;
+  dep: number;
+  govWord: string;
+  depWord: string;
+}
+
+export interface RelexEvidence {
+  status: "complete" | "recovered" | "failed";
+  relations: RelexEvidenceRelation[];
+  /** Families present, for cheap presence checks. */
+  families: string[];
+}
+
 /** One shadow linkage's record (see ParsedSentence.linkageShadow). */
 export interface LinkageShadow {
   status: "complete" | "partial" | "declined";
@@ -303,6 +327,19 @@ export interface ParsedSentence {
    *  unlinked; `skipped` are words with no dictionary record
    *  (not UNUSED — the dictionary simply does not file them). */
   linkageShadow?: LinkageShadow;
+  /** The RelEx Stanford evidence record (RelEx completion,
+   *  routing stage): the full-pipeline Stanford relations over
+   *  the WASM linkage, attached beside the parse by turn.ts's
+   *  async pre-pass — parse() itself is synchronous and never
+   *  runs the WASM. EVIDENCE ONLY in this slice: the record
+   *  proposes dependency relations; no graph edge, check, or
+   *  reply is written from it here. Consumers must treat it the
+   *  way the adapter's relations are treated — proposals for
+   *  AnSci's own arbitration (valency, check.ts), never direct
+   *  meaning. Absent when the WASM linkage was unavailable,
+   *  incomplete, or its words could not be mapped onto the
+   *  parse's tokens. */
+  relexEvidence?: RelexEvidence;
   /** Token resolutions applied before item classification, when any
    *  token needed them (token-resolve.ts). The connective graph is
    *  built over the resolved tokens; this record is the provenance

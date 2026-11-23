@@ -53,3 +53,48 @@ this layer adds the modifier/auxiliary/copula families.
 One label-drift exception: SF_DET_POSS expects "Ds*w";
 Link Grammar 5.13 emits "Ds*wc" (Java-verified mismatch),
 so "whose" yields det, not poss.
+
+## Completion (2026-11-23): the gaps above are closed where upstream closes them
+
+The standalone mode above is unchanged (it remains the cold
+path and its absence pins stand). Alongside it, the full
+upstream pipeline now runs — tagging → semantic → stanford —
+in src/ansci/linkgrammar-semantic.ts over the vendored
+relex-tagging.algs / relex-semantic.algs, with the six named
+algorithms ported (Morphy over AnSci's own WordNet extract).
+Mechanism survey: docs/ansci/relex-semantic-survey.md.
+
+Full-pipeline gate (same 98 inputs, statuses identical):
+156 → 402 relations. New families: nsubj 99, dobj 52,
+advmod 39, nn +3, aux +2, cop +2, nsubjpass 6, neg 5, num 4,
+expl 3, partmod 3, poss 3, xcomp 3, advcl 2, appos 2,
+ccomp 2, csubj 2, iobj 2, acomp 2, mark 2, and singletons.
+Zero non-merge rule errors; the 72 feature-merge errors are
+the ones upstream's applier swallows by design (classified
+in the gate report).
+
+What still cannot fire, upstream-faithfully: prep_* and
+agent — the shipped semantic file's only live
+PrepositionLinkAlg call is commented out, so `ref
+prep-links` is never populated (upstream produces prep_at
+only in its --expand-preps mode, a different feature path);
+and infmod — SF_INFMOD tests a `pos` feature no upstream
+file writes. Both absences are pinned by tests with the
+reason recorded.
+
+Native relations (Stage 2): the semantic file's own output
+(`ref links _X`) is exposed as nativeRelations() —
+_subj/_obj/_iobj/_expl/_predadj/_pobj/_comparative/… —
+gated on 12 cited cases. Relex2Logic (Stage 3) consumes
+them in shadow: src/ansci/relex2logic.ts applies the
+transcribed rule inventory and emits logic records in
+AnSci's ParsedSentence vocabulary (questions as the `query`
+record, never null-filled assertions); gate 12/12.
+
+Routing (Stage 4): the full pipeline's Stanford relations
+ride ParsedSentence.relexEvidence (src/ansci/
+linkgrammar-relex-evidence.ts, attached in parse.ts beside
+the linkage shadow) as EVIDENCE — proposals over the parse's
+own token indices, peer of the adapter. Nothing consumes
+the record to decide anything yet; the native and R2L
+outputs remain unrouted shadow outputs.

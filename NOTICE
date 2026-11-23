@@ -191,6 +191,53 @@ passes), so semantic-pass relations (nsubj, dobj, prep_*,
 neg, …) are absent by design — see
 docs/ansci/linkgrammar-stanford-slice.md.
 
+RelEx tagging + semantic passes (vendor/relex/,
+src/ansci/linkgrammar-semantic.ts) — added 2026-11-23
+-----------------------------------------------------------------
+The tagging and semantic rule sets in this repository
+(vendor/relex/relex-tagging.algs and
+vendor/relex/relex-semantic.algs, generated into
+src/ansci/linkgrammar-passes-rules.ts by
+scripts/import-relex-passes.mjs) are taken verbatim from the
+same RelEx distribution, under the same Apache License 2.0.
+The named (non-template) algorithms interleaved in those
+files — MorphyAlg, WordSequenceCombineAlg,
+TwoWordCombineToLeftAlg, TwoWordCombineToRightAlg,
+TenseConjoinAlg, PrepositionLinkAlg (relex.algs.*, same
+license) — are ported in src/ansci/linkgrammar-semantic.ts,
+written from the Java sources. MorphyAlg's lemma source
+upstream is WordNet via JWNL; here it is AnSci's own Open
+English WordNet extract (see the WordNet entry above) — the
+algorithm is RelEx's, the data is AnSci's, and no JWNL or
+OpenNLP assets are bundled. With these passes the full
+pipeline (tagging → semantic → stanford) produces the
+semantic-dependent Stanford families and the native RelEx
+relations; see docs/ansci/relex-semantic-survey.md and
+docs/ansci/linkgrammar-stanford-slice.md.
+
+Relex2Logic rule patterns (vendor/relex2logic/,
+src/ansci/relex2logic-rules.ts, src/ansci/relex2logic.ts)
+— added 2026-11-23
+-----------------------------------------------------------------
+Relex2Logic lives in the opencog/opencog repository
+(https://github.com/opencog/opencog, opencog/nlp/relex2logic/),
+whose files are distributed under the GNU Affero General
+Public License v3 (AGPL-3.0) with the OpenCog linking
+exception, unless a file header says otherwise; the R2L files
+carry no per-file licence header. The Scheme rule files are
+vendored in vendor/relex2logic/ for audit and reference only
+— they are not executed, linked, or compiled by AnSci. What
+AnSci ships (src/ansci/relex2logic-rules.ts) is a clean-room
+transcription of the rules' linguistic content — their
+dependency patterns over RelEx's native relations and the
+argument shapes of their outputs — written from reading the
+sources, with the outputs re-expressed in AnSci's own
+ParsedSentence / meaning-graph vocabulary. No Scheme code is
+copied or transliterated. If the AGPL terms are ever read to
+cover the patterns themselves, the transcription would need
+re-derivation from the RelEx documentation alone; the
+vendored copies exist so that question stays auditable.
+
 qualreas relation algebras (data/qualreas/, src/ansci/qualreas.ts)
 -----------------------------------------------------------------
 The relation-algebra data in this repository (RCC-8, Allen's
