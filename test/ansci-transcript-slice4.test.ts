@@ -23,6 +23,19 @@ import assert from "node:assert/strict";
 import { newSession } from "../src/ansci/session";
 import { processTurn } from "../src/ansci/turn";
 import { requestPlace } from "../src/ansci/social";
+import { PLACE } from "../src/ansci/place";
+
+/** Run with no configured seat: the place-gap machinery's
+ *  standing (the default seat is Oklahoma City, OK now). */
+function withNoSeat<T>(fn: () => T): T {
+  const saved = PLACE.place;
+  PLACE.place = null;
+  try {
+    return fn();
+  } finally {
+    PLACE.place = saved;
+  }
+}
 
 const SHAPE_TEXT = "this question shape is not one the net can answer yet";
 const SHAPE_REPLY = "I answer questions about what things are like, and that one asks something else";
@@ -45,15 +58,14 @@ function person(session: ReturnType<typeof newSession>) {
   return session.objects.filter((o) => o.producer === "person");
 }
 
-test("the Place table's standing configuration: no place is configured", () => {
-  // The design choice the slice records: self-location's
-  // home is a Place entry in Awareness Self's tables
-  // (deployment configuration, like Identity/Capabilities),
-  // and its honest content today is that no place is
-  // configured — the frame is a time record and no shell
-  // supplies a place. The self-location decline below is
-  // composed from exactly this standing.
-  assert.equal(requestPlace().place, null);
+test("the Place table's standing configuration: the default seat is Oklahoma City, OK", () => {
+  // Self-location's home is a Place entry in Awareness
+  // Self's tables (deployment configuration, like
+  // Identity/Capabilities); its standing content is the
+  // default seat, Oklahoma City, OK, unless a deployment
+  // overrides it. The self-location decline below is
+  // composed under no seat (withNoSeat).
+  assert.equal(requestPlace().place, "Oklahoma City, OK");
 });
 
 test("probe 11: 'where is oklahoma?' answers at gloss level from the grounded entity record", () => {
@@ -73,7 +85,7 @@ test("probe 11: 'where is oklahoma?' answers at gloss level from the grounded en
 
 test("probe 12: 'where are you?' takes the self-location path — a decline naming self-location as the gap", () => {
   const session = newSession();
-  const { reply, trace } = turn(session, "where are you?");
+  const { reply, trace } = withNoSeat(() => turn(session, "where are you?"));
   // Recognised as self-directed in assessment: a self-query
   // of the location flavour.
   assert.equal(person(session)[0].act.kind, "self-query");
@@ -134,7 +146,7 @@ test("the time-frame forms route by their real subject, not the mis-headed time 
   // The parse heads a trailing time word as the subject,
   // the real subject standing as its qualifier; the split
   // reads the subject through the qualifier.
-  assert.equal(turn(newSession(), "where are you now?").reply, SELF_LOCATION_TEXT);
+  assert.equal(withNoSeat(() => turn(newSession(), "where are you now?")).reply, SELF_LOCATION_TEXT);
   assert.equal(
     turn(newSession(), "where is the dog now?").reply,
     "I can't answer that from what I know: nothing in what I know says where the dog is.",

@@ -45,6 +45,7 @@ import {
   type WhatsThereCategory,
 } from "../src/ansci/overpass-client";
 import { detectGeographyQuestion, processTurnWithGeography } from "../src/ansci/geography-turn";
+import { PLACE } from "../src/ansci/place";
 
 function fixturesDir(): string {
   let dir = __dirname;
@@ -226,12 +227,17 @@ test("G2: an attested absence answers as the source's absence, not the world's",
 });
 
 test("G2: the declines stand at their locations — no place, unresolvable place, ambiguous place, source down, stale-only set", async () => {
-  // No place anywhere: GeographyAwareness's gap (§9.4).
+  // No place anywhere: GeographyAwareness's gap (§9.4) —
+  // under no configured seat (the default is Oklahoma City,
+  // OK now, and a seat would answer "near me?" from it).
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
   const noPlace = await processTurnWithGeography(
     newSession(),
     "what is near me?",
     geographyOpts(new PlaceRegister(), new StubOverpass(riversElements)),
   );
+  PLACE.place = savedSeat;
   assert.equal(noPlace.trace.geography?.action, "no-place");
   assert.match(noPlace.reply, /don't know where you are/);
 

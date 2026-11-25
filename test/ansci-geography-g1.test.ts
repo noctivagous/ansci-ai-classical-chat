@@ -56,6 +56,19 @@ import {
 import { rankEntities, type EntityCandidate } from "../src/ansci/entity-rank";
 import { interlocutorPlace, readGeographyAwareness } from "../src/ansci/geography-awareness";
 import { processTurnWithWeather } from "../src/ansci/weather-turn";
+import { PLACE } from "../src/ansci/place";
+
+/** Run with no configured seat (the default is Oklahoma
+ *  City, OK now): the standing these tests pin. */
+function withNoSeat<T>(fn: () => T): T {
+  const saved = PLACE.place;
+  PLACE.place = null;
+  try {
+    return fn();
+  } finally {
+    PLACE.place = saved;
+  }
+}
 import { FixtureWeatherSource } from "../src/ansci/weather-client";
 import { defaultWeatherBank, placeKeyOf } from "../src/ansci/weather-bank";
 import { WikidataBank } from "../src/ansci/wikidata-bank";
@@ -344,11 +357,11 @@ test("resolution: a no-hit consultation is unresolved; a down source is unavaila
 
 /* ---- GeographyAwareness ---- */
 
-test("awareness: a new session's seat is the Place table's standing — unconfigured — and no centre stands", () => {
+test("awareness: a new session's seat is the Place table's standing — the default, Oklahoma City, OK — and no centre stands", () => {
   const s = newSession();
-  assert.equal(s.geography.seat, null);
+  assert.equal(s.geography.seat, "Oklahoma City, OK");
   assert.equal(s.geography.centre, undefined);
-  assert.deepEqual(requestPlace(), { place: null }, "the self-location route's fact is unchanged by the custody move");
+  assert.deepEqual(requestPlace(), { place: "Oklahoma City, OK" }, "the self-location route's fact is unchanged by the custody move");
 });
 
 test("awareness: the interlocutor's stated place is read from the record, and the shift is recorded", () => {
@@ -370,7 +383,7 @@ test("awareness: the interlocutor's stated place is read from the record, and th
 
 test("awareness: the self-location answer is byte-identical after the re-point", () => {
   assert.equal(
-    processTurn(newSession(), "where are you?").reply,
+    withNoSeat(() => processTurn(newSession(), "where are you?")).reply,
     "I don't have a place: nothing in my situation record says where I am.",
   );
 });
@@ -477,16 +490,22 @@ test("weather: a stale-only holding declines at the staleness and never serves t
     provenance: RETRIEVED,
     fetchedAt: "2025-01-01T00:00:00.000Z",
   });
-  const s = newSession();
-  processTurn(s, "i am in oklahoma.");
-  const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
-    source: new FixtureWeatherSource(OKC_NWS),
-    wikidataBank: new WikidataBank(),
-    placeRegister: register,
-    geographySource: downSource,
-    now: () => new Date("2026-11-20T12:00:00Z"),
-    retrievedFrom: "fixture",
-  });
-  assert.equal(trace.weather?.action, "stale-only");
-  assert.match(reply, /out of date/);
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
+  try {
+    const s = newSession();
+    processTurn(s, "i am in oklahoma.");
+    const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
+      source: new FixtureWeatherSource(OKC_NWS),
+      wikidataBank: new WikidataBank(),
+      placeRegister: register,
+      geographySource: downSource,
+      now: () => new Date("2026-11-20T12:00:00Z"),
+      retrievedFrom: "fixture",
+    });
+    assert.equal(trace.weather?.action, "stale-only");
+    assert.match(reply, /out of date/);
+  } finally {
+    PLACE.place = savedSeat;
+  }
 });

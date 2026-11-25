@@ -9,19 +9,16 @@
  * holds no copy of its own, exactly as Identity and
  * Capabilities are held (identity.ts, capabilities.ts).
  *
- * The honest configuration, as this table stands, is that
- * NO place is configured — and that is a finding, not an
- * omission. The system is a program: it runs wherever it is
- * run, no shell records a place for it, and the system's
- * situation record — the Awareness frame (session.ts's
- * FrameRecord) — is a TIME record: month/day/hour, season,
- * daypart. There is no place field in it to answer from,
- * and inventing one (a city, a country, "the internet")
- * would assert a fact nothing holds. So the self-location
- * answer this table supports today is the located decline
- * that names self-location as the gap. A deployment that
- * does run somewhere nameable sets the place here, as data,
- * and the same request then answers with it.
+ * The default configuration, as this table stands, is
+ * Oklahoma City, OK (DEFAULT_PLACE below, with its point):
+ * the seat answers self-location questions and grounds
+ * unlocated weather questions where the deployment has
+ * configured nothing else. A deployment that runs somewhere
+ * nameable overrides the default here, as data — through
+ * the environment (see envPlace) — and the same request
+ * then answers with that place instead. Where a place were
+ * ever set back to null, the self-location answer is the
+ * located decline that names self-location as the gap.
  *
  * Place is deployment configuration, not session state: it
  * does not change within a conversation, which is why it
@@ -61,10 +58,18 @@ export interface PlaceTable {
   longitude?: number;
 }
 
+/** The default seat, where no deployment configuration
+ *  overrides it: Oklahoma City, OK, with its point. */
+export const DEFAULT_PLACE: PlaceTable = {
+  place: "Oklahoma City, OK",
+  latitude: 35.4676,
+  longitude: -97.5164,
+};
+
 function envPlace(): PlaceTable {
   const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
   const place = env?.ANSCI_PLACE?.trim();
-  if (!place) return { place: null };
+  if (!place) return { ...DEFAULT_PLACE };
   const latitude = Number(env?.ANSCI_PLACE_LATITUDE);
   const longitude = Number(env?.ANSCI_PLACE_LONGITUDE);
   return {
@@ -78,9 +83,8 @@ function envPlace(): PlaceTable {
  * The configured place: deployment configuration from the
  * environment (ANSCI_PLACE, with ANSCI_PLACE_LATITUDE /
  * ANSCI_PLACE_LONGITUDE alongside it where the deployment
- * knows its point), or null where none is configured. The
- * data and its honesty are unchanged: no place is invented,
- * and an unconfigured deployment still declines by naming
- * self-location as the gap.
+ * knows its point), or the default seat (DEFAULT_PLACE,
+ * Oklahoma City, OK) where none is configured. An explicit
+ * configuration always replaces the default.
  */
 export const PLACE: PlaceTable = envPlace();

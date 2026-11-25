@@ -34,6 +34,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newSession } from "../src/ansci/session";
 import { processTurn } from "../src/ansci/turn";
+import { PLACE } from "../src/ansci/place";
 import { parse } from "../src/ansci/parse";
 import { generate, unsoundAnswerValue } from "../src/ansci/generate";
 import { planPredication, planRecordPredication, UnsoundAnswerError } from "../src/ansci/plan";
@@ -131,9 +132,17 @@ test("Family V regression: the shadowed paths are byte-identical and the guard d
     "what is the capital of oklahoma?":
       "I can't answer that from what I know: I have capital in my notes as a book written by Karl Marx (1867) describing his economic theories, but nothing that connects it to 'what', and I have no way to connect anything to 'what'.",
   };
-  for (const [input, reply] of Object.entries(expected)) {
-    const result = processTurn(newSession(), input);
-    assert.equal(result.reply, reply, input);
-    assert.equal(result.trace.answerGuard, undefined, `guard must not misfire on '${input}'`);
+  // The weather pin stands under no configured seat (the
+  // default seat is Oklahoma City, OK now).
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
+  try {
+    for (const [input, reply] of Object.entries(expected)) {
+      const result = processTurn(newSession(), input);
+      assert.equal(result.reply, reply, input);
+      assert.equal(result.trace.answerGuard, undefined, `guard must not misfire on '${input}'`);
+    }
+  } finally {
+    PLACE.place = savedSeat;
   }
 });

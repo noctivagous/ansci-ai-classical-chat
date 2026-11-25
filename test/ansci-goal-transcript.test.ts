@@ -84,10 +84,10 @@ test("wh-determiner date: 'what day is it?' answers from the wired clock", () =>
 test("a question establishes no place: 'where are you?' does not poison the weather place", () => {
   const s = newSession();
   processTurn(s, "where are you?");
-  const { reply, trace } = processTurn(s, "what is the weather?");
-  assert.equal(trace.weather?.action, "place-gap");
-  assert.match(reply, /I don't know where you are/);
-  assert.doesNotMatch(reply, /Where/);
+  const { trace } = processTurn(s, "what is the weather?");
+  // The place in force is the default seat, not "Where".
+  assert.equal(trace.weather?.action, "lookup-needed");
+  assert.match(trace.weather?.place ?? "", /Oklahoma City/);
 });
 
 test("a stated residence still establishes the weather place", () => {
@@ -98,9 +98,10 @@ test("a stated residence still establishes the weather place", () => {
   assert.match(trace.weather?.place ?? "", /oklahoma/i);
 });
 
-test("self-location answers from the configured place, and declines honestly without one", () => {
-  const unconfigured = processTurn(newSession(), "where are you?");
-  assert.match(unconfigured.reply, /I don't have a place/);
+test("self-location answers from the default place, and a configured place replaces it", () => {
+  const byDefault = processTurn(newSession(), "where are you?");
+  assert.equal(byDefault.reply, "I am in Oklahoma City, OK.");
+  assert.equal(byDefault.trace.declineReason, undefined);
 
   const saved = PLACE.place;
   PLACE.place = "Chicago";
@@ -117,9 +118,9 @@ test("the goal transcript, in sequence, on a clocked session", () => {
   const s = clockedSession();
   assert.equal(processTurn(s, "hello").reply, "Hello.");
   assert.match(processTurn(s, "do you know your name?").reply, /AnSci/);
-  assert.match(processTurn(s, "where are you?").reply, /I don't have a place/);
+  assert.equal(processTurn(s, "where are you?").reply, "I am in Oklahoma City, OK.");
   assert.equal(processTurn(s, "what time is it?").reply, "It is 3:04 PM.");
-  assert.match(processTurn(s, "what is the weather?").reply, /I don't know where you are/);
+  assert.equal(processTurn(s, "what is the weather?").trace.weather?.place, "Oklahoma City, OK");
   const knowledge = processTurn(s, "what do you know?");
   assert.match(knowledge.reply, /AnSci/);
   assert.equal(knowledge.trace.declineReason, undefined);

@@ -26,6 +26,19 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newSession } from "../src/ansci/session";
 import { processTurn } from "../src/ansci/turn";
+import { PLACE } from "../src/ansci/place";
+
+/** Run with no configured seat (the default is Oklahoma
+ *  City, OK now): the place-gap standing these tests pin. */
+function withNoSeat<T>(fn: () => T): T {
+  const saved = PLACE.place;
+  PLACE.place = null;
+  try {
+    return fn();
+  } finally {
+    PLACE.place = saved;
+  }
+}
 
 test("V8: 'what is the capital of oklahoma?' reaches the knowledge — it declines there, not at the referent branch", () => {
   const { reply, trace } = processTurn(newSession(), "what is the capital of oklahoma?");
@@ -45,7 +58,7 @@ test("IM3: 'now' is not asked after as a referent — W2 stood down at this slic
   // intercepts the question before answerPredicateQuestion,
   // so no stand-down is recorded — the IM3 guarantee (never
   // asked after 'now') is now kept by the earlier claim.
-  const { reply, trace } = processTurn(newSession(), "what is the weather now?");
+  const { reply, trace } = withNoSeat(() => processTurn(newSession(), "what is the weather now?"));
   assert.ok(!reply.startsWith("What now?"));
   assert.equal(trace.weather?.action, "place-gap");
   assert.equal(trace.unanchoredDefinite, undefined);
@@ -85,7 +98,7 @@ test("ownership: 'what is the weather?' clarified at this slice — Slice 6 has 
   // Superseded by Probe-2 Slice 6: the weather shape claims
   // the question upstream of this branch, and with no place
   // standing the reply names the place gap.
-  const { reply, trace } = processTurn(newSession(), "what is the weather?");
+  const { reply, trace } = withNoSeat(() => processTurn(newSession(), "what is the weather?"));
   assert.equal(reply, "I don't know where you are, so I can't say what the weather is like there.");
   assert.equal(trace.weather?.action, "place-gap");
 });

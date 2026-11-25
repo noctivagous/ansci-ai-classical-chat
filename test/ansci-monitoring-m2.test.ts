@@ -20,6 +20,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newSession, type Session } from "../src/ansci/session";
+import { PLACE } from "../src/ansci/place";
 import {
   processTurnWithMonitoring,
   registerSituatedWeatherMonitor,
@@ -164,6 +165,10 @@ test("the registrar seam: GeographyAwareness registers over the situated place; 
   }
   assert.equal(registered.monitor.registrar, "Awareness (GeographyAwareness)");
 
+  // No situated place: under no configured seat (the
+  // default is Oklahoma City, OK now).
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
   const bare = clockedSession(fixtureClock(T0));
   const refused = registerSituatedWeatherMonitor(
     bare,
@@ -174,6 +179,7 @@ test("the registrar seam: GeographyAwareness registers over the situated place; 
     },
     standingOf(bare),
   );
+  PLACE.place = savedSeat;
   assert.equal(refused.ok, false);
   if (!refused.ok) {
     assert.match(refused.reason, /at the subject/);

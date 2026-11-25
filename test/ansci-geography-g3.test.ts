@@ -22,6 +22,7 @@ import * as path from "node:path";
 import { newSession } from "../src/ansci/session";
 import { processTurn } from "../src/ansci/turn";
 import { PlaceRegister } from "../src/ansci/geography";
+import { PLACE } from "../src/ansci/place";
 import { WikidataBank } from "../src/ansci/wikidata-bank";
 import { FixtureNominatimSource } from "../src/ansci/geography-client";
 import {
@@ -197,10 +198,15 @@ test("G3: the declines stand at the failing endpoint — ambiguous destination, 
   assert.equal(ambiguous.trace.geography?.action, "place-ambiguous");
   assert.match(ambiguous.trace.geography!.detail, /the destination \(springfield\)/);
 
+  // "from here" with no situated place: under no configured
+  // seat (the default is Oklahoma City, OK now).
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
   const noPlace = await processTurnWithGeography(
     newSession(),
     "how far is tulsa from here?",
     howFarOpts(new PlaceRegister(), new StubOsrm()),
   );
+  PLACE.place = savedSeat;
   assert.equal(noPlace.trace.geography?.action, "no-place");
 });

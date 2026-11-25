@@ -54,6 +54,13 @@ import { WikidataBank } from "../src/ansci/wikidata-bank";
 import { parseWikidataEntities, translateWikidataItems } from "../src/ansci/wikidata";
 import { PlaceRegister } from "../src/ansci/geography";
 import type { NominatimSource } from "../src/ansci/geography-client";
+import { PLACE } from "../src/ansci/place";
+
+// This file exercises the place-gap and conversation-place
+// machinery under no configured seat; the default seat
+// (Oklahoma City, OK) is cleared for the file, and the
+// default standing is asserted in the goal-transcript tests.
+PLACE.place = null;
 
 /** Geography G1: a Nominatim consultation that resolves
  *  nothing, for any name — injected so the wrapper tests

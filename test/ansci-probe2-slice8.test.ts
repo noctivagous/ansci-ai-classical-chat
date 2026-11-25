@@ -192,6 +192,11 @@ test("the phrase table: rain and snow words, measured precipitation, and the sno
 
 test("coordinates from the bank: the wrapper's trace names the banked P625 record it read", async () => {
   expireOklahomaReading();
+  // Under no configured seat (the default is Oklahoma City,
+  // OK now): the conversation-stated place is the one in force.
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
+  try {
   const s = newSession();
   processTurn(s, "i am in oklahoma.");
   const { reply, trace } = await processTurnWithWeather(s, "what is the weather?", {
@@ -204,6 +209,9 @@ test("coordinates from the bank: the wrapper's trace names the banked P625 recor
   assert.equal(reply, BANKED_REPLY);
   assert.match(trace.weather?.detail ?? "", /Wikidata bank's record for Oklahoma \(Q1649\)/);
   assert.match(trace.weather?.detail ?? "", /35\.5, -98/);
+  } finally {
+    PLACE.place = savedSeat;
+  }
 });
 
 test("coordinates from the Place table: a configured place with configured coordinates needs no bank record", async () => {
@@ -289,6 +297,11 @@ test("coverage: Sydney's banked point is outside the source's coverage — the d
 
 test("one lookup is three HTTP requests; a repeat inside the shelf life is none", async () => {
   expireOklahomaReading();
+  // Under no configured seat, as the bank-coordinates test
+  // above: the conversation-stated place is the one in force.
+  const savedSeat = PLACE.place;
+  PLACE.place = null;
+  try {
   let calls = 0;
   const urls: string[] = [];
   const fetchFn = async (url: string) => {
@@ -330,4 +343,7 @@ test("one lookup is three HTTP requests; a repeat inside the shelf life is none"
   assert.equal(second.reply, BANKED_REPLY);
   assert.equal(second.trace.weather?.action, "answered-from-bank");
   assert.equal(calls, 3, "the repeat made no HTTP request");
+  } finally {
+    PLACE.place = savedSeat;
+  }
 });
