@@ -140,6 +140,7 @@ import { mixFor, type EmotionMixEntry } from "./emotion-mix";
 import { composeWeatherReply, detectWeatherQuestion, displayPlace, resolveWeatherPlace, statedWeather, type WeatherQuestion } from "./weather";
 import { defaultWeatherBank, placeKeyOf } from "./weather-bank";
 import { winkSentences } from "./wink";
+import { insideStructuredSpan, structuredSpans } from "./structured-tokens";
 
 export interface TurnTrace {
   turn: number;
@@ -4066,11 +4067,17 @@ function splitTurnSegmentsDetailed(text: string): { segments: string[]; sbdVetoe
   }
   const boundaries: { start: number; end: number }[] = [];
   let extendFrom: number | undefined;
+  // Structured-token spans (structured-tokens.ts): a mark
+  // inside an address or domain is the token's, not a segment
+  // boundary — the decimal exception's sibling, computed once
+  // for the turn.
+  const addressSpans = structuredSpans(trimmed);
   for (const r of rawMatches) {
     const punctAt = r.start + trimmed.slice(r.start, r.end).search(/[.?!]/);
     const isDecimal =
       trimmed[punctAt] === "." && /\d/.test(trimmed[punctAt - 1] ?? "") && /\d/.test(trimmed[r.end] ?? "");
-    if (isDecimal) {
+    const isStructured = insideStructuredSpan(trimmed, punctAt, addressSpans);
+    if (isDecimal || isStructured) {
       // Not a boundary: the segment it belongs to runs on, and the
       // next real boundary's span extends back over it.
       if (extendFrom === undefined) extendFrom = r.start;

@@ -76,6 +76,8 @@ function safeAdaptSyntax(text: string, tokens: string[]) {
   }
 }
 import { resolveTokenList, type TokenClass } from "./token-resolve";
+import { classifyStructuredToken } from "./structured-tokens";
+import { parseOrdinalToken } from "./ordinal-words";
 import { lookupClassification } from "./classify";
 import { applySenseSelection } from "./sense";
 import { zhAspectFor, zhPreverbalAspectFor } from "./aspect";
@@ -259,7 +261,34 @@ export function enTokenize(text: string): {
   const cleaned = text.trim().replace(/[.?!]\s*$/, "").replace(/_comma_/gi, " , ").replace(/,/g, " , ");
   const raw = cleaned.split(/\s+/).filter(Boolean);
   const tokens: string[] = [];
+  // Currency and percent markers (LUIS Currency/Percentage
+  // checklist): a leading "$"/"¢" and a trailing "%" are the
+  // amount's markers, not the word's edges — split them into
+  // their own tokens here, before the edge-strip below would
+  // remove them ("$5" lost its dollar, "50%" its percent).
+  const splitMarkers = (rawToken: string): string[] => {
+    let head = "";
+    let stem = rawToken;
+    let tail = "";
+    if (/^[$¢]/.test(stem) && stem.length > 1) {
+      head = stem[0];
+      stem = stem.slice(1);
+    }
+    if (/%$/.test(stem) && stem.length > 1) {
+      tail = "%";
+      stem = stem.slice(0, -1);
+    }
+    return [...(head ? [head] : []), ...(stem ? [stem] : []), ...(tail ? [tail] : [])];
+  };
   for (const rawToken of raw) {
+    for (const piece of splitMarkers(rawToken)) {
+      // A bare marker is language's, not a word's: it passes
+      // the pipeline untouched — the edge-strip below would
+      // delete it (both markers stand in its strip set).
+      if (piece === "$" || piece === "¢" || piece === "%") {
+        tokens.push(piece);
+        continue;
+      }
     // Surface symbols at a token's edges (Probe-2 Slice 3,
     // 2026-11-20; diagnostic IM1): the strip above and the
     // glued split below know only the sentence marks [.?!]
@@ -278,7 +307,7 @@ export function enTokenize(text: string): {
     // the apostrophe and the hyphen are NOT in it (they are
     // grammatical or word-internal, and the rules below own
     // them), and nothing inside a token is touched.
-    const t = rawToken
+    const t = piece
       .replace(/^[><\/\\|@#$%^&*_~`"“”()\[\]{}:;…•·«»—–]+/, "")
       .replace(/[><\/\\|@#$%^&*_~`"“”()\[\]{}:;…•·«»—–]+$/, "");
     if (!t) continue;
@@ -319,6 +348,7 @@ export function enTokenize(text: string): {
       } else {
         tokens.push(t);
       }
+    }
     }
   }
   return { tokens, interrogative };
@@ -1275,6 +1305,24 @@ function parseEn(text: string): ParsedSentence {
       wordnetNoun(lower) !== undefined ||
       wordnetAdjective(lower) !== undefined ||
       (lower !== "between" && wordnetAdverb(lower) !== undefined)
+    ) {
+      return "known";
+    }
+    // Closed structural forms (structured-tokens.ts,
+    // ordinal-words.ts): a contact token, a currency/percent
+    // marker, or an ordinal form needs no spelling help —
+    // the layers below own them. Without this, the matcher
+    // "corrected" ordinals into neighbours ("first" is one
+    // delete from "fist") and digit-ordinals ("2nd") sank as
+    // unresolvable word-forms. Both imports are leaf modules
+    // (no session chain) — the bridge itself must never be
+    // imported here (see ordinal-words.ts).
+    if (
+      lower === "$" ||
+      lower === "¢" ||
+      lower === "%" ||
+      classifyStructuredToken(lower) !== undefined ||
+      parseOrdinalToken(lower) !== undefined
     ) {
       return "known";
     }

@@ -50,11 +50,25 @@ const NUMBER_WORDS: Record<string, number> = {
   six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
   eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
   sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20,
+  thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
   hundred: 100, thousand: 1000,
 };
 
+/**
+ * Ordinals (LUIS Ordinal checklist) live in ordinal-words.ts
+ * — a leaf module, because the sentence layer's token
+ * recognition reads the same table and cannot import this
+ * bridge (which imports the session). Re-exported here so
+ * the bridge stays the LPU's address for language's
+ * numbers; ordinals are NOT amounts and never name a
+ * counted kind, enforced below.
+ */
+import { parseOrdinalToken } from "./ordinal-words";
+
+export { parseOrdinalToken };
+
 /** A token's number, if it is one: a digit string ("5", up to
- *  and past 9999) or a number word (one..twenty, hundred,
+ *  and past 9999) or a number word (one..ninety, hundred,
  *  thousand standing alone). Compound forms are not composed
  *  (see the header). */
 export function parseNumberToken(token: string): number | undefined {
@@ -108,15 +122,41 @@ const KIND_EXCEPTIONS = new Set(["news"]);
  *  same kind. The parse's own entity grain is untouched —
  *  this normalisation is the ledger's, and it lives here
  *  because naming kinds is language's work. */
+/**
+ * Currency and percent synonyms (LUIS Currency/Percentage
+ * checklist): surface forms naming the same counted kind.
+ * "Bucks" are dollars — the colloquial name, not a second
+ * kind — and "percentage" is "percent". Rates between
+ * currencies are NOT filed: no FX table stands anywhere,
+ * so dollars and euros stay distinct kinds that never
+ * convert.
+ */
+const KIND_SYNONYMS: Record<string, string> = {
+  $: "dollar",
+  "¢": "cent",
+  "%": "percent",
+  buck: "dollar",
+  percentage: "percent",
+};
+
 export function normaliseKind(lemma: string): string {
-  const w = lemma.toLowerCase();
-  if (KIND_EXCEPTIONS.has(w)) return w;
-  if (w.length > 3 && w.endsWith("s") && !w.endsWith("ss")) return w.slice(0, -1);
-  return w;
+  const raw = lemma.toLowerCase();
+  if (KIND_EXCEPTIONS.has(raw)) return raw;
+  if (KIND_SYNONYMS[raw] !== undefined) return KIND_SYNONYMS[raw];
+  if (raw.length > 3 && raw.endsWith("s") && !raw.endsWith("ss")) {
+    const singular = raw.slice(0, -1);
+    return KIND_SYNONYMS[singular] ?? singular;
+  }
+  return raw;
 }
 
-/** A kind named in the plural ("apple" → "apples"). */
+/**
+ * A kind named in the plural ("apple" → "apples").
+ * "Percent" is uncountable in this position ("fifty
+ * percent", never "percents").
+ */
 export function pluraliseKind(kind: string): string {
+  if (kind === "percent") return kind;
   return kind.endsWith("s") ? kind : `${kind}s`;
 }
 
@@ -191,7 +231,8 @@ export function computeQuantityMentions(parsed: ParsedSentence): QuantityMention
   const unit = unitNode ? unitForWord(unitNode.lemma)?.id : undefined;
 
   // The counted kind: an Earth argument node that is not the
-  // agent, a numeral, a pronoun, a quantifier or a unit.
+  // agent, a numeral, an ordinal, a pronoun, a quantifier or
+  // a unit. Ordinals rank; they never name a counted kind.
   const kindNode = argNodes
     .map((x) => x.node)
     .find(
@@ -199,11 +240,27 @@ export function computeQuantityMentions(parsed: ParsedSentence): QuantityMention
         n.syntacticElement === "Earth" &&
         n.id !== agent.id &&
         parseNumberToken(n.lemma) === undefined &&
+        parseOrdinalToken(n.lemma) === undefined &&
         !PRONOUNS.has(n.lemma.toLowerCase()) &&
         !quantifierKind(n.lemma) &&
         !unitForWord(n.lemma),
     );
   const kind = kindNode ? normaliseKind(kindNode.lemma) : undefined;
+
+  // The numeral rides on the kind, not the verb: "fifty
+  // apples" and "fifty percent" both draw the numeral
+  // qualifying the kind node (the probe reads n4 -qualifies->
+  // n3). Where the verb carries no numeral of its own, the
+  // kind's qualifying numeral is the amount; an ordinal there
+  // ("the first apple") is rank, never an amount — the
+  // filter below only admits numerals, exactly as above.
+  let amountNodes = numeralNodes;
+  if (amountNodes.length === 0 && kindNode) {
+    amountNodes = parsed.meaning.edges
+      .filter((e) => e.to === kindNode.id && e.relation === "qualifies")
+      .map((e) => nodeById(parsed, e.from))
+      .filter((n): n is MeaningNode => !!n && parseNumberToken(n.lemma) !== undefined);
+  }
 
   // The recipient of a transfer verb: a recipient/goal
   // argument that is a person or pronoun (not the numeral,
@@ -228,8 +285,8 @@ export function computeQuantityMentions(parsed: ParsedSentence): QuantityMention
     ...(unit ? { unit } : {}),
   };
 
-  if (numeralNodes.length) {
-    for (const n of numeralNodes) {
+  if (amountNodes.length) {
+    for (const n of amountNodes) {
       const amount = parseNumberToken(n.lemma)!;
       // A pronoun's stock: the numeral's modifier is a pronoun
       // ("3 of them") — the kind is the pronoun's, resolved
