@@ -94,25 +94,31 @@ export function configuredSeat(): { place: string | null } {
  * is read). Pure read; nothing is written; only
  * speaker-attributed content counts.
  */
+const QUESTION_WORDS = new Set(["what", "who", "whom", "whose", "where", "when", "why", "how", "which"]);
+
 export function statedPlaceFromConversation(
   session: Session,
 ): { place: string; via: string } | undefined {
   for (let i = session.events.length - 1; i >= 0; i--) {
     const e = session.events[i];
-    if (e.agent === "you" && e.location) {
+    if (e.agent === "you" && e.location && !QUESTION_WORDS.has(e.location.toLowerCase())) {
       return { place: e.location, via: e.verb };
     }
   }
   for (let i = session.objects.length - 1; i >= 0; i--) {
     const o = session.objects[i];
     if (o.producer !== "person") continue;
+    // Only an asserted statement establishes a place: a
+    // question asserts nothing about where anyone is, and a
+    // question word is a slot being asked after, never a place.
+    if (o.act.kind !== "statement") continue;
     const meaning = (o.content as { meaning?: { nodes: { id: string; lemma: string; form: string }[]; edges: { from: string; to: string; relation: string }[] } }).meaning;
     if (!meaning) continue;
     const locationEdge = meaning.edges.find((e) => e.relation === "location");
     if (!locationEdge) continue;
     const speaker = meaning.nodes.find((n) => n.id === locationEdge.from);
     const target = meaning.nodes.find((n) => n.id === locationEdge.to);
-    if (speaker && (speaker.lemma === "i" || speaker.lemma === "you") && target) {
+    if (speaker && speaker.lemma === "i" && target && !QUESTION_WORDS.has(target.lemma.toLowerCase())) {
       // The place's full name: the target node is the head
       // ("city"), and its qualifiers in the same graph carry
       // the rest of the name ("oklahoma" — a qualifies edge

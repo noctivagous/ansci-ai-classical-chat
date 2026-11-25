@@ -19,7 +19,8 @@ import { createInterface } from "node:readline";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { newSession } from "../dist/src/ansci/session.js";
-import { processTurn } from "../dist/src/ansci/turn.js";
+import { processTurnWithWeather } from "../dist/src/ansci/weather-turn.js";
+import { HostClockSource } from "../dist/src/ansci/timekeeping.js";
 import { FileInterlocutorStore } from "../dist/src/ansci/interlocutor-store.js";
 import { ensureLinkGrammarLoaded } from "../dist/src/ansci/linkgrammar-wasm.js";
 
@@ -40,14 +41,24 @@ try {
 // once an identity is stated, and a visitor who never gives
 // a name writes nothing to it.
 const storePath = process.env.ANSCI_INTERLOCUTOR_STORE ?? join(homedir(), ".ansci", "interlocutors.json");
-const session = newSession(undefined, undefined, { interlocutorStore: new FileInterlocutorStore(storePath) });
+// Situated wiring: the shell supplies the host clock as the
+// session's clock source (Timekeeping's consultation route
+// answers time/date from a fresh reading each turn), and the
+// weather wrapper completes lookup-needed turns from the
+// live weather source. The deployment's place, where one is
+// configured (ANSCI_PLACE in place.ts), is the seat both the
+// self-location answer and an unlocated weather question read.
+const session = newSession(undefined, undefined, {
+  interlocutorStore: new FileInterlocutorStore(storePath),
+  clockSource: new HostClockSource(),
+});
 const rl = createInterface({ input: process.stdin, terminal: false });
 
 console.log("Fork chat — say anything; every reply is the turn loop's own. Ctrl-D to end.");
 for await (const line of rl) {
   const text = line.trim();
   if (!text) continue;
-  const { reply, trace } = processTurn(session, text);
+  const { reply, trace } = await processTurnWithWeather(session, text);
   console.log("\nBot: " + reply);
   const bits = [trace.parseSummary];
   for (const c of trace.classifications) bits.push(`${c.concept} -> ${c.element} @${c.confidence} (${c.provenance})`);
@@ -55,6 +66,8 @@ for await (const line of rl) {
   if (trace.cyclePath) bits.push("cycle path: " + trace.cyclePath);
   if (trace.derivationPath) bits.push("derivation: " + trace.derivationPath);
   if (trace.steeringNote) bits.push(trace.steeringNote);
+  if (trace.timeAnswer) bits.push(`time: ${trace.timeAnswer.route ?? "declined"} — ${trace.timeAnswer.ground}`);
+  if (trace.weather) bits.push(`weather: ${trace.weather.action} — ${trace.weather.detail}`);
   if (trace.declineReason) bits.push("declined: " + trace.declineReason);
   console.log("  trace: " + bits.join("; "));
 }

@@ -96,9 +96,10 @@ test("assessment: a complement predication of the visitor is not a self-query; a
   assert.equal(turn(newSession(), "do you know who you are?").reply, IDENTITY_TEXT);
 });
 
-test("probe 2 stands as Slice 1 left it: 'what do you know?' is the owner's undecided call, untouched", () => {
-  const { reply } = turn(newSession(), "what do you know?");
-  assert.equal(reply, "I can't answer that from what I know: nothing you have told me says what was known.");
+test("probe 2, settled by the goal transcript: 'what do you know?' answers from the Self tables", () => {
+  const { reply, trace } = turn(newSession(), "what do you know?");
+  assert.match(reply, /^I am AnSci\. I can talk over simple statements and questions\./);
+  assert.equal(trace.declineReason, undefined);
 });
 
 test("controls unchanged: probes 5, 6, 7, 20 and the NP know forms", () => {

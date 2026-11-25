@@ -612,10 +612,21 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     if (!selfFactMatter) {
       const yourNode = nodes.find((n) => n.lemma.toLowerCase() === "your");
       const whatNode = nodes.find((n) => n.questionWord && n.lemma.toLowerCase() === "what");
+      // The predicated-as edge runs either from "your" itself
+      // or from the possessed noun it qualifies ("what is your
+      // name?" draws name predicated-as what, your qualifying
+      // name) — both draw the same possessed-NP question.
+      const possessedPredication = edges.some(
+        (e) =>
+          e.relation === "predicated-as" &&
+          e.to === whatNode?.id &&
+          edges.some((q) => q.relation === "qualifies" && q.from === yourNode?.id && q.to === e.from),
+      );
       if (
         yourNode &&
         whatNode &&
-        edges.some((e) => e.from === yourNode.id && e.to === whatNode.id && e.relation === "predicated-as")
+        (edges.some((e) => e.from === yourNode.id && e.to === whatNode.id && e.relation === "predicated-as") ||
+          possessedPredication)
       ) {
         const npTokens: string[] = [];
         for (const t of tokens.slice(tokens.indexOf("your") + 1)) {
@@ -674,6 +685,56 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
           if (hit?.matter === "name") selfFactName = true;
           else if (hit) selfFactMatter = hit.matter;
         }
+      }
+    }
+  }
+  // Addressee-possessive and addressee-cognition questions: a
+  // question agented by "you" (the system, as addressed) whose
+  // theme/patient is a possessive NP ("your <head>") asks after a
+  // fact of the system itself, whatever the governing verb —
+  // know, tell, remember, have. The head is the matter, on C3
+  // shape (d)'s ground; "name" is the Identity table's fact.
+  // A bare questioned theme of a cognition verb ("what do you
+  // know?") asks for the inventory of what the system knows —
+  // a knowledge self-query, answered from the Self tables and
+  // the conversation record, not from the graph.
+  let isKnowledgeQuery = false;
+  if (interrogative && root?.role === "verb") {
+    const nodes = parsed.meaning.nodes;
+    const edges = parsed.meaning.edges;
+    const youAgent = edges.some(
+      (e) =>
+        e.from === root.id &&
+        e.relation === "agent" &&
+        nodes.some((n) => n.id === e.to && n.lemma.toLowerCase() === "you"),
+    );
+    if (youAgent) {
+      const objectIds = edges
+        .filter((e) => e.from === root.id && (e.relation === "theme" || e.relation === "patient"))
+        .map((e) => e.to);
+      const possessed = objectIds
+        .map((id) => nodes.find((n) => n.id === id))
+        .find(
+          (n) =>
+            n &&
+            edges.some(
+              (e) =>
+                e.relation === "qualifies" &&
+                e.to === n.id &&
+                nodes.some((q) => q.id === e.from && q.lemma.toLowerCase() === "your"),
+            ),
+        );
+      if (possessed) {
+        const head = possessed.lemma.toLowerCase();
+        if (head === "name") selfFactName = true;
+        else if (!selfFactMatter) selfFactMatter = head;
+      } else {
+        const COGNITION = new Set(["know", "understand", "remember", "believe", "think"]);
+        const questioned = objectIds
+          .map((id) => nodes.find((n) => n.id === id))
+          .find((n) => n?.questionWord && n.lemma.toLowerCase() === "what");
+        const hasAbout = edges.some((e) => e.from === root.id && e.relation === "about");
+        if (questioned && COGNITION.has(root.lemma.toLowerCase()) && !hasAbout) isKnowledgeQuery = true;
       }
     }
   }
@@ -1068,7 +1129,7 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         ? "leave-taking"
         : isThanks
           ? "thanks"
-          : isSelfQuery || isCapabilityQuery || isSelfFactQuery || isAbilityQuery || identityRequest || isSelfLocationQuery
+          : isSelfQuery || isCapabilityQuery || isSelfFactQuery || isAbilityQuery || identityRequest || isSelfLocationQuery || isKnowledgeQuery
             ? "self-query"
             : parsed.query || interrogative
               ? "question"
@@ -1163,11 +1224,13 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
               ? "capability"
               : isSelfLocationQuery
                 ? "location"
-                : isAbilityQuery
-                  ? "ability"
-                  : selfFactMatter
-                    ? "fact"
-                    : "identity") as "identity" | "capability" | "fact" | "ability" | "location",
+                : isKnowledgeQuery
+                  ? "knowledge"
+                  : isAbilityQuery
+                    ? "ability"
+                    : selfFactMatter
+                      ? "fact"
+                      : "identity") as "identity" | "capability" | "fact" | "ability" | "location" | "knowledge",
             ...(selfFactMatter ? { selfFact: selfFactMatter } : {}),
             ...(isAbilityQuery ? { selfFact: abilityVerb, abilityModal } : {}),
           }

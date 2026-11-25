@@ -92,9 +92,10 @@ test("probe 10: the decline the turn reaches is framed by the topic 'dogs'", () 
   assert.match(trace.parseSummary, /dog/, "the topic is visible in the parse summary");
 });
 
-test("probe 2: 'what do you know?' is UNCHANGED — the owner's call stays open", () => {
+test("probe 2, settled by the goal transcript: 'what do you know?' answers as a knowledge self-query", () => {
   const { reply, trace } = turn(newSession(), "what do you know?");
-  assert.equal(reply, PROBE2_REPLY);
+  assert.match(reply, /^I am AnSci\. /);
+  assert.notEqual(reply, PROBE2_REPLY, "no longer the missing-role decline");
   assert.equal(trace.aboutTopic, undefined, "no about-phrase, no topic filed");
 });
 

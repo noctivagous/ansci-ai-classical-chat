@@ -61,6 +61,26 @@ export interface PlaceTable {
   longitude?: number;
 }
 
-export const PLACE: PlaceTable = {
-  place: null,
-};
+function envPlace(): PlaceTable {
+  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env;
+  const place = env?.ANSCI_PLACE?.trim();
+  if (!place) return { place: null };
+  const latitude = Number(env?.ANSCI_PLACE_LATITUDE);
+  const longitude = Number(env?.ANSCI_PLACE_LONGITUDE);
+  return {
+    place,
+    ...(Number.isFinite(latitude) && env?.ANSCI_PLACE_LATITUDE ? { latitude } : {}),
+    ...(Number.isFinite(longitude) && env?.ANSCI_PLACE_LONGITUDE ? { longitude } : {}),
+  };
+}
+
+/**
+ * The configured place: deployment configuration from the
+ * environment (ANSCI_PLACE, with ANSCI_PLACE_LATITUDE /
+ * ANSCI_PLACE_LONGITUDE alongside it where the deployment
+ * knows its point), or null where none is configured. The
+ * data and its honesty are unchanged: no place is invented,
+ * and an unconfigured deployment still declines by naming
+ * self-location as the gap.
+ */
+export const PLACE: PlaceTable = envPlace();

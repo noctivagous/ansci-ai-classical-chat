@@ -5094,6 +5094,24 @@ function processTurnInnerBody(
       trace.wordingNotDerived = true;
       return { reply: openingObject.act.abilityModal ? `I can't ${verb}${object}.` : `I don't ${verb}${object}.`, trace };
     }
+    if (which === "knowledge") {
+      const facts = requestCapabilities();
+      const identityFacts = requestIdentity();
+      dischargeDemand(session, "self-answer");
+      const QUESTION_WORD_LEMMAS = new Set(["what", "who", "whom", "whose", "where", "when", "why", "how", "which"]);
+      const toldStates = session.states.filter((s) => s.turn < turn && !QUESTION_WORD_LEMMAS.has(s.lemma.toLowerCase()));
+      const toldEvents = session.events.filter((e) => e.turn < turn && !QUESTION_WORD_LEMMAS.has(e.verb.toLowerCase()));
+      const recordPart = toldStates.length || toldEvents.length
+        ? ` In this conversation, the record holds ${[
+            ...toldStates.map((s) => `${s.holder} is ${s.negated ? "not " : ""}${s.lemma}`),
+            ...toldEvents.map((e) => `${e.agent ?? "you"} ${e.verb}${e.patient ? ` ${e.patient}` : ""}${e.theme ? ` ${e.theme}` : ""}`),
+          ].join("; ")}.`
+        : " Nothing has been established in this conversation yet beyond this exchange.";
+      trace.planNote =
+        "self answer (knowledge): the question asks what the system knows — answered from Awareness Self's tables (identity, capabilities and limits) and the conversation record, the two places the system's knowledge actually stands";
+      trace.wordingNotDerived = true;
+      return { reply: `I am ${identityFacts.name}. ${[...facts.capabilities, facts.limits[0]].join(" ")}${recordPart}`, trace };
+    }
     if (which === "capability") {
       const facts = requestCapabilities();
       dischargeDemand(session, "self-answer");
@@ -8117,6 +8135,16 @@ const MONTH_NAMES = [
 function timeDateAskOf(parsed: ParsedSentence): "time" | "date" | undefined {
   const root = parsed.meaning.nodes.find((n) => n.id === parsed.meaning.rootId);
   if (!root || root.lemma !== "what") return undefined;
+  // The wh-determiner form ("what time is it?"): the parse
+  // files no node for the determined noun, but the token
+  // record holds it in determiner position, directly after
+  // the question word — read there, as other recognitions
+  // read dropped matter by position.
+  const toks = parsed.connective.tokens.map((t) => t.toLowerCase().replace(/[^a-z']/g, ""));
+  const whatAt = toks.indexOf("what");
+  const determined = whatAt >= 0 ? toks[whatAt + 1] : undefined;
+  if (determined === "time") return "time";
+  if (determined === "date" || determined === "day") return "date";
   const byLemma = (lemma: string) => parsed.meaning.nodes.find((n) => n.lemma === lemma);
   const hasOfPhrase = (node: MeaningNode) =>
     parsed.meaning.edges.some(

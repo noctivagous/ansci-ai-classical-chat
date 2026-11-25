@@ -213,7 +213,7 @@ export interface SemanticObject {
      *  table (place.ts) — the configured place, or the located
      *  decline naming self-location as the gap when none is
      *  configured. */
-    selfQuery?: "identity" | "capability" | "fact" | "ability" | "location";
+    selfQuery?: "identity" | "capability" | "fact" | "ability" | "location" | "knowledge";
     /** Present on self-query objects of the "fact" flavour
      *  (conversation-shapes C3, 2026-11-18): the matter the
      *  question asks after, as spoken ("pets", "rank",
