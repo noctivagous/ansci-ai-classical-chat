@@ -343,6 +343,26 @@ system. Gender association is guarded knowledge: its values
 change no price, flag, referent or pronoun decision, or reply
 in v1 (pinned by test).
 
+Bot Framework envelope shapes and storage contract
+(src/ansci/channel-activity.ts, src/ansci/channel-store.ts)
+---------------------------------------------------------------
+These two files are a narrow TypeScript port of interface shapes
+from Microsoft's botbuilder-js (botframework-sdk ecosystem):
+
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  Licensed under the MIT License.
+
+Source files (MIT): libraries/botframework-schema/src/index.ts
+and src/activityInterfaces.ts (ChannelAccount,
+ConversationAccount, IActivity / IMessageActivity, Attachment
+content shape) and libraries/botbuilder-core/src/storage.ts
+(Storage, StoreItem, StoreItems) and src/memoryStorage.ts
+(MemoryStorage eTag read/write/delete semantics). Only the
+envelope and storage-contract shapes are ported, rewritten
+without the zod dependency; no TurnContext, middleware,
+dialog, connector, or LUIS/QnA code is included. Upstream
+repository: https://github.com/microsoft/botbuilder-js
+
 Everything else in this repository — the ontology graph, seed data, reasoner
 and chat — is original AnSci work (see README.md). ConceptNet is a planned
 base net (design doc §4) and is not yet bundled; when it lands, its
