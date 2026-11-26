@@ -48,6 +48,95 @@ export type ObjectKind =
 
 export type StreamRole = "opens" | "answers" | "continues" | "corrects" | "closes";
 
+/** The wider speech-act reading (the volvelle build, 2026-11-25):
+ *  the Ring-1 act the utterance performs, read by
+ *  SemanticAssessment (assess.ts) alongside the kind. The kind
+ *  stays the loop's working classification and is never renamed;
+ *  the speech act refines it — several acts the conversation
+ *  trades in (a directive, an offer, a concern, a hedged or
+ *  negated saying) previously existed only as a mood, a flag or
+ *  a state on some other axis, so nothing could key on them as
+ *  acts. Person objects always carry this reading; reply objects
+ *  do not (their act is the move the Planner made, recorded as
+ *  the reply's force). */
+export type SpeechAct =
+  | "statement"
+  | "question"
+  | "reason-query"
+  | "self-query"
+  | "proposition"
+  | "directive"
+  | "request"
+  | "offer"
+  | "uncertainty"
+  | "exclamation"
+  | "concern"
+  | "affirmation"
+  | "negation"
+  | "greeting"
+  | "leave-taking"
+  | "thanks";
+
+/** The per-utterance meta frame (the volvelle build, slice 3,
+ *  2026-11-25): the circumstances of the saying itself,
+ *  assembled on the object at assessment — who is speaking,
+ *  who is addressed, what topic the utterance touches, and how
+ *  its content was delivered. The pieces existed before only
+ *  scattered across registers (the interlocutor register, the
+ *  session's topic table, the state's provenance), and two of
+ *  them — the addressee, and how a statement was delivered —
+ *  existed as fields nowhere. Every field POINTS at the
+ *  register that owns the fact; the frame copies nothing but
+ *  the pointer and the delivery reading, which is the
+ *  assessment's own. Person objects only: a reply object's
+ *  circumstances are the conversation's, read from the object
+ *  it answers. */
+export interface UtteranceFrame {
+  speaker: {
+    /** The register that owns the speaker's identity. The name
+     *  below is read from it at assessment, never held as a
+     *  fact of the frame's own. */
+    register: "session.interlocutor";
+    /** The speaker's name as the register holds it: stated in
+     *  this very utterance (statedThisTurn), or learned
+     *  earlier in the conversation. Absent when the speaker
+     *  has not named themselves. */
+    name?: string;
+    statedThisTurn: boolean;
+  };
+  /** Who the utterance is addressed to. In this conversation
+   *  the standing addressee of a person's utterance is the
+   *  system; a stated other addressee is not a shape the
+   *  parse draws today, so no other value is assigned. */
+  addressee: "system";
+  /** The topic this utterance raises or touches: the lemma
+   *  that keys the session's topic table (session.topics) —
+   *  a pointer into that table, present when one of the
+   *  utterance's content lemmas stands in it at assessment
+   *  time (the assessment reads the session as it stood
+   *  before this turn, as grounding does). */
+  topic?: string;
+  /** How the content was delivered, as the utterance itself
+   *  carries it: "stated" — the speaker says it directly;
+   *  "reported" — the utterance reports another's saying (a
+   *  saying verb agented by a third person, its content
+   *  subordinated to it); "inferred" — the speaker presents
+   *  it under their own hedge (the uncertainty reading's
+   *  frame). No other value is assigned: the turn either
+   *  carries one of these shapes or it does not. */
+  evidence: "stated" | "reported" | "inferred";
+}
+
+/** The top-level functional binary, kept as the primary axis
+ *  the wider acts refine: a Statement supplies something (the
+ *  record takes it in); a Request solicits something not given
+ *  (the record is asked to produce it). Questions, reason and
+ *  self queries, directives and requests solicit; everything
+ *  else supplies — a proposition supplies tentatively, an offer
+ *  supplies a service, an affirmation or negation supplies a
+ *  stance on what stands. */
+export type TurnFamily = "statement" | "request";
+
 /** A hole: something the object's kind normally carries that this
  *  utterance leaves unexpressed, held as an explicit node of the
  *  content so a reader finds it structurally. Slice 1 knows the
@@ -191,6 +280,12 @@ export interface SemanticObject {
   tokenResolutions?: TokenResolution[];
   act: {
     kind: ObjectKind;
+    /** The wider speech-act reading (see SpeechAct above):
+     *  present on person objects, where SemanticAssessment
+     *  reads it; the functional family it falls under rides
+     *  with it. */
+    speechAct?: SpeechAct;
+    turnFamily?: TurnFamily;
     /** The utterance's grammatical form (the root's mood). */
     form: string;
     /** What the act is doing. In v1 force equals kind except
@@ -324,6 +419,9 @@ export interface SemanticObject {
   /** The aspects rolled up: a ranked predominance list, the
    *  disposition format. Computed in slice 3. */
   composition?: Composition;
+  /** The per-utterance meta frame (see UtteranceFrame):
+   *  assembled by SemanticAssessment on person objects. */
+  frame?: UtteranceFrame;
   /** The assessment's own confidence in this reading. */
   confidence: number;
   links: {

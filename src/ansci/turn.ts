@@ -117,6 +117,7 @@ import {
   dischargeFilledSceneNeeds,
   informationOf,
   noteHandled,
+  outstandingNeeds,
   seedQuantityNeeds,
   seedSceneNeeds,
 } from "./info-object";
@@ -133,6 +134,7 @@ import { applySceneUpdate } from "./senses-scening";
 import { applyQuantityMentions, currentQuantity, latestKindFor } from "./quantification";
 import { normaliseKind, parseNumberToken, pluraliseKind, renderQuantity } from "./quantification-language";
 import { authorReplyObject } from "./reply";
+import { decideResponse, recordDecision, type ResponsePolicyDecision } from "./response-policy";
 import { generate } from "./generate";
 import { canonicalEmotion, type EmotionKind } from "./edu";
 import { canonicalNameFor, uncategorisedEmotionWord } from "./ledu";
@@ -816,6 +818,14 @@ export interface TurnTrace {
    *  exchange, not a substantive saying, so the wrapper does
    *  not record it as the last substantive reply. */
   ritualReply?: boolean;
+  /** The volvelle build, slice 2 (2026-11-25): the Response
+   *  Policy's decision for this turn (response-policy.ts) —
+   *  the reply act decided and the ground it stands on,
+   *  computed at the turn body's decision point and recorded
+   *  on the inbound object's trail. Turns that return before
+   *  that point (a parse failure, a clarification fill) carry
+   *  none in this slice. */
+  responsePolicy?: { act: string; ground: string };
   /** Recognition programme R3: this turn's reply is a boundary
    *  reply — a receipt (thanks) or a closing (farewell): a
    *  designed move, complete in itself, that neither the
@@ -2340,7 +2350,13 @@ function tryGapQuestion(session: Session, trace: TurnTrace, parsed: ParsedSenten
  * named in the trace. Hand-worded replies (wordingNotDerived)
  * do not come through here.
  */
-function speakWithObject(session: Session, trace: TurnTrace, graph: ParsedSentence, move: string): void {
+function speakWithObject(
+  session: Session,
+  trace: TurnTrace,
+  graph: ParsedSentence,
+  move: string,
+  policy?: ResponsePolicyDecision,
+): void {
   const inbound = [...session.objects].reverse().find((o) => o.producer === "person" && o.turn === trace.turn);
   // The envelope settlement at the Planner's door (2026-11-17):
   // the Planner's handling is recorded on the inbound's route;
@@ -2360,7 +2376,7 @@ function speakWithObject(session: Session, trace: TurnTrace, graph: ParsedSenten
     }
     priceSurvivingNeeds(inboundInfo);
   }
-  const replyObject = authorReplyObject({ graph, turn: trace.turn, session, inbound, move });
+  const replyObject = authorReplyObject({ graph, turn: trace.turn, session, inbound, move, ...(policy ? { policy } : {}) });
   analyseOutbound(replyObject, inbound, session);
   const replyInfo = informationOf(replyObject);
   if (replyInfo) noteHandled(replyInfo, "coherence/coherence-analysis");
@@ -4890,8 +4906,36 @@ function processTurnInnerBody(
    * exchange and let later greetings fall through to the
    * statement steering — the envelope build closes that
    * shortcut-shaped asymmetry.) */
+  /* The Response Policy (the volvelle build, slice 2,
+   * 2026-11-25): at this point the turn's readings stand
+   * complete — SemanticAssessment has assessed the object, the
+   * Social Unit has raised its demands, the pending state has
+   * been read — so the Policy decides the KIND of reply this
+   * turn gets, in one place (response-policy.ts), and the
+   * decision is recorded on the object's trail and the trace.
+   * The ritual branches below execute through the decision:
+   * they run when the Policy's act is the ritual return, and
+   * the reply objects they author carry the decision. The
+   * directive decline likewise executes through it (routed
+   * 2026-11-25, owner ruling — its branch stands below the
+   * ritual branches). Every other branch keeps its own
+   * machinery — the decision stands recorded against it
+   * (record-only rows), as the stated choice that machinery
+   * is measured against. */
   const openingObject = assessed[0];
-  if (openingObject && openingObject.act.kind === "greeting" && openingObject.act.wellbeing) {
+  const openingInfo = openingObject ? informationOf(openingObject) : undefined;
+  const policyDecision: ResponsePolicyDecision | undefined = openingObject
+    ? decideResponse({
+        object: openingObject,
+        session,
+        needs: openingInfo ? outstandingNeeds(openingInfo) : [],
+      })
+    : undefined;
+  if (openingObject && policyDecision) {
+    recordDecision(openingObject, policyDecision);
+    trace.responsePolicy = { act: policyDecision.act, ground: policyDecision.ground };
+  }
+  if (openingObject && openingObject.act.kind === "greeting" && openingObject.act.wellbeing && policyDecision?.act === "ritual-return") {
     /* The wellbeing answer (conversation-shapes C1, 2026-11-18):
      * the greeting object is the ritual "How are you?" — the
      * Planner answers it with the wellbeing predication the
@@ -4902,7 +4946,7 @@ function processTurnInnerBody(
      * proper; a wellbeing query mirrored from its own graph
      * would generate the question back at the visitor. */
     const authored = planWellbeingAnswer();
-    speakWithObject(session, trace, authored.graph, "wellbeing answer");
+    speakWithObject(session, trace, authored.graph, "wellbeing answer", policyDecision);
     dischargeDemand(session, "greeting-return");
     trace.planNote =
       "wellbeing answer (conversation-shapes C1): the greeting's ritual exchange answered with the wellbeing predication; recorded as ritual — nothing about the system's state is banked from it";
@@ -4910,8 +4954,8 @@ function processTurnInnerBody(
     trace.wordingNotDerived = false;
     return { reply: authored.sentence, trace };
   }
-  if (openingObject && openingObject.act.kind === "greeting") {
-    speakWithObject(session, trace, parsed, "return greeting");
+  if (openingObject && openingObject.act.kind === "greeting" && policyDecision?.act === "ritual-return") {
+    speakWithObject(session, trace, parsed, "return greeting", policyDecision);
     // S2: the authored mirror discharges the Social Unit's
     // greeting-return demand (the unit records the discharge).
     dischargeDemand(session, "greeting-return");
@@ -4936,8 +4980,8 @@ function processTurnInnerBody(
    * ends here. Before S2 this act fell through to the statement
    * steering and was answered "Ok. Noted." — the free-
    * conversation probe's finding, closed at its location. */
-  if (openingObject && openingObject.act.kind === "leave-taking") {
-    speakWithObject(session, trace, parsed, "return farewell");
+  if (openingObject && openingObject.act.kind === "leave-taking" && policyDecision?.act === "ritual-return") {
+    speakWithObject(session, trace, parsed, "return farewell", policyDecision);
     dischargeDemand(session, "farewell-return");
     trace.ritualReply = true;
     trace.boundaryReply = true;
@@ -4971,9 +5015,9 @@ function processTurnInnerBody(
    * was about — survives a thanks untouched, so the turn ends
    * here like the other ritual exchanges. The authoring
    * discharges the unit's thanks-receipt demand. */
-  if (openingObject && openingObject.act.kind === "thanks") {
+  if (openingObject && openingObject.act.kind === "thanks" && policyDecision?.act === "ritual-return") {
     const receipt = planThanksReceipt();
-    speakWithObject(session, trace, receipt.graph, "thanks receipt");
+    speakWithObject(session, trace, receipt.graph, "thanks receipt", policyDecision);
     dischargeDemand(session, "thanks-receipt");
     trace.ritualReply = true;
     trace.boundaryReply = true;
@@ -4982,6 +5026,44 @@ function processTurnInnerBody(
     trace.replyGraph = serialiseReplyGraph(receipt.graph);
     trace.wordingNotDerived = false;
     return { reply: receipt.sentence, trace };
+  }
+
+  /* The directive decline (the volvelle build, slice 2 routed
+   * 2026-11-25, owner ruling): the Response Policy's directive
+   * row, executed. A directive — an imperative demanding an
+   * act in the world of the system (bring, show, fetch…) — is
+   * decided by the Policy as a decline located at CAPABILITY:
+   * the system has no means of acting except in speech
+   * (response-policy.ts). Until this routing the decision
+   * stood recorded while the turn fell through to the plain
+   * acknowledgement ("Ok."), which read as the act accepted
+   * as doable. The branch runs only on the Policy's own
+   * decision for the directive act: a telling-REQUEST is a
+   * different act (it solicits a saying, and keeps its own
+   * paths below exactly as before), and no other decline row
+   * reaches this site — at the loop's decision point the
+   * Policy returns decline only on directive grounds.
+   *
+   * The reply is rendered in the loop's standing decline
+   * shape — the system's limit stated plainly, then its
+   * ground (the priced decline's shape, §9.2; the construction
+   * gap's voice, Transcript Slice 7) — and its ground clause
+   * is the Capabilities & limits table's own limit sentence
+   * (capabilities.ts, requested through the Social Unit's one
+   * address as every self fact is): the table is the one
+   * source for what the system cannot do, so the decline
+   * speaks from it rather than from a wording invented here.
+   * Nothing is recorded as done, and no pending opens: a
+   * located decline is not a clarification. */
+  if (openingObject && policyDecision?.act === "decline" && openingObject.act.speechAct === "directive") {
+    const limit = requestCapabilities().limits.find((l) => l.includes("outside this conversation"));
+    trace.declineReason = policyDecision.ground;
+    trace.planNote =
+      "directive decline (the Response Policy's directive row, routed): the turn demands an act in the world and the " +
+      "Policy declines it located at capability — the reply states the limit from the Capabilities & limits table and " +
+      "does not acknowledge the act as doable; nothing is recorded as done";
+    trace.wordingNotDerived = true;
+    return { reply: `I can't do that: ${limit ?? "I cannot fetch or do things outside this conversation."}`, trace };
   }
 
   /* The self-query (Social Unit S3, 2026-11-18): answered from

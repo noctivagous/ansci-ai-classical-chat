@@ -23,7 +23,8 @@
  */
 import type { Element, ParsedSentence } from "./sentence";
 import type { Session } from "./session";
-import type { AspectReading, GroundingMark, ObjectHole, SemanticObject } from "./semantic-object";
+import type { AspectReading, GroundingMark, ObjectHole, SemanticObject, SpeechAct, TurnFamily, UtteranceFrame } from "./semantic-object";
+import { statedName } from "./social";
 import { classificationsOf } from "./classify";
 import { emotionAspect, emotionPriorFor, mixEmotionAspect } from "./ledu";
 import { buildSensesFace } from "./senses-scening";
@@ -1194,6 +1195,139 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
 
   const aspects = classifyAspects(parsed);
   const composition = rollUpComposition(aspects);
+
+  /* The wider speech-act reading (the volvelle build, slice 1,
+   * 2026-11-25): the Ring-1 act this utterance performs, named
+   * on the object beside the kind. The kind above stays the
+   * loop's classification, untouched; this reading refines it,
+   * naming acts that previously existed only on other axes —
+   * a directive was an imperative mood, an offer a flag, a
+   * negation a state on the root, a concern a feeling routed
+   * elsewhere. Every detector reads material the parse itself
+   * carries (the root's mood and states, the flags the
+   * recognitions above already computed, the token record the
+   * parse retains, the emotion readings just classified) —
+   * the same discipline as the social-act recognitions: a
+   * shape not drawn is not named, and the reading falls back
+   * to the kind's own act. Precedence is by dress before
+   * content: the ritual kinds keep their acts; an act in
+   * question dress (the offer, the tell-me request) is read
+   * as the act it is before the question reading; a feeling
+   * predicated of the speaker is a concern before it is a
+   * negation ("I am not happy" is a feeling stated, not a
+   * denial performed). */
+  const speechAct: SpeechAct = (() => {
+    if (kind === "greeting") return "greeting";
+    if (kind === "leave-taking") return "leave-taking";
+    if (kind === "thanks") return "thanks";
+    if (kind === "self-query") return "self-query";
+    if (kind === "reason-query") return "reason-query";
+    // The offer, in either dress: the question form the S2
+    // recognition drew (act.offerHelp), and its declarative
+    // twin — the speaker predicating their own helping of the
+    // addressed "you" under a modal ("I can help you.").
+    const declarativeOffer = Boolean(
+      root?.role === "verb" &&
+        root.lemma.toLowerCase() === "help" &&
+        (root.states?.mood ?? "indicative") === "indicative" &&
+        (root.states?.aux === "can" || root.states?.modal === "can" || root.states?.aux === "may" || root.states?.modal === "may") &&
+        parsed.meaning.edges.some(
+          (e) =>
+            e.from === root.id &&
+            e.relation === "agent" &&
+            nodeOf(e.to)?.lemma.toLowerCase() === "i",
+        ) &&
+        parsed.meaning.edges.some(
+          (e) =>
+            e.from === root.id &&
+            e.relation === "patient" &&
+            nodeOf(e.to)?.lemma.toLowerCase() === "you",
+        ),
+    );
+    if (isOfferHelp || declarativeOffer) return "offer";
+    // A telling with its matter named is a request, in
+    // imperative or modal-question dress alike ("Tell me
+    // about the garden." / "Can you tell me about the
+    // garden?"); the self-presentation request is the same
+    // act addressed to the system's own matter.
+    if (tellMatter || identityRequest) return "request";
+    // Any other imperative is a directive. (The ritual
+    // imperatives — thank-you, see-you — were taken by their
+    // kinds above; imperatives of ordinary verbs mostly do
+    // not parse yet, a located sentence-layer gap, so this
+    // reading names the shape where the parse draws it.)
+    if (root?.states?.mood === "imperative") return "directive";
+    // The bare polar answers: a lone "yes" / "no" topic is an
+    // affirmation / negation performed, not a topic raised.
+    if (root && root.role === "topic" && parsed.meaning.edges.length === 0) {
+      const bare = root.lemma.toLowerCase();
+      if (bare === "yes") return "affirmation";
+      if (bare === "no") return "negation";
+    }
+    if (kind === "statement") {
+      // Concern: a feeling predicated of the speaker — an
+      // emotion-read word standing as the predicate of an
+      // "i" subject ("I am sad."), or as the result of the
+      // speaker's feeling verb ("I feel sad."). A feeling
+      // predicated of anyone else is a report about them and
+      // stays a statement.
+      const emotionOf = (lemma: string) => emotionAspect(lemma) ?? mixEmotionAspect(lemma);
+      const isConcern = parsed.meaning.nodes.some((n) => {
+        if (!emotionOf(n.lemma)) return false;
+        if (n === root && root.states?.subjectPerson === "1sg") return true;
+        return parsed.meaning.edges.some((e) => {
+          if (e.to !== n.id) return false;
+          const src = nodeOf(e.from);
+          if (!src) return false;
+          if (e.relation === "predicate" && src.lemma.toLowerCase() === "i") return true;
+          if (e.relation === "result" && src.lemma.toLowerCase() === "feel") return true;
+          return false;
+        });
+      });
+      if (isConcern) return "concern";
+      // Uncertainty, as an incoming stance: the saying is
+      // hedged by its own frame — a first-person think/guess/
+      // suppose frame the graph drops but the token record
+      // retains ("I think the soup is hot."), a modal of
+      // possibility standing in the clause ("The soup might
+      // be hot."), or the speaker predicating their own
+      // not-sureness ("I am not sure.").
+      const hedgedFrame = tokens[0] === "i" && ["think", "guess", "suppose", "believe"].includes(tokens[1] ?? "");
+      const modalHedge = parsed.meaning.nodes.some((n) => n.lemma.toLowerCase() === "might" || n.lemma.toLowerCase() === "may");
+      const ownUncertainty = Boolean(
+        root?.states?.negated &&
+          (root.lemma.toLowerCase() === "sure" || root.lemma.toLowerCase() === "certain") &&
+          parsed.meaning.nodes.some((n) => n.role === "subject" && n.lemma.toLowerCase() === "i"),
+      );
+      if (hedgedFrame || modalHedge || ownUncertainty) return "uncertainty";
+      // A proposition puts content forward without settling
+      // it: the topic proposal (already the kind), and the
+      // wondering frame, whose posed matter the recognition
+      // above recorded.
+      if (posedMatter) return "proposition";
+      // An exclamation is a statement in exclamatory dress.
+      if (trimmed.endsWith("!")) return "exclamation";
+      // A negated statement performs the negation of its
+      // predication: the root carries the negation state.
+      if (root?.states?.negated) return "negation";
+      return "statement";
+    }
+    if (kind === "topic-proposal") return "proposition";
+    if (kind === "question") return "question";
+    return "statement";
+  })();
+  /* The functional binary the wider act falls under: what
+   * solicits something not given is the Request family; what
+   * supplies something — settled, tentative, ritual or felt —
+   * is the Statement family. */
+  const turnFamily: TurnFamily =
+    speechAct === "question" ||
+    speechAct === "reason-query" ||
+    speechAct === "self-query" ||
+    speechAct === "directive" ||
+    speechAct === "request"
+      ? "request"
+      : "statement";
   // The senses face, produced by the Senses-Scening Unit at
   // creation (2026-11-17): computed against the session's
   // running scene as it stands BEFORE this object is recorded;
@@ -1214,6 +1348,8 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
     ...(parsed.tokenResolutions ? { tokenResolutions: parsed.tokenResolutions } : {}),
     act: {
       kind,
+      speechAct,
+      turnFamily,
       form,
       force: kind,
       ritual: kind === "greeting" || kind === "leave-taking" || kind === "thanks",
@@ -1287,6 +1423,51 @@ export function assessUtterance(parsed: ParsedSentence, ctx: AssessContext): Sem
         },
       },
     });
+  }
+  /* The per-utterance meta frame (the volvelle build, slice 3,
+   * 2026-11-25): the circumstances of this saying, assembled
+   * on the object from the registers that own them — the
+   * frame points, it does not copy. The speaker is the
+   * interlocutor register: the name it will hold for this
+   * speaker is the one this very utterance states (read by
+   * the Social Unit's own statedName, the one reader of that
+   * shape) or the one it already holds from earlier turns.
+   * The topic is the session's topic table, read as it stood
+   * before this turn, as grounding reads it: the first of the
+   * utterance's content lemmas standing in the table keys the
+   * record this utterance touches. The addressee is the
+   * system, the conversation's standing addressee. The
+   * evidence is the delivery the utterance itself carries:
+   * reported, when a saying verb agented by a third person
+   * carries the content subordinated to it; inferred, when
+   * the saying stands under the speaker's own hedge (the
+   * uncertainty reading above); stated otherwise. */
+  {
+    const statedNow = statedName(obj);
+    const speakerName = statedNow ?? session.interlocutor.identity?.name;
+    const topicLemma = parsed.meaning.nodes
+      .map((n) => n.lemma.toLowerCase())
+      .find((lemma) => session.topics.some((t) => t.lemma.toLowerCase() === lemma));
+    const SAYING_VERBS = new Set(["say", "tell", "report", "claim"]);
+    const reported = parsed.meaning.edges.some((e) => {
+      if (e.relation !== "complement" && e.relation !== "theme" && e.relation !== "patient") return false;
+      const verb = nodeOf(e.from);
+      if (!verb || verb.role !== "verb" || !SAYING_VERBS.has(verb.lemma.toLowerCase())) return false;
+      const agentEdge = parsed.meaning.edges.find((a) => a.from === verb.id && a.relation === "agent");
+      const agent = agentEdge ? nodeOf(agentEdge.to) : undefined;
+      return agent !== undefined && agent.lemma.toLowerCase() !== "i" && agent.lemma.toLowerCase() !== "you";
+    });
+    const evidence: UtteranceFrame["evidence"] = reported ? "reported" : speechAct === "uncertainty" ? "inferred" : "stated";
+    obj.frame = {
+      speaker: {
+        register: "session.interlocutor",
+        ...(speakerName ? { name: speakerName } : {}),
+        statedThisTurn: statedNow !== undefined,
+      },
+      addressee: "system",
+      ...(topicLemma ? { topic: topicLemma } : {}),
+      evidence,
+    };
   }
   return [obj];
 }

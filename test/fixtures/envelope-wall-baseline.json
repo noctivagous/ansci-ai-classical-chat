@@ -8,6 +8,8 @@
       "surface": "I have 5 apples.",
       "act": {
         "kind": "statement",
+        "speechAct": "statement",
+        "turnFamily": "statement",
         "form": "indicative",
         "force": "statement",
         "ritual": false,
@@ -157,10 +159,10 @@
           "reading": {
             "number": 5,
             "word": "five",
-            "hanzi": "五",
+            "hanzi": "\u4e94",
             "element": "Earth",
             "tier": "established",
-            "source": "QuantificationUnit ← OKU Numbers slice (ingested): 'five' (五, number), Suwen ch. 4"
+            "source": "QuantificationUnit \u2190 OKU Numbers slice (ingested): 'five' (\u4e94, number), Suwen ch. 4"
           }
         }
       ],
@@ -176,7 +178,7 @@
         },
         {
           "unit": "reasoning/problem-solving",
-          "note": "routed to the ProblemSolving Unit — the router asked \"does this need problem-solving?\" and the answer is yes (the object carries quantity content, assessed from the object); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
+          "note": "routed to the ProblemSolving Unit \u2014 the router asked \"does this need problem-solving?\" and the answer is yes (the object carries quantity content, assessed from the object); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
           "data": {
             "needs": [
               "quantification"
@@ -184,8 +186,33 @@
             "routedTo": "reasoning/problem-solving",
             "ground": "the object carries quantity content, assessed from the object"
           }
+        },
+        {
+          "unit": "reasoning/response-policy",
+          "note": "response policy: store-acknowledge \u2014 the turn supplies content; the reply takes it into the record and acknowledges what stands there from it",
+          "data": {
+            "responsePolicy": {
+              "act": "store-acknowledge",
+              "ground": "the turn supplies content; the reply takes it into the record and acknowledges what stands there from it",
+              "basis": {
+                "kind": "statement",
+                "speechAct": "statement",
+                "demands": [],
+                "needs": [],
+                "premise": "not-consulted"
+              }
+            }
+          }
         }
-      ]
+      ],
+      "frame": {
+        "speaker": {
+          "register": "session.interlocutor",
+          "statedThisTurn": false
+        },
+        "addressee": "system",
+        "evidence": "stated"
+      }
     },
     {
       "id": "obj-2-2",
@@ -213,6 +240,8 @@
       ],
       "act": {
         "kind": "statement",
+        "speechAct": "statement",
+        "turnFamily": "statement",
         "form": "indicative",
         "force": "statement",
         "ritual": false,
@@ -362,7 +391,7 @@
         },
         {
           "unit": "reasoning/problem-solving",
-          "note": "routed to the ProblemSolving Unit — the router asked \"does this need problem-solving?\" and the answer is yes (the object carries quantity content, assessed from the object); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
+          "note": "routed to the ProblemSolving Unit \u2014 the router asked \"does this need problem-solving?\" and the answer is yes (the object carries quantity content, assessed from the object); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
           "data": {
             "needs": [
               "quantification"
@@ -370,8 +399,33 @@
             "routedTo": "reasoning/problem-solving",
             "ground": "the object carries quantity content, assessed from the object"
           }
+        },
+        {
+          "unit": "reasoning/response-policy",
+          "note": "response policy: store-acknowledge \u2014 the turn supplies content; the reply takes it into the record and acknowledges what stands there from it",
+          "data": {
+            "responsePolicy": {
+              "act": "store-acknowledge",
+              "ground": "the turn supplies content; the reply takes it into the record and acknowledges what stands there from it",
+              "basis": {
+                "kind": "statement",
+                "speechAct": "statement",
+                "demands": [],
+                "needs": [],
+                "premise": "not-consulted"
+              }
+            }
+          }
         }
-      ]
+      ],
+      "frame": {
+        "speaker": {
+          "register": "session.interlocutor",
+          "statedThisTurn": false
+        },
+        "addressee": "system",
+        "evidence": "stated"
+      }
     },
     {
       "id": "obj-3-3",
@@ -399,6 +453,8 @@
       ],
       "act": {
         "kind": "question",
+        "speechAct": "question",
+        "turnFamily": "request",
         "form": "interrogative",
         "force": "question",
         "ritual": false,
@@ -506,17 +562,47 @@
           "note": "assessed as question"
         },
         {
+          "unit": "reasoning/response-policy",
+          "note": "response policy: answer \u2014 the question opens whether its predication holds; the reply answers it from the record and the graph, or declines at the located gap where nothing stands",
+          "data": {
+            "responsePolicy": {
+              "act": "answer",
+              "ground": "the question opens whether its predication holds; the reply answers it from the record and the graph, or declines at the located gap where nothing stands",
+              "basis": {
+                "kind": "question",
+                "speechAct": "question",
+                "demands": [],
+                "needs": [
+                  {
+                    "kind": "answer",
+                    "slot": "whether the questioned predication holds"
+                  }
+                ],
+                "premise": "not-consulted"
+              }
+            }
+          }
+        },
+        {
           "unit": "reasoning/problem-solving",
-          "note": "routed to the ProblemSolving Unit — the router asked \"does this need problem-solving?\" and the answer is yes (a how-many question — solving asked for by the person); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
+          "note": "routed to the ProblemSolving Unit \u2014 the router asked \"does this need problem-solving?\" and the answer is yes (a how-many question \u2014 solving asked for by the person); needs attached: quantification. The unit is a placeholder: the needs are recorded on the object and no solving approach runs yet",
           "data": {
             "needs": [
               "quantification"
             ],
             "routedTo": "reasoning/problem-solving",
-            "ground": "a how-many question — solving asked for by the person"
+            "ground": "a how-many question \u2014 solving asked for by the person"
           }
         }
-      ]
+      ],
+      "frame": {
+        "speaker": {
+          "register": "session.interlocutor",
+          "statedThisTurn": false
+        },
+        "addressee": "system",
+        "evidence": "stated"
+      }
     }
   ],
   "airport": [
@@ -546,6 +632,8 @@
       ],
       "act": {
         "kind": "statement",
+        "speechAct": "statement",
+        "turnFamily": "statement",
         "form": "indicative",
         "force": "statement",
         "ritual": false,
@@ -691,8 +779,38 @@
         {
           "unit": "lpu/semantic-assessment",
           "note": "assessed as statement"
+        },
+        {
+          "unit": "reasoning/response-policy",
+          "note": "response policy: ask-after-gap \u2014 a placement need stands unfilled (airport.city); the reply asks after the unplaced slot rather than proceeding as if it were placed",
+          "data": {
+            "responsePolicy": {
+              "act": "ask-after-gap",
+              "ground": "a placement need stands unfilled (airport.city); the reply asks after the unplaced slot rather than proceeding as if it were placed",
+              "basis": {
+                "kind": "statement",
+                "speechAct": "statement",
+                "demands": [],
+                "needs": [
+                  {
+                    "kind": "placement",
+                    "slot": "airport.city"
+                  }
+                ],
+                "premise": "not-consulted"
+              }
+            }
+          }
         }
-      ]
+      ],
+      "frame": {
+        "speaker": {
+          "register": "session.interlocutor",
+          "statedThisTurn": false
+        },
+        "addressee": "system",
+        "evidence": "stated"
+      }
     },
     {
       "id": "obj-2-2",
@@ -720,6 +838,8 @@
       ],
       "act": {
         "kind": "statement",
+        "speechAct": "statement",
+        "turnFamily": "statement",
         "form": "indicative",
         "force": "statement",
         "ritual": false,
@@ -956,8 +1076,42 @@
         {
           "unit": "lpu/semantic-assessment",
           "note": "assessed as statement"
+        },
+        {
+          "unit": "reasoning/response-policy",
+          "note": "response policy: ask-after-gap \u2014 a placement need stands unfilled (bathroom-1.exact-location); the reply asks after the unplaced slot rather than proceeding as if it were placed",
+          "data": {
+            "responsePolicy": {
+              "act": "ask-after-gap",
+              "ground": "a placement need stands unfilled (bathroom-1.exact-location); the reply asks after the unplaced slot rather than proceeding as if it were placed",
+              "basis": {
+                "kind": "statement",
+                "speechAct": "statement",
+                "demands": [],
+                "needs": [
+                  {
+                    "kind": "placement",
+                    "slot": "bathroom-1.exact-location"
+                  },
+                  {
+                    "kind": "placement",
+                    "slot": "bathroom-2.exact-location"
+                  }
+                ],
+                "premise": "not-consulted"
+              }
+            }
+          }
         }
-      ]
+      ],
+      "frame": {
+        "speaker": {
+          "register": "session.interlocutor",
+          "statedThisTurn": false
+        },
+        "addressee": "system",
+        "evidence": "stated"
+      }
     }
   ]
 }
