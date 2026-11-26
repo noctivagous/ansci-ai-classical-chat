@@ -495,8 +495,12 @@ export function readSocial(object: SemanticObject, session: Session): void {
 /** The speaker's stated name, when this object is a self-naming
  *  statement: a predicated-as edge from the "i" subject to a
  *  predicate whose retained form is capitalised and whose lemma
- *  the classification table does not know as a common concept. */
-function statedName(object: SemanticObject): string | undefined {
+ *  the classification table does not know as a common concept.
+ *  Exported for SemanticAssessment's meta frame (the volvelle
+ *  build, slice 3): the frame reads the same stated name the
+ *  register learns here, from the same shape — one reader of
+ *  the shape, two records of it. */
+export function statedName(object: SemanticObject): string | undefined {
   const { nodes, edges } = object.content.meaning;
   // Two drawn shapes: the speaker predicated as the name
   // ("I'm Sam." — subject "i"), and the name-noun predicated

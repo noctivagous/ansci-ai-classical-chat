@@ -99,6 +99,26 @@ test("the wall: stripped cores deep-equal the pre-envelope baseline (apples)", (
   // semanticElement Wood — the classification table's entry
   // reaching the node, as designed. Verified as the ONLY
   // delta (1 added line; the airport baseline is unchanged).
+  // Regenerated again 2026-11-25 for the volvelle build,
+  // slice 1: each act now also carries the wider speech-act
+  // reading (speechAct, turnFamily) SemanticAssessment names
+  // beside the kind. Verified as the ONLY delta (2 added
+  // lines per object, 10 total; removing those two keys from
+  // the regenerated fixture reproduces the prior baseline
+  // exactly).
+  // Regenerated again 2026-11-25 for the volvelle build,
+  // slice 2: each object now also carries the Response
+  // Policy's trail annotation (the decision recorded on the
+  // inbound object, response-policy.ts). Verified as the
+  // ONLY delta: removing the reasoning/response-policy trail
+  // entries from the regenerated fixture reproduces the
+  // slice-1 baseline exactly.
+  // Regenerated again 2026-11-25 for the volvelle build,
+  // slice 3: each object now also carries its per-utterance
+  // meta frame (frame: speaker / addressee / topic /
+  // evidence). Verified as the ONLY delta: removing the
+  // frame key from the regenerated fixture reproduces the
+  // slice-2 baseline exactly.
   const s = newSession();
   run(s, ["I have 5 apples.", "Sally bought 3 of them.", "How many do I have left?"]);
   const infos = persons(s);

@@ -26,6 +26,7 @@
 import type { ParsedSentence } from "./sentence";
 import type { Session } from "./session";
 import type { SemanticObject } from "./semantic-object";
+import type { ResponsePolicyDecision } from "./response-policy";
 import { classifyAspects, rollUpComposition } from "./assess";
 import { buildSensesFace } from "./senses-scening";
 import { wrapReplyObject, type InformationObject } from "./info-object";
@@ -40,10 +41,18 @@ export interface AuthorReplyInput {
   /** The move, in words ("return greeting", "valency gap
    *  question", "predication") — the reply object's force. */
   move: string;
+  /** The Response Policy decision this reply was authored
+   *  under (response-policy.ts), where the call site is
+   *  policy-driven: the decision is recorded on the reply
+   *  object's trail, so the reply carries the choice that
+   *  produced it — its kind and its ground — beside the move
+   *  that names it. Call sites the policy does not drive
+   *  supply none, as before. */
+  policy?: ResponsePolicyDecision;
 }
 
 export function authorReplyObject(input: AuthorReplyInput): InformationObject {
-  const { graph, turn, session, inbound, move } = input;
+  const { graph, turn, session, inbound, move, policy } = input;
   const systemCount = session.objects.filter((o) => o.producer === "system").length;
   const aspects = classifyAspects(graph);
   const composition = rollUpComposition(aspects);
@@ -84,6 +93,13 @@ export function authorReplyObject(input: AuthorReplyInput): InformationObject {
     links: { ...(inbound ? { follows: inbound.id } : {}) },
     trail: [{ unit: "reasoning/planner", note: `authored as a reply object: ${move}` }],
   };
+  if (policy) {
+    obj.trail.push({
+      unit: "reasoning/response-policy",
+      note: `authored under the response-policy decision: ${policy.act} — ${policy.ground}`,
+      data: { responsePolicy: { ...policy } },
+    });
+  }
   // The envelope (2026-11-17): the reply object travels as an
   // information object too, carrying the surviving needs of
   // the object it answers — priced by Coherence before this
